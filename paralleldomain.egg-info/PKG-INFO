@@ -1,0 +1,11 @@
+Metadata-Version: 1.2
+Name: paralleldomain
+Version: 0.1.dev0
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: Nisse Knudsen
+Author-email: nisse@paralleldomain.com
+License: UNKNOWN
+Description: Python SDK for ParallelDomain Datasets
+Platform: UNKNOWN
+Requires-Python: >=3.7
