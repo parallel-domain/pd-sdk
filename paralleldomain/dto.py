@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, Undefined, CatchAll, config
 from typing import List, Dict, Any, Optional
+from .utils import Transformation
+from .sensor import SensorExtrinsic
 
 
 @dataclass_json
@@ -134,3 +136,37 @@ class SceneDTO:
     ontologies: Dict[str, str]
     metadata: SceneMetadataDTO
     samples: List[SceneSampleDTO]
+
+
+@dataclass_json
+@dataclass
+class CalibrationExtrinsicDTO(PoseDTO):
+    ...
+
+
+@dataclass_json
+@dataclass
+class CalibrationIntrinsicDTO:
+    cx: float
+    cy: float
+    fx: float
+    fy: float
+    k1: float
+    k2: float
+    p1: float
+    p2: float
+    k3: float
+    k4: float
+    k5: float
+    k6: float
+    skew: float
+    fov: float
+    fisheye: bool
+
+
+@dataclass_json
+@dataclass
+class CalibrationDTO:
+    extrinsics: List[CalibrationExtrinsicDTO]
+    names: List[str]
+    intrinsics: List[CalibrationIntrinsicDTO]

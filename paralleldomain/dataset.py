@@ -16,7 +16,7 @@ class Dataset:
         for fn in filenames:
             with open(f"{self._path}/{fn}", "r") as f:
                 scene_data = json.load(f)
-                scene = Scene.from_dict(scene_data)
+                scene = Scene.from_dict(scene_data, self)
                 self.scenes[scene.name] = scene
 
     @staticmethod
