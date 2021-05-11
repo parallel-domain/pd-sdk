@@ -20,7 +20,7 @@ class Dataset:
                 self.scenes[scene.name] = scene
 
     @staticmethod
-    def from_path(dataset_path: str) -> Dataset:
+    def from_path(dataset_path: str) -> "Dataset":
         with open(f"{dataset_path}/scene_dataset.json", "r") as f:
             scene_dataset = json.load(f)
 
