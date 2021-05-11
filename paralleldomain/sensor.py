@@ -14,17 +14,30 @@ class Sensor:
     def name(self):
         return self._name
 
+    @property
+    def frames(self):
+        return self._sensor_frames
+
     def add_sensor_frame(self, sensor_frame: SensorFrame):
         self._sensor_frames.append(sensor_frame)
 
 
 class SensorFrame:
-    def __init__(self, filename, annotations=None, pose=None):
+    def __init__(self, sensor, filename, annotations=None, pose=None):
+        self._sensor = sensor
         self._filename: str = filename
         self._pose: SensorPose = SensorPose() if not pose else pose
         self._annotations: Dict[str, Any] = {} if not annotations else annotations
         self._extrinsic: SensorExtrinsic = SensorExtrinsic()
         self._intrinsic: SensorIntrinsic = SensorIntrinsic()
+
+    @property
+    def sensor(self):
+        return self._sensor
+
+    @property
+    def filename(self):
+        return self._filename
 
     @property
     def extrinsic(self):
@@ -46,20 +59,22 @@ class SensorFrame:
     def pose(self):
         return self._pose
 
-    @pose.setter
-    def pose(self, value):
-        self._pose = pose
+    @property
+    def annotations(self):
+        return self._annotations
 
     @staticmethod
-    def from_SceneDataDatumDTO(datum: SceneDataDatum):
+    def from_SceneDataDatumDTO(sensor: Sensor, datum: SceneDataDatum):
         if datum.image:
             return SensorFrame(
+                sensor,
                 datum.image.filename,
                 datum.image.annotations,
                 SensorPose.from_PoseDTO(datum.image.pose),
             )
         elif datum.point_cloud:
             return SensorFrame(
+                sensor,
                 datum.point_cloud.filename,
                 datum.point_cloud.annotations,
                 SensorPose.from_PoseDTO(datum.point_cloud.pose),

@@ -7,6 +7,12 @@ class Transformation:
     def __init__(self):
         self._matrix = np.eye(4)
 
+    def __matmul__(self, other):
+        if isinstance(other, Transformation):
+            return np.dot(self.matrix, other.matrix)
+        elif isinstance(other, np.ndarray):
+            return np.dot(self.matrix, other)
+
     @property
     def matrix(self):
         return self._matrix
@@ -16,20 +22,20 @@ class Transformation:
         self._matrix = m
 
     @property
-    def rotation_matrix(self):
+    def rotation(self):
         return self.matrix[:3, :3]
 
-    @rotation_matrix.setter
-    def rotation_matrix(self, R):
+    @rotation.setter
+    def rotation(self, R):
         self.matrix[:3, :3] = R
 
     @property
     def rotation_quaternion(self):
-        return Quaternion(matrix=self.rotation_matrix).elements
+        return Quaternion(matrix=self.rotation).elements
 
     @rotation_quaternion.setter
     def rotation_quaternion(self, q):
-        self.rotation_matrix = Quaternion(*q)
+        self.rotation = Quaternion(*q)
 
     @property
     def translation(self):
