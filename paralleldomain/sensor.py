@@ -48,7 +48,6 @@ class SensorAnnotations:
         if key == 1:
             with open(f"{self._path}/{self._scene_name}/{self._data[key]}", "r") as f:
                 annotations_dto = AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
-            print(annotations_dto.annotations)
             return map(BoundingBox3D.from_BoundingBox3DDTO, annotations_dto.annotations)
         else:
             return []
