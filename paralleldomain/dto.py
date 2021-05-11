@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, Undefined, CatchAll, config
 from typing import List, Dict, Any, Optional
-from .utils import Transformation
-from .sensor import SensorExtrinsic
 
 
 @dataclass_json
@@ -170,3 +168,44 @@ class CalibrationDTO:
     extrinsics: List[CalibrationExtrinsicDTO]
     names: List[str]
     intrinsics: List[CalibrationIntrinsicDTO]
+
+
+@dataclass_json
+@dataclass
+class BoundingBox3DAttributesDTO:
+    vehicle_type: str
+    point_cache: str
+    parked_vehicle: Optional[str] = None
+
+
+@dataclass_json
+@dataclass
+class BoundingBox3DBoxDTO:
+    pose: PoseDTO
+    width: float
+    length: float
+    height: float
+    occlusion: float
+    truncation: float
+
+
+@dataclass_json
+@dataclass
+class BoundingBox3DDTO:
+    class_id: int
+    instance_id: int
+    num_points: int
+    box: BoundingBox3DBoxDTO
+    attributes: BoundingBox3DAttributesDTO
+
+
+@dataclass_json
+@dataclass
+class AnnotationsDTO:
+    annotations: List[Any]
+
+
+@dataclass_json
+@dataclass
+class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
+    annotations: List[BoundingBox3DDTO]

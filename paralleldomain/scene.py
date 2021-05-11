@@ -59,7 +59,7 @@ class Scene:
                 sensor = (
                     sensors[sensor_name]
                     if sensor_name in sensors.keys()
-                    else Sensor(sensor_name)
+                    else Sensor(self, sensor_name)
                 )
                 sensor_frame = SensorFrame.from_SceneDataDatumDTO(
                     sensor,

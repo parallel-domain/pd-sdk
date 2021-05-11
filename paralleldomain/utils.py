@@ -1,11 +1,16 @@
-from __future__ import annotations
+from __future__ import annotations as ann
 import numpy as np
 from pyquaternion import Quaternion
 
 
 class Transformation:
     def __init__(self):
-        self._matrix = np.eye(4)
+        self._Rq = Quaternion(1, 0, 0, 0)
+        self._t = [0.0, 0.0, 0.0]
+
+    def __repr__(self):
+        rep = f"R: {self.rpy}, t: {self.translation}"
+        return rep
 
     def __matmul__(self, other):
         if isinstance(other, Transformation):
@@ -14,36 +19,47 @@ class Transformation:
             return np.dot(self.matrix, other)
 
     @property
-    def matrix(self):
-        return self._matrix
+    def transformation_matrix(self):
+        matrix = np.eye(4)
+        matrix[:3, :3] = self.rotation
+        matrix[:3, 3] = self.translation
+        return matrix
 
-    @matrix.setter
-    def matrix(self, m):
+    @transformation_matrix.setter
+    def transformation_matrix(self, m):
         self._matrix = m
 
     @property
     def rotation(self):
-        return self.matrix[:3, :3]
+        return self._Rq.rotation_matrix
 
     @rotation.setter
     def rotation(self, R):
-        self.matrix[:3, :3] = R
+        self._Rq = Quaternion(matrix=R)
 
     @property
     def rotation_quaternion(self):
-        return Quaternion(matrix=self.rotation).elements
+        return self._Rq.elements
 
     @rotation_quaternion.setter
     def rotation_quaternion(self, q):
-        self.rotation = Quaternion(*q)
+        self._Rq = Quaternion(*q)
+
+    @property
+    def rpy(self):
+        return [
+            self._Rq.yaw_pitch_roll[2],
+            self._Rq.yaw_pitch_roll[1],
+            self._Rq.yaw_pitch_roll[0],
+        ]
 
     @property
     def translation(self):
-        return self.matrix[:3, 3]
+        return self._t
 
     @translation.setter
     def translation(self, t):
-        self.matrix[:3, 3] = t
+        self._t = t
 
     @staticmethod
     def from_PoseDTO(pose_dto: PoseDTO):
