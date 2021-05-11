@@ -10,10 +10,17 @@ class Scene:
         self._dto = scene_dto
         self._dataset = dataset
         self._frames = []
+        self._sensors = {}
         self._prepare_frames()
 
     def _data_by_key(self):
         return {d.key: d for d in self._dto.data}
+
+    def _add_frame(self, frame):
+        self._frames.append(frame)
+        self._sensors.update(
+            {sf.sensor.name: sf.sensor for _, sf in frame.sensors.items()}
+        )
 
     def _prepare_frames(self):  # quick implementation, tbd better
         sensors = {}
@@ -55,16 +62,17 @@ class Scene:
                     else Sensor(sensor_name)
                 )
                 sensor_frame = SensorFrame.from_SceneDataDatumDTO(
+                    sensor,
                     data_row.datum,
                 )
                 sensor_frame.extrinsic = extrinsics_by_sensor[sensor_name]
                 sensor_frame.intrinsic = intrinsics_by_sensor[sensor_name]
                 sensor.add_sensor_frame(sensor_frame)
+                frame.add_sensor(sensor_frame)
 
                 sensors[sensor_name] = sensor
-                frame.add_sensor(sensor)
 
-            self._frames.append(frame)
+            self._add_frame(frame)
 
     @property
     def _path(self):
@@ -77,6 +85,14 @@ class Scene:
     @property
     def description(self):
         return self._dto.description
+
+    @property
+    def frames(self):
+        return self._frames
+
+    @property
+    def sensors(self):
+        return self._sensors
 
     @staticmethod
     def from_dict(scene_data: Dict, dataset):

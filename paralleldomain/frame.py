@@ -1,9 +1,13 @@
-from .sensor import Sensor
+from .sensor import SensorFrame
 
 
 class Frame:
     def __init__(self):
-        self._sensors: Dict[str, Sensor] = {}
+        self._sensor_frames: Dict[str, SensorFrame] = {}
 
-    def add_sensor(self, sensor: Sensor):
-        self._sensors[sensor.name] = sensor
+    @property
+    def sensors(self):
+        return self._sensor_frames
+
+    def add_sensor(self, sensor_frame: SensorFrame):
+        self._sensor_frames[sensor_frame.sensor.name] = sensor_frame
