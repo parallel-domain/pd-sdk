@@ -1,12 +1,14 @@
 from __future__ import annotations
 from .utils import Transformation
 from typing import Dict
-
-# from .dto import CalibrationIntrinsicDTO, CalibrationExtrinsicDTO
+from .annotation import BoundingBox3D
+from .dto import AnnotationsBoundingBox3DDTO
+import ujson as json
 
 
 class Sensor:
-    def __init__(self, name):
+    def __init__(self, scene, name):
+        self._scene = scene
         self._name = name
         self._sensor_frames = []
 
@@ -18,8 +20,49 @@ class Sensor:
     def frames(self):
         return self._sensor_frames
 
+    @property
+    def scene(self):
+        return self._scene
+
+    @property
+    def _path(self):
+        return self._scene._path
+
+    @property
+    def _scene_name(self):
+        return self._scene.name
+
     def add_sensor_frame(self, sensor_frame: SensorFrame):
         self._sensor_frames.append(sensor_frame)
+
+
+class SensorAnnotations:
+    def __init__(self, sensor_frame: SensorFrame, data: Dict[int, str]):
+        self._sensor_frame = sensor_frame
+        self._data = data
+
+    def __call__(self):
+        return {key: a.split("/")[0] for key, a in self._data.items()}
+
+    def __getitem__(self, key):
+        if key == 1:
+            with open(f"{self._path}/{self._scene_name}/{self._data[key]}", "r") as f:
+                annotations_dto = AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
+            return map(BoundingBox3D.from_BoundingBox3DDTO, annotations_dto.annotations)
+        else:
+            return []
+
+    @property
+    def sensor_frame(self):
+        return self._sensor_frame
+
+    @property
+    def _path(self):
+        return self._sensor_frame._path
+
+    @property
+    def _scene_name(self):
+        return self._sensor_frame._scene_name
 
 
 class SensorFrame:
@@ -27,7 +70,11 @@ class SensorFrame:
         self._sensor = sensor
         self._filename: str = filename
         self._pose: SensorPose = SensorPose() if not pose else pose
-        self._annotations: Dict[str, Any] = {} if not annotations else annotations
+        self._annotations: SensorAnnotations = (
+            SensorAnnotations(self, {})
+            if not annotations
+            else SensorAnnotations(self, {int(k): v for k, v in annotations.items()})
+        )
         self._extrinsic: SensorExtrinsic = SensorExtrinsic()
         self._intrinsic: SensorIntrinsic = SensorIntrinsic()
 
@@ -62,6 +109,14 @@ class SensorFrame:
     @property
     def annotations(self):
         return self._annotations
+
+    @property
+    def _path(self):
+        return self._sensor._path
+
+    @property
+    def _scene_name(self):
+        return self._sensor._scene_name
 
     @staticmethod
     def from_SceneDataDatumDTO(sensor: Sensor, datum: SceneDataDatum):
