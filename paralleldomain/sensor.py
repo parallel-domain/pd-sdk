@@ -1,175 +1,150 @@
 from __future__ import annotations
-from .utils import Transformation
-from typing import Dict
-from .annotation import BoundingBox3D
-from .dto import AnnotationsBoundingBox3DDTO
+from typing import Dict, Optional, List, cast
 import ujson as json
+
+from paralleldomain.utils import Transformation
+from paralleldomain.annotation import BoundingBox3D, Annotation
+from paralleldomain.dto import AnnotationsBoundingBox3DDTO, CalibrationIntrinsicDTO, PoseDTO, CalibrationExtrinsicDTO, \
+    SceneDataDatum
 
 
 class Sensor:
-    def __init__(self, scene, name):
-        self._scene = scene
-        self._name = name
+    def __init__(self, scene_path: str, sensor_name: str):
+        self._scene_path = scene_path
+        self._sensor_name = sensor_name
         self._sensor_frames = []
 
     @property
-    def name(self):
-        return self._name
+    def name(self) -> str:
+        return self._sensor_name
 
     @property
-    def frames(self):
+    def frames(self) -> List[SensorFrame]:
         return self._sensor_frames
 
     @property
-    def scene(self):
-        return self._scene
-
-    @property
-    def _path(self):
-        return self._scene._path
-
-    @property
-    def _scene_name(self):
-        return self._scene.name
+    def _path(self) -> str:
+        return self._scene_path
 
     def add_sensor_frame(self, sensor_frame: SensorFrame):
         self._sensor_frames.append(sensor_frame)
 
 
 class SensorAnnotations:
-    def __init__(self, sensor_frame: SensorFrame, data: Dict[int, str]):
-        self._sensor_frame = sensor_frame
+    def __init__(self, scene_path: str, data: Dict[int, str], ):
+        self._scene_path = scene_path
         self._data = data
 
-    def __call__(self):
+    @property
+    def available_annotation_types(self) -> Dict[int, str]:
         return {key: a.split("/")[0] for key, a in self._data.items()}
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> List[Annotation]:
+        # TODO enum for key
         if key == 1:
-            with open(f"{self._path}/{self._scene_name}/{self._data[key]}", "r") as f:
+            with open(f"{self._scene_path}/{self._data[key]}", "r") as f:
                 annotations_dto = AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
-            return map(BoundingBox3D.from_BoundingBox3DDTO, annotations_dto.annotations)
+            return list(map(BoundingBox3D.from_dto, annotations_dto.annotations))
         else:
             return []
 
-    @property
-    def sensor_frame(self):
-        return self._sensor_frame
-
-    @property
-    def _path(self):
-        return self._sensor_frame._path
-
-    @property
-    def _scene_name(self):
-        return self._sensor_frame._scene_name
-
 
 class SensorFrame:
-    def __init__(self, sensor, filename, annotations=None, pose=None):
-        self._sensor = sensor
-        self._filename: str = filename
+    def __init__(self, scene_path: str, sensor_name: str, file_name: str,
+                 extrinsic: SensorExtrinsic, intrinsic: SensorIntrinsic,
+                 annotations: Optional[Dict[str, str]] = None,
+                 pose: Optional[SensorPose] = None):
+        self._scene_path = scene_path
+        self._sensor_name = sensor_name
+        self._file_name: str = file_name
         self._pose: SensorPose = SensorPose() if not pose else pose
         self._annotations: SensorAnnotations = (
-            SensorAnnotations(self, {})
+            SensorAnnotations(scene_path=self._scene_path, data={})
             if not annotations
-            else SensorAnnotations(self, {int(k): v for k, v in annotations.items()})
+            else SensorAnnotations(scene_path=self._scene_path, data={int(k): v for k, v in annotations.items()})
         )
-        self._extrinsic: SensorExtrinsic = SensorExtrinsic()
-        self._intrinsic: SensorIntrinsic = SensorIntrinsic()
+        self._extrinsic: SensorExtrinsic = extrinsic
+        self._intrinsic: SensorIntrinsic = intrinsic
 
     @property
-    def sensor(self):
-        return self._sensor
-
-    @property
-    def filename(self):
-        return self._filename
-
-    @property
-    def extrinsic(self):
+    def extrinsic(self) -> SensorExtrinsic:
         return self._extrinsic
 
-    @extrinsic.setter
-    def extrinsic(self, value):
-        self._extrinsic = value
-
     @property
-    def intrinsic(self):
+    def intrinsic(self) -> SensorIntrinsic:
         return self._intrinsic
 
-    @intrinsic.setter
-    def intrinsic(self, value):
-        self._intrinsic = value
-
     @property
-    def pose(self):
+    def pose(self) -> SensorPose:
         return self._pose
 
     @property
-    def annotations(self):
+    def annotations(self) -> SensorAnnotations:
         return self._annotations
 
     @property
-    def _path(self):
-        return self._sensor._path
-
-    @property
-    def _scene_name(self):
-        return self._sensor._scene_name
+    def sensor_name(self) -> str:
+        return self._sensor_name
 
     @staticmethod
-    def from_SceneDataDatumDTO(sensor: Sensor, datum: SceneDataDatum):
+    def from_dto(scene_path: str, sensor_name: str, datum: SceneDataDatum,
+                 extrinsic: SensorExtrinsic, intrinsic: SensorIntrinsic) -> "SensorFrame":
         if datum.image:
             return SensorFrame(
-                sensor,
-                datum.image.filename,
-                datum.image.annotations,
-                SensorPose.from_PoseDTO(datum.image.pose),
+                scene_path=scene_path,
+                sensor_name=sensor_name,
+                file_name=datum.image.filename,
+                extrinsic=extrinsic,
+                intrinsic=intrinsic,
+                annotations=datum.image.annotations,
+                pose=SensorPose.from_dto(dto=datum.image.pose),
             )
         elif datum.point_cloud:
             return SensorFrame(
-                sensor,
-                datum.point_cloud.filename,
-                datum.point_cloud.annotations,
-                SensorPose.from_PoseDTO(datum.point_cloud.pose),
+                scene_path=scene_path,
+                sensor_name=sensor_name,
+                file_name=datum.point_cloud.filename,
+                extrinsic=extrinsic,
+                intrinsic=intrinsic,
+                annotations=datum.point_cloud.annotations,
+                pose=SensorPose.from_dto(dto=datum.point_cloud.pose),
             )
 
 
 class SensorPose(Transformation):
     @staticmethod
-    def from_PoseDTO(pose: PoseDTO):
-        tf = Transformation.from_PoseDTO(pose)
-        tf.__class__ = SensorPose
-        return tf
+    def from_dto(dto: PoseDTO) -> "SensorPose":
+        tf = Transformation.from_dto(dto=dto)
+        # tf.__class__ = SensorPose
+        return cast(tf, SensorPose)
 
 
 class SensorExtrinsic(Transformation):
     @staticmethod
-    def from_CalibrationExtrinsicDTO(extrinsic: CalibrationExtrinsicDTO):
-        tf = Transformation.from_PoseDTO(extrinsic)
-        tf.__class__ = SensorExtrinsic
-        return tf
+    def from_dto(dto: CalibrationExtrinsicDTO) -> "SensorExtrinsic":
+        tf = Transformation.from_dto(dto=dto)
+        # tf.__class__ = SensorExtrinsic
+        return cast(tf, SensorExtrinsic)
 
 
 class SensorIntrinsic:
     def __init__(
-        self,
-        cx=0.0,
-        cy=0.0,
-        fx=0.0,
-        fy=0.0,
-        k1=0.0,
-        k2=0.0,
-        p1=0.0,
-        p2=0.0,
-        k3=0.0,
-        k4=0.0,
-        k5=0.0,
-        k6=0.0,
-        skew=0.0,
-        fov=0.0,
-        fisheye=False,
+            self,
+            cx=0.0,
+            cy=0.0,
+            fx=0.0,
+            fy=0.0,
+            k1=0.0,
+            k2=0.0,
+            p1=0.0,
+            p2=0.0,
+            k3=0.0,
+            k4=0.0,
+            k5=0.0,
+            k6=0.0,
+            skew=0.0,
+            fov=0.0,
+            fisheye=False,
     ):
         self.cx = cx
         self.cy = cy
@@ -188,21 +163,21 @@ class SensorIntrinsic:
         self.fisheye = fisheye
 
     @staticmethod
-    def from_CalibrationIntrinsicDTO(intrinsic: CalibrationIntrinsicDTO):
+    def from_dto(dto: CalibrationIntrinsicDTO) -> "SensorIntrinsic":
         return SensorIntrinsic(
-            cx=intrinsic.cx,
-            cy=intrinsic.cy,
-            fx=intrinsic.fx,
-            fy=intrinsic.fy,
-            k1=intrinsic.k1,
-            k2=intrinsic.k2,
-            p1=intrinsic.p1,
-            p2=intrinsic.p2,
-            k3=intrinsic.k3,
-            k4=intrinsic.k4,
-            k5=intrinsic.k5,
-            k6=intrinsic.k6,
-            skew=intrinsic.skew,
-            fov=intrinsic.fov,
-            fisheye=intrinsic.fisheye,
+            cx=dto.cx,
+            cy=dto.cy,
+            fx=dto.fx,
+            fy=dto.fy,
+            k1=dto.k1,
+            k2=dto.k2,
+            p1=dto.p1,
+            p2=dto.p2,
+            k3=dto.k3,
+            k4=dto.k4,
+            k5=dto.k5,
+            k6=dto.k6,
+            skew=dto.skew,
+            fov=dto.fov,
+            fisheye=dto.fisheye,
         )
