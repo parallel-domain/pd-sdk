@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, List
+import numpy as np
 
 from paralleldomain.sensor import SensorFrame
 
@@ -11,9 +12,19 @@ class Frame:
     def sensors(self) -> Dict[str, SensorFrame]:
         return self._sensor_frames
 
-    # @property TODO
-    # def camera_Sensors(self):
-    #     return [sen for sen in self.sensors if isinstance(sen, CameraSensor)]
+    @property
+    def available_sensors(self) -> List[str]:
+        return list(self._sensor_frames.keys())
 
     def add_sensor(self, sensor_frame: SensorFrame):
         self._sensor_frames[sensor_frame.sensor_name] = sensor_frame
+
+    @property
+    def point_clouds(self) -> Dict[str, np.ndarray]:
+        # todo load from sensor frame lazyload on dict __getitem__
+        pass
+
+    @property
+    def images(self) -> Dict[str, np.ndarray]:
+        # todo load from sensor frame lazyload on dict __getitem_
+        pass
