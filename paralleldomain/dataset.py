@@ -1,22 +1,23 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from .scene import Scene
 from typing import List, Dict
 import ujson as json
 
+from paralleldomain.scene import Scene
+
 
 class Dataset:
-    def __init__(self, scene_dataset: Dict, path: str = "."):
+    def __init__(self, scene_dataset: Dict, dataset_path: str = "."):
         self.scenes = {}
-        self._path = path
+        self._dataset_path = dataset_path
         self.metadata = DatasetMeta.from_dict(scene_dataset["metadata"])
         self.load_scenes(scene_dataset["scene_splits"]["0"]["filenames"])
 
     def load_scenes(self, filenames: List[str]):
         for fn in filenames:
-            with open(f"{self._path}/{fn}", "r") as f:
+            with open(f"{self._dataset_path}/{fn}", "r") as f:
                 scene_data = json.load(f)
-                scene = Scene.from_dict(scene_data, self)
+                scene = Scene.from_dict(scene_data=scene_data, dataset_path=self._dataset_path)
                 self.scenes[scene.name] = scene
 
     @staticmethod
@@ -24,7 +25,7 @@ class Dataset:
         with open(f"{dataset_path}/scene_dataset.json", "r") as f:
             scene_dataset = json.load(f)
 
-        return Dataset(scene_dataset, dataset_path)
+        return Dataset(scene_dataset=scene_dataset, dataset_path=dataset_path)
 
 
 @dataclass_json

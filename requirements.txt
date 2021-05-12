@@ -12,3 +12,5 @@ virtualenv==20.4.4
 virtualenv-clone==0.5.4
 virtualenvwrapper==4.8.4
 zipp==3.4.1
+ujson==4.0.2
+dataclasses_json==0.5.3

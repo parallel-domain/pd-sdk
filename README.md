@@ -7,13 +7,12 @@ ds = Dataset.from_path(DATA)
 
 ds.scenes.keys()
 
-print(ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations())
+print(ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations.available_annotation_types)
 # OR
-print(ds.scenes["scene_000000"].sensors["camera_04"].frames[0].annotations())
+print(ds.scenes["scene_000000"].sensors["camera_04"].frames[0].annotations.available_annotation_types)
 
 # only Type 1 (BB3D) currently supported
-annotations_gen = ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations[1]  # returns map
-a = list(annotations_gen)
+annotations = ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations[1]  # returns map
 
 
 ```

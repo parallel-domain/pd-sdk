@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json, Undefined, CatchAll, config
+from dataclasses_json import dataclass_json, Undefined, CatchAll, config, DataClassJsonMixin
 from typing import List, Dict, Any, Optional
 
 
 @dataclass_json
 @dataclass
-class TranslationDTO:
+class TranslationDTO(DataClassJsonMixin):
     x: float
     y: float
     z: float
@@ -13,7 +13,7 @@ class TranslationDTO:
 
 @dataclass_json
 @dataclass
-class RotationDTO:
+class RotationDTO(DataClassJsonMixin):
     qw: float
     qx: float
     qy: float
@@ -22,14 +22,14 @@ class RotationDTO:
 
 @dataclass_json
 @dataclass
-class PoseDTO:
+class PoseDTO(DataClassJsonMixin):
     translation: TranslationDTO
     rotation: RotationDTO
 
 
 @dataclass_json
 @dataclass
-class IdDTO:
+class IdDTO(DataClassJsonMixin):
     timestamp: str  # TODO: Read as proper datetime object
     index: str
     log: str
@@ -50,7 +50,7 @@ class SceneSampleIdDTO(IdDTO):
 
 @dataclass_json
 @dataclass
-class SceneDataDatumTypeGeneric:
+class SceneDataDatumTypeGeneric(DataClassJsonMixin):
     pose: PoseDTO
     filename: str
     annotations: Dict[str, str]
@@ -74,14 +74,14 @@ class SceneDataDatumTypePointCloud(SceneDataDatumTypeGeneric):
 
 @dataclass_json
 @dataclass
-class SceneDataDatum:
+class SceneDataDatum(DataClassJsonMixin):
     image: Optional[SceneDataDatumTypeImage] = None
     point_cloud: Optional[SceneDataDatumTypePointCloud] = None
 
 
 @dataclass_json
 @dataclass
-class SceneMetadataPDDTO:
+class SceneMetadataPDDTO(DataClassJsonMixin):
     type_: str = field(metadata=config(field_name="@type"))
     location: str
     time_of_day: str
@@ -100,14 +100,14 @@ class SceneMetadataPDDTO:
 
 @dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
-class SceneMetadataDTO:
+class SceneMetadataDTO(DataClassJsonMixin):
     PD: SceneMetadataPDDTO
     other: CatchAll
 
 
 @dataclass_json
 @dataclass
-class SceneDataDTO:
+class SceneDataDTO(DataClassJsonMixin):
     next_key: str
     datum: SceneDataDatum
     id: SceneDataIdDTO
@@ -117,7 +117,7 @@ class SceneDataDTO:
 
 @dataclass_json
 @dataclass
-class SceneSampleDTO:
+class SceneSampleDTO(DataClassJsonMixin):
     calibration_key: str
     id: SceneSampleIdDTO
     datum_keys: List[str]
@@ -126,7 +126,7 @@ class SceneSampleDTO:
 
 @dataclass_json
 @dataclass
-class SceneDTO:
+class SceneDTO(DataClassJsonMixin):
     name: str
     description: str
     log: str
@@ -144,7 +144,7 @@ class CalibrationExtrinsicDTO(PoseDTO):
 
 @dataclass_json
 @dataclass
-class CalibrationIntrinsicDTO:
+class CalibrationIntrinsicDTO(DataClassJsonMixin):
     cx: float
     cy: float
     fx: float
@@ -164,7 +164,7 @@ class CalibrationIntrinsicDTO:
 
 @dataclass_json
 @dataclass
-class CalibrationDTO:
+class CalibrationDTO(DataClassJsonMixin):
     extrinsics: List[CalibrationExtrinsicDTO]
     names: List[str]
     intrinsics: List[CalibrationIntrinsicDTO]
@@ -172,7 +172,7 @@ class CalibrationDTO:
 
 @dataclass_json
 @dataclass
-class BoundingBox3DAttributesDTO:
+class BoundingBox3DAttributesDTO(DataClassJsonMixin):
     vehicle_type: str
     point_cache: str
     parked_vehicle: Optional[str] = None
@@ -180,7 +180,7 @@ class BoundingBox3DAttributesDTO:
 
 @dataclass_json
 @dataclass
-class BoundingBox3DBoxDTO:
+class BoundingBox3DBoxDTO(DataClassJsonMixin):
     pose: PoseDTO
     width: float
     length: float
@@ -191,7 +191,7 @@ class BoundingBox3DBoxDTO:
 
 @dataclass_json
 @dataclass
-class BoundingBox3DDTO:
+class BoundingBox3DDTO(DataClassJsonMixin):
     class_id: int
     instance_id: int
     num_points: int
@@ -201,7 +201,7 @@ class BoundingBox3DDTO:
 
 @dataclass_json
 @dataclass
-class AnnotationsDTO:
+class AnnotationsDTO(DataClassJsonMixin):
     annotations: List[Any]
 
 

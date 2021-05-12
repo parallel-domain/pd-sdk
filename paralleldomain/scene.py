@@ -1,34 +1,36 @@
-from .dto import SceneDTO, CalibrationDTO
-from .frame import Frame
-from .sensor import Sensor, SensorFrame, SensorExtrinsic, SensorIntrinsic
-from typing import Dict
+from typing import Dict, List
 import ujson as json
+
+from paralleldomain.dto import SceneDTO, CalibrationDTO
+from paralleldomain.frame import Frame
+from paralleldomain.sensor import Sensor, SensorFrame, SensorExtrinsic, SensorIntrinsic
 
 
 class Scene:
-    def __init__(self, scene_dto: SceneDTO, dataset):
+    def __init__(self, scene_dto: SceneDTO, dataset_path: str):
         self._dto = scene_dto
-        self._dataset = dataset
-        self._frames = []
-        self._sensors = {}
+        self._dataset_path = dataset_path
+        self._scene_path = f"{self._dataset_path}/{self.name}"
+        self._frames: List[Frame] = []
+        self._sensors: Dict[str, Sensor] = {}
         self._prepare_frames()
 
-    def _data_by_key(self):
+    def _data_by_key(self) -> Dict[str, SceneDTO]:
         return {d.key: d for d in self._dto.data}
 
-    def _add_frame(self, frame):
+    def _add_frame(self, frame: Frame):
         self._frames.append(frame)
         self._sensors.update(
             {sf.sensor.name: sf.sensor for _, sf in frame.sensors.items()}
         )
 
     def _prepare_frames(self):  # quick implementation, tbd better
-        sensors = {}
+        sensors: Dict[str, Sensor] = dict()
         data = self._data_by_key()
         for sample in self._dto.samples:
             frame = Frame()
             with open(
-                f"{self._path}/{self.name}/calibration/{sample.calibration_key}.json",
+                f"{self._scene_path}/calibration/{sample.calibration_key}.json",
                 "r",
             ) as f:
                 calibration = CalibrationDTO.from_dict(json.load(f))
@@ -37,7 +39,7 @@ class Scene:
                 zip(
                     calibration.names,
                     map(
-                        SensorExtrinsic.from_CalibrationExtrinsicDTO,
+                        SensorExtrinsic.from_dto,
                         calibration.extrinsics,
                     ),
                 )
@@ -47,7 +49,7 @@ class Scene:
                 zip(
                     calibration.names,
                     map(
-                        SensorIntrinsic.from_CalibrationIntrinsicDTO,
+                        SensorIntrinsic.from_dto,
                         calibration.intrinsics,
                     ),
                 )
@@ -59,14 +61,15 @@ class Scene:
                 sensor = (
                     sensors[sensor_name]
                     if sensor_name in sensors.keys()
-                    else Sensor(self, sensor_name)
+                    else Sensor(scene_path=self._scene_path, sensor_name=sensor_name)
                 )
-                sensor_frame = SensorFrame.from_SceneDataDatumDTO(
-                    sensor,
-                    data_row.datum,
+                sensor_frame = SensorFrame.from_dto(
+                    scene_path=self._scene_path,
+                    sensor_name=sensor_name,
+                    datum=data_row.datum,
+                    extrinsic=extrinsics_by_sensor[sensor_name],
+                    intrinsic=intrinsics_by_sensor[sensor_name]
                 )
-                sensor_frame.extrinsic = extrinsics_by_sensor[sensor_name]
-                sensor_frame.intrinsic = intrinsics_by_sensor[sensor_name]
                 sensor.add_sensor_frame(sensor_frame)
                 frame.add_sensor(sensor_frame)
 
@@ -75,26 +78,22 @@ class Scene:
             self._add_frame(frame)
 
     @property
-    def _path(self):
-        return self._dataset._path
-
-    @property
-    def name(self):
+    def name(self) -> str:
         return self._dto.name
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self._dto.description
 
     @property
-    def frames(self):
+    def frames(self) -> List[Frame]:
         return self._frames
 
     @property
-    def sensors(self):
+    def sensors(self) -> Dict[str, Sensor]:
         return self._sensors
 
     @staticmethod
-    def from_dict(scene_data: Dict, dataset):
-        scene = Scene(SceneDTO.from_dict(scene_data), dataset)
+    def from_dict(scene_data: Dict, dataset_path: str):
+        scene = Scene(scene_dto=SceneDTO.from_dict(scene_data), dataset_path=dataset_path)
         return scene
