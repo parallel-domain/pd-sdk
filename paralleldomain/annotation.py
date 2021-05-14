@@ -20,8 +20,16 @@ class Annotation:
 
 
 class BoundingBox3D(Annotation):
-    def __init__(self, pose: AnnotationPose, width: float, height: float, length: float,
-                 class_id: int, instance_id: int, num_points: int):
+    def __init__(
+        self,
+        pose: AnnotationPose,
+        width: float,
+        height: float,
+        length: float,
+        class_id: int,
+        instance_id: int,
+        num_points: int,
+    ):
         super().__init__()
         self.pose: AnnotationPose = pose
         self.width: float = width
@@ -37,10 +45,12 @@ class BoundingBox3D(Annotation):
 
     @staticmethod
     def from_dto(dto: BoundingBox3DDTO):
-        return BoundingBox3D(pose=AnnotationPose.from_dto(dto=dto.box.pose),
-                             width=dto.box.width,
-                             length=dto.box.length,
-                             height=dto.box.width,
-                             class_id=dto.class_id,
-                             instance_id=dto.instance_id,
-                             num_points=dto.num_points)
+        return BoundingBox3D(
+            pose=AnnotationPose.from_dto(dto=dto.box.pose),
+            width=dto.box.width,
+            length=dto.box.length,
+            height=dto.box.width,
+            class_id=dto.class_id,
+            instance_id=dto.instance_id,
+            num_points=dto.num_points,
+        )
