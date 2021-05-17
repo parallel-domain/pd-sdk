@@ -259,7 +259,7 @@ class LidarData(SensorData):
         return self._point_cloud_info[p_info]
 
     def _load_data(self):
-        npz_data = np.load(f"{self._scene_path}/self._filename")
+        npz_data = np.load(f"{self._scene_path}/{self._filename}")
         column_count = len(self._point_cloud_info)
         return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, column_count)
 
