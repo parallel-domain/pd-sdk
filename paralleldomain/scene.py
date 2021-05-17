@@ -64,11 +64,10 @@ class Scene:
                     else Sensor(scene_path=self._scene_path, sensor_name=sensor_name)
                 )
                 sensor_frame = SensorFrame.from_dto(
-                    scene_path=self._scene_path,
-                    sensor_name=sensor_name,
+                    sensor=sensor,
                     datum=data_row.datum,
                     extrinsic=extrinsics_by_sensor[sensor_name],
-                    intrinsic=intrinsics_by_sensor[sensor_name]
+                    intrinsic=intrinsics_by_sensor[sensor_name],
                 )
                 sensor.add_sensor_frame(sensor_frame)
                 frame.add_sensor(sensor_frame)
@@ -95,5 +94,7 @@ class Scene:
 
     @staticmethod
     def from_dict(scene_data: Dict, dataset_path: str):
-        scene = Scene(scene_dto=SceneDTO.from_dict(scene_data), dataset_path=dataset_path)
+        scene = Scene(
+            scene_dto=SceneDTO.from_dict(scene_data), dataset_path=dataset_path
+        )
         return scene
