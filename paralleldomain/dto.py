@@ -149,17 +149,17 @@ class CalibrationIntrinsicDTO(DataClassJsonMixin):
     cy: float
     fx: float
     fy: float
-    k1: float
-    k2: float
-    p1: float
-    p2: float
-    k3: float
-    k4: float
-    k5: float
-    k6: float
-    skew: float
-    fov: float
-    fisheye: bool
+    k1: float = 0.0
+    k2: float = 0.0
+    p1: float = 0.0
+    p2: float = 0.0
+    k3: float = 0.0
+    k4: float = 0.0
+    k5: float = 0.0
+    k6: float = 0.0
+    skew: float = 0.0
+    fov: float = 0.0
+    fisheye: bool = 0.0
 
 
 @dataclass_json
@@ -209,3 +209,29 @@ class AnnotationsDTO(DataClassJsonMixin):
 @dataclass
 class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
     annotations: List[BoundingBox3DDTO]
+
+
+@dataclass_json
+@dataclass
+class DatasetMeta:
+    origin: str
+    name: str
+    creator: str
+    available_annotation_types: List[int]
+    creation_date: str
+    version: str
+    description: str
+    origin: str
+    name: str
+    creator: str
+    available_annotation_types: List[int]
+    creation_date: str
+    version: str
+    description: str
+
+
+@dataclass_json
+@dataclass
+class DatasetDTO:
+    meta_data: DatasetMeta
+    scene_names: List[str]

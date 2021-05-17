@@ -4,7 +4,7 @@ from typing import cast
 
 from paralleldomain.dto import PoseDTO, BoundingBox3DDTO
 
-from paralleldomain.utils import Transformation
+from paralleldomain.transformation import Transformation
 
 
 class AnnotationPose(Transformation):

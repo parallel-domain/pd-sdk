@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from enum import Enum
-from typing import Dict, Optional, List, cast
+from typing import Dict, Optional, List, cast, Callable, Union
 
 import numpy as np
 import ujson as json
@@ -16,12 +16,11 @@ from paralleldomain.dto import (
     SceneDataDatum,
     SceneDataDatumTypePointCloud,
 )
-from paralleldomain.utils import Transformation
+from paralleldomain.transformation import Transformation
 
 
 class Sensor:
-    def __init__(self, scene_path: str, sensor_name: str):
-        self._scene_path = scene_path
+    def __init__(self, sensor_name: str):
         self._sensor_name = sensor_name
         self._sensor_frames = []
 
@@ -33,77 +32,79 @@ class Sensor:
     def frames(self) -> List[SensorFrame]:
         return self._sensor_frames
 
-    @property
-    def _path(self) -> str:
-        return self._scene_path
-
     def add_sensor_frame(self, sensor_frame: SensorFrame):
         self._sensor_frames.append(sensor_frame)
 
 
 class SensorAnnotations:
-    def __init__(
-        self,
-        scene_path: str,
-        data: Dict[int, str],
-    ):
-        self._scene_path = scene_path
-        self._data = data
+    def __init__(self, available_annotation_type_id_to_identifier: Dict[Union[int, str], str],
+                 annotation_loader: Callable[[str], List[Annotation]]):
+        self._annotation_loader = annotation_loader
+        self._available_annotation_type_id_to_identifier = {int(k): v for k, v in
+                                                            available_annotation_type_id_to_identifier.items()}
 
     @property
     def available_annotation_types(self) -> Dict[int, str]:
-        return {key: a.split("/")[0] for key, a in self._data.items()}
+        return {key: a.split("/")[0] for key, a in self._available_annotation_type_id_to_identifier.items()}
 
-    def __getitem__(self, key) -> List[Annotation]:
+    def __getitem__(self, key: int) -> List[Annotation]:
         # TODO enum for key
-        if key == 1:
-            with open(f"{self._scene_path}/{self._data[key]}", "r") as f:
-                annotations_dto = AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
-            return list(map(BoundingBox3D.from_dto, annotations_dto.annotations))
-        else:
-            return []
+        return self._annotation_loader(self._available_annotation_type_id_to_identifier[key])
+        # if key == 1:
+        #     with open(f"{self._scene_path}/{self._annotation_type_id_to_file_name[key]}", "r") as f:
+        #         annotations_dto = AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
+        #     return list(map(BoundingBox3D.from_dto, annotations_dto.annotations))
+        # else:
+        #     return []
 
 
 class SensorFrame:
     def __init__(
-        self,
-        sensor: Sensor,
-        file_name: str,
-        extrinsic: SensorExtrinsic,
-        intrinsic: SensorIntrinsic,
-        annotations: Optional[Dict[str, str]] = None,
-        pose: Optional[SensorPose] = None,
-        data: Optional[SensorData] = None,
+            self,
+            sensor: Sensor,
+            file_name: str,
+            extrinsic_loader: Callable[[], SensorExtrinsic],
+            intrinsic_loader: Callable[[], SensorIntrinsic],
+            annotations_loader: Callable[[], SensorAnnotations],
+            pose_loader: Callable[[], SensorPose],
+            data_loader: Callable[[], SensorData],
     ):
+        self._data_loader = data_loader
+        self._pose_loader = pose_loader
+        self._annotations_loader = annotations_loader
+        self._intrinsic_loader = intrinsic_loader
+        self._extrinsic_loader = extrinsic_loader
         self._sensor = sensor
         self._file_name: str = file_name
-        self._pose: SensorPose = SensorPose() if not pose else pose
-        self._annotations: SensorAnnotations = (
-            SensorAnnotations(scene_path=self._scene_path, data={})
-            if not annotations
-            else SensorAnnotations(
-                scene_path=self._scene_path,
-                data={int(k): v for k, v in annotations.items()},
-            )
-        )
-        self._extrinsic: SensorExtrinsic = extrinsic
-        self._intrinsic: SensorIntrinsic = intrinsic
-        self._data = data
+
+        self._pose: Optional[SensorPose] = None
+        self._annotations: Optional[SensorAnnotations] = None
+        self._extrinsic: Optional[SensorExtrinsic] = None
+        self._intrinsic: Optional[SensorIntrinsic] = None
+        self._data: Optional[SensorData] = None
 
     @property
     def extrinsic(self) -> SensorExtrinsic:
+        if self._extrinsic is None:
+            self._extrinsic = self._extrinsic_loader()
         return self._extrinsic
 
     @property
     def intrinsic(self) -> SensorIntrinsic:
+        if self._intrinsic is None:
+            self._intrinsic = self._intrinsic_loader()
         return self._intrinsic
 
     @property
     def pose(self) -> SensorPose:
+        if self._pose is None:
+            self._pose = self._pose_loader()
         return self._pose
 
     @property
     def annotations(self) -> SensorAnnotations:
+        if self._annotations is None:
+            self._annotations = self._annotations_loader()
         return self._annotations
 
     @property
@@ -112,6 +113,8 @@ class SensorFrame:
 
     @property
     def data(self) -> SensorData:
+        if self._data is None:
+            self._data = self._data_loader()
         return self._data
 
     @property
@@ -119,40 +122,8 @@ class SensorFrame:
         return self._sensor
 
     @property
-    def _scene_path(self):
-        return self._sensor._scene_path
-
-    @property
     def _sensor_name(self):
         return self._sensor.name
-
-    @staticmethod
-    def from_dto(
-        sensor: Sensor,
-        datum: SceneDataDatum,
-        extrinsic: SensorExtrinsic,
-        intrinsic: SensorIntrinsic,
-    ) -> "SensorFrame":
-        if datum.image:
-            return SensorFrame(
-                sensor=sensor,
-                file_name=datum.image.filename,
-                extrinsic=extrinsic,
-                intrinsic=intrinsic,
-                annotations=datum.image.annotations,
-                pose=SensorPose.from_dto(dto=datum.image.pose),
-                data=None,
-            )
-        elif datum.point_cloud:
-            return SensorFrame(
-                sensor=sensor,
-                file_name=datum.point_cloud.filename,
-                extrinsic=extrinsic,
-                intrinsic=intrinsic,
-                annotations=datum.point_cloud.annotations,
-                pose=SensorPose.from_dto(dto=datum.point_cloud.pose),
-                data=None,
-            )
 
 
 """LidarData.from_dto(
@@ -176,22 +147,22 @@ class SensorExtrinsic(Transformation):
 
 class SensorIntrinsic:
     def __init__(
-        self,
-        cx=0.0,
-        cy=0.0,
-        fx=0.0,
-        fy=0.0,
-        k1=0.0,
-        k2=0.0,
-        p1=0.0,
-        p2=0.0,
-        k3=0.0,
-        k4=0.0,
-        k5=0.0,
-        k6=0.0,
-        skew=0.0,
-        fov=0.0,
-        fisheye=False,
+            self,
+            cx=0.0,
+            cy=0.0,
+            fx=0.0,
+            fy=0.0,
+            k1=0.0,
+            k2=0.0,
+            p1=0.0,
+            p2=0.0,
+            k3=0.0,
+            k4=0.0,
+            k5=0.0,
+            k6=0.0,
+            skew=0.0,
+            fov=0.0,
+            fisheye=False,
     ):
         self.cx = cx
         self.cy = cy
@@ -247,10 +218,10 @@ class PointInfo(Enum):
 
 
 class LidarData(SensorData):
-    def __init__(self, filename: str, point_format: List[str], scene_path: str):
-        self._filename = filename
+    def __init__(self, point_format: List[str], load_data: Callable[[], np.ndarray]):
+        self._load_data_call = load_data
+        self._cloud_data: Optional[np.ndarray] = None
         self._point_cloud_info = {val: idx for idx, val in enumerate(point_format)}
-        self._scene_path = scene_path
 
     def _has(self, p_info: PointInfo):
         return p_info in self._point_cloud_info
@@ -259,9 +230,9 @@ class LidarData(SensorData):
         return self._point_cloud_info[p_info]
 
     def _load_data(self):
-        npz_data = np.load(f"{self._scene_path}/{self._filename}")
-        column_count = len(self._point_cloud_info)
-        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, column_count)
+        if self._cloud_data is None:
+            self._cloud_data = self._load_data_call()
+        return self._cloud_data
 
     @property
     def xyz(self):
@@ -316,7 +287,3 @@ class LidarData(SensorData):
         xyz_data = self.xyz
         one_data = np.ones((len(xyz_data), 1))
         return np.concatenate((xyz_data, one_data), axis=1)
-
-    @staticmethod
-    def from_dto(dto: SceneDataDatumTypePointCloud, scene_path: str) -> "LidarData":
-        return LidarData(dto.filename, dto.point_format, scene_path)
