@@ -12,4 +12,10 @@ setup(
     python_requires=">=3.7",
     long_description="Python SDK for ParallelDomain Datasets",
     install_requires=requirements,
+    extras_require={
+            "dev": [
+                "pytest>=5.3.1",
+                "pytest-cov>=2.8.1",
+            ]
+        },
 )

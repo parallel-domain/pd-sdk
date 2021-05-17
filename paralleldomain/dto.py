@@ -86,8 +86,6 @@ class SceneMetadataPDDTO(DataClassJsonMixin):
     location: str
     time_of_day: str
     version: int
-    region_type: str
-    scene_type: str
     cloud_cover: float
     sun_elevation: float
     sun_azimuth: float
@@ -96,6 +94,8 @@ class SceneMetadataPDDTO(DataClassJsonMixin):
     wetness: float
     street_lights: float
     batch_id: int
+    region_type: str = field(metadata=config(field_name="region"))
+    scene_type: Optional[str] = None
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)
