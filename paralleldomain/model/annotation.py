@@ -2,9 +2,9 @@ from __future__ import annotations as ann
 
 from typing import cast
 
-from paralleldomain.dto import PoseDTO, BoundingBox3DDTO
+from paralleldomain.decoding.dgp_dto import PoseDTO, BoundingBox3DDTO
 
-from paralleldomain.transformation import Transformation
+from paralleldomain.model.transformation import Transformation
 
 
 class AnnotationPose(Transformation):

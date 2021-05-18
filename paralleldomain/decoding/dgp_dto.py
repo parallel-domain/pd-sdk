@@ -213,14 +213,7 @@ class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
 
 @dataclass_json
 @dataclass
-class DatasetMeta:
-    origin: str
-    name: str
-    creator: str
-    available_annotation_types: List[int]
-    creation_date: str
-    version: str
-    description: str
+class DatasetMetaDTO:
     origin: str
     name: str
     creator: str
@@ -233,5 +226,5 @@ class DatasetMeta:
 @dataclass_json
 @dataclass
 class DatasetDTO:
-    meta_data: DatasetMeta
+    meta_data: DatasetMetaDTO
     scene_names: List[str]

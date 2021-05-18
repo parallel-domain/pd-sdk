@@ -3,7 +3,6 @@ from __future__ import annotations as ann
 from typing import List
 
 import numpy as np
-from paralleldomain.dto import PoseDTO
 from pyquaternion import Quaternion
 
 
@@ -65,20 +64,3 @@ class Transformation:
     @translation.setter
     def translation(self, t):
         self._t = t
-
-    @staticmethod
-    def from_dto(dto: PoseDTO) -> "Transformation":
-        tf = Transformation()
-        tf.rotation_quaternion = [
-            dto.rotation.qw,
-            dto.rotation.qx,
-            dto.rotation.qy,
-            dto.rotation.qz,
-        ]
-        tf.translation = [
-            dto.translation.x,
-            dto.translation.y,
-            dto.translation.z,
-        ]
-
-        return tf

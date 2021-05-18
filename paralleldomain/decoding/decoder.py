@@ -2,37 +2,38 @@ import abc
 from typing import List
 
 import numpy as np
-from paralleldomain.dto import DatasetDTO, SceneDTO, CalibrationDTO, AnnotationsDTO, AnnotationsBoundingBox3DDTO, \
+from paralleldomain.model.dataset import DatasetMeta
+from paralleldomain.decoding.dgp_dto import DatasetDTO, SceneDTO, CalibrationDTO, AnnotationsDTO, AnnotationsBoundingBox3DDTO, \
     CalibrationExtrinsicDTO, CalibrationIntrinsicDTO
+from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
 
 
 class Decoder(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def decode_dataset(self) -> DatasetDTO:
+    def decode_scene_names(self) -> List[SceneName]:
         pass
 
     @abc.abstractmethod
-    def decode_scene(self, scene_name: str) -> SceneDTO:
+    def decode_dataset_meta_data(self) -> DatasetMeta:
         pass
 
     @abc.abstractmethod
-    def decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
+    def decode_scene_description(self, scene_name: SceneName) -> str:
         pass
 
     @abc.abstractmethod
-    def decode_extrinsic_calibration(self, scene_name: str, calibration_key: str, sensor_name: str) \
-            -> CalibrationExtrinsicDTO:
+    def decode_frame_ids(self, scene_name: SceneName) -> List[str]:
         pass
 
     @abc.abstractmethod
-    def decode_intrinsic_calibration(self, scene_name: str, calibration_key: str, sensor_name: str) \
-            -> CalibrationIntrinsicDTO:
+    def decode_sensor_names(self, scene_name: SceneName) -> List[str]:
         pass
 
     @abc.abstractmethod
-    def decode_3d_bounding_boxes(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
+    def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         pass
 
     @abc.abstractmethod
-    def decode_point_cloud(self, scene_name: str, cloud_identifier: str, point_format: List[str]) -> np.ndarray:
+    def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
         pass

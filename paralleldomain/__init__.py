@@ -1,2 +1,2 @@
-from .dataset import Dataset
-from .scene import Scene
+from .model.dataset import Dataset
+from .model.scene import Scene

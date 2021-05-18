@@ -9,7 +9,7 @@ setup(
     author="Nisse Knudsen",
     author_email="nisse@paralleldomain.com",
     packages=["paralleldomain"],
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     long_description="Python SDK for ParallelDomain Datasets",
     install_requires=requirements,
     extras_require={
