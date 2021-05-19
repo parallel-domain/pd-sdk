@@ -197,7 +197,7 @@ class _FrameLazyLoader:
             tf = _post_dto_to_transformation(dto=self.datum.point_cloud.pose)
             return cast(tf, SensorPose)
 
-    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
+    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> List[T]:
 
         annotations = list()
         if issubclass(annotation_type, BoundingBox3D):

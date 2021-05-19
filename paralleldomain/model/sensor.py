@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from enum import Enum
-from typing import Dict, Optional, List, cast, Callable, Union, TypeVar
+from typing import Dict, Optional, List, cast, Callable, Union, TypeVar, Type
 
 try:
     from typing import Protocol
@@ -103,7 +103,7 @@ class SensorFrame:
             self._available_annotation_types = self._lazy_loader.load_available_annotation_types()
         return list(self._available_annotation_types.keys())
 
-    def get_annotations(self, annotation_type: T) -> List[T]:
+    def get_annotations(self, annotation_type: Type[T]) -> List[T]:
         if annotation_type not in self.available_annotation_types:
             raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
         if annotation_type not in self._annotations:
