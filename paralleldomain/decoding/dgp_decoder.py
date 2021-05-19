@@ -39,9 +39,12 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
 
 
 class DGPDecoder(Decoder):
-    def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10):
+    def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10,
+                 max_point_clouds_to_cache: int = 50, max_annotations_to_cache: int = 50):
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
+        self.decode_point_cloud = lru_cache(max_point_clouds_to_cache)(self.decode_point_cloud)
+        self.decode_3d_bounding_boxes = lru_cache(max_annotations_to_cache)(self.decode_3d_bounding_boxes)
 
     @lru_cache(maxsize=1)
     def _data_by_key(self, scene_name: str) -> Dict[str, SceneDataDTO]:
