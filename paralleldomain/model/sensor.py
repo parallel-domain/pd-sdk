@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from enum import Enum
-from typing import Dict, Optional, List, cast, Callable, Union
+from typing import Dict, Optional, List, cast, Callable, Union, TypeVar
 
 try:
     from typing import Protocol
@@ -12,9 +12,11 @@ except ImportError:
 
 import numpy as np
 
-from paralleldomain.model.annotation import BoundingBox3D, Annotation
+from paralleldomain.model.annotation import BoundingBox3D, Annotation, AnnotationType
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier, AnnotationType
+from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier
+
+T = TypeVar('T')
 
 
 class Sensor:
@@ -44,7 +46,7 @@ class SensorFrameLazyLoaderProtocol(Protocol):
     def load_point_cloud(self) -> Optional[PointCloudData]:
         pass
 
-    def load_annotations(self, identifier: AnnotationIdentifier) -> List[Annotation]:
+    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
         pass
 
     def load_available_annotation_types(self) -> Dict[AnnotationType, AnnotationIdentifier]:
@@ -65,7 +67,7 @@ class SensorFrame:
         self._intrinsic: Optional[SensorIntrinsic] = None
         self._point_cloud: Optional[SensorData] = None
         self._available_annotation_types: Optional[Dict[AnnotationType, AnnotationIdentifier]] = None
-        self._annotations: Dict[AnnotationType, List[Annotation]] = dict()
+        self._annotations: Dict[AnnotationType, List[T]] = dict()
 
     @property
     def extrinsic(self) -> SensorExtrinsic:
@@ -101,12 +103,13 @@ class SensorFrame:
             self._available_annotation_types = self._lazy_loader.load_available_annotation_types()
         return list(self._available_annotation_types.keys())
 
-    def get_annotations(self, annotation_type: AnnotationType) -> List[Annotation]:
+    def get_annotations(self, annotation_type: T) -> List[T]:
         if annotation_type not in self.available_annotation_types:
             raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
         if annotation_type not in self._annotations:
             identifier = self._available_annotation_types[annotation_type]
-            self._annotations[annotation_type] = self._lazy_loader.load_annotations(identifier=identifier)
+            self._annotations[annotation_type] = self._lazy_loader.load_annotations(identifier=identifier,
+                                                                                    annotation_type=annotation_type)
         return self._annotations[annotation_type]
 
 

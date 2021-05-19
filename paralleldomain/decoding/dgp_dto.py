@@ -174,7 +174,7 @@ class CalibrationDTO(DataClassJsonMixin):
 @dataclass
 class BoundingBox3DAttributesDTO(DataClassJsonMixin):
     vehicle_type: str
-    point_cache: str
+    point_cache: Optional[str] = None
     parked_vehicle: Optional[str] = None
 
 

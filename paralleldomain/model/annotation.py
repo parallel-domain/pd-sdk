@@ -1,21 +1,23 @@
 from __future__ import annotations as ann
 
-from typing import cast
-
-from paralleldomain.decoding.dgp_dto import PoseDTO, BoundingBox3DDTO
+from typing import Type
 
 from paralleldomain.model.transformation import Transformation
 
 
 class AnnotationPose(Transformation):
-    @staticmethod
-    def from_dto(dto: PoseDTO) -> "AnnotationPose":
-        tf = Transformation.from_dto(dto=dto)
-        # tf.__class__ = AnnotationPose
-        return cast(tf, AnnotationPose)
+    ...
 
 
 class Annotation:
+    ...
+
+
+class BoundingBox2D(Annotation):
+    ...
+
+
+class SemanticSegmentation2D(Annotation):
     ...
 
 
@@ -43,14 +45,11 @@ class BoundingBox3D(Annotation):
         rep = f"Class ID: {self.class_id} {self.pose}"
         return rep
 
-    @staticmethod
-    def from_dto(dto: BoundingBox3DDTO):
-        return BoundingBox3D(
-            pose=AnnotationPose.from_dto(dto=dto.box.pose),
-            width=dto.box.width,
-            length=dto.box.length,
-            height=dto.box.width,
-            class_id=dto.class_id,
-            instance_id=dto.instance_id,
-            num_points=dto.num_points,
-        )
+
+AnnotationType = Type[Annotation]
+
+
+class AnnotationTypes:
+    BoundingBox2D: Type[BoundingBox2D] = BoundingBox2D
+    BoundingBox3D: Type[BoundingBox3D] = BoundingBox3D
+    SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D
