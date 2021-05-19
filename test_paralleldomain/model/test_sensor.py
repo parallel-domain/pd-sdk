@@ -1,3 +1,4 @@
+import numpy as np
 from paralleldomain import Scene
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
 
@@ -28,3 +29,5 @@ class TestSensorFrame:
 
         for box in boxes:
             assert isinstance(box, BoundingBox3D)
+            assert isinstance(box.pose.translation, np.ndarray)
+            assert isinstance(box.pose.transformation_matrix, np.ndarray)

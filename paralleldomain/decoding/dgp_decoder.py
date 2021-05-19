@@ -204,8 +204,7 @@ class _FrameLazyLoader:
             dto = self.decoder.decode_3d_bounding_boxes(scene_name=self.scene_name,
                                                         annotation_identifier=identifier)
             for box_dto in dto.annotations:
-                pose = _post_dto_to_transformation(dto=box_dto.box.pose)
-                pose = cast(pose, AnnotationPose)
+                pose = _post_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
                 box = BoundingBox3D(
                     pose=pose,
                     width=box_dto.box.width,
