@@ -7,9 +7,9 @@ from pyquaternion import Quaternion
 
 
 class Transformation:
-    def __init__(self):
-        self._Rq = Quaternion(1, 0, 0, 0)
-        self._t = np.array([0.0, 0.0, 0.0])
+    def __init__(self, quaternion: Quaternion, translation: np.ndarray):
+        self._Rq = quaternion
+        self._t = translation
 
     def __repr__(self):
         rep = f"R: {self.rpy}, t: {self.translation}"
@@ -28,26 +28,26 @@ class Transformation:
         matrix[:3, 3] = self.translation
         return matrix
 
-    @transformation_matrix.setter
-    def transformation_matrix(self, m):
-        # TODO
-        self._matrix = m
+    # @transformation_matrix.setter
+    # def transformation_matrix(self, m):
+    #     # TODO
+    #     self._matrix = m
 
     @property
     def rotation(self) -> np.ndarray:
         return self._Rq.rotation_matrix
 
-    @rotation.setter
-    def rotation(self, R):
-        self._Rq = Quaternion(matrix=R)
+    # @rotation.setter
+    # def rotation(self, R):
+    #     self._Rq = Quaternion(matrix=R)
 
     @property
     def rotation_quaternion(self) -> np.ndarray:
         return self._Rq.elements
-
-    @rotation_quaternion.setter
-    def rotation_quaternion(self, q):
-        self._Rq = Quaternion(*q)
+    #
+    # @rotation_quaternion.setter
+    # def rotation_quaternion(self, q):
+    #     self._Rq = Quaternion(*q)
 
     @property
     def rpy(self) -> List[float]:
@@ -61,6 +61,6 @@ class Transformation:
     def translation(self) -> np.ndarray:
         return self._t
 
-    @translation.setter
-    def translation(self, t):
-        self._t = t
+    # @translation.setter
+    # def translation(self, t):
+    #     self._t = t

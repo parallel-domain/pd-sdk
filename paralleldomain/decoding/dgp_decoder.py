@@ -3,6 +3,8 @@ from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import logging
 
+from pyquaternion import Quaternion
+
 import numpy as np
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, AnnotationPose
 from paralleldomain.model.dataset import DatasetMeta
@@ -19,6 +21,7 @@ logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
 
 T = TypeVar('T')
+TransformType = TypeVar('TransformType')
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
     "0": AnnotationTypes.BoundingBox2D,
@@ -177,8 +180,7 @@ class _FrameLazyLoader:
             scene_name=self.scene_name,
             calibration_key=self.calibration_key,
             sensor_name=self.sensor_name)
-        tf = _post_dto_to_transformation(dto=dto)
-        return cast(tf, SensorExtrinsic)
+        return _post_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
         if self.datum.point_cloud:
@@ -191,11 +193,9 @@ class _FrameLazyLoader:
 
     def load_sensor_pose(self) -> SensorPose:
         if self.datum.image:
-            tf = _post_dto_to_transformation(dto=self.datum.image.pose)
-            return cast(tf, SensorPose)
+            return _post_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
         else:
-            tf = _post_dto_to_transformation(dto=self.datum.point_cloud.pose)
-            return cast(tf, SensorPose)
+            return _post_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
 
     def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> List[T]:
 
@@ -226,17 +226,18 @@ class _FrameLazyLoader:
         return {_annotation_type_map[k]: v for k, v in type_to_path.items()}
 
 
-def _post_dto_to_transformation(dto: PoseDTO) -> "Transformation":
-    tf = Transformation()
-    tf.rotation_quaternion = [
-        dto.rotation.qw,
-        dto.rotation.qx,
-        dto.rotation.qy,
-        dto.rotation.qz,
-    ]
-    tf.translation = [
-        dto.translation.x,
-        dto.translation.y,
-        dto.translation.z,
-    ]
+def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
+    tf = transformation_type(quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz,),
+                             translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
+    # tf.rotation_quaternion = [
+    #     dto.rotation.qw,
+    #     dto.rotation.qx,
+    #     dto.rotation.qy,
+    #     dto.rotation.qz,
+    # ]
+    # tf.translation = [
+    #     dto.translation.x,
+    #     dto.translation.y,
+    #     dto.translation.z,
+    # ]
     return tf
