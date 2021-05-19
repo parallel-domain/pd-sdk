@@ -109,12 +109,11 @@ class DGPDecoder(Decoder):
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
-    def decode_point_cloud(self, scene_name: str, cloud_identifier: str, point_format: List[str]) -> np.ndarray:
+    def decode_point_cloud(self, scene_name: str, cloud_identifier: str, num_channels: int) -> np.ndarray:
         cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
-        column_count = len(point_format)
-        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, column_count)
+        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
 
     # ------------------------------------------------
     def decode_scene_names(self) -> List[SceneName]:
@@ -191,7 +190,7 @@ class _FrameLazyLoader:
                                   load_data=lambda: self.decoder.decode_point_cloud(
                                       scene_name=self.scene_name,
                                       cloud_identifier=self.datum.point_cloud.filename,
-                                      point_format=self.datum.point_cloud.point_format))
+                                      num_channels=len(self.datum.point_cloud.point_format)))
         return None
 
     def load_sensor_pose(self) -> SensorPose:
