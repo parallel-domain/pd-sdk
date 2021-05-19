@@ -1,10 +1,10 @@
 import json
 from functools import lru_cache
-from typing import Union, List, cast, BinaryIO, Dict, Optional
+from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import logging
 
 import numpy as np
-from paralleldomain.model.annotation import Annotation
+from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, AnnotationPose
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp_dto import DatasetDTO, DatasetMetaDTO, SceneDTO, CalibrationDTO, \
@@ -12,11 +12,27 @@ from paralleldomain.decoding.dgp_dto import DatasetDTO, DatasetMetaDTO, SceneDTO
     CalibrationExtrinsicDTO, CalibrationIntrinsicDTO, SceneDataDTO, SceneSampleDTO, PoseDTO, SceneDataDatum
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.sensor import PointCloudData, SensorFrame, SensorPose, SensorExtrinsic, SensorIntrinsic
-from paralleldomain.model.type_aliases import SensorName, SceneName, FrameId, AnnotationIdentifier, AnnotationType
+from paralleldomain.model.type_aliases import SensorName, SceneName, FrameId, AnnotationIdentifier
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
+
+T = TypeVar('T')
+
+_annotation_type_map: Dict[str, Type[Annotation]] = {
+    "0": AnnotationTypes.BoundingBox2D,
+    "1": AnnotationTypes.BoundingBox3D,
+    "2": AnnotationTypes.SemanticSegmentation2D,
+    "3": Annotation,
+    "4": Annotation,
+    "5": Annotation,
+    "6": Annotation,
+    "7": Annotation,
+    "8": Annotation,
+    "9": Annotation,
+    "10": Annotation,
+}
 
 
 class DGPDecoder(Decoder):
@@ -83,7 +99,7 @@ class DGPDecoder(Decoder):
         return calibration_dto.intrinsics[index]
 
     def decode_3d_bounding_boxes(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        annotation_path = (self._dataset_path / scene_name).parent / annotation_identifier
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
@@ -181,15 +197,33 @@ class _FrameLazyLoader:
             tf = _post_dto_to_transformation(dto=self.datum.point_cloud.pose)
             return cast(tf, SensorPose)
 
-    def load_annotations(self, identifier: AnnotationIdentifier) -> List[Annotation]:
-        return list()
+    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
+
+        annotations = list()
+        if issubclass(annotation_type, BoundingBox3D):
+            dto = self.decoder.decode_3d_bounding_boxes(scene_name=self.scene_name,
+                                                        annotation_identifier=identifier)
+            for box_dto in dto.annotations:
+                pose = _post_dto_to_transformation(dto=box_dto.box.pose)
+                pose = cast(pose, AnnotationPose)
+                box = BoundingBox3D(
+                    pose=pose,
+                    width=box_dto.box.width,
+                    length=box_dto.box.length,
+                    height=box_dto.box.width,
+                    class_id=box_dto.class_id,
+                    instance_id=box_dto.instance_id,
+                    num_points=box_dto.num_points)
+                annotations.append(box)
+
+        return annotations
 
     def load_available_annotation_types(self) -> Dict[AnnotationType, AnnotationIdentifier]:
         if self.datum.image:
             type_to_path = self.datum.image.annotations
         else:
             type_to_path = self.datum.point_cloud.annotations
-        return {AnnotationType(int(k)): v for k, v in type_to_path.items()}
+        return {_annotation_type_map[k]: v for k, v in type_to_path.items()}
 
 
 def _post_dto_to_transformation(dto: PoseDTO) -> "Transformation":
