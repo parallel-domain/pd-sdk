@@ -65,7 +65,7 @@ class SensorFrame:
         self._pose: Optional[SensorPose] = None
         self._extrinsic: Optional[SensorExtrinsic] = None
         self._intrinsic: Optional[SensorIntrinsic] = None
-        self._point_cloud: Optional[SensorData] = None
+        self._point_cloud: Optional[PointCloudData] = None
         self._available_annotation_types: Optional[Dict[AnnotationType, AnnotationIdentifier]] = None
         self._annotations: Dict[AnnotationType, List[T]] = dict()
 
