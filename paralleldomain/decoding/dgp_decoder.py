@@ -3,6 +3,8 @@ from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import logging
 
+from pyquaternion import Quaternion
+
 import numpy as np
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, AnnotationPose
 from paralleldomain.model.dataset import DatasetMeta
@@ -19,6 +21,7 @@ logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
 
 T = TypeVar('T')
+TransformType = TypeVar('TransformType')
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
     "0": AnnotationTypes.BoundingBox2D,
@@ -36,9 +39,12 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
 
 
 class DGPDecoder(Decoder):
-    def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10):
+    def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10,
+                 max_point_clouds_to_cache: int = 50, max_annotations_to_cache: int = 50):
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
+        self.decode_point_cloud = lru_cache(max_point_clouds_to_cache)(self.decode_point_cloud)
+        self.decode_3d_bounding_boxes = lru_cache(max_annotations_to_cache)(self.decode_3d_bounding_boxes)
 
     @lru_cache(maxsize=1)
     def _data_by_key(self, scene_name: str) -> Dict[str, SceneDataDTO]:
@@ -103,12 +109,11 @@ class DGPDecoder(Decoder):
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
-    def decode_point_cloud(self, scene_name: str, cloud_identifier: str, point_format: List[str]) -> np.ndarray:
+    def decode_point_cloud(self, scene_name: str, cloud_identifier: str, num_channels: int) -> np.ndarray:
         cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
-        column_count = len(point_format)
-        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, column_count)
+        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
 
     # ------------------------------------------------
     def decode_scene_names(self) -> List[SceneName]:
@@ -177,8 +182,7 @@ class _FrameLazyLoader:
             scene_name=self.scene_name,
             calibration_key=self.calibration_key,
             sensor_name=self.sensor_name)
-        tf = _post_dto_to_transformation(dto=dto)
-        return cast(tf, SensorExtrinsic)
+        return _post_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
         if self.datum.point_cloud:
@@ -186,16 +190,14 @@ class _FrameLazyLoader:
                                   load_data=lambda: self.decoder.decode_point_cloud(
                                       scene_name=self.scene_name,
                                       cloud_identifier=self.datum.point_cloud.filename,
-                                      point_format=self.datum.point_cloud.point_format))
+                                      num_channels=len(self.datum.point_cloud.point_format)))
         return None
 
     def load_sensor_pose(self) -> SensorPose:
         if self.datum.image:
-            tf = _post_dto_to_transformation(dto=self.datum.image.pose)
-            return cast(tf, SensorPose)
+            return _post_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
         else:
-            tf = _post_dto_to_transformation(dto=self.datum.point_cloud.pose)
-            return cast(tf, SensorPose)
+            return _post_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
 
     def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> List[T]:
 
@@ -204,8 +206,7 @@ class _FrameLazyLoader:
             dto = self.decoder.decode_3d_bounding_boxes(scene_name=self.scene_name,
                                                         annotation_identifier=identifier)
             for box_dto in dto.annotations:
-                pose = _post_dto_to_transformation(dto=box_dto.box.pose)
-                pose = cast(pose, AnnotationPose)
+                pose = _post_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
                 box = BoundingBox3D(
                     pose=pose,
                     width=box_dto.box.width,
@@ -226,17 +227,7 @@ class _FrameLazyLoader:
         return {_annotation_type_map[k]: v for k, v in type_to_path.items()}
 
 
-def _post_dto_to_transformation(dto: PoseDTO) -> "Transformation":
-    tf = Transformation()
-    tf.rotation_quaternion = [
-        dto.rotation.qw,
-        dto.rotation.qx,
-        dto.rotation.qy,
-        dto.rotation.qz,
-    ]
-    tf.translation = [
-        dto.translation.x,
-        dto.translation.y,
-        dto.translation.z,
-    ]
+def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
+    tf = transformation_type(quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz,),
+                             translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
     return tf
