@@ -230,15 +230,4 @@ class _FrameLazyLoader:
 def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
     tf = transformation_type(quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz,),
                              translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
-    # tf.rotation_quaternion = [
-    #     dto.rotation.qw,
-    #     dto.rotation.qx,
-    #     dto.rotation.qy,
-    #     dto.rotation.qz,
-    # ]
-    # tf.translation = [
-    #     dto.translation.x,
-    #     dto.translation.y,
-    #     dto.translation.z,
-    # ]
     return tf
