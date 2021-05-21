@@ -18,9 +18,10 @@ if os.environ.get("USESMARTOPEN", True):
 
 
 class AnyPath:
-    def __new__(cls, path: str, *args, **kwargs):
+    def __new__(cls, path: Union[str, AdjustedCloudPath, Path, CloudPath], *args, **kwargs):
         # Dispatch to subclass if base CloudPath
-        if path.startswith("s3") or path.startswith("gs") or path.startswith("azure"):
-            return AdjustedCloudPath(path, *args, **kwargs)
-        return Path(path, *args, **kwargs)
+        str_path = str(path)
+        if str_path.startswith("s3") or str_path.startswith("gs") or str_path.startswith("azure"):
+            return AdjustedCloudPath(str_path, *args, **kwargs)
+        return Path(str_path, *args, **kwargs)
 
