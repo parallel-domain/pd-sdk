@@ -113,7 +113,7 @@ class DGPDecoder(Decoder):
         cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
-        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
+            return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
 
     # ------------------------------------------------
     def decode_scene_names(self) -> List[SceneName]:
