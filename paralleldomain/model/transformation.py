@@ -24,6 +24,15 @@ class Transformation:
             raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4x4 numpy array!")
         return Transformation.from_transformation_matrix(mat=transform)
 
+    def __rmatmul__(self, other) -> "Transformation":
+        if isinstance(other, Transformation):
+            transform = other.transformation_matrix @ self.transformation_matrix
+        elif isinstance(other, np.ndarray):
+            transform = other @ self.transformation_matrix
+        else:
+            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4x4 numpy array!")
+        return Transformation.from_transformation_matrix(mat=transform)
+
     @property
     def transformation_matrix(self) -> np.ndarray:
         matrix = np.eye(4)

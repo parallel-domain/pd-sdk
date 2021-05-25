@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
 
 T = TypeVar('T')
-TransformType = TypeVar('TransformType')
+TransformType = TypeVar('TransformType', bound=Transformation)
 _DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 
 
@@ -289,6 +289,7 @@ class _FrameLazyLoader:
 
 
 def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
-    return _DGP_TO_INTERNAL_CS @ transformation_type(
-        quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz, ),
+    transform = transformation_type(
+        quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz),
         translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
+    return transformation_type.from_transformation_matrix(_DGP_TO_INTERNAL_CS @ transform.transformation_matrix)
