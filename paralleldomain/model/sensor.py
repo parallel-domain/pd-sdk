@@ -185,7 +185,8 @@ class PointCloudData(SensorData):
     def _get_index(self, p_info: PointInfo):
         return self._point_cloud_info[p_info]
 
-    def _load_data(self):
+    @property
+    def _data(self) -> np.ndarray:
         if self._cloud_data is None:
             self._cloud_data = self._load_data_call()
         return self._cloud_data
@@ -198,7 +199,7 @@ class PointCloudData(SensorData):
             self._get_index(PointInfo.Z),
         ]
 
-        return self._load_data()[:, xyz_index]
+        return self._data[:, xyz_index]
 
     @property
     def rgb(self) -> np.ndarray:
@@ -208,7 +209,7 @@ class PointCloudData(SensorData):
             self._get_index(PointInfo.B),
         ]
 
-        return self._load_data()[:, rgb_index]
+        return self._data[:, rgb_index]
 
     @property
     def intensity(self) -> np.ndarray:
@@ -216,7 +217,7 @@ class PointCloudData(SensorData):
             self._get_index(PointInfo.I),
         ]
 
-        return self._load_data()[:, intensity_index]
+        return self._data[:, intensity_index]
 
     @property
     def ts(self) -> np.ndarray:
@@ -224,7 +225,7 @@ class PointCloudData(SensorData):
             self._get_index(PointInfo.TS),
         ]
 
-        return self._load_data()[:, ts_index]
+        return self._data[:, ts_index]
 
     @property
     def ring(self) -> np.ndarray:
@@ -232,7 +233,7 @@ class PointCloudData(SensorData):
             self._get_index(PointInfo.RING),
         ]
 
-        return self._load_data()[:, ring_index]
+        return self._data[:, ring_index]
 
     @property
     def xyz_i(self) -> np.ndarray:

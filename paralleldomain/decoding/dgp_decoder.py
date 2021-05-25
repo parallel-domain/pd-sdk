@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import logging
 
+from paralleldomain.utilities.coordinate_system import CoordinateSystem, INTERNAL_COORDINATE_SYSTEM
 from pyquaternion import Quaternion
 
 import numpy as np
@@ -23,6 +24,8 @@ MAX_CALIBRATIONS_TO_CACHE = 10
 
 T = TypeVar('T')
 TransformType = TypeVar('TransformType')
+_DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
+
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
     "0": AnnotationTypes.BoundingBox2D,
@@ -286,7 +289,6 @@ class _FrameLazyLoader:
 
 
 def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
-    tf = transformation_type(
+    return _DGP_TO_INTERNAL_CS @ transformation_type(
         quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz, ),
         translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
-    return tf
