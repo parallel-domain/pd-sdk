@@ -50,7 +50,7 @@ DGPLabel = namedtuple('Label', [
     'is_thing',  # Whether this label distinguishes between single instances or not
 ])
 
-_default_labels = [
+_default_labels: List[DGPLabel] = [
     DGPLabel("Animal", 0, -1, True),
     DGPLabel("Bicycle", 1, 8, True),
     DGPLabel("Bicyclist", 2, 0, True),
@@ -101,8 +101,8 @@ class DGPDecoder(Decoder):
     def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10,
                  custom_labels: Optional[List[DGPLabel]] = None):
         labels = _default_labels if custom_labels is None else custom_labels
-        self.id_to_label = {label.id: label for label in labels}
-        self.cuboid_id_to_label = {label.cuboid_id: label for label in labels}
+        self.id_to_label: Dict[int, DGPLabel] = {label.id: label for label in labels}
+        self.cuboid_id_to_label: Dict[int, DGPLabel] = {label.cuboid_id: label for label in labels}
 
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
@@ -275,7 +275,7 @@ class _FrameLazyLoader:
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
-                    class_name=self.decoder.cuboid_id_to_label[box_dto.class_id])
+                    class_name=self.decoder.cuboid_id_to_label[box_dto.class_id].name)
                 annotations.append(box)
 
         return annotations

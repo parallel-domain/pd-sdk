@@ -95,3 +95,5 @@ class TestSensorFrame:
             assert isinstance(box, BoundingBox3D)
             assert isinstance(box.pose.translation, np.ndarray)
             assert isinstance(box.pose.transformation_matrix, np.ndarray)
+            assert isinstance(box.class_id, int)
+            assert isinstance(box.class_name, str)
