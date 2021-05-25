@@ -15,11 +15,14 @@ class Transformation:
         rep = f"R: {self.rpy}, t: {self.translation}"
         return rep
 
-    def __matmul__(self, other):
+    def __matmul__(self, other) -> "Transformation":
         if isinstance(other, Transformation):
-            return self.transformation_matrix @ other.transformation_matrix
+            transform = self.transformation_matrix @ other.transformation_matrix
         elif isinstance(other, np.ndarray):
-            return self.transformation_matrix @ other
+            transform = self.transformation_matrix @ other
+        else:
+            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4x4 numpy array!")
+        return Transformation.from_transformation_matrix(mat=transform)
 
     @property
     def transformation_matrix(self) -> np.ndarray:
@@ -28,27 +31,17 @@ class Transformation:
         matrix[:3, 3] = self.translation
         return matrix
 
-    # @transformation_matrix.setter
-    # def transformation_matrix(self, m):
-    #     # TODO
-    #     self._matrix = m
-
     @property
     def rotation(self) -> np.ndarray:
         return self._Rq.rotation_matrix
 
-    # @rotation.setter
-    # def rotation(self, R):
-    #     self._Rq = Quaternion(matrix=R)
+    @property
+    def quaternion(self) -> Quaternion:
+        return self._Rq
 
     @property
     def rotation_quaternion(self) -> np.ndarray:
         return self._Rq.elements
-    #
-    # @rotation_quaternion.setter
-    # def rotation_quaternion(self, q):
-    #     self._Rq = Quaternion(*q)
-
     @property
     def rpy(self) -> List[float]:
         return [
@@ -61,6 +54,8 @@ class Transformation:
     def translation(self) -> np.ndarray:
         return self._t
 
-    # @translation.setter
-    # def translation(self, t):
-    #     self._t = t
+    @staticmethod
+    def from_transformation_matrix(mat: np.ndarray) -> "Transformation":
+        quat = Quaternion(matrix=mat)
+        translation = mat[:3, 3]
+        return Transformation(quaternion=quat, translation=translation)
