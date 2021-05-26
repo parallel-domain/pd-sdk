@@ -148,7 +148,7 @@ class DGPDecoder(Decoder):
             return scene_dto
 
     def decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
-        calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
+        calibration_path = (self._dataset_path / scene_name).parent / "calibration" / f"{calibration_key}.json"
         with calibration_path.open("r") as f:
             cal_dict = json.load(f)
             return CalibrationDTO.from_dict(cal_dict)
