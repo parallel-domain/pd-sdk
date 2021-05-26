@@ -86,12 +86,14 @@ class TestSensorFrame:
         sensors = frame.available_sensors
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
-        boxes = sensor_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBox3D)
+        boxes = sensor_frame.get_annotations(
+            annotation_type=AnnotationTypes.BoundingBoxes3D
+        )
 
-        assert isinstance(boxes, list)
-        assert len(boxes) > 0
+        assert isinstance(boxes.boxes, list)
+        assert len(boxes.boxes) > 0
 
-        for box in boxes:
+        for box in boxes.boxes:
             assert isinstance(box, BoundingBox3D)
             assert isinstance(box.pose.translation, np.ndarray)
             assert isinstance(box.pose.transformation_matrix, np.ndarray)

@@ -16,3 +16,4 @@ ujson==4.0.2
 dataclasses_json==0.5.3
 cloudpathlib[all]>=0.4.0,<1.0.0
 smart-open==5.0.0
+imageio==2.9.0

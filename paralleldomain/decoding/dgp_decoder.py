@@ -1,24 +1,12 @@
 import json
+import logging
 from collections import namedtuple
 from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
-import logging
-
-from paralleldomain.utilities.coordinate_system import (
-    CoordinateSystem,
-    INTERNAL_COORDINATE_SYSTEM,
-)
+import imageio
+import numpy as np
 from pyquaternion import Quaternion
 
-import numpy as np
-from paralleldomain.model.annotation import (
-    Annotation,
-    AnnotationType,
-    AnnotationTypes,
-    BoundingBox3D,
-    AnnotationPose,
-)
-from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp_dto import (
     DatasetDTO,
@@ -33,7 +21,17 @@ from paralleldomain.decoding.dgp_dto import (
     PoseDTO,
     SceneDataDatum,
 )
-from paralleldomain.model.transformation import Transformation
+from paralleldomain.model.annotation import (
+    Annotation,
+    AnnotationType,
+    AnnotationTypes,
+    BoundingBox3D,
+    SemanticSegmentation3D,
+    AnnotationPose,
+    BoundingBoxes3D,
+    SemanticSegmentation2D,
+)
+from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
     PointCloudData,
     SensorFrame,
@@ -41,6 +39,7 @@ from paralleldomain.model.sensor import (
     SensorExtrinsic,
     SensorIntrinsic,
 )
+from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import (
     SensorName,
     SceneName,
@@ -48,6 +47,10 @@ from paralleldomain.model.type_aliases import (
     AnnotationIdentifier,
 )
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.coordinate_system import (
+    CoordinateSystem,
+    INTERNAL_COORDINATE_SYSTEM,
+)
 
 logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
@@ -58,9 +61,9 @@ _DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
     "0": AnnotationTypes.BoundingBox2D,
-    "1": AnnotationTypes.BoundingBox3D,
+    "1": AnnotationTypes.BoundingBoxes3D,
     "2": AnnotationTypes.SemanticSegmentation2D,
-    "3": Annotation,
+    "3": AnnotationTypes.SemanticSegmentation3D,
     "4": Annotation,
     "5": Annotation,
     "6": Annotation,
@@ -198,7 +201,9 @@ class DGPDecoder(Decoder):
         self, scene_name: str, calibration_key: str
     ) -> CalibrationDTO:
         calibration_path = (
-            self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
+            (self._dataset_path / scene_name).parent
+            / "calibration"
+            / f"{calibration_key}.json"
         )
         with calibration_path.open("r") as f:
             cal_dict = json.load(f)
@@ -222,7 +227,7 @@ class DGPDecoder(Decoder):
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
 
-    def decode_3d_bounding_boxes(
+    def decode_bounding_boxes_3d(
         self, scene_name: str, annotation_identifier: str
     ) -> AnnotationsBoundingBox3DDTO:
         annotation_path = (
@@ -230,6 +235,28 @@ class DGPDecoder(Decoder):
         ).parent / annotation_identifier
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
+
+    def decode_semantic_segmentation_3d(
+        self, scene_name: str, annotation_identifier: str
+    ) -> np.ndarray:
+        annotation_path = (
+            self._dataset_path / scene_name
+        ).parent / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            return npz_data.f.segmentation
+
+    def decode_semantic_segmentation_2d(
+        self, scene_name: str, annotation_identifier: str
+    ) -> np.ndarray:
+        annotation_path = (
+            self._dataset_path / scene_name
+        ).parent / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            image_data = np.asarray(
+                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
+            )
+            return image_data
 
     def decode_point_cloud(
         self, scene_name: str, cloud_identifier: str, num_channels: int
@@ -368,13 +395,13 @@ class _FrameLazyLoader:
 
     def load_annotations(
         self, identifier: AnnotationIdentifier, annotation_type: Type[T]
-    ) -> List[T]:
-
-        annotations = list()
-        if issubclass(annotation_type, BoundingBox3D):
-            dto = self.decoder.decode_3d_bounding_boxes(
+    ) -> T:
+        if issubclass(annotation_type, BoundingBoxes3D):
+            dto = self.decoder.decode_bounding_boxes_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
+
+            box_list = []
             for box_dto in dto.annotations:
                 pose = _pose_dto_to_transformation(
                     dto=box_dto.box.pose, transformation_type=AnnotationPose
@@ -389,9 +416,19 @@ class _FrameLazyLoader:
                     num_points=box_dto.num_points,
                     class_name=self.decoder.cuboid_id_to_label[box_dto.class_id].name,
                 )
-                annotations.append(box)
+                box_list.append(box)
 
-        return annotations
+            return BoundingBoxes3D(boxes=box_list)
+        elif issubclass(annotation_type, SemanticSegmentation3D):
+            segmentation_mask = self.decoder.decode_semantic_segmentation_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return SemanticSegmentation3D(mask=segmentation_mask)
+        elif issubclass(annotation_type, SemanticSegmentation2D):
+            segmentation_mask = self.decoder.decode_semantic_segmentation_2d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return SemanticSegmentation2D(mask=segmentation_mask)
 
     def load_available_annotation_types(
         self,

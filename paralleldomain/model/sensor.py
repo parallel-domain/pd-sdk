@@ -16,11 +16,15 @@ from paralleldomain.model.annotation import BoundingBox3D, Annotation, Annotatio
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Sensor:
-    def __init__(self, sensor_name: SensorName, sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+    ):
         self._sensor_frame_factory = sensor_frame_factory
         self._sensor_name = sensor_name
         self._sensor_frames = []
@@ -31,6 +35,14 @@ class Sensor:
 
     def get_frame(self, frame_id: FrameId) -> SensorFrame:
         return self._sensor_frame_factory(frame_id, self._sensor_name)
+
+
+class CameraSensor(Sensor):
+    ...
+
+
+class LidarSensor(Sensor):
+    ...
 
 
 class SensorFrameLazyLoaderProtocol(Protocol):
@@ -46,18 +58,22 @@ class SensorFrameLazyLoaderProtocol(Protocol):
     def load_point_cloud(self) -> Optional[PointCloudData]:
         pass
 
-    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
+    def load_annotations(
+        self, identifier: AnnotationIdentifier, annotation_type: T
+    ) -> List[T]:
         pass
 
-    def load_available_annotation_types(self) -> Dict[AnnotationType, AnnotationIdentifier]:
+    def load_available_annotation_types(
+        self,
+    ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
 
 class SensorFrame:
     def __init__(
-            self,
-            sensor_name: SensorName,
-            lazy_loader: SensorFrameLazyLoaderProtocol,
+        self,
+        sensor_name: SensorName,
+        lazy_loader: SensorFrameLazyLoaderProtocol,
     ):
         self._lazy_loader = lazy_loader
         self._sensor_name = sensor_name
@@ -66,7 +82,9 @@ class SensorFrame:
         self._extrinsic: Optional[SensorExtrinsic] = None
         self._intrinsic: Optional[SensorIntrinsic] = None
         self._point_cloud: Optional[PointCloudData] = None
-        self._available_annotation_types: Optional[Dict[AnnotationType, AnnotationIdentifier]] = None
+        self._available_annotation_types: Optional[
+            Dict[AnnotationType, AnnotationIdentifier]
+        ] = None
         self._annotations: Dict[AnnotationType, List[T]] = dict()
 
     @property
@@ -100,16 +118,21 @@ class SensorFrame:
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         if self._available_annotation_types is None:
-            self._available_annotation_types = self._lazy_loader.load_available_annotation_types()
+            self._available_annotation_types = (
+                self._lazy_loader.load_available_annotation_types()
+            )
         return list(self._available_annotation_types.keys())
 
     def get_annotations(self, annotation_type: Type[T]) -> List[T]:
         if annotation_type not in self.available_annotation_types:
-            raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
+            raise ValueError(
+                f"The annotaiton type {annotation_type} is not available in this sensor frame!"
+            )
         if annotation_type not in self._annotations:
             identifier = self._available_annotation_types[annotation_type]
-            self._annotations[annotation_type] = self._lazy_loader.load_annotations(identifier=identifier,
-                                                                                    annotation_type=annotation_type)
+            self._annotations[annotation_type] = self._lazy_loader.load_annotations(
+                identifier=identifier, annotation_type=annotation_type
+            )
         return self._annotations[annotation_type]
 
 
@@ -123,22 +146,22 @@ class SensorExtrinsic(Transformation):
 
 class SensorIntrinsic:
     def __init__(
-            self,
-            cx=0.0,
-            cy=0.0,
-            fx=0.0,
-            fy=0.0,
-            k1=0.0,
-            k2=0.0,
-            p1=0.0,
-            p2=0.0,
-            k3=0.0,
-            k4=0.0,
-            k5=0.0,
-            k6=0.0,
-            skew=0.0,
-            fov=0.0,
-            fisheye=False,
+        self,
+        cx=0.0,
+        cy=0.0,
+        fx=0.0,
+        fy=0.0,
+        k1=0.0,
+        k2=0.0,
+        p1=0.0,
+        p2=0.0,
+        k3=0.0,
+        k4=0.0,
+        k5=0.0,
+        k6=0.0,
+        skew=0.0,
+        fov=0.0,
+        fisheye=False,
     ):
         self.cx = cx
         self.cy = cy
@@ -177,7 +200,9 @@ class PointCloudData(SensorData):
     def __init__(self, point_format: List[str], load_data: Callable[[], np.ndarray]):
         self._load_data_call = load_data
         self._cloud_data: Optional[np.ndarray] = None
-        self._point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
+        self._point_cloud_info = {
+            PointInfo(val): idx for idx, val in enumerate(point_format)
+        }
 
     def _has(self, p_info: PointInfo):
         return p_info in self._point_cloud_info
