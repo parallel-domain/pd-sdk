@@ -29,6 +29,7 @@ class BoundingBox3D(Annotation):
         height: float,
         length: float,
         class_id: int,
+        class_name: str,
         instance_id: int,
         num_points: int,
     ):
@@ -38,6 +39,7 @@ class BoundingBox3D(Annotation):
         self.length: float = length
         self.height: float = height
         self.class_id: int = class_id
+        self.class_name: str = class_name
         self.instance_id: int = instance_id
         self.num_points: int = num_points
 

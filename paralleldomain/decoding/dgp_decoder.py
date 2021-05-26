@@ -1,8 +1,10 @@
 import json
+from collections import namedtuple
 from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import logging
 
+from paralleldomain.utilities.coordinate_system import CoordinateSystem, INTERNAL_COORDINATE_SYSTEM
 from pyquaternion import Quaternion
 
 import numpy as np
@@ -21,7 +23,8 @@ logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
 
 T = TypeVar('T')
-TransformType = TypeVar('TransformType')
+TransformType = TypeVar('TransformType', bound=Transformation)
+_DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
     "0": AnnotationTypes.BoundingBox2D,
@@ -37,14 +40,73 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
     "10": Annotation,
 }
 
+DGPLabel = namedtuple('Label', [
+    'name',  # The identifier of this label, e.g. 'Car', 'Person', ... .
+    # We use them to uniquely name a class
+    'id',  # An integer ID that is associated with this label.
+    # The IDs are used to represent the label in ground truth images
+    'cuboid_id',  # ID that is used for 3d cuboid annotations
+    'is_thing',  # Whether this label distinguishes between single instances or not
+    'is_prefered_name_for_cuboid_id',  # Whether this label distinguishes between single instances or not
+])
+
+_default_labels: List[DGPLabel] = [
+    DGPLabel("Animal", 0, -1, True, False),
+    DGPLabel("Bicycle", 1, 8, True, True),
+    DGPLabel("Bicyclist", 2, 0, True, False),
+    DGPLabel("Building", 3, -1, False, False),
+    DGPLabel("Bus", 4, 3, True, True),
+    DGPLabel("Car", 5, 2, True, True),
+    DGPLabel("Caravan/RV", 6, 3, True, False),
+    DGPLabel("ConstructionVehicle", 7, -1, True, False),
+    DGPLabel("CrossWalk", 8, -1, True, False),
+    DGPLabel("Fence", 9, -1, False, False),
+    DGPLabel("HorizontalPole", 10, -1, True, False),
+    DGPLabel("LaneMarking", 11, -1, False, False),
+    DGPLabel("LimitLine", 12, -1, False, False),
+    DGPLabel("Motorcycle", 13, 4, True, True),
+    DGPLabel("Motorcyclist", 14, 11, True, True),
+    DGPLabel("OtherDriveableSurface", 15, -1, False, False),
+    DGPLabel("OtherFixedStructure", 16, -1, False, False),
+    DGPLabel("OtherMovable", 17, -1, True, False),
+    DGPLabel("OtherRider", 18, -1, True, False),
+    DGPLabel("Overpass/Bridge/Tunnel", 19, -1, False, False),
+    DGPLabel("OwnCar(EgoCar)", 20, 2, False, False),
+    DGPLabel("ParkingMeter", 21, -1, False, False),
+    DGPLabel("Pedestrian", 22, 0, True, True),
+    DGPLabel("Railway", 23, -1, False, False),
+    DGPLabel("Road", 24, -1, False, False),
+    DGPLabel("RoadBarriers", 25, -1, False, False),
+    DGPLabel("RoadBoundary(Curb)", 26, -1, False, False),
+    DGPLabel("RoadMarking", 27, -1, False, False),
+    DGPLabel("SideWalk", 28, -1, False, False),
+    DGPLabel("Sky", 29, -1, False, False),
+    DGPLabel("TemporaryConstructionObject", 30, -1, True, False),
+    DGPLabel("Terrain", 31, -1, False, False),
+    DGPLabel("TowedObject", 32, 9, True, True),
+    DGPLabel("TrafficLight", 33, -1, True, False),
+    DGPLabel("TrafficSign", 34, -1, True, False),
+    DGPLabel("Train", 35, 6, True, True),
+    DGPLabel("Truck", 36, 1, True, True),
+    DGPLabel("Vegetation", 37, -1, False, False),
+    DGPLabel("VerticalPole", 38, -1, True, False),
+    DGPLabel("WheeledSlow", 39, 5, True, True),
+    DGPLabel("LaneMarkingOther", 40, -1, False, False),
+    DGPLabel("LaneMarkingGap", 41, -1, False, False),
+    DGPLabel("Void", 255, -1, False, True)
+]
+
 
 class DGPDecoder(Decoder):
     def __init__(self, dataset_path: Union[str, AnyPath], max_calibrations_to_cache: int = 10,
-                 max_point_clouds_to_cache: int = 50, max_annotations_to_cache: int = 50):
+                 custom_labels: Optional[List[DGPLabel]] = None):
+        labels = _default_labels if custom_labels is None else custom_labels
+        self.id_to_label: Dict[int, DGPLabel] = {label.id: label for label in labels}
+        self.cuboid_id_to_label: Dict[int, DGPLabel] = {label.cuboid_id: label for label in labels if
+                                                        label.is_prefered_name_for_cuboid_id}
+
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
-        self.decode_point_cloud = lru_cache(max_point_clouds_to_cache)(self.decode_point_cloud)
-        self.decode_3d_bounding_boxes = lru_cache(max_annotations_to_cache)(self.decode_3d_bounding_boxes)
 
     @lru_cache(maxsize=1)
     def _data_by_key(self, scene_name: str) -> Dict[str, SceneDataDTO]:
@@ -79,7 +141,6 @@ class DGPDecoder(Decoder):
         scene_names: List[str] = scene_dataset["scene_splits"]["0"]["filenames"]
         return DatasetDTO(meta_data=meta_data, scene_names=scene_names)
 
-    @lru_cache(maxsize=1)
     def decode_scene(self, scene_name: str) -> SceneDTO:
         with (self._dataset_path / scene_name).open("r") as f:
             scene_data = json.load(f)
@@ -113,7 +174,7 @@ class DGPDecoder(Decoder):
         cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
-        return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
+            return np.array([f.tolist() for f in npz_data.f.data]).reshape(-1, num_channels)
 
     # ------------------------------------------------
     def decode_scene_names(self) -> List[SceneName]:
@@ -214,7 +275,8 @@ class _FrameLazyLoader:
                     height=box_dto.box.width,
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
-                    num_points=box_dto.num_points)
+                    num_points=box_dto.num_points,
+                    class_name=self.decoder.cuboid_id_to_label[box_dto.class_id].name)
                 annotations.append(box)
 
         return annotations
@@ -228,6 +290,7 @@ class _FrameLazyLoader:
 
 
 def _post_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
-    tf = transformation_type(quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz,),
-                             translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
-    return tf
+    transform = transformation_type(
+        quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz),
+        translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]))
+    return transformation_type.from_transformation_matrix(_DGP_TO_INTERNAL_CS @ transform.transformation_matrix)
