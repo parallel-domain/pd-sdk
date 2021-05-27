@@ -34,6 +34,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
     PointCloudData,
+    ImageData,
     SensorFrame,
     SensorPose,
     SensorExtrinsic,
@@ -259,6 +260,14 @@ class DGPDecoder(Decoder):
                 -1, num_channels
             )
 
+    def decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
+        cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
+        with cloud_path.open(mode="rb") as cloud_binary:
+            image_data = np.asarray(
+                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
+            )
+            return image_data
+
     # ------------------------------------------------
     def decode_scene_names(self) -> List[SceneName]:
         dto = self.decode_dataset()
@@ -373,6 +382,15 @@ class _FrameLazyLoader:
                 ),
             )
         return None
+
+    def load_image(self) -> Optional[ImageData]:
+        if self.datum.image:
+            return ImageData(
+                load_data_rgba=lambda: self.decoder.decode_image_rgb(
+                    scene_name=self.scene_name,
+                    cloud_identifier=self.datum.image.filename,
+                ),
+            )
 
     def load_sensor_pose(self) -> SensorPose:
         if self.datum.image:
