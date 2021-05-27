@@ -77,59 +77,55 @@ DGPLabel = namedtuple(
     "Label",
     [
         "name",  # The identifier of this label, e.g. 'Car', 'Person', ... .
-        # We use them to uniquely name a class
         "id",  # An integer ID that is associated with this label.
-        # The IDs are used to represent the label in ground truth images
-        "cuboid_id",  # ID that is used for 3d cuboid annotations
         "is_thing",  # Whether this label distinguishes between single instances or not
-        "is_prefered_name_for_cuboid_id",  # Whether this label distinguishes between single instances or not
     ],
 )
 
 _default_labels: List[DGPLabel] = [
-    DGPLabel("Animal", 0, -1, True, False),
-    DGPLabel("Bicycle", 1, 8, True, True),
-    DGPLabel("Bicyclist", 2, 0, True, False),
-    DGPLabel("Building", 3, -1, False, False),
-    DGPLabel("Bus", 4, 3, True, True),
-    DGPLabel("Car", 5, 2, True, True),
-    DGPLabel("Caravan/RV", 6, 3, True, False),
-    DGPLabel("ConstructionVehicle", 7, -1, True, False),
-    DGPLabel("CrossWalk", 8, -1, True, False),
-    DGPLabel("Fence", 9, -1, False, False),
-    DGPLabel("HorizontalPole", 10, -1, True, False),
-    DGPLabel("LaneMarking", 11, -1, False, False),
-    DGPLabel("LimitLine", 12, -1, False, False),
-    DGPLabel("Motorcycle", 13, 4, True, True),
-    DGPLabel("Motorcyclist", 14, 11, True, True),
-    DGPLabel("OtherDriveableSurface", 15, -1, False, False),
-    DGPLabel("OtherFixedStructure", 16, -1, False, False),
-    DGPLabel("OtherMovable", 17, -1, True, False),
-    DGPLabel("OtherRider", 18, -1, True, False),
-    DGPLabel("Overpass/Bridge/Tunnel", 19, -1, False, False),
-    DGPLabel("OwnCar(EgoCar)", 20, 2, False, False),
-    DGPLabel("ParkingMeter", 21, -1, False, False),
-    DGPLabel("Pedestrian", 22, 0, True, True),
-    DGPLabel("Railway", 23, -1, False, False),
-    DGPLabel("Road", 24, -1, False, False),
-    DGPLabel("RoadBarriers", 25, -1, False, False),
-    DGPLabel("RoadBoundary(Curb)", 26, -1, False, False),
-    DGPLabel("RoadMarking", 27, -1, False, False),
-    DGPLabel("SideWalk", 28, -1, False, False),
-    DGPLabel("Sky", 29, -1, False, False),
-    DGPLabel("TemporaryConstructionObject", 30, -1, True, False),
-    DGPLabel("Terrain", 31, -1, False, False),
-    DGPLabel("TowedObject", 32, 9, True, True),
-    DGPLabel("TrafficLight", 33, -1, True, False),
-    DGPLabel("TrafficSign", 34, -1, True, False),
-    DGPLabel("Train", 35, 6, True, True),
-    DGPLabel("Truck", 36, 1, True, True),
-    DGPLabel("Vegetation", 37, -1, False, False),
-    DGPLabel("VerticalPole", 38, -1, True, False),
-    DGPLabel("WheeledSlow", 39, 5, True, True),
-    DGPLabel("LaneMarkingOther", 40, -1, False, False),
-    DGPLabel("LaneMarkingGap", 41, -1, False, False),
-    DGPLabel("Void", 255, -1, False, True),
+    DGPLabel("Animal", 0, True),
+    DGPLabel("Bicycle", 1, True),
+    DGPLabel("Bicyclist", 2, True),
+    DGPLabel("Building", 3, False),
+    DGPLabel("Bus", 4, True),
+    DGPLabel("Car", 5, True),
+    DGPLabel("Caravan/RV", 6, True),
+    DGPLabel("ConstructionVehicle", 7, True),
+    DGPLabel("CrossWalk", 8, True),
+    DGPLabel("Fence", 9, False),
+    DGPLabel("HorizontalPole", 10, True),
+    DGPLabel("LaneMarking", 11, False),
+    DGPLabel("LimitLine", 12, False),
+    DGPLabel("Motorcycle", 13, True),
+    DGPLabel("Motorcyclist", 14, True),
+    DGPLabel("OtherDriveableSurface", 15, False),
+    DGPLabel("OtherFixedStructure", 16, False),
+    DGPLabel("OtherMovable", 17, True),
+    DGPLabel("OtherRider", 18, True),
+    DGPLabel("Overpass/Bridge/Tunnel", 19, False),
+    DGPLabel("OwnCar(EgoCar)", 20, False),
+    DGPLabel("ParkingMeter", 21, False),
+    DGPLabel("Pedestrian", 22, True),
+    DGPLabel("Railway", 23, False),
+    DGPLabel("Road", 24, False),
+    DGPLabel("RoadBarriers", 25, False),
+    DGPLabel("RoadBoundary(Curb)", 26, False),
+    DGPLabel("RoadMarking", 27, False),
+    DGPLabel("SideWalk", 28, False),
+    DGPLabel("Sky", 29, False),
+    DGPLabel("TemporaryConstructionObject", 30, True),
+    DGPLabel("Terrain", 31, False),
+    DGPLabel("TowedObject", 32, True),
+    DGPLabel("TrafficLight", 33, True),
+    DGPLabel("TrafficSign", 34, True),
+    DGPLabel("Train", 35, True),
+    DGPLabel("Truck", 36, True),
+    DGPLabel("Vegetation", 37, False),
+    DGPLabel("VerticalPole", 38, True),
+    DGPLabel("WheeledSlow", 39, True),
+    DGPLabel("LaneMarkingOther", 40, False),
+    DGPLabel("LaneMarkingGap", 41, False),
+    DGPLabel("Void", 255, False),
 ]
 
 
@@ -142,11 +138,6 @@ class DGPDecoder(Decoder):
     ):
         labels = _default_labels if custom_labels is None else custom_labels
         self.id_to_label: Dict[int, DGPLabel] = {label.id: label for label in labels}
-        self.cuboid_id_to_label: Dict[int, DGPLabel] = {
-            label.cuboid_id: label
-            for label in labels
-            if label.is_prefered_name_for_cuboid_id
-        }
 
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
@@ -414,7 +405,7 @@ class _FrameLazyLoader:
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
-                    class_name=self.decoder.cuboid_id_to_label[box_dto.class_id].name,
+                    class_name=self.decoder.id_to_label[box_dto.class_id].name,
                 )
                 box_list.append(box)
 
