@@ -58,6 +58,9 @@ class SensorFrameLazyLoaderProtocol(Protocol):
     def load_point_cloud(self) -> Optional[PointCloudData]:
         pass
 
+    def load_image(self) -> Optional[ImageData]:
+        pass
+
     def load_annotations(
         self, identifier: AnnotationIdentifier, annotation_type: T
     ) -> List[T]:
@@ -82,6 +85,7 @@ class SensorFrame:
         self._extrinsic: Optional[SensorExtrinsic] = None
         self._intrinsic: Optional[SensorIntrinsic] = None
         self._point_cloud: Optional[PointCloudData] = None
+        self._image: Optional[ImageData] = None
         self._available_annotation_types: Optional[
             Dict[AnnotationType, AnnotationIdentifier]
         ] = None
@@ -114,6 +118,12 @@ class SensorFrame:
         if self._point_cloud is None:
             self._point_cloud = self._lazy_loader.load_point_cloud()
         return self._point_cloud
+
+    @property
+    def image(self) -> Optional[ImageData]:
+        if self._image is None:
+            self._image = self._lazy_loader.load_image()
+        return self._image
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
@@ -194,6 +204,26 @@ class PointInfo(Enum):
     B = "B"
     RING = "RING"
     TS = "TIMESTAMP"
+
+
+class ImageData(SensorData):
+    def __init__(self, load_data_rgba: Callable[[], np.ndarray]):
+        self._load_data_rgb_call = load_data_rgba
+        self._cloud_data_rgba: Optional[np.ndarray] = None
+
+    @property
+    def _data_rgba(self) -> np.ndarray:
+        if self._cloud_data_rgba is None:
+            self._cloud_data_rgba = self._load_data_rgb_call()
+        return self._cloud_data_rgba
+
+    @property
+    def rgba(self) -> np.ndarray:
+        return self._data_rgba
+
+    @property
+    def rgb(self) -> np.ndarray:
+        return self._data_rgba[:, :, :3]
 
 
 class PointCloudData(SensorData):
