@@ -123,7 +123,7 @@ class SensorFrame:
             )
         return list(self._available_annotation_types.keys())
 
-    def get_annotations(self, annotation_type: Type[T]) -> List[T]:
+    def get_annotations(self, annotation_type: Type[T]) -> T:
         if annotation_type not in self.available_annotation_types:
             raise ValueError(
                 f"The annotaiton type {annotation_type} is not available in this sensor frame!"
