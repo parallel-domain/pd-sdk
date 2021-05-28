@@ -1,5 +1,6 @@
 from __future__ import annotations as ann
 
+import numpy as np
 from dataclasses import dataclass
 from typing import Type, List
 
@@ -60,6 +61,14 @@ class BoundingBox3D:
     def __repr__(self):
         rep = f"Class ID: {self.class_id} {self.pose}"
         return rep
+
+    @property
+    def size(self) -> np.ndarray:
+        return np.array([self.length, self.width, self.height])  # assuming FLU
+
+    @property
+    def position(self) -> np.ndarray:
+        return self.pose.translation
 
 
 AnnotationType = Type[Annotation]
