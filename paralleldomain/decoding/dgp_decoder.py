@@ -184,7 +184,20 @@ class DGPDecoder(Decoder):
         return DatasetDTO(meta_data=meta_data, scene_names=scene_names)
 
     def decode_scene(self, scene_name: str) -> SceneDTO:
-        with (self._dataset_path / scene_name).open("r") as f:
+        scene_folder = self._dataset_path / scene_name
+        potential_scene_files = [
+            name.name
+            for name in scene_folder.iterdir()
+            if name.name.startswith("scene") and name.name.endswith("json")
+        ]
+
+        if len(potential_scene_files) == 0:
+            logger.error(
+                f"No sceneXXX.json found under {scene_folder}!"
+            )
+
+        scene_file = scene_folder / potential_scene_files[0]
+        with scene_file.open("r") as f:
             scene_data = json.load(f)
             scene_dto = SceneDTO.from_dict(scene_data)
             return scene_dto
@@ -192,11 +205,7 @@ class DGPDecoder(Decoder):
     def decode_calibration(
         self, scene_name: str, calibration_key: str
     ) -> CalibrationDTO:
-        calibration_path = (
-            (self._dataset_path / scene_name).parent
-            / "calibration"
-            / f"{calibration_key}.json"
-        )
+        calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
         with calibration_path.open("r") as f:
             cal_dict = json.load(f)
             return CalibrationDTO.from_dict(cal_dict)
@@ -222,18 +231,14 @@ class DGPDecoder(Decoder):
     def decode_bounding_boxes_3d(
         self, scene_name: str, annotation_identifier: str
     ) -> AnnotationsBoundingBox3DDTO:
-        annotation_path = (
-            self._dataset_path / scene_name
-        ).parent / annotation_identifier
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
     def decode_semantic_segmentation_3d(
         self, scene_name: str, annotation_identifier: str
     ) -> np.ndarray:
-        annotation_path = (
-            self._dataset_path / scene_name
-        ).parent / annotation_identifier
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             return npz_data.f.segmentation
@@ -241,9 +246,7 @@ class DGPDecoder(Decoder):
     def decode_semantic_segmentation_2d(
         self, scene_name: str, annotation_identifier: str
     ) -> np.ndarray:
-        annotation_path = (
-            self._dataset_path / scene_name
-        ).parent / annotation_identifier
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
             image_data = np.asarray(
                 imageio.imread(cast(BinaryIO, cloud_binary), format="png")
@@ -253,7 +256,7 @@ class DGPDecoder(Decoder):
     def decode_point_cloud(
         self, scene_name: str, cloud_identifier: str, num_channels: int
     ) -> np.ndarray:
-        cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
+        cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             return np.array([f.tolist() for f in npz_data.f.data]).reshape(
@@ -261,7 +264,7 @@ class DGPDecoder(Decoder):
             )
 
     def decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
-        cloud_path = (self._dataset_path / scene_name).parent / cloud_identifier
+        cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             image_data = np.asarray(
                 imageio.imread(cast(BinaryIO, cloud_binary), format="png")
@@ -274,7 +277,7 @@ class DGPDecoder(Decoder):
 
     def decode_scene_names(self) -> List[SceneName]:
         dto = self.decode_dataset()
-        return dto.scene_names
+        return [AnyPath(path).parent.name for path in dto.scene_names]
 
     def decode_dataset_meta_data(self) -> DatasetMeta:
         dto = self.decode_dataset()
