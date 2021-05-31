@@ -1,5 +1,8 @@
+from sys import getsizeof
+
 import pytest
 from paralleldomain import Scene
+from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 
 class TestSceneFrames:
@@ -9,16 +12,18 @@ class TestSceneFrames:
         assert len(frames) == len(scene.frame_ids)
 
     def test_lazy_frame_id_loading(self, scene: Scene):
-        assert scene._frame_ids is None
-        frame_ids = scene.frame_ids
+        LAZY_LOAD_CACHE.clear()
+        pre_size = LAZY_LOAD_CACHE.currsize
+        frame_ids = scene.frame_ids  # counts as one item / one list of size 1
+        assert pre_size + getsizeof(frame_ids) == LAZY_LOAD_CACHE.currsize
         assert len(frame_ids) > 0
-        assert scene._frame_ids is not None
 
     def test_lazy_frame_loading(self, scene: Scene):
+        LAZY_LOAD_CACHE.clear()
         frame_id = scene.frame_ids[0]
-        assert frame_id not in scene._frames
-        frame = scene.get_frame(frame_id=frame_id)
-        assert frame_id in scene._frames
+        pre_size = LAZY_LOAD_CACHE.currsize
+        frame = scene.get_frame(frame_id=frame_id)  # frame objects are not cached
+        assert pre_size == LAZY_LOAD_CACHE.currsize
         assert frame.frame_id == frame_id
 
 
@@ -29,14 +34,16 @@ class TestSceneSensors:
         assert len(sensors) == len(scene.sensor_names)
 
     def test_lazy_sensor_name_loading(self, scene: Scene):
-        assert scene._sensor_names is None
-        sensor_names = scene.sensor_names
+        LAZY_LOAD_CACHE.clear()
+        pre_size = LAZY_LOAD_CACHE.currsize
+        sensor_names = scene.sensor_names  # counts as one item / one list of size 1
+        assert pre_size + getsizeof(sensor_names) == LAZY_LOAD_CACHE.currsize
         assert len(sensor_names) > 0
-        assert scene._sensor_names is not None
 
     def test_lazy_sensor_loading(self, scene: Scene):
+        LAZY_LOAD_CACHE.clear()
         sensor_name = scene.sensor_names[0]
-        assert sensor_name not in scene._sensors
-        sensor = scene.get_sensor(sensor_name=sensor_name)
-        assert sensor_name in scene._sensors
+        pre_size = LAZY_LOAD_CACHE.currsize
+        sensor = scene.get_sensor(sensor_name=sensor_name)  # sensor objects are not cached
+        assert pre_size == LAZY_LOAD_CACHE.currsize
         assert sensor.name == sensor_name
