@@ -111,9 +111,8 @@ class SensorFrame:
 
     @property
     def image(self) -> Optional[ImageData]:
-        if self._image is None:
-            self._image = self._lazy_loader.load_image()
-        return self._image
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image",
+                                        loader=self._lazy_loader.load_image)
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
