@@ -260,6 +260,9 @@ class DGPDecoder(Decoder):
             )
 
     # ------------------------------------------------
+    def get_unique_scene_id(self, scene_name: SceneName) -> str:
+        return f"{self._dataset_path}-{scene_name}"
+
     def decode_scene_names(self) -> List[SceneName]:
         dto = self.decode_dataset()
         return dto.scene_names
@@ -301,10 +304,12 @@ class DGPDecoder(Decoder):
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
-
+        unique_cache_key = f"{self._dataset_path}-{scene_name}-{frame_id}-{sensor_name}"
         sensor_frame = SensorFrame(
+            unique_cache_key=unique_cache_key,
             sensor_name=sensor_name,
             lazy_loader=_FrameLazyLoader(
+                unique_cache_key_prefix=unique_cache_key,
                 decoder=self,
                 scene_name=scene_name,
                 sensor_name=sensor_name,
@@ -318,6 +323,7 @@ class DGPDecoder(Decoder):
 class _FrameLazyLoader:
     def __init__(
         self,
+        unique_cache_key_prefix: str,
         decoder: DGPDecoder,
         scene_name: SceneName,
         sensor_name: SensorName,
@@ -325,6 +331,7 @@ class _FrameLazyLoader:
         datum: SceneDataDatum,
     ):
         self.datum = datum
+        self._unique_cache_key_prefix = unique_cache_key_prefix
         self.sensor_name = sensor_name
         self.scene_name = scene_name
         self.decoder = decoder
@@ -364,7 +371,9 @@ class _FrameLazyLoader:
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
         if self.datum.point_cloud:
+            unique_cache_key = f"{self._unique_cache_key_prefix}-point_cloud"
             return PointCloudData(
+                unique_cache_key=unique_cache_key,
                 point_format=self.datum.point_cloud.point_format,
                 load_data=lambda: self.decoder.decode_point_cloud(
                     scene_name=self.scene_name,
