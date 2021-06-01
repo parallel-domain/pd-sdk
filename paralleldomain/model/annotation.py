@@ -1,8 +1,8 @@
 from __future__ import annotations as ann
 
 import numpy as np
-from dataclasses import dataclass
-from typing import Type, List
+from dataclasses import dataclass, field
+from typing import Type, List, Any, Dict
 
 from paralleldomain.model.transformation import Transformation
 
@@ -57,6 +57,7 @@ class BoundingBox3D:
     class_name: str
     instance_id: int
     num_points: int
+    attributes: Dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self):
         rep = f"Class ID: {self.class_id} {self.pose}"
