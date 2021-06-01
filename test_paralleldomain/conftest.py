@@ -8,7 +8,7 @@ from paralleldomain.decoding.dgp_decoder import DGPDecoder
 
 @pytest.fixture()
 def decoder() -> Decoder:
-    return DGPDecoder(dataset_path="replace this with a s3 or local path to a dgp!")
+    return DGPDecoder(dataset_path="replace this with a url to test!")
 
 
 @pytest.fixture()
