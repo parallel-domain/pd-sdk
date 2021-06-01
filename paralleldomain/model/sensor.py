@@ -11,10 +11,10 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-
 import numpy as np
 
-from paralleldomain.model.annotation import BoundingBox3D, Annotation, AnnotationType
+from paralleldomain.model.annotation import BoundingBox3D, Annotation, AnnotationType, VirtualAnnotation, \
+    PolygonSegmentation2D, SemanticSegmentation2D, InstanceSegmentation2D
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier
 
@@ -23,9 +23,9 @@ T = TypeVar("T")
 
 class Sensor:
     def __init__(
-        self,
-        sensor_name: SensorName,
-        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+            self,
+            sensor_name: SensorName,
+            sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
     ):
         self._sensor_frame_factory = sensor_frame_factory
         self._sensor_name = sensor_name
@@ -64,22 +64,22 @@ class SensorFrameLazyLoaderProtocol(Protocol):
         pass
 
     def load_annotations(
-        self, identifier: AnnotationIdentifier, annotation_type: T
+            self, identifier: AnnotationIdentifier, annotation_type: T
     ) -> List[T]:
         pass
 
     def load_available_annotation_types(
-        self,
+            self,
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
 
 class SensorFrame:
     def __init__(
-        self,
-        unique_cache_key: str,
-        sensor_name: SensorName,
-        lazy_loader: SensorFrameLazyLoaderProtocol,
+            self,
+            unique_cache_key: str,
+            sensor_name: SensorName,
+            lazy_loader: SensorFrameLazyLoaderProtocol,
     ):
         self._unique_cache_key = unique_cache_key
         self._lazy_loader = lazy_loader
@@ -124,7 +124,20 @@ class SensorFrame:
                                         loader=self._lazy_loader.load_available_annotation_types)
 
     def get_annotations(self, annotation_type: Type[T]) -> T:
-        if annotation_type not in self._annotation_type_identifiers:
+        if issubclass(annotation_type, VirtualAnnotation):
+            if annotation_type is PolygonSegmentation2D:
+                def load_polygons_from_masks():
+                    assert any([
+                        SemanticSegmentation2D in self.available_annotation_types,
+                        # InstanceSegmentation2D in self.available_annotation_types
+                    ])
+                    semseg2d = self.get_annotations(SemanticSegmentation2D)
+                    return PolygonSegmentation2D(semseg2d=semseg2d)
+
+                return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + annotation_type.__name__,
+                                                loader=load_polygons_from_masks)
+
+        elif annotation_type not in self._annotation_type_identifiers:
             raise ValueError(
                 f"The annotaiton type {annotation_type} is not available in this sensor frame!"
             )
@@ -144,22 +157,22 @@ class SensorExtrinsic(Transformation):
 
 class SensorIntrinsic:
     def __init__(
-        self,
-        cx=0.0,
-        cy=0.0,
-        fx=0.0,
-        fy=0.0,
-        k1=0.0,
-        k2=0.0,
-        p1=0.0,
-        p2=0.0,
-        k3=0.0,
-        k4=0.0,
-        k5=0.0,
-        k6=0.0,
-        skew=0.0,
-        fov=0.0,
-        fisheye=False,
+            self,
+            cx=0.0,
+            cy=0.0,
+            fx=0.0,
+            fy=0.0,
+            k1=0.0,
+            k2=0.0,
+            p1=0.0,
+            p2=0.0,
+            k3=0.0,
+            k4=0.0,
+            k5=0.0,
+            k6=0.0,
+            skew=0.0,
+            fov=0.0,
+            fisheye=False,
     ):
         self.cx = cx
         self.cy = cy
