@@ -1,7 +1,7 @@
 from __future__ import annotations as ann
 
 from dataclasses import dataclass
-from typing import Type, List, Dict, Any
+from typing import Type, List, Dict, Any, Optional
 
 import numpy as np
 from shapely.geometry import Polygon
@@ -15,6 +15,13 @@ class AnnotationPose(Transformation):
 
 
 class Annotation:
+    ...
+
+class VirtualAnnotation:
+    """
+    Use Multiple Inheritance for annotations which are not part of the DGP output,
+    but are calculated through SDK.
+    """
     ...
 
 
@@ -43,8 +50,9 @@ class SemanticSegmentation2D(Annotation):
         return self._mask[:, :, 0]
 
 
-class PolygonSegmentation2D(Annotation):
-    def __init__(self, semseg2d: SemanticSegmentation2D = None, instanceseg2d: InstanceSegmentation2D = None):
+class PolygonSegmentation2D(Annotation, VirtualAnnotation):
+    def __init__(self, semseg2d: Optional[SemanticSegmentation2D] = None,
+                 instanceseg2d: Optional[InstanceSegmentation2D] = None):
         self._semseg2d = semseg2d
         self._instanceseg2d = instanceseg2d
         self._polygons = None
@@ -58,7 +66,7 @@ class PolygonSegmentation2D(Annotation):
         return self._polygons
 
     def _mask_to_polygons(self) -> None:
-        polygons = mask_to_polygons(self.labels)
+        polygons = mask_to_polygons(self._semseg2d.labels)
         self._polygons = [Polygon2D.from_rasterio_polygon(p[0]) for p in polygons]
 
     def _build_polygon_tree(self) -> None:
@@ -72,8 +80,11 @@ class PolygonSegmentation2D(Annotation):
             for p_interior in p.interior_points
         }
 
-        _ = [c.set_parent(child_by_parent[c.exterior_points]) for c in self._polygons if
-             tuple(c.exterior_points) in child_by_parent]
+        for child_polygon in self._polygons:
+            if child_polygon.exterior_points in child_by_parent:
+                child_polygon.set_parent(
+                    child_by_parent[child_polygon.exterior_points]
+                )
 
 
 @dataclass
