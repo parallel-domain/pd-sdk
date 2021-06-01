@@ -22,8 +22,8 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
                           ])
 def test_transformation_from_rpy(system: Optional[Union[str, CoordinateSystem]], roll: float, pitch: float, yaw: float,
                                  order: str, translation: np.ndarray, source: np.ndarray, target: np.ndarray):
-    transform = Transformation.from_yaw_pith_roll_translation(yaw=yaw, pitch=pitch, roll=roll,
-                                                              translation=translation, is_degrees=True,
-                                                              order=order, coordinate_system=system)
+    transform = Transformation.from_euler_angles(yaw=yaw, pitch=pitch, roll=roll,
+                                                 translation=translation, is_degrees=True,
+                                                 order=order, coordinate_system=system)
     transformed = transform @ source
     assert all(np.isclose(target, transformed))

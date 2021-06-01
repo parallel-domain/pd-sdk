@@ -80,10 +80,10 @@ class Transformation:
         return Transformation(quaternion=quat, translation=translation)
 
     @classmethod
-    def from_yaw_pith_roll_translation(cls, yaw: float, pitch: float, roll: float,
-                                       translation: Optional[np.ndarray] = None,
-                                       is_degrees: bool = False, order: str = "rpy",
-                                       coordinate_system: Optional[Union[str, CoordinateSystem]] = None) \
+    def from_euler_angles(cls, yaw: float, pitch: float, roll: float,
+                          translation: Optional[np.ndarray] = None,
+                          is_degrees: bool = False, order: str = "rpy",
+                          coordinate_system: Optional[Union[str, CoordinateSystem]] = None) \
             -> "Transformation":
         if translation is None:
             translation = np.array([0., 0., 0.])
