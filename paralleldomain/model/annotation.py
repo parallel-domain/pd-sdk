@@ -3,13 +3,10 @@ from __future__ import annotations as ann
 from dataclasses import dataclass
 from typing import Type, List, Dict, Any
 
-from paralleldomain.model.transformation import Transformation
-
-from shapely.geometry import Polygon
-import rasterio.features
-
 import numpy as np
+from shapely.geometry import Polygon
 
+from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.image_tools import mask_to_polygons
 
 
@@ -27,31 +24,48 @@ class BoundingBox2D(Annotation):
 
 @dataclass
 class SemanticSegmentation2D(Annotation):
-    mask: np.ndarray
-    _polygons: List[Polygon2D] = None
+
+    def __init__(self, mask: np.ndarray):
+        self._mask = mask
+        self._polygons = None
 
     @property
-    def rgb(self):
-        return self.mask[:, :, :3]
+    def rgb(self) -> np.ndarray:
+        return self._mask[:, :, :3]
 
     @property
-    def rgba(self):
-        return self.mask
+    def rgba(self) -> np.ndarray:
+        return self._mask
 
     @property
-    def labels(self):
-        return self.mask[:, :, 0]
+    def labels(self) -> np.ndarray:
+        return self._mask[:, :, 0]
 
     @property
-    def polygons(self):
+    def polygons(self) -> List[Polygon2D]:
         if self._polygons is None:
             self._mask_to_polygons()
+            self._build_polygon_tree()
 
         return self._polygons
 
-    def _mask_to_polygons(self):
+    def _mask_to_polygons(self) -> None:
         polygons = mask_to_polygons(self.labels)
         self._polygons = [Polygon2D.from_rasterio_polygon(p[0]) for p in polygons]
+
+    def _build_polygon_tree(self) -> None:
+        """ Compare LinearRings on tuple-level so it is hashable for performance
+
+        :return:
+        """
+        child_by_parent = {
+            p_interior: p
+            for p in self._polygons
+            for p_interior in p.interior_points
+        }
+
+        _ = [c.set_parent(child_by_parent[c.exterior_points]) for c in self._polygons if
+             tuple(c.exterior_points) in child_by_parent]
 
 
 @dataclass
@@ -83,18 +97,37 @@ class BoundingBox3D:
 class Polygon2D:
     def __init__(self, polygon: Polygon):
         self._polygon = polygon
+        self._parent = None
 
     @property
     def area(self):
-        return self._polygon.area
+        return abs(self._polygon.area)
+
+    @property
+    def z_index(self):
+        if self._parent == None:
+            return 0
+        else:
+            return self._parent.z_index + 1
+
+    @property
+    def has_children(self):
+        return len(self._polygon.interiors) > 0
 
     @property
     def exterior_points(self):
-        return np.asarray(self._polygon.exterior.coords)
+        return tuple(self._polygon.exterior.coords)
 
     @property
     def interior_points(self):
-        return [np.asarray(ip.coords) for ip in self._polygon.interiors]
+        return [tuple(ip.coords) for ip in self._polygon.interiors]
+
+    def is_parent_of(self, child_polygon: Polygon2D):
+        # return any(np.array_equal(shape, child_polygon.exterior_points) for shape in self.interior_points)
+        return any(p == child_polygon._polygon.exterior for p in self._polygon.interiors)
+
+    def set_parent(self, parent: Polygon2D):
+        self._parent = parent
 
     @staticmethod
     def from_rasterio_polygon(polygon_dict: Dict[str: Any]):
