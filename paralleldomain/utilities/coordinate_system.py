@@ -1,6 +1,8 @@
+import math
 from typing import Dict
 import logging
 import numpy as np
+from pyquaternion import Quaternion
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,24 @@ class CoordinateSystem:
         logger.info(f"Font axis: {CoordinateSystem._axis_char_map['F']}")
         logger.info(f"Left axis: {CoordinateSystem._axis_char_map['L']}")
         logger.info(f"Up axis: {CoordinateSystem._axis_char_map['U']}")
+
+    def quaternion_from_rpy(self, yaw: float, pitch: float, roll: float,
+                            is_degrees: bool = False, order: str = "rpy"):
+        transform = CoordinateSystem("FLU") > self
+
+        front = transform[:3, :3] @ CoordinateSystem._axis_char_map["F"].reshape((3, 1))
+        left = transform[:3, :3] @ CoordinateSystem._axis_char_map["L"].reshape((3, 1))
+        up = transform[:3, :3] @ CoordinateSystem._axis_char_map["U"].reshape((3, 1))
+
+        rotations = {
+            "r": Quaternion(axis=front, radians=roll if not is_degrees else math.radians(roll)),
+            "p": Quaternion(axis=left, radians=pitch if not is_degrees else math.radians(pitch)),
+            "y": Quaternion(axis=up, radians=yaw if not is_degrees else math.radians(yaw)),
+        }
+        q = Quaternion()
+        for rot in order:
+            q = q * rotations[rot]
+        return q
 
 
 INTERNAL_COORDINATE_SYSTEM = CoordinateSystem("FLU")
