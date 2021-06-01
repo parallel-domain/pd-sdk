@@ -22,12 +22,13 @@ class BoundingBox2D(Annotation):
     ...
 
 
-@dataclass
-class SemanticSegmentation2D(Annotation):
+class InstanceSegmentation2D(Annotation):
+    ...
 
+
+class SemanticSegmentation2D(Annotation):
     def __init__(self, mask: np.ndarray):
         self._mask = mask
-        self._polygons = None
 
     @property
     def rgb(self) -> np.ndarray:
@@ -40,6 +41,13 @@ class SemanticSegmentation2D(Annotation):
     @property
     def labels(self) -> np.ndarray:
         return self._mask[:, :, 0]
+
+
+class PolygonSegmentation2D(Annotation):
+    def __init__(self, semseg2d: SemanticSegmentation2D = None, instanceseg2d: InstanceSegmentation2D = None):
+        self._semseg2d = semseg2d
+        self._instanceseg2d = instanceseg2d
+        self._polygons = None
 
     @property
     def polygons(self) -> List[Polygon2D]:
@@ -122,10 +130,6 @@ class Polygon2D:
     def interior_points(self):
         return [tuple(ip.coords) for ip in self._polygon.interiors]
 
-    def is_parent_of(self, child_polygon: Polygon2D):
-        # return any(np.array_equal(shape, child_polygon.exterior_points) for shape in self.interior_points)
-        return any(p == child_polygon._polygon.exterior for p in self._polygon.interiors)
-
     def set_parent(self, parent: Polygon2D):
         self._parent = parent
 
@@ -148,3 +152,4 @@ class AnnotationTypes:
     BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D
     SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D
     SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D
+    PolygonSegmentation2D: Type[PolygonSegmentation2D] = PolygonSegmentation2D
