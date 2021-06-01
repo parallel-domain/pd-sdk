@@ -76,10 +76,10 @@ class SensorFrameLazyLoaderProtocol(Protocol):
 
 class SensorFrame:
     def __init__(
-        self,
-        unique_cache_key: str,
-        sensor_name: SensorName,
-        lazy_loader: SensorFrameLazyLoaderProtocol,
+            self,
+            unique_cache_key: str,
+            sensor_name: SensorName,
+            lazy_loader: SensorFrameLazyLoaderProtocol,
     ):
         self._unique_cache_key = unique_cache_key
         self._lazy_loader = lazy_loader
@@ -126,14 +126,18 @@ class SensorFrame:
     def get_annotations(self, annotation_type: Type[T]) -> T:
         if issubclass(annotation_type, VirtualAnnotation):
             if annotation_type is PolygonSegmentation2D:
-                assert any([
-                    SemanticSegmentation2D in self.available_annotation_types,
-                    # InstanceSegmentation2D in self.available_annotation_types
-                ])
-                semseg2d = self.get_annotations(SemanticSegmentation2D)
-                self._annotations[annotation_type] = PolygonSegmentation2D(semseg2d=semseg2d)
-                return self._annotations[annotation_type]
-        else if annotation_type not in self._annotation_type_identifiers:
+                def load_polygons_from_masks():
+                    assert any([
+                        SemanticSegmentation2D in self.available_annotation_types,
+                        # InstanceSegmentation2D in self.available_annotation_types
+                    ])
+                    semseg2d = self.get_annotations(SemanticSegmentation2D)
+                    return PolygonSegmentation2D(semseg2d=semseg2d)
+
+                return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + annotation_type.__name__,
+                                                loader=load_polygons_from_masks)
+
+        elif annotation_type not in self._annotation_type_identifiers:
             raise ValueError(
                 f"The annotaiton type {annotation_type} is not available in this sensor frame!"
             )
