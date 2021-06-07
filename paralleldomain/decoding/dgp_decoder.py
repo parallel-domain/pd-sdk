@@ -253,15 +253,12 @@ class DGPDecoder(Decoder):
             )
             return image_data
 
-    def decode_point_cloud(
-            self, scene_name: str, cloud_identifier: str, num_channels: int
-    ) -> np.ndarray:
+    def decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
-            return np.array([f.tolist() for f in npz_data.f.data]).reshape(
-                -1, num_channels
-            )
+            pc_data = npz_data.f.data
+            return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
     def decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
@@ -387,11 +384,8 @@ class _FrameLazyLoader:
             return PointCloudData(
                 unique_cache_key=unique_cache_key,
                 point_format=self.datum.point_cloud.point_format,
-                load_data=lambda: self.decoder.decode_point_cloud(
-                    scene_name=self.scene_name,
-                    cloud_identifier=self.datum.point_cloud.filename,
-                    num_channels=len(self.datum.point_cloud.point_format),
-                ),
+                load_data=lambda: self.decoder.decode_point_cloud(scene_name=self.scene_name,
+                                                                  cloud_identifier=self.datum.point_cloud.filename),
             )
         return None
 
