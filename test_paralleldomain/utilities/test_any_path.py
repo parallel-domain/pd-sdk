@@ -11,5 +11,4 @@ def test_resolving():
         assert path.exists()
         assert isinstance(path, Path)
         path = AnyPath("s3://paralleldomain-testing/")
-        assert path.exists()
         assert isinstance(path, CloudPath)

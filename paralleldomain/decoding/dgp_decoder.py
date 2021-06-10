@@ -1,6 +1,7 @@
 import json
 import logging
 from collections import namedtuple
+from datetime import datetime
 from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import imageio
@@ -284,9 +285,10 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.description
 
-    def decode_frame_ids(self, scene_name: SceneName) -> List[FrameId]:
+    def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return [sample.id.index for sample in scene_dto.samples]
+        return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in
+                scene_dto.samples}
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
@@ -310,12 +312,15 @@ class DGPDecoder(Decoder):
         sensor_data = self._data_by_key_with_name(
             scene_name=scene_name, data_name=sensor_name
         )
+
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
         unique_cache_key = f"{self._dataset_path}-{scene_name}-{frame_id}-{sensor_name}"
         sensor_frame = SensorFrame(
             unique_cache_key=unique_cache_key,
+            frame_id=frame_id,
+            date_time=self._scene_sample_to_date_time(sample=sample),
             sensor_name=sensor_name,
             lazy_loader=_FrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
@@ -327,6 +332,10 @@ class DGPDecoder(Decoder):
             ),
         )
         return sensor_frame
+
+    @staticmethod
+    def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
+        return datetime.strptime(sample.id.timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 class _FrameLazyLoader:
