@@ -30,7 +30,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation3D,
     AnnotationPose,
     BoundingBoxes3D,
-    SemanticSegmentation2D,
+    SemanticSegmentation2D, InstanceSegmentation3D, InstanceSegmentation2D,
 )
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
@@ -66,8 +66,8 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
     "1": AnnotationTypes.BoundingBoxes3D,
     "2": AnnotationTypes.SemanticSegmentation2D,
     "3": AnnotationTypes.SemanticSegmentation3D,
-    "4": Annotation,
-    "5": Annotation,
+    "4": AnnotationTypes.InstanceSegmentation2D,
+    "5": AnnotationTypes.InstanceSegmentation3D,
     "6": Annotation,
     "7": Annotation,
     "8": Annotation,
@@ -244,7 +244,25 @@ class DGPDecoder(Decoder):
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             return npz_data.f.segmentation
 
+    def decode_instance_segmentation_3d(
+            self, scene_name: str, annotation_identifier: str
+    ) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            return npz_data.f.instance
+
     def decode_semantic_segmentation_2d(
+            self, scene_name: str, annotation_identifier: str
+    ) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            image_data = np.asarray(
+                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
+            )
+            return image_data
+
+    def decode_instance_segmentation_2d(
             self, scene_name: str, annotation_identifier: str
     ) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -448,11 +466,21 @@ class _FrameLazyLoader:
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation3D(mask=segmentation_mask)
+        elif issubclass(annotation_type, InstanceSegmentation3D):
+            instance_mask = self.decoder.decode_instance_segmentation_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return InstanceSegmentation3D(mask=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
             segmentation_mask = self.decoder.decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation2D(mask=segmentation_mask)
+        elif issubclass(annotation_type, InstanceSegmentation2D):
+            segmentation_mask = self.decoder.decode_instance_segmentation_2d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return InstanceSegmentation2D(mask=segmentation_mask)
 
     def load_available_annotation_types(
             self,

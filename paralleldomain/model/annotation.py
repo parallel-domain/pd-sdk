@@ -6,7 +6,6 @@ from typing import Type, List, Dict, Any, Optional
 
 from paralleldomain.model.transformation import Transformation
 
-
 import numpy as np
 from shapely.geometry import Polygon
 
@@ -21,6 +20,7 @@ class AnnotationPose(Transformation):
 class Annotation:
     ...
 
+
 class VirtualAnnotation:
     """
     Use Multiple Inheritance for annotations which are not part of the DGP output,
@@ -33,11 +33,7 @@ class BoundingBox2D(Annotation):
     ...
 
 
-class InstanceSegmentation2D(Annotation):
-    ...
-
-
-class SemanticSegmentation2D(Annotation):
+class ImageMask(Annotation):
     def __init__(self, mask: np.ndarray):
         self._mask = mask
 
@@ -49,6 +45,12 @@ class SemanticSegmentation2D(Annotation):
     def rgba(self) -> np.ndarray:
         return self._mask
 
+
+class InstanceSegmentation2D(ImageMask):
+    ...
+
+
+class SemanticSegmentation2D(ImageMask):
     @property
     def labels(self) -> np.ndarray:
         return self._mask[:, :, 0]
@@ -93,6 +95,11 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
 
 @dataclass
 class SemanticSegmentation3D(Annotation):
+    mask: np.ndarray
+
+
+@dataclass
+class InstanceSegmentation3D(Annotation):
     mask: np.ndarray
 
 
@@ -175,5 +182,7 @@ class AnnotationTypes:
     BoundingBox2D: Type[BoundingBox2D] = BoundingBox2D
     BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D
     SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D
+    InstanceSegmentation2D: Type[InstanceSegmentation2D] = InstanceSegmentation2D
     SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D
+    InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D
     PolygonSegmentation2D: Type[PolygonSegmentation2D] = PolygonSegmentation2D
