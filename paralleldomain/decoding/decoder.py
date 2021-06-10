@@ -1,5 +1,6 @@
 import abc
-from typing import List
+from datetime import datetime
+from typing import List, Dict
 
 import numpy as np
 from paralleldomain.model.dataset import DatasetMeta
@@ -23,7 +24,7 @@ class Decoder(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def decode_frame_ids(self, scene_name: SceneName) -> List[str]:
+    def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         pass
 
     @abc.abstractmethod

@@ -14,8 +14,10 @@ class TestSceneFrames:
     def test_lazy_frame_id_loading(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
         pre_size = LAZY_LOAD_CACHE.currsize
-        frame_ids = scene.frame_ids  # counts as one item / one list of size 1
-        assert pre_size + getsizeof(frame_ids) == LAZY_LOAD_CACHE.currsize
+        frame_ids = scene.frame_ids
+        size_after_frame_load = LAZY_LOAD_CACHE.currsize
+        frame_id_to_date_time_map = scene.frame_id_to_date_time_map
+        assert pre_size + getsizeof(frame_id_to_date_time_map) == LAZY_LOAD_CACHE.currsize == size_after_frame_load
         assert len(frame_ids) > 0
 
     def test_lazy_frame_loading(self, scene: Scene):

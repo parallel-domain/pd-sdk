@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
@@ -19,7 +20,7 @@ class SceneDecoderProtocol(Protocol):
     def decode_scene_description(self, scene_name: SceneName) -> str:
         pass
 
-    def decode_frame_ids(self, scene_name: SceneName) -> List[FrameId]:
+    def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         pass
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
@@ -65,11 +66,17 @@ class Scene:
 
     @property
     def frame_ids(self) -> List[str]:
-        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-frame_ids",
-                                        loader=lambda: self._decoder.decode_frame_ids(scene_name=self.name))
+        return list(self.frame_id_to_date_time_map.keys())
+
+    @property
+    def frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
+        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-frame_id_to_date_time_map",
+                                        loader=lambda: self._decoder.decode_frame_id_to_date_time_map(
+                                            scene_name=self.name))
 
     def get_frame(self, frame_id: FrameId) -> Frame:
         return Frame(frame_id=frame_id,
+                     date_time=self.frame_id_to_date_time_map[frame_id],
                      sensor_frame_loader=self._load_sensor_frame,
                      available_sensors_loader=self._load_available_sensors)
 

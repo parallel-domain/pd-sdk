@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta
+from datetime import datetime
 from enum import Enum
 from typing import Dict, Optional, List, cast, Callable, Union, TypeVar, Type
 
@@ -79,8 +80,12 @@ class SensorFrame:
             self,
             unique_cache_key: str,
             sensor_name: SensorName,
+            frame_id: FrameId,
+            date_time: datetime,
             lazy_loader: SensorFrameLazyLoaderProtocol,
     ):
+        self._frame_id = frame_id
+        self._date_time = date_time
         self._unique_cache_key = unique_cache_key
         self._lazy_loader = lazy_loader
         self._sensor_name = sensor_name
@@ -103,6 +108,14 @@ class SensorFrame:
     @property
     def sensor_name(self) -> str:
         return self._sensor_name
+
+    @property
+    def frame_id(self) -> FrameId:
+        return self._frame_id
+
+    @property
+    def date_time(self) -> datetime:
+        return self._date_time
 
     @property
     def point_cloud(self) -> Optional[PointCloudData]:
