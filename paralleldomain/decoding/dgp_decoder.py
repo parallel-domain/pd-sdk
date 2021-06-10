@@ -379,6 +379,14 @@ class _FrameLazyLoader:
             calibration_key=self.calibration_key,
             sensor_name=self.sensor_name,
         )
+
+        if dto.fisheye == True:
+            camera_model = "fisheye"
+        elif dto.fisheye == False:
+            camera_model = "brown_conrady"
+        elif dto.fisheye > 1:
+            camera_model = f"custom_{dto.fisheye}"
+
         return SensorIntrinsic(
             cx=dto.cx,
             cy=dto.cy,
@@ -394,7 +402,7 @@ class _FrameLazyLoader:
             k6=dto.k6,
             skew=dto.skew,
             fov=dto.fov,
-            fisheye=dto.fisheye,
+            camera_model=camera_model,
         )
 
     def load_extrinsic(self) -> SensorExtrinsic:

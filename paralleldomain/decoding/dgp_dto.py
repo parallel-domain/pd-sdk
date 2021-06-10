@@ -6,7 +6,7 @@ from dataclasses_json import (
     config,
     DataClassJsonMixin,
 )
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 
 @dataclass_json
@@ -165,7 +165,7 @@ class CalibrationIntrinsicDTO(DataClassJsonMixin):
     k6: float = 0.0
     skew: float = 0.0
     fov: float = 0.0
-    fisheye: bool = 0.0
+    fisheye: Union[bool,int] = 0
 
 
 @dataclass_json
