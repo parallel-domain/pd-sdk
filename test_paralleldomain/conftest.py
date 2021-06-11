@@ -12,6 +12,10 @@ def decoder() -> Decoder:
 
 
 @pytest.fixture()
-def scene(decoder: Decoder) -> Scene:
-    dataset = Dataset.from_decoder(decoder=decoder)
+def dataset(decoder: Decoder) -> Dataset:
+    return Dataset.from_decoder(decoder=decoder)
+
+
+@pytest.fixture()
+def scene(dataset: Dataset) -> Scene:
     return dataset.get_scene(scene_name=dataset.scene_names[0])

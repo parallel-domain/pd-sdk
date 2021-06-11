@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Dict
 
 import numpy as np
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.decoding.dgp_dto import DatasetDTO, SceneDTO, CalibrationDTO, AnnotationsDTO, AnnotationsBoundingBox3DDTO, \
     CalibrationExtrinsicDTO, CalibrationIntrinsicDTO

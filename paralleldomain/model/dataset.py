@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Dict
+from dataclasses import dataclass, field
+from typing import List, Dict, Any
 
 try:
     from typing import Protocol
@@ -10,19 +10,16 @@ except ImportError:
 import logging
 from paralleldomain.model.scene import Scene, SceneDecoderProtocol
 from paralleldomain.model.type_aliases import SceneName
+from paralleldomain.model.annotation import AnnotationType
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class DatasetMeta:
-    origin: str
     name: str
-    creator: str
-    available_annotation_types: List[int]
-    creation_date: str
-    version: str
-    description: str
+    available_annotation_types: List[AnnotationType]
+    custom_attributes: Dict[str, Any] = field(default_factory=dict)
 
 
 class DatasetDecoderProtocol(SceneDecoderProtocol, Protocol):
@@ -55,6 +52,14 @@ class Dataset:
         for scene_name in self._scene_names:
             self._load_scene(scene_name=scene_name)
         return self._scenes
+
+    @property
+    def available_annotation_types(self) -> List[AnnotationType]:
+        return self.meta_data.available_annotation_types
+
+    @property
+    def name(self) -> str:
+        return self.meta_data.name
 
     def get_scene(self, scene_name: SceneName) -> Scene:
         self._load_scene(scene_name=scene_name)
