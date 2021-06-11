@@ -4,6 +4,7 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Type, List, Dict, Any, Optional
 
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.transformation import Transformation
 
 import numpy as np
@@ -29,8 +30,25 @@ class VirtualAnnotation:
     ...
 
 
+@dataclass
 class BoundingBox2D(Annotation):
-    ...
+    x: int  # top left corner (in absolute pixel coordinates)
+    y: int  # top left corner (in absolute pixel coordinates)
+    width: int  # in absolute pixel coordinates
+    height: int  # in absolute pixel coordinates
+    class_id: int
+    instance_id: int
+    visibility: float
+
+    def __repr__(self):
+        rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
+        return rep
+
+
+@dataclass
+class BoundingBoxes2D(Annotation):
+    boxes: List[BoundingBox2D]
+    class_map: ClassMap
 
 
 class ImageMask(Annotation):
@@ -51,6 +69,10 @@ class InstanceSegmentation2D(ImageMask):
 
 
 class SemanticSegmentation2D(ImageMask):
+    def __init__(self, mask: np.ndarray, class_map: ClassMap):
+        super().__init__(mask=mask)
+        self.class_map = class_map
+
     @property
     def labels(self) -> np.ndarray:
         return self._mask[:, :, 0]
@@ -96,6 +118,7 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
 @dataclass
 class SemanticSegmentation3D(Annotation):
     mask: np.ndarray
+    class_map: ClassMap
 
 
 @dataclass
@@ -106,6 +129,7 @@ class InstanceSegmentation3D(Annotation):
 @dataclass
 class BoundingBoxes3D(Annotation):
     boxes: List[BoundingBox3D]
+    class_map: ClassMap
 
 
 @dataclass
@@ -115,7 +139,6 @@ class BoundingBox3D:
     height: float
     length: float
     class_id: int
-    class_name: str
     instance_id: int
     num_points: int
     attributes: Dict[str, Any] = field(default_factory=dict)
@@ -179,7 +202,7 @@ AnnotationType = Type[Annotation]
 
 
 class AnnotationTypes:
-    BoundingBox2D: Type[BoundingBox2D] = BoundingBox2D
+    BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D
     BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D
     SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D
     InstanceSegmentation2D: Type[InstanceSegmentation2D] = InstanceSegmentation2D

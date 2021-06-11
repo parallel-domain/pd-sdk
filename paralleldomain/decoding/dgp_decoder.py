@@ -6,6 +6,7 @@ from functools import lru_cache
 from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar
 import imageio
 import numpy as np
+from paralleldomain.model.class_mapping import ClassMap
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.decoder import Decoder
@@ -20,7 +21,7 @@ from paralleldomain.decoding.dgp_dto import (
     SceneDataDTO,
     SceneSampleDTO,
     PoseDTO,
-    SceneDataDatum,
+    SceneDataDatum, AnnotationsBoundingBox2DDTO,
 )
 from paralleldomain.model.annotation import (
     Annotation,
@@ -30,7 +31,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation3D,
     AnnotationPose,
     BoundingBoxes3D,
-    SemanticSegmentation2D, InstanceSegmentation3D, InstanceSegmentation2D,
+    SemanticSegmentation2D, InstanceSegmentation3D, InstanceSegmentation2D, BoundingBoxes2D, BoundingBox2D,
 )
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
@@ -62,17 +63,17 @@ TransformType = TypeVar("TransformType", bound=Transformation)
 _DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 
 _annotation_type_map: Dict[str, Type[Annotation]] = {
-    "0": AnnotationTypes.BoundingBox2D,
+    "0": AnnotationTypes.BoundingBoxes2D,
     "1": AnnotationTypes.BoundingBoxes3D,
     "2": AnnotationTypes.SemanticSegmentation2D,
     "3": AnnotationTypes.SemanticSegmentation3D,
     "4": AnnotationTypes.InstanceSegmentation2D,
     "5": AnnotationTypes.InstanceSegmentation3D,
-    "6": Annotation,
-    "7": Annotation,
-    "8": Annotation,
-    "9": Annotation,
-    "10": Annotation,
+    "6": Annotation,  # Depth
+    "7": Annotation,  # Surface Normals 3D
+    "8": Annotation,  # Motion Vectors 2D aka Optical Flow
+    "9": Annotation,  # Motion Vectors 3D aka Scene Flow
+    "10": Annotation,  # Surface normals 2D
 }
 
 DGPLabel = namedtuple(
@@ -130,16 +131,17 @@ _default_labels: List[DGPLabel] = [
     DGPLabel("Void", 255, False),
 ]
 
+default_map = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
+
 
 class DGPDecoder(Decoder):
     def __init__(
             self,
             dataset_path: Union[str, AnyPath],
             max_calibrations_to_cache: int = 10,
-            custom_labels: Optional[List[DGPLabel]] = None,
+            custom_map: Optional[ClassMap] = None,
     ):
-        labels = _default_labels if custom_labels is None else custom_labels
-        self.id_to_label: Dict[int, DGPLabel] = {label.id: label for label in labels}
+        self.class_map = default_map if custom_map is None else custom_map
 
         self._dataset_path = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_calibrations_to_cache)(self.decode_scene)
@@ -236,6 +238,14 @@ class DGPDecoder(Decoder):
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
+    def decode_bounding_boxes_2d(
+            self, scene_name: str, annotation_identifier: str
+    ) -> AnnotationsBoundingBox2DDTO:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        print(annotation_path)
+        with annotation_path.open("r") as f:
+            return AnnotationsBoundingBox2DDTO.from_dict(json.load(f))
+
     def decode_semantic_segmentation_3d(
             self, scene_name: str, annotation_identifier: str
     ) -> np.ndarray:
@@ -297,7 +307,13 @@ class DGPDecoder(Decoder):
 
     def decode_dataset_meta_data(self) -> DatasetMeta:
         dto = self.decode_dataset()
-        return DatasetMeta(**dto.meta_data.to_dict())
+        meta_dict = dto.meta_data.to_dict()
+        anno_types = [_annotation_type_map[str(a)] for a in dto.meta_data.available_annotation_types]
+        return DatasetMeta(
+            name=dto.meta_data.name,
+            available_annotation_types=anno_types,
+            custom_attributes=meta_dict
+        )
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
         scene_dto = self.decode_scene(scene_name=scene_name)
@@ -343,6 +359,7 @@ class DGPDecoder(Decoder):
             lazy_loader=_FrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
                 decoder=self,
+                class_map=self.class_map,
                 scene_name=scene_name,
                 sensor_name=sensor_name,
                 calibration_key=sample.calibration_key,
@@ -363,9 +380,11 @@ class _FrameLazyLoader:
             decoder: DGPDecoder,
             scene_name: SceneName,
             sensor_name: SensorName,
+            class_map: ClassMap,
             calibration_key: str,
             datum: SceneDataDatum,
     ):
+        self.class_map = class_map
         self.datum = datum
         self._unique_cache_key_prefix = unique_cache_key_prefix
         self.sensor_name = sensor_name
@@ -456,16 +475,33 @@ class _FrameLazyLoader:
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
-                    class_name=self.decoder.id_to_label[box_dto.class_id].name,
                 )
                 box_list.append(box)
 
-            return BoundingBoxes3D(boxes=box_list)
+            return BoundingBoxes3D(boxes=box_list,
+                                   class_map=self.class_map)
+        elif issubclass(annotation_type, BoundingBoxes2D):
+            dto = self.decoder.decode_bounding_boxes_2d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+
+            box_list = []
+            for box_dto in dto.annotations:
+                user_data = json.loads(box_dto.attributes.user_data)
+
+                box = BoundingBox2D(x=box_dto.box.x, y=box_dto.box.y, width=box_dto.box.w, height=box_dto.box.h,
+                                    class_id=box_dto.class_id, instance_id=box_dto.instance_id,
+                                    visibility=float(user_data["visibility"]))
+                box_list.append(box)
+
+            return BoundingBoxes2D(boxes=box_list,
+                                   class_map=self.class_map)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self.decoder.decode_semantic_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return SemanticSegmentation3D(mask=segmentation_mask)
+            return SemanticSegmentation3D(mask=segmentation_mask,
+                                          class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self.decoder.decode_instance_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
@@ -475,7 +511,8 @@ class _FrameLazyLoader:
             segmentation_mask = self.decoder.decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return SemanticSegmentation2D(mask=segmentation_mask)
+            return SemanticSegmentation2D(mask=segmentation_mask,
+                                          class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             segmentation_mask = self.decoder.decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier

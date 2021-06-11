@@ -219,6 +219,38 @@ class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
 
 @dataclass_json
 @dataclass
+class BoundingBox2DAttributesDTO(DataClassJsonMixin):
+    vehicle_type: str
+    user_data: Optional[str] = None
+    parked_vehicle: Optional[str] = None
+
+
+@dataclass_json
+@dataclass
+class BoundingBox2DBoxDTO(DataClassJsonMixin):
+    x: int
+    y: int
+    w: int
+    h: int
+
+
+@dataclass_json
+@dataclass
+class BoundingBox2DDTO(DataClassJsonMixin):
+    class_id: int
+    instance_id: int
+    iscrowd: bool
+    box: BoundingBox2DBoxDTO
+    attributes: BoundingBox2DAttributesDTO
+
+@dataclass_json
+@dataclass
+class AnnotationsBoundingBox2DDTO(AnnotationsDTO):
+    annotations: List[BoundingBox2DDTO]
+
+
+@dataclass_json
+@dataclass
 class DatasetMetaDTO:
     origin: str
     name: str

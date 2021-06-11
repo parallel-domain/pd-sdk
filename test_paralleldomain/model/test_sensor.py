@@ -79,23 +79,3 @@ class TestSensorFrame:
         assert xyz.shape[0] > 0
         assert time4 < time1
         assert time3 < 1
-
-    def test_box_3d_loading(self, scene: Scene):
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
-        boxes = sensor_frame.get_annotations(
-            annotation_type=AnnotationTypes.BoundingBoxes3D
-        )
-
-        assert isinstance(boxes.boxes, list)
-        assert len(boxes.boxes) > 0
-
-        for box in boxes.boxes:
-            assert isinstance(box, BoundingBox3D)
-            assert isinstance(box.pose.translation, np.ndarray)
-            assert isinstance(box.pose.transformation_matrix, np.ndarray)
-            assert isinstance(box.class_id, int)
-            assert isinstance(box.class_name, str)
