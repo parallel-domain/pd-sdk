@@ -10,7 +10,7 @@ class TestSensorFrame:
     def test_lazy_cloud_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
@@ -24,7 +24,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
@@ -38,7 +38,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
@@ -53,7 +53,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
@@ -68,7 +68,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
