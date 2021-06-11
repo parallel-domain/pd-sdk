@@ -12,11 +12,11 @@ jobs:
       - name: Install Black
         run: pip install black
       - name: Run black --check .
-        run: black --line-width 120 --check .
+        run: black --line-length 120 --check .
       - name: If needed, commit black changes to the pull request
         if: failure()
         run: |
-          black --line-width 120 .
+          black --line-length 120 .
           git config --global user.name 'autoblack'
           git config --global user.email 'cclauss@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
