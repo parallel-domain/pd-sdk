@@ -7,6 +7,7 @@ from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar, C
 import imageio
 import numpy as np
 from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.ego import EgoFrame, EgoPose
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.decoder import Decoder
@@ -354,6 +355,21 @@ class DGPDecoder(Decoder):
             ),
         )
         return sensor_frame
+
+    def decode_ego_frame(self, scene_name: SceneName, frame_id: FrameId) -> EgoFrame:
+        unique_cache_key = f"{self._dataset_path}-{scene_name}-{frame_id}-ego_frame"
+
+        def _load_pose() -> EgoPose:
+            sensor_name = next(iter(self.decode_available_sensor_names(scene_name=scene_name,
+                                                                       frame_id=frame_id)))
+            sensor_frame = self.decode_sensor_frame(scene_name=scene_name, frame_id=frame_id,
+                                                    sensor_name=sensor_name)
+            ext_inv = np.linalg.inv(sensor_frame.extrinsic.transformation_matrix)
+            vehicle_pose = ext_inv @ sensor_frame.pose.transformation_matrix
+            return cast(EgoPose.from_transformation_matrix(vehicle_pose), EgoPose)
+
+        return EgoFrame(unique_cache_key=unique_cache_key,
+                        pose_loader=_load_pose)
 
     @staticmethod
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:

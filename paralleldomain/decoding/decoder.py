@@ -7,6 +7,7 @@ from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.decoding.dgp_dto import DatasetDTO, SceneDTO, CalibrationDTO, AnnotationsDTO, AnnotationsBoundingBox3DDTO, \
     CalibrationExtrinsicDTO, CalibrationIntrinsicDTO
+from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import SensorFrame, Sensor
 from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
 
@@ -47,6 +48,11 @@ class Decoder(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
+        pass
+
+
+    @abc.abstractmethod
+    def decode_ego_frame(self, scene_name: SceneName, frame_id: FrameId) -> EgoFrame:
         pass
 
     @abc.abstractmethod

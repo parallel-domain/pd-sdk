@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List, Callable, Tuple, Optional
 
+from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SensorName
 
@@ -9,9 +10,11 @@ class Frame:
     def __init__(self, frame_id: FrameId, date_time: datetime,
                  sensor_frame_loader: Callable[[FrameId, SensorName], SensorFrame],
                  available_sensors_loader: Callable[[FrameId], List[SensorName]],
+                 ego_frame_loader: Callable[[FrameId], EgoFrame],
                  available_cameras_loader: Callable[[FrameId], List[SensorName]],
                  available_lidars_loader: Callable[[FrameId], List[SensorName]],
                  ):
+        self._ego_frame_loader = ego_frame_loader
         self._sensor_frame_loader = sensor_frame_loader
         self._available_sensors_loader = available_sensors_loader
         self._available_cameras_loader = available_cameras_loader
@@ -26,6 +29,10 @@ class Frame:
     @property
     def date_time(self) -> datetime:
         return self._date_time
+
+    @property
+    def ego_frame(self) -> EgoFrame:
+        return self._ego_frame_loader(self.frame_id)
 
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame:
         return self._sensor_frame_loader(self.frame_id, sensor_name)
