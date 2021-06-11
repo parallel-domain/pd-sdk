@@ -8,7 +8,7 @@ from paralleldomain.decoding.dgp_decoder import DGPDecoder
 
 @pytest.fixture()
 def decoder() -> Decoder:
-    return DGPDecoder(dataset_path="replace this with a url to test!")
+    return DGPDecoder(dataset_path="s3://paralleldomain-silo-ai/public_pdviz_6/")
 
 
 @pytest.fixture()
