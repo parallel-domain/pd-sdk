@@ -1,13 +1,13 @@
 import abc
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 import numpy as np
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.decoding.dgp_dto import DatasetDTO, SceneDTO, CalibrationDTO, AnnotationsDTO, AnnotationsBoundingBox3DDTO, \
     CalibrationExtrinsicDTO, CalibrationIntrinsicDTO
-from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.model.sensor import SensorFrame, Sensor
 from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
 
 
@@ -29,7 +29,20 @@ class Decoder(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def decode_sensor_names(self, scene_name: SceneName) -> List[str]:
+    def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
+        pass
+
+    @abc.abstractmethod
+    def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+        pass
+
+    @abc.abstractmethod
+    def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+        pass
+
+    @abc.abstractmethod
+    def decode_sensor(self, scene_name: SceneName, sensor_name: SensorName,
+                      sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame]) -> Sensor:
         pass
 
     @abc.abstractmethod

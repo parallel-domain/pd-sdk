@@ -10,7 +10,7 @@ class TestSensorFrame:
     def test_box_3d_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
         boxes = sensor_frame.get_annotations(
@@ -32,7 +32,7 @@ class TestSensorFrame:
 
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[5])
-        sensors = frame.available_sensors
+        sensors = frame.sensor_names
         camera_sensor = next(iter([s for s in sensors if s.startswith("cam")]))
         sensor_frame = frame.get_sensor(sensor_name=camera_sensor)
         boxes = sensor_frame.get_annotations(
