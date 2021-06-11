@@ -1,5 +1,5 @@
 name: autoblack
-on: [push]
+on: [ pull_request ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,9 +17,9 @@ jobs:
         if: failure()
         run: |
           black --line-length 120 .
-          git config --global user.name 'pd-formatter'
-          git config --global user.email 'info@paralleldomain.com'
+          git config --global user.name 'pd-github-actions'
+          git config --global user.email 'github-actions@paralleldomain.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-          git checkout -b $GITHUB_HEAD_REF
+          git checkout $GITHUB_HEAD_REF
           git commit -am "fixup: Format Python code with Black"
-          git push origin $GITHUB_HEAD_REF
+          git push
