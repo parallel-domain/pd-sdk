@@ -36,7 +36,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation3D,
     InstanceSegmentation2D,
     BoundingBoxes2D,
-    BoundingBox2D,
+    BoundingBox2D, OpticalFlow,
 )
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
@@ -79,7 +79,7 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
     "5": AnnotationTypes.InstanceSegmentation3D,
     "6": Annotation,  # Depth
     "7": Annotation,  # Surface Normals 3D
-    "8": Annotation,  # Motion Vectors 2D aka Optical Flow
+    "8": AnnotationTypes.OpticalFlow,
     "9": Annotation,  # Motion Vectors 3D aka Scene Flow
     "10": Annotation,  # Surface normals 2D
 }
@@ -140,6 +140,13 @@ _default_labels: List[DGPLabel] = [
 ]
 
 default_map = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
+
+
+def pack_int_sequence(sequence: np.ndarray) -> np.int32:
+    out = 0
+    for i, val in enumerate(sequence):
+        out = (val << (8 * i)) | out
+    return out
 
 
 class DGPDecoder(Decoder):
@@ -251,6 +258,14 @@ class DGPDecoder(Decoder):
         with annotation_path.open(mode="rb") as cloud_binary:
             image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
             return image_data
+
+    def decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
+            vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
+
+            return vectors
 
     def decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -499,6 +514,11 @@ class _FrameLazyLoader:
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation2D(mask=segmentation_mask, class_map=self.class_map)
+        elif issubclass(annotation_type, OpticalFlow):
+            flow_vectors = self.decoder.decode_optical_flow(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return OpticalFlow(vectors=flow_vectors)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             segmentation_mask = self.decoder.decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
