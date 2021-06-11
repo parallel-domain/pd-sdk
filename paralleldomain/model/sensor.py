@@ -185,7 +185,7 @@ class SensorIntrinsic:
             k6=0.0,
             skew=0.0,
             fov=0.0,
-            fisheye=False,
+            camera_model="brown_conrady",
     ):
         self.cx = cx
         self.cy = cy
@@ -201,7 +201,7 @@ class SensorIntrinsic:
         self.k6 = k6
         self.skew = skew
         self.fov = fov
-        self.fisheye = fisheye
+        self.camera_model = camera_model
 
 
 class SensorData(metaclass=ABCMeta):
