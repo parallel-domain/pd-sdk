@@ -1,6 +1,6 @@
 import os
 from sys import getsizeof
-from typing import Hashable, TypeVar, Callable, Dict, Type, Union, Any
+from typing import Any, Callable, Dict, Hashable, Type, TypeVar, Union
 
 import cachetools
 

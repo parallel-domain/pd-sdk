@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("requirements.txt", "r") as f:
+with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setup(
@@ -19,4 +19,5 @@ setup(
             "pytest-cov>=2.8.1",
         ]
     },
-    zip_safe=False)
+    zip_safe=False,
+)

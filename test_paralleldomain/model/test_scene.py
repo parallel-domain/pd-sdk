@@ -1,6 +1,7 @@
 from sys import getsizeof
 
 import pytest
+
 from paralleldomain import Scene
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 

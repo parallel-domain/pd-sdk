@@ -8,9 +8,9 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import Sensor, SensorFrame
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 
 class SceneDecoderProtocol(Protocol):
@@ -41,16 +41,18 @@ class Scene:
         self._decoder = decoder
 
     def _load_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
-        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-{frame_id}-{sensor_name}-SensorFrame",
-                                        loader=lambda: self._decoder.decode_sensor_frame(
-                                            scene_name=self.name,
-                                            frame_id=frame_id,
-                                            sensor_name=sensor_name))
+        return LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-{frame_id}-{sensor_name}-SensorFrame",
+            loader=lambda: self._decoder.decode_sensor_frame(
+                scene_name=self.name, frame_id=frame_id, sensor_name=sensor_name
+            ),
+        )
 
     def _load_available_sensors(self, frame_id: FrameId) -> List[SensorName]:
-        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-{frame_id}-available_sensors",
-                                        loader=lambda: self._decoder.decode_available_sensor_names(
-                                            scene_name=self.name, frame_id=frame_id))
+        return LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-{frame_id}-available_sensors",
+            loader=lambda: self._decoder.decode_available_sensor_names(scene_name=self.name, frame_id=frame_id),
+        )
 
     @property
     def name(self) -> str:
@@ -70,15 +72,18 @@ class Scene:
 
     @property
     def frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
-        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-frame_id_to_date_time_map",
-                                        loader=lambda: self._decoder.decode_frame_id_to_date_time_map(
-                                            scene_name=self.name))
+        return LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-frame_id_to_date_time_map",
+            loader=lambda: self._decoder.decode_frame_id_to_date_time_map(scene_name=self.name),
+        )
 
     def get_frame(self, frame_id: FrameId) -> Frame:
-        return Frame(frame_id=frame_id,
-                     date_time=self.frame_id_to_date_time_map[frame_id],
-                     sensor_frame_loader=self._load_sensor_frame,
-                     available_sensors_loader=self._load_available_sensors)
+        return Frame(
+            frame_id=frame_id,
+            date_time=self.frame_id_to_date_time_map[frame_id],
+            sensor_frame_loader=self._load_sensor_frame,
+            available_sensors_loader=self._load_available_sensors,
+        )
 
     @property
     def sensors(self) -> List[Sensor]:
@@ -86,16 +91,15 @@ class Scene:
 
     @property
     def sensor_names(self) -> List[str]:
-        return LAZY_LOAD_CACHE.get_item(key=f"{self._unique_cache_key}-sensor_names",
-                                        loader=lambda: self._decoder.decode_sensor_names(scene_name=self.name))
+        return LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-sensor_names",
+            loader=lambda: self._decoder.decode_sensor_names(scene_name=self.name),
+        )
 
     def get_sensor(self, sensor_name: SensorName) -> Sensor:
-        return Sensor(sensor_name=sensor_name,
-                      sensor_frame_factory=self._load_sensor_frame)
+        return Sensor(sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame)
 
     @staticmethod
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
-        return Scene(name=scene_name,
-                     description=description,
-                     decoder=decoder)
+        return Scene(name=scene_name, description=description, decoder=decoder)

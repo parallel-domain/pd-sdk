@@ -1,7 +1,7 @@
 import pytest
 
-from paralleldomain.model.dataset import Dataset
 from paralleldomain.decoding.decoder import Decoder
+from paralleldomain.model.dataset import Dataset
 
 
 def test_can_load_dataset_from_path(decoder: Decoder):

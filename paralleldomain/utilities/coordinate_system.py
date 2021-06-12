@@ -1,6 +1,7 @@
+import logging
 import math
 from typing import Dict
-import logging
+
 import numpy as np
 from pyquaternion import Quaternion
 
@@ -8,8 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class CoordinateSystem:
-    _axis_char_map: Dict[str, np.ndarray] = dict(**{character: axis for character, axis in zip("FLU", np.identity(3))},
-                                                 **{character: axis for character, axis in zip("BRD", -np.identity(3))})
+    _axis_char_map: Dict[str, np.ndarray] = dict(
+        **{character: axis for character, axis in zip("FLU", np.identity(3))},
+        **{character: axis for character, axis in zip("BRD", -np.identity(3))},
+    )
 
     def __init__(self, axis_directions: str):
         self.axis_directions = axis_directions
@@ -43,8 +46,7 @@ class CoordinateSystem:
         logger.info(f"Left axis: {CoordinateSystem._axis_char_map['L']}")
         logger.info(f"Up axis: {CoordinateSystem._axis_char_map['U']}")
 
-    def quaternion_from_rpy(self, yaw: float, pitch: float, roll: float,
-                            is_degrees: bool = False, order: str = "rpy"):
+    def quaternion_from_rpy(self, yaw: float, pitch: float, roll: float, is_degrees: bool = False, order: str = "rpy"):
         transform = CoordinateSystem("FLU") > self
 
         front = transform[:3, :3] @ CoordinateSystem._axis_char_map["F"].reshape((3, 1))
