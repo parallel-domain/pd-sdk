@@ -1,25 +1,25 @@
-name: autoblack
-on: [pull_request]
+name: auto-format
+on: pull_request
 jobs:
-  build:
+  format:
+    # Check if the PR is not from a fork
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - name: black
+        uses: lgeiger/black-action@v1.0.1
         with:
-          python-version: 3.6
-      - name: Install Black
-        run: pip install black
-      - name: Run black --check .
-        run: black --line-length 120 --check .
-      - name: If needed, commit black changes to the pull request
-        if: failure()
+          args: .
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
         run: |
-          git checkout `basename $GITHUB_REF`
-          black --line-length 120 .
-          git config --global user.name 'autoblack'
-          git config --global user.email 'cclauss@users.noreply.github.com'
+          git config --global user.name 'Peter Evans'
+          git config --global user.email 'peter-evans@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-          git commit -am "fixup: Format Python code with Black"
-          git push `basename $GITHUB_REF`
+          git checkout $GITHUB_HEAD_REF
+          git commit -am "Automated changes"
+          git push
