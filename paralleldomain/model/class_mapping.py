@@ -50,13 +50,19 @@ class LabelMapping:
 
     def __matmul__(self, other: T) -> T:
         if isinstance(other, ClassMap):
-            return ClassMap(class_id_to_class_name={
-                class_id: self[class_name] for class_id, class_name in other.items() if self[class_name] is not None
-            })
+            return ClassMap(
+                class_id_to_class_name={
+                    class_id: self[class_name] for class_id, class_name in other.items() if self[class_name] is not None
+                }
+            )
         elif isinstance(other, LabelMapping):
-            return LabelMapping(label_mapping={
-                class_name: self[to_class_name] for class_name, to_class_name in other.items() if
-                self[to_class_name] is not None
-            }, on_not_defined=self.on_not_defined)
+            return LabelMapping(
+                label_mapping={
+                    class_name: self[to_class_name]
+                    for class_name, to_class_name in other.items()
+                    if self[to_class_name] is not None
+                },
+                on_not_defined=self.on_not_defined,
+            )
         else:
             raise ValueError(f"Unsupported type {type(other)}")

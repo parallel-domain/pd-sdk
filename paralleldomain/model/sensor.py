@@ -14,8 +14,15 @@ except ImportError:
 
 import numpy as np
 
-from paralleldomain.model.annotation import BoundingBox3D, Annotation, AnnotationType, VirtualAnnotation, \
-    PolygonSegmentation2D, SemanticSegmentation2D, InstanceSegmentation2D
+from paralleldomain.model.annotation import (
+    BoundingBox3D,
+    Annotation,
+    AnnotationType,
+    VirtualAnnotation,
+    PolygonSegmentation2D,
+    SemanticSegmentation2D,
+    InstanceSegmentation2D,
+)
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier
 
@@ -24,9 +31,9 @@ T = TypeVar("T")
 
 class Sensor:
     def __init__(
-            self,
-            sensor_name: SensorName,
-            sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+        self,
+        sensor_name: SensorName,
+        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
     ):
         self._sensor_frame_factory = sensor_frame_factory
         self._sensor_name = sensor_name
@@ -64,25 +71,23 @@ class SensorFrameLazyLoaderProtocol(Protocol):
     def load_image(self) -> Optional[ImageData]:
         pass
 
-    def load_annotations(
-            self, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> List[T]:
+    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
         pass
 
     def load_available_annotation_types(
-            self,
+        self,
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
 
 class SensorFrame:
     def __init__(
-            self,
-            unique_cache_key: str,
-            sensor_name: SensorName,
-            frame_id: FrameId,
-            date_time: datetime,
-            lazy_loader: SensorFrameLazyLoaderProtocol,
+        self,
+        unique_cache_key: str,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        date_time: datetime,
+        lazy_loader: SensorFrameLazyLoaderProtocol,
     ):
         self._frame_id = frame_id
         self._date_time = date_time
@@ -92,18 +97,19 @@ class SensorFrame:
 
     @property
     def extrinsic(self) -> SensorExtrinsic:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "extrinsic",
-                                        loader=self._lazy_loader.load_extrinsic)
+        return LAZY_LOAD_CACHE.get_item(
+            key=self._unique_cache_key + "extrinsic", loader=self._lazy_loader.load_extrinsic
+        )
 
     @property
     def intrinsic(self) -> SensorIntrinsic:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "intrinsic",
-                                        loader=self._lazy_loader.load_intrinsic)
+        return LAZY_LOAD_CACHE.get_item(
+            key=self._unique_cache_key + "intrinsic", loader=self._lazy_loader.load_intrinsic
+        )
 
     @property
     def pose(self) -> SensorPose:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "pose",
-                                        loader=self._lazy_loader.load_sensor_pose)
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "pose", loader=self._lazy_loader.load_sensor_pose)
 
     @property
     def sensor_name(self) -> str:
@@ -119,13 +125,13 @@ class SensorFrame:
 
     @property
     def point_cloud(self) -> Optional[PointCloudData]:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "point_cloud",
-                                        loader=self._lazy_loader.load_point_cloud)
+        return LAZY_LOAD_CACHE.get_item(
+            key=self._unique_cache_key + "point_cloud", loader=self._lazy_loader.load_point_cloud
+        )
 
     @property
     def image(self) -> Optional[ImageData]:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image",
-                                        loader=self._lazy_loader.load_image)
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image", loader=self._lazy_loader.load_image)
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
@@ -133,31 +139,37 @@ class SensorFrame:
 
     @property
     def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "annotation_type_identifiers",
-                                        loader=self._lazy_loader.load_available_annotation_types)
+        return LAZY_LOAD_CACHE.get_item(
+            key=self._unique_cache_key + "annotation_type_identifiers",
+            loader=self._lazy_loader.load_available_annotation_types,
+        )
 
     def get_annotations(self, annotation_type: Type[T]) -> T:
         if issubclass(annotation_type, VirtualAnnotation):
             if annotation_type is PolygonSegmentation2D:
+
                 def load_polygons_from_masks():
-                    assert any([
-                        SemanticSegmentation2D in self.available_annotation_types,
-                        # InstanceSegmentation2D in self.available_annotation_types
-                    ])
+                    assert any(
+                        [
+                            SemanticSegmentation2D in self.available_annotation_types,
+                            # InstanceSegmentation2D in self.available_annotation_types
+                        ]
+                    )
                     semseg2d = self.get_annotations(SemanticSegmentation2D)
                     return PolygonSegmentation2D(semseg2d=semseg2d)
 
-                return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + annotation_type.__name__,
-                                                loader=load_polygons_from_masks)
+                return LAZY_LOAD_CACHE.get_item(
+                    key=self._unique_cache_key + annotation_type.__name__, loader=load_polygons_from_masks
+                )
 
         elif annotation_type not in self._annotation_type_identifiers:
-            raise ValueError(
-                f"The annotaiton type {annotation_type} is not available in this sensor frame!"
-            )
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + annotation_type.__name__,
-                                        loader=lambda: self._lazy_loader.load_annotations(
-                                            identifier=self._annotation_type_identifiers[annotation_type],
-                                            annotation_type=annotation_type))
+            raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
+        return LAZY_LOAD_CACHE.get_item(
+            key=self._unique_cache_key + annotation_type.__name__,
+            loader=lambda: self._lazy_loader.load_annotations(
+                identifier=self._annotation_type_identifiers[annotation_type], annotation_type=annotation_type
+            ),
+        )
 
 
 class SensorPose(Transformation):
@@ -170,22 +182,22 @@ class SensorExtrinsic(Transformation):
 
 class SensorIntrinsic:
     def __init__(
-            self,
-            cx=0.0,
-            cy=0.0,
-            fx=0.0,
-            fy=0.0,
-            k1=0.0,
-            k2=0.0,
-            p1=0.0,
-            p2=0.0,
-            k3=0.0,
-            k4=0.0,
-            k5=0.0,
-            k6=0.0,
-            skew=0.0,
-            fov=0.0,
-            camera_model="brown_conrady",
+        self,
+        cx=0.0,
+        cy=0.0,
+        fx=0.0,
+        fy=0.0,
+        k1=0.0,
+        k2=0.0,
+        p1=0.0,
+        p2=0.0,
+        k3=0.0,
+        k4=0.0,
+        k5=0.0,
+        k6=0.0,
+        skew=0.0,
+        fov=0.0,
+        camera_model="brown_conrady",
     ):
         self.cx = cx
         self.cy = cy
@@ -244,9 +256,7 @@ class PointCloudData(SensorData):
     def __init__(self, unique_cache_key: str, point_format: List[str], load_data: Callable[[], np.ndarray]):
         self._unique_cache_key = unique_cache_key
         self._load_data_call = load_data
-        self._point_cloud_info = {
-            PointInfo(val): idx for idx, val in enumerate(point_format)
-        }
+        self._point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
 
     def _has(self, p_info: PointInfo):
         return p_info in self._point_cloud_info
@@ -256,8 +266,7 @@ class PointCloudData(SensorData):
 
     @property
     def _data(self) -> np.ndarray:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data",
-                                        loader=self._load_data_call)
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_call)
 
     @property
     def xyz(self) -> np.ndarray:

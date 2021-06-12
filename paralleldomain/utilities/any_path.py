@@ -11,6 +11,7 @@ from smart_open.smart_open_lib import open
 AdjustedCloudPath = CloudPath
 
 if os.environ.get("USESMARTOPEN", True):
+
     def _open_wrap(self, mode, *args, **kwargs) -> IO:
         return open(uri=self._str, mode=mode, *args, **kwargs)
 
@@ -24,4 +25,3 @@ class AnyPath:
         if str_path.startswith("s3") or str_path.startswith("gs") or str_path.startswith("azure"):
             return AdjustedCloudPath(str_path, *args, **kwargs)
         return Path(str_path, *args, **kwargs)
-

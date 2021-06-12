@@ -21,7 +21,8 @@ from paralleldomain.decoding.dgp_dto import (
     SceneDataDTO,
     SceneSampleDTO,
     PoseDTO,
-    SceneDataDatum, AnnotationsBoundingBox2DDTO,
+    SceneDataDatum,
+    AnnotationsBoundingBox2DDTO,
 )
 from paralleldomain.model.annotation import (
     Annotation,
@@ -31,7 +32,11 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation3D,
     AnnotationPose,
     BoundingBoxes3D,
-    SemanticSegmentation2D, InstanceSegmentation3D, InstanceSegmentation2D, BoundingBoxes2D, BoundingBox2D,
+    SemanticSegmentation2D,
+    InstanceSegmentation3D,
+    InstanceSegmentation2D,
+    BoundingBoxes2D,
+    BoundingBox2D,
 )
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
@@ -136,10 +141,10 @@ default_map = ClassMap(class_id_to_class_name={label.id: label.name for label in
 
 class DGPDecoder(Decoder):
     def __init__(
-            self,
-            dataset_path: Union[str, AnyPath],
-            max_calibrations_to_cache: int = 10,
-            custom_map: Optional[ClassMap] = None,
+        self,
+        dataset_path: Union[str, AnyPath],
+        max_calibrations_to_cache: int = 10,
+        custom_map: Optional[ClassMap] = None,
     ):
         self.class_map = default_map if custom_map is None else custom_map
 
@@ -152,9 +157,7 @@ class DGPDecoder(Decoder):
         return {d.key: d for d in dto.data}
 
     @lru_cache(maxsize=1)
-    def _data_by_key_with_name(
-            self, scene_name: str, data_name: str
-    ) -> Dict[str, SceneDataDTO]:
+    def _data_by_key_with_name(self, scene_name: str, data_name: str) -> Dict[str, SceneDataDTO]:
         dto = self.decode_scene(scene_name=scene_name)
         return {d.key: d for d in dto.data if d.id.name == data_name}
 
@@ -168,11 +171,7 @@ class DGPDecoder(Decoder):
         dataset_cloud_path: AnyPath = AnyPath(self._dataset_path)
         scene_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
         if not scene_json_path.exists():
-            files_with_prefix = [
-                name.name
-                for name in dataset_cloud_path.iterdir()
-                if "scene_dataset" in name.name
-            ]
+            files_with_prefix = [name.name for name in dataset_cloud_path.iterdir() if "scene_dataset" in name.name]
             if len(files_with_prefix) == 0:
                 logger.error(
                     f"No scene_dataset.json or file starting with scene_dataset found under {dataset_cloud_path}!"
@@ -189,15 +188,11 @@ class DGPDecoder(Decoder):
     def decode_scene(self, scene_name: str) -> SceneDTO:
         scene_folder = self._dataset_path / scene_name
         potential_scene_files = [
-            name.name
-            for name in scene_folder.iterdir()
-            if name.name.startswith("scene") and name.name.endswith("json")
+            name.name for name in scene_folder.iterdir() if name.name.startswith("scene") and name.name.endswith("json")
         ]
 
         if len(potential_scene_files) == 0:
-            logger.error(
-                f"No sceneXXX.json found under {scene_folder}!"
-            )
+            logger.error(f"No sceneXXX.json found under {scene_folder}!")
 
         scene_file = scene_folder / potential_scene_files[0]
         with scene_file.open("r") as f:
@@ -205,81 +200,59 @@ class DGPDecoder(Decoder):
             scene_dto = SceneDTO.from_dict(scene_data)
             return scene_dto
 
-    def decode_calibration(
-            self, scene_name: str, calibration_key: str
-    ) -> CalibrationDTO:
+    def decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
         with calibration_path.open("r") as f:
             cal_dict = json.load(f)
             return CalibrationDTO.from_dict(cal_dict)
 
     def decode_extrinsic_calibration(
-            self, scene_name: str, calibration_key: str, sensor_name: SensorName
+        self, scene_name: str, calibration_key: str, sensor_name: SensorName
     ) -> CalibrationExtrinsicDTO:
-        calibration_dto = self.decode_calibration(
-            scene_name=scene_name, calibration_key=calibration_key
-        )
+        calibration_dto = self.decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.extrinsics[index]
 
     def decode_intrinsic_calibration(
-            self, scene_name: str, calibration_key: str, sensor_name: SensorName
+        self, scene_name: str, calibration_key: str, sensor_name: SensorName
     ) -> CalibrationIntrinsicDTO:
-        calibration_dto = self.decode_calibration(
-            scene_name=scene_name, calibration_key=calibration_key
-        )
+        calibration_dto = self.decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
 
-    def decode_bounding_boxes_3d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> AnnotationsBoundingBox3DDTO:
+    def decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
 
-    def decode_bounding_boxes_2d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> AnnotationsBoundingBox2DDTO:
+    def decode_bounding_boxes_2d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox2DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         print(annotation_path)
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox2DDTO.from_dict(json.load(f))
 
-    def decode_semantic_segmentation_3d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> np.ndarray:
+    def decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             return npz_data.f.segmentation
 
-    def decode_instance_segmentation_3d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> np.ndarray:
+    def decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             return npz_data.f.instance
 
-    def decode_semantic_segmentation_2d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> np.ndarray:
+    def decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(
-                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
-            )
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
             return image_data
 
-    def decode_instance_segmentation_2d(
-            self, scene_name: str, annotation_identifier: str
-    ) -> np.ndarray:
+    def decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(
-                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
-            )
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
             return image_data
 
     def decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
@@ -292,9 +265,7 @@ class DGPDecoder(Decoder):
     def decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(
-                imageio.imread(cast(BinaryIO, cloud_binary), format="png")
-            )
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
             return image_data
 
     # ------------------------------------------------
@@ -309,11 +280,7 @@ class DGPDecoder(Decoder):
         dto = self.decode_dataset()
         meta_dict = dto.meta_data.to_dict()
         anno_types = [_annotation_type_map[str(a)] for a in dto.meta_data.available_annotation_types]
-        return DatasetMeta(
-            name=dto.meta_data.name,
-            available_annotation_types=anno_types,
-            custom_attributes=meta_dict
-        )
+        return DatasetMeta(name=dto.meta_data.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
         scene_dto = self.decode_scene(scene_name=scene_name)
@@ -321,31 +288,24 @@ class DGPDecoder(Decoder):
 
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in
-                scene_dto.samples}
+        return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         return list(set([datum.id.name for datum in scene_dto.data]))
 
-    def decode_available_sensor_names(
-            self, scene_name: SceneName, frame_id: FrameId
-    ) -> List[SensorName]:
+    def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
         # sample of current frame
         sample = self._sample_by_index(scene_name=scene_name)[frame_id]
         # all sensor data of the sensor
         sensor_data = self._data_by_key(scene_name=scene_name)
         return [sensor_data[key].id.name for key in sample.datum_keys]
 
-    def decode_sensor_frame(
-            self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName
-    ) -> SensorFrame:
+    def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         # sample of current frame
         sample = self._sample_by_index(scene_name=scene_name)[frame_id]
         # all sensor data of the sensor
-        sensor_data = self._data_by_key_with_name(
-            scene_name=scene_name, data_name=sensor_name
-        )
+        sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
 
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
@@ -370,19 +330,19 @@ class DGPDecoder(Decoder):
 
     @staticmethod
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
-        return datetime.strptime(sample.id.timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class _FrameLazyLoader:
     def __init__(
-            self,
-            unique_cache_key_prefix: str,
-            decoder: DGPDecoder,
-            scene_name: SceneName,
-            sensor_name: SensorName,
-            class_map: ClassMap,
-            calibration_key: str,
-            datum: SceneDataDatum,
+        self,
+        unique_cache_key_prefix: str,
+        decoder: DGPDecoder,
+        scene_name: SceneName,
+        sensor_name: SensorName,
+        class_map: ClassMap,
+        calibration_key: str,
+        datum: SceneDataDatum,
     ):
         self.class_map = class_map
         self.datum = datum
@@ -438,8 +398,9 @@ class _FrameLazyLoader:
             return PointCloudData(
                 unique_cache_key=unique_cache_key,
                 point_format=self.datum.point_cloud.point_format,
-                load_data=lambda: self.decoder.decode_point_cloud(scene_name=self.scene_name,
-                                                                  cloud_identifier=self.datum.point_cloud.filename),
+                load_data=lambda: self.decoder.decode_point_cloud(
+                    scene_name=self.scene_name, cloud_identifier=self.datum.point_cloud.filename
+                ),
             )
         return None
 
@@ -454,27 +415,17 @@ class _FrameLazyLoader:
 
     def load_sensor_pose(self) -> SensorPose:
         if self.datum.image:
-            return _pose_dto_to_transformation(
-                dto=self.datum.image.pose, transformation_type=SensorPose
-            )
+            return _pose_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
         else:
-            return _pose_dto_to_transformation(
-                dto=self.datum.point_cloud.pose, transformation_type=SensorPose
-            )
+            return _pose_dto_to_transformation(dto=self.datum.point_cloud.pose, transformation_type=SensorPose)
 
-    def load_annotations(
-            self, identifier: AnnotationIdentifier, annotation_type: Type[T]
-    ) -> T:
+    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> T:
         if issubclass(annotation_type, BoundingBoxes3D):
-            dto = self.decoder.decode_bounding_boxes_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
+            dto = self.decoder.decode_bounding_boxes_3d(scene_name=self.scene_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
-                pose = _pose_dto_to_transformation(
-                    dto=box_dto.box.pose, transformation_type=AnnotationPose
-                )
+                pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
                 box = BoundingBox3D(
                     pose=pose,
                     width=box_dto.box.width,
@@ -486,30 +437,31 @@ class _FrameLazyLoader:
                 )
                 box_list.append(box)
 
-            return BoundingBoxes3D(boxes=box_list,
-                                   class_map=self.class_map)
+            return BoundingBoxes3D(boxes=box_list, class_map=self.class_map)
         elif issubclass(annotation_type, BoundingBoxes2D):
-            dto = self.decoder.decode_bounding_boxes_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
+            dto = self.decoder.decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
                 user_data = json.loads(box_dto.attributes.user_data)
 
-                box = BoundingBox2D(x=box_dto.box.x, y=box_dto.box.y, width=box_dto.box.w, height=box_dto.box.h,
-                                    class_id=box_dto.class_id, instance_id=box_dto.instance_id,
-                                    visibility=float(user_data["visibility"]))
+                box = BoundingBox2D(
+                    x=box_dto.box.x,
+                    y=box_dto.box.y,
+                    width=box_dto.box.w,
+                    height=box_dto.box.h,
+                    class_id=box_dto.class_id,
+                    instance_id=box_dto.instance_id,
+                    visibility=float(user_data["visibility"]),
+                )
                 box_list.append(box)
 
-            return BoundingBoxes2D(boxes=box_list,
-                                   class_map=self.class_map)
+            return BoundingBoxes2D(boxes=box_list, class_map=self.class_map)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self.decoder.decode_semantic_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return SemanticSegmentation3D(mask=segmentation_mask,
-                                          class_map=self.class_map)
+            return SemanticSegmentation3D(mask=segmentation_mask, class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self.decoder.decode_instance_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
@@ -519,8 +471,7 @@ class _FrameLazyLoader:
             segmentation_mask = self.decoder.decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return SemanticSegmentation2D(mask=segmentation_mask,
-                                          class_map=self.class_map)
+            return SemanticSegmentation2D(mask=segmentation_mask, class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             segmentation_mask = self.decoder.decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
@@ -528,7 +479,7 @@ class _FrameLazyLoader:
             return InstanceSegmentation2D(mask=segmentation_mask)
 
     def load_available_annotation_types(
-            self,
+        self,
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         if self.datum.image:
             type_to_path = self.datum.image.annotations
@@ -537,15 +488,9 @@ class _FrameLazyLoader:
         return {_annotation_type_map[k]: v for k, v in type_to_path.items()}
 
 
-def _pose_dto_to_transformation(
-        dto: PoseDTO, transformation_type: Type[TransformType]
-) -> TransformType:
+def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
     transform = transformation_type(
-        quaternion=Quaternion(
-            dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz
-        ),
+        quaternion=Quaternion(dto.rotation.qw, dto.rotation.qx, dto.rotation.qy, dto.rotation.qz),
         translation=np.array([dto.translation.x, dto.translation.y, dto.translation.z]),
     )
-    return transformation_type.from_transformation_matrix(
-        _DGP_TO_INTERNAL_CS @ transform.transformation_matrix
-    )
+    return transformation_type.from_transformation_matrix(_DGP_TO_INTERNAL_CS @ transform.transformation_matrix)
