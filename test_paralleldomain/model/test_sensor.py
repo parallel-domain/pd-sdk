@@ -1,7 +1,8 @@
 import time
 
 import numpy as np
-from paralleldomain import Scene, Dataset
+
+from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, List, cast, Callable, Union, TypeVar, Type
+from typing import Callable, Dict, List, Optional, Type, TypeVar, Union, cast
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -15,16 +15,16 @@ except ImportError:
 import numpy as np
 
 from paralleldomain.model.annotation import (
-    BoundingBox3D,
     Annotation,
     AnnotationType,
-    VirtualAnnotation,
+    BoundingBox3D,
+    InstanceSegmentation2D,
     PolygonSegmentation2D,
     SemanticSegmentation2D,
-    InstanceSegmentation2D,
+    VirtualAnnotation,
 )
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import SensorName, FrameId, AnnotationIdentifier
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
 
 T = TypeVar("T")
 
@@ -224,7 +224,7 @@ class PointInfo(Enum):
     X = "X"
     Y = "Y"
     Z = "Z"
-    I = "INTENSITY"
+    I = "INTENSITY"  # noqa: E741
     R = "R"
     G = "G"
     B = "B"
@@ -254,7 +254,7 @@ class ImageData(SensorData):
     @property
     def coordinates(self) -> np.ndarray:
         shape = self._data_rgba.shape
-        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing='ij')
+        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
         return np.stack([y_coords, x_coords], axis=-1)
 
 

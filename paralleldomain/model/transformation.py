@@ -3,8 +3,9 @@ from __future__ import annotations as ann
 from typing import List, Optional, Union
 
 import numpy as np
-from paralleldomain.utilities.coordinate_system import CoordinateSystem, INTERNAL_COORDINATE_SYSTEM
 from pyquaternion import Quaternion
+
+from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 
 
 class Transformation:
@@ -61,6 +62,7 @@ class Transformation:
     @property
     def rotation_quaternion(self) -> np.ndarray:
         return self._Rq.elements
+
     @property
     def rpy(self) -> List[float]:
         return [
@@ -80,19 +82,25 @@ class Transformation:
         return Transformation(quaternion=quat, translation=translation)
 
     @classmethod
-    def from_euler_angles(cls, yaw: float, pitch: float, roll: float,
-                          translation: Optional[np.ndarray] = None,
-                          is_degrees: bool = False, order: str = "rpy",
-                          coordinate_system: Optional[Union[str, CoordinateSystem]] = None) \
-            -> "Transformation":
+    def from_euler_angles(
+        cls,
+        yaw: float,
+        pitch: float,
+        roll: float,
+        translation: Optional[np.ndarray] = None,
+        is_degrees: bool = False,
+        order: str = "rpy",
+        coordinate_system: Optional[Union[str, CoordinateSystem]] = None,
+    ) -> "Transformation":
         if translation is None:
-            translation = np.array([0., 0., 0.])
+            translation = np.array([0.0, 0.0, 0.0])
 
         if coordinate_system is None:
             coordinate_system = INTERNAL_COORDINATE_SYSTEM
         elif isinstance(coordinate_system, str):
             coordinate_system = CoordinateSystem(axis_directions=coordinate_system)
 
-        quat = coordinate_system.quaternion_from_rpy(yaw=yaw, pitch=pitch, roll=roll,
-                                                     is_degrees=is_degrees, order=order)
+        quat = coordinate_system.quaternion_from_rpy(
+            yaw=yaw, pitch=pitch, roll=roll, is_degrees=is_degrees, order=order
+        )
         return cls(quaternion=quat, translation=translation)

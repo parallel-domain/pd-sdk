@@ -1,6 +1,7 @@
 from sys import getsizeof
 
 import pytest
+
 from paralleldomain import Scene
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -29,7 +30,6 @@ class TestSceneFrames:
         assert frame.frame_id == frame_id
 
 
-
 class TestSceneSensors:
     def test_lazy_sensor_name_loading(self, scene: Scene):
         sensors = scene.sensors
@@ -46,7 +46,7 @@ class TestSceneSensors:
         assert len(lidar_names) > 0
         assert len(scene.lidars) == len(lidar_names)
 
-    def test_lazy_sensor_name_loading(self, scene: Scene):
+    def test_lazy_sensor_name_loading_cache(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
         pre_size = LAZY_LOAD_CACHE.currsize
         sensor_names = scene.sensor_names  # counts as one item / one list of size 1

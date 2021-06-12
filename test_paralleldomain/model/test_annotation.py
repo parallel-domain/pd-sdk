@@ -2,9 +2,10 @@ import time
 
 import numpy as np
 import pytest
-from paralleldomain import Scene, Dataset
+
+from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D, BoundingBox2D
+from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
 
 
 class TestSensorFrame:
@@ -12,9 +13,7 @@ class TestSensorFrame:
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         lidar_sensor = next(iter(frame.lidar_frames))
-        boxes = lidar_sensor.get_annotations(
-            annotation_type=AnnotationTypes.BoundingBoxes3D
-        )
+        boxes = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
 
         assert isinstance(boxes.boxes, list)
         assert len(boxes.boxes) > 0
@@ -32,9 +31,7 @@ class TestSensorFrame:
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[5])
         camera_sensor = next(iter(frame.camera_frames))
-        boxes = camera_sensor.get_annotations(
-            annotation_type=AnnotationTypes.BoundingBoxes2D
-        )
+        boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
 
         assert isinstance(boxes.boxes, list)
         assert len(boxes.boxes) > 0
@@ -55,9 +52,7 @@ class TestSensorFrame:
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[5])
         camera_sensor = next(iter(frame.camera_frames))
-        flow = camera_sensor.get_annotations(
-            annotation_type=AnnotationTypes.OpticalFlow
-        )
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
 
         assert flow is not None
         image = camera_sensor.image.rgb
@@ -77,6 +72,7 @@ class TestSensorFrame:
             for x in range(rgb.shape[1]):
                 assert np.all(coordinates[y, x] == np.array([y, x]))
 
+    """
     @pytest.skip
     def test_image_warp(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
@@ -103,4 +99,4 @@ class TestSensorFrame:
         import cv2
         cv2.imshow("window_name", next_image[..., [2,1,0]])
         cv2.waitKey()
-
+    """

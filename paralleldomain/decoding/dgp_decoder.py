@@ -3,65 +3,59 @@ import logging
 from collections import namedtuple
 from datetime import datetime
 from functools import lru_cache
-from typing import Union, List, cast, BinaryIO, Dict, Optional, Type, TypeVar, Callable
+from typing import BinaryIO, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
+
 import imageio
 import numpy as np
-from paralleldomain.model.class_mapping import ClassMap
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp_dto import (
-    DatasetDTO,
-    DatasetMetaDTO,
-    SceneDTO,
-    CalibrationDTO,
+    AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
+    CalibrationDTO,
     CalibrationExtrinsicDTO,
     CalibrationIntrinsicDTO,
-    SceneDataDTO,
-    SceneSampleDTO,
+    DatasetDTO,
+    DatasetMetaDTO,
     PoseDTO,
     SceneDataDatum,
-    AnnotationsBoundingBox2DDTO,
+    SceneDataDTO,
+    SceneDTO,
+    SceneSampleDTO,
 )
 from paralleldomain.model.annotation import (
     Annotation,
+    AnnotationPose,
     AnnotationType,
     AnnotationTypes,
+    BoundingBox2D,
     BoundingBox3D,
-    SemanticSegmentation3D,
-    AnnotationPose,
-    BoundingBoxes3D,
-    SemanticSegmentation2D,
-    InstanceSegmentation3D,
-    InstanceSegmentation2D,
     BoundingBoxes2D,
-    BoundingBox2D, OpticalFlow,
+    BoundingBoxes3D,
+    InstanceSegmentation2D,
+    InstanceSegmentation3D,
+    OpticalFlow,
+    SemanticSegmentation2D,
+    SemanticSegmentation3D,
 )
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
-    PointCloudData,
-    ImageData,
-    SensorFrame,
-    SensorPose,
-    SensorExtrinsic,
-    SensorIntrinsic,
-    Sensor,
-    LidarSensor,
     CameraSensor,
+    ImageData,
+    LidarSensor,
+    PointCloudData,
+    Sensor,
+    SensorExtrinsic,
+    SensorFrame,
+    SensorIntrinsic,
+    SensorPose,
 )
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import (
-    SensorName,
-    SceneName,
-    FrameId,
-    AnnotationIdentifier,
-)
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.coordinate_system import (
-    CoordinateSystem,
-    INTERNAL_COORDINATE_SYSTEM,
-)
+from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 
 logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
@@ -310,15 +304,15 @@ class DGPDecoder(Decoder):
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list(set([datum.id.name for datum in scene_dto.data]))
+        return list({datum.id.name for datum in scene_dto.data})
 
     def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list(set([datum.id.name for datum in scene_dto.data if datum.datum.image]))
+        return list({datum.id.name for datum in scene_dto.data if datum.datum.image})
 
     def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list(set([datum.id.name for datum in scene_dto.data if datum.datum.point_cloud]))
+        return list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud})
 
     def decode_sensor(
         self,
@@ -401,9 +395,9 @@ class _FrameLazyLoader:
             sensor_name=self.sensor_name,
         )
 
-        if dto.fisheye == True:
+        if dto.fisheye is True:
             camera_model = "fisheye"
-        elif dto.fisheye == False:
+        elif dto.fisheye is False:
             camera_model = "brown_conrady"
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
