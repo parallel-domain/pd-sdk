@@ -1,10 +1,10 @@
-name: "black-formatter"
+name: "black-flake8"
 on:
   pull_request:
     branches:
       - main
 jobs:
-  format:
+  black-format:
     # Check if the PR is not from a fork
     # Due to token restrictions on public repository forks these workflows do not work for pull requests raised from forks.
     # Private repositories can be configured to enable workflows from forks to run without restriction.
@@ -29,3 +29,15 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "Black formatted"
           git push
+  flake8-lint:
+    needs: black-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - uses: TrueBrain/actions-flake8@v2
+        with:
+          max_line_length: 120
+          only_warn: 1
