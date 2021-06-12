@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   black-format:
-    # Check if the PR is not from a fork
+    # Check if the PR is not from a fork.
     # Due to token restrictions on public repository forks these workflows do not work for pull requests raised from forks.
     # Private repositories can be configured to enable workflows from forks to run without restriction.
     if: github.event.pull_request.head.repo.full_name == github.repository
