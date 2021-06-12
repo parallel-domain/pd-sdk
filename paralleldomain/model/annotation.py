@@ -27,6 +27,7 @@ class VirtualAnnotation:
     Use Multiple Inheritance for annotations which are not part of the DGP output,
     but are calculated through SDK.
     """
+
     ...
 
 
@@ -79,8 +80,9 @@ class SemanticSegmentation2D(ImageMask):
 
 
 class PolygonSegmentation2D(Annotation, VirtualAnnotation):
-    def __init__(self, semseg2d: Optional[SemanticSegmentation2D] = None,
-                 instanceseg2d: Optional[InstanceSegmentation2D] = None):
+    def __init__(
+        self, semseg2d: Optional[SemanticSegmentation2D] = None, instanceseg2d: Optional[InstanceSegmentation2D] = None
+    ):
         self._semseg2d = semseg2d
         self._instanceseg2d = instanceseg2d
         self._polygons = None
@@ -98,21 +100,15 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
         self._polygons = [Polygon2D.from_rasterio_polygon(p[0]) for p in polygons]
 
     def _build_polygon_tree(self) -> None:
-        """ Compare LinearRings on tuple-level so it is hashable for performance
+        """Compare LinearRings on tuple-level so it is hashable for performance
 
         :return:
         """
-        child_by_parent = {
-            p_interior: p
-            for p in self._polygons
-            for p_interior in p.interior_points
-        }
+        child_by_parent = {p_interior: p for p in self._polygons for p_interior in p.interior_points}
 
         for child_polygon in self._polygons:
             if child_polygon.exterior_points in child_by_parent:
-                child_polygon.set_parent(
-                    child_by_parent[child_polygon.exterior_points]
-                )
+                child_polygon.set_parent(child_by_parent[child_polygon.exterior_points])
 
 
 @dataclass
@@ -188,12 +184,9 @@ class Polygon2D:
         self._parent = parent
 
     @staticmethod
-    def from_rasterio_polygon(polygon_dict: Dict[str: Any]):
+    def from_rasterio_polygon(polygon_dict: Dict[str:Any]):
         coordinates = polygon_dict["coordinates"]
-        polygon = Polygon(
-            coordinates[0],
-            holes=coordinates[1:]
-        )
+        polygon = Polygon(coordinates[0], holes=coordinates[1:])
 
         return Polygon2D(polygon=polygon)
 
