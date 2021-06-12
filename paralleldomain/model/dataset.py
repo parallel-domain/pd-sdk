@@ -23,7 +23,6 @@ class DatasetMeta:
 
 
 class DatasetDecoderProtocol(SceneDecoderProtocol, Protocol):
-
     def decode_scene_names(self) -> List[SceneName]:
         pass
 
@@ -40,8 +39,7 @@ class Dataset:
 
     def _load_scene(self, scene_name: SceneName):
         if scene_name not in self._scenes:
-            self._scenes[scene_name] = Scene.from_decoder(scene_name=scene_name,
-                                                          decoder=self._decoder)
+            self._scenes[scene_name] = Scene.from_decoder(scene_name=scene_name, decoder=self._decoder)
 
     @property
     def scene_names(self) -> List[SceneName]:

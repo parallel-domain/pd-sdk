@@ -16,8 +16,7 @@ class TestClassMap:
 class TestLabelMapping:
     def test_label_mapping(self):
         label_mapping = {"Car": "car", "Pedestrian": "ped", "Rider": "ped"}
-        label_map = LabelMapping(label_mapping=label_mapping,
-                                 on_not_defined=OnLabelNotDefined.RAISE_ERROR)
+        label_map = LabelMapping(label_mapping=label_mapping, on_not_defined=OnLabelNotDefined.RAISE_ERROR)
         for label in list(label_mapping.keys()):
             assert label_map[label] == label_mapping[label]
 
@@ -26,8 +25,7 @@ class TestLabelMapping:
 
     def test_label_mapping_return_identity(self):
         label_mapping = {"Car": "car", "Pedestrian": "ped", "Rider": "ped"}
-        label_map = LabelMapping(label_mapping=label_mapping,
-                                 on_not_defined=OnLabelNotDefined.KEEP_LABEL)
+        label_map = LabelMapping(label_mapping=label_mapping, on_not_defined=OnLabelNotDefined.KEEP_LABEL)
         for label in list(label_mapping.keys()):
             assert label_map[label] == label_mapping[label]
 
@@ -36,8 +34,7 @@ class TestLabelMapping:
 
     def test_label_mapping_discard(self):
         label_mapping = {"Car": "car", "Pedestrian": "ped", "Rider": "ped"}
-        label_map = LabelMapping(label_mapping=label_mapping,
-                                 on_not_defined=OnLabelNotDefined.DISCARD_LABEL)
+        label_map = LabelMapping(label_mapping=label_mapping, on_not_defined=OnLabelNotDefined.DISCARD_LABEL)
         for label in list(label_mapping.keys()):
             assert label_map[label] == label_mapping[label]
 
@@ -46,11 +43,9 @@ class TestLabelMapping:
 
     def test_map_chaining(self):
         label_mapping = {"Car": "car", "Pedestrian": "ped", "Rider": "rider"}
-        label_map = LabelMapping(label_mapping=label_mapping,
-                                 on_not_defined=OnLabelNotDefined.RAISE_ERROR)
+        label_map = LabelMapping(label_mapping=label_mapping, on_not_defined=OnLabelNotDefined.RAISE_ERROR)
         label_mapping2 = {"car": "thing", "ped": "thing", "rider": "Rider"}
-        label_map2 = LabelMapping(label_mapping=label_mapping2,
-                                  on_not_defined=OnLabelNotDefined.RAISE_ERROR)
+        label_map2 = LabelMapping(label_mapping=label_mapping2, on_not_defined=OnLabelNotDefined.RAISE_ERROR)
 
         chained_map = label_map2 @ label_map
         for label in list(label_mapping.keys()):

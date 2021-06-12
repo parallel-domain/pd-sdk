@@ -19,4 +19,5 @@ setup(
             "pytest-cov>=2.8.1",
         ]
     },
-    zip_safe=False)
+    zip_safe=False,
+)

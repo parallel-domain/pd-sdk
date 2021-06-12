@@ -13,9 +13,7 @@ class TestSensorFrame:
         sensors = frame.available_sensors
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
         sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
-        boxes = sensor_frame.get_annotations(
-            annotation_type=AnnotationTypes.BoundingBoxes3D
-        )
+        boxes = sensor_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
 
         assert isinstance(boxes.boxes, list)
         assert len(boxes.boxes) > 0
@@ -35,9 +33,7 @@ class TestSensorFrame:
         sensors = frame.available_sensors
         camera_sensor = next(iter([s for s in sensors if s.startswith("cam")]))
         sensor_frame = frame.get_sensor(sensor_name=camera_sensor)
-        boxes = sensor_frame.get_annotations(
-            annotation_type=AnnotationTypes.BoundingBoxes2D
-        )
+        boxes = sensor_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
 
         assert isinstance(boxes.boxes, list)
         assert len(boxes.boxes) > 0
