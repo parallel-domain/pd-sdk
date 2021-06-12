@@ -5,10 +5,7 @@ from typing import List, Optional, Union
 import numpy as np
 from pyquaternion import Quaternion
 
-from paralleldomain.utilities.coordinate_system import (
-    INTERNAL_COORDINATE_SYSTEM,
-    CoordinateSystem,
-)
+from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 
 
 class Transformation:

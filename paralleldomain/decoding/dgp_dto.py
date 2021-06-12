@@ -1,13 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
-from dataclasses_json import (
-    CatchAll,
-    DataClassJsonMixin,
-    Undefined,
-    config,
-    dataclass_json,
-)
+from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
 
 
 @dataclass_json

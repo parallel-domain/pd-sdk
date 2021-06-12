@@ -5,11 +5,7 @@ import pytest
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.model.annotation import (
-    AnnotationTypes,
-    BoundingBox2D,
-    BoundingBox3D,
-)
+from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
 
 
 class TestSensorFrame:

@@ -53,17 +53,9 @@ from paralleldomain.model.sensor import (
     SensorPose,
 )
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import (
-    AnnotationIdentifier,
-    FrameId,
-    SceneName,
-    SensorName,
-)
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.coordinate_system import (
-    INTERNAL_COORDINATE_SYSTEM,
-    CoordinateSystem,
-)
+from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 
 logger = logging.getLogger(__name__)
 MAX_CALIBRATIONS_TO_CACHE = 10
