@@ -1,8 +1,13 @@
-name: auto-format
-on: pull_request
+name: "black-formatter"
+on:
+  pull_request:
+    branches:
+      - main
 jobs:
   format:
     # Check if the PR is not from a fork
+    # Due to token restrictions on public repository forks these workflows do not work for pull requests raised from forks.
+    # Private repositories can be configured to enable workflows from forks to run without restriction.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
@@ -19,8 +24,8 @@ jobs:
       - name: Push changes
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          git config --global user.name 'xxx'
-          git config --global user.email 'xxxs@users.noreply.github.com'
+          git config --global user.name 'pd-github-actions'
+          git config --global user.email 'github-actions@paralleldomain.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git commit -am "Automated changes"
+          git commit -am "Black formatted"
           git push

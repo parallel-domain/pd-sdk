@@ -1,15 +1,14 @@
-name: Python package
-
-on: [ push ]
-
+name: "flake8-linter"
+on:
+  pull_request:
+    branches:
+      - main
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [ 3.6, 3.7, 3.8, 3.9 ]
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}

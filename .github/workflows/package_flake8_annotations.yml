@@ -1,0 +1,17 @@
+name: "flake8-annotations"
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: TrueBrain/actions-flake8@v2
+        with:
+          max_line_length: 120
+          only_warn: 1
