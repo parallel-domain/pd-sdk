@@ -31,12 +31,22 @@ class TestSceneFrames:
 
 
 class TestSceneSensors:
-    def test_lazy_cloud_loading(self, scene: Scene):
+    def test_lazy_sensor_name_loading(self, scene: Scene):
         sensors = scene.sensors
         assert len(sensors) > 0
         assert len(sensors) == len(scene.sensor_names)
 
-    def test_lazy_sensor_name_loading(self, scene: Scene):
+    def test_camera_names_loading(self, scene: Scene):
+        camera_names = scene.camera_names
+        assert len(camera_names) > 0
+        assert len(scene.cameras) == len(camera_names)
+
+    def test_lidar_name_loading(self, scene: Scene):
+        lidar_names = scene.lidar_names
+        assert len(lidar_names) > 0
+        assert len(scene.lidars) == len(lidar_names)
+
+    def test_lazy_sensor_name_loading_cache(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
         pre_size = LAZY_LOAD_CACHE.currsize
         sensor_names = scene.sensor_names  # counts as one item / one list of size 1
@@ -47,6 +57,6 @@ class TestSceneSensors:
         LAZY_LOAD_CACHE.clear()
         sensor_name = scene.sensor_names[0]
         pre_size = LAZY_LOAD_CACHE.currsize
-        sensor = scene.get_sensor(sensor_name=sensor_name)  # sensor objects are not cached
-        assert pre_size == LAZY_LOAD_CACHE.currsize
+        sensor = scene.get_sensor(sensor_name=sensor_name)
+        assert pre_size + getsizeof(sensor) == LAZY_LOAD_CACHE.currsize
         assert sensor.name == sensor_name

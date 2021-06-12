@@ -12,9 +12,13 @@ class Frame:
         date_time: datetime,
         sensor_frame_loader: Callable[[FrameId, SensorName], SensorFrame],
         available_sensors_loader: Callable[[FrameId], List[SensorName]],
+        available_cameras_loader: Callable[[FrameId], List[SensorName]],
+        available_lidars_loader: Callable[[FrameId], List[SensorName]],
     ):
         self._sensor_frame_loader = sensor_frame_loader
         self._available_sensors_loader = available_sensors_loader
+        self._available_cameras_loader = available_cameras_loader
+        self._available_lidars_loader = available_lidars_loader
         self._frame_id = frame_id
         self._date_time = date_time
 
@@ -30,5 +34,25 @@ class Frame:
         return self._sensor_frame_loader(self.frame_id, sensor_name)
 
     @property
-    def available_sensors(self) -> List[str]:
+    def sensor_names(self) -> List[SensorName]:
         return self._available_sensors_loader(self.frame_id)
+
+    @property
+    def camera_names(self) -> List[SensorName]:
+        return self._available_cameras_loader(self.frame_id)
+
+    @property
+    def lidar_names(self) -> List[SensorName]:
+        return self._available_lidars_loader(self.frame_id)
+
+    @property
+    def sensor_frames(self) -> List[SensorFrame]:
+        return [self.get_sensor(sensor_name=name) for name in self.sensor_names]
+
+    @property
+    def camera_frames(self) -> List[SensorFrame]:
+        return [self.get_sensor(sensor_name=name) for name in self.camera_names]
+
+    @property
+    def lidar_frames(self) -> List[SensorFrame]:
+        return [self.get_sensor(sensor_name=name) for name in self.lidar_names]

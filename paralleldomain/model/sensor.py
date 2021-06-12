@@ -251,6 +251,12 @@ class ImageData(SensorData):
     def rgb(self) -> np.ndarray:
         return self._data_rgba[:, :, :3]
 
+    @property
+    def coordinates(self) -> np.ndarray:
+        shape = self._data_rgba.shape
+        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
+        return np.stack([y_coords, x_coords], axis=-1)
+
 
 class PointCloudData(SensorData):
     def __init__(self, unique_cache_key: str, point_format: List[str], load_data: Callable[[], np.ndarray]):

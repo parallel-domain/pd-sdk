@@ -3,7 +3,7 @@ import logging
 from collections import namedtuple
 from datetime import datetime
 from functools import lru_cache
-from typing import BinaryIO, Dict, List, Optional, Type, TypeVar, Union, cast
+from typing import BinaryIO, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
 
 import imageio
 import numpy as np
@@ -35,14 +35,18 @@ from paralleldomain.model.annotation import (
     BoundingBoxes3D,
     InstanceSegmentation2D,
     InstanceSegmentation3D,
+    OpticalFlow,
     SemanticSegmentation2D,
     SemanticSegmentation3D,
 )
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.sensor import (
+    CameraSensor,
     ImageData,
+    LidarSensor,
     PointCloudData,
+    Sensor,
     SensorExtrinsic,
     SensorFrame,
     SensorIntrinsic,
@@ -77,7 +81,7 @@ _annotation_type_map: Dict[str, Type[Annotation]] = {
     "5": AnnotationTypes.InstanceSegmentation3D,
     "6": Annotation,  # Depth
     "7": Annotation,  # Surface Normals 3D
-    "8": Annotation,  # Motion Vectors 2D aka Optical Flow
+    "8": AnnotationTypes.OpticalFlow,
     "9": Annotation,  # Motion Vectors 3D aka Scene Flow
     "10": Annotation,  # Surface normals 2D
 }
@@ -138,6 +142,13 @@ _default_labels: List[DGPLabel] = [
 ]
 
 default_map = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
+
+
+def pack_int_sequence(sequence: np.ndarray) -> np.int32:
+    out = 0
+    for i, val in enumerate(sequence):
+        out = (val << (8 * i)) | out
+    return out
 
 
 class DGPDecoder(Decoder):
@@ -250,6 +261,14 @@ class DGPDecoder(Decoder):
             image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
             return image_data
 
+    def decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
+            vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
+
+            return vectors
+
     def decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
@@ -294,6 +313,30 @@ class DGPDecoder(Decoder):
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         return list({datum.id.name for datum in scene_dto.data})
+
+    def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        return list({datum.id.name for datum in scene_dto.data if datum.datum.image})
+
+    def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        return list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud})
+
+    def decode_sensor(
+        self,
+        scene_name: SceneName,
+        sensor_name: SensorName,
+        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+    ) -> Sensor:
+        sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
+        data = next(iter(sensor_data.values()))
+
+        if data.datum.point_cloud:
+            return LidarSensor(sensor_name=sensor_name, sensor_frame_factory=sensor_frame_factory)
+        elif data.datum.image:
+            return CameraSensor(sensor_name=sensor_name, sensor_frame_factory=sensor_frame_factory)
+
+        raise ValueError(f"Unknown Sensor type {sensor_name}!")
 
     def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
         # sample of current frame
@@ -473,6 +516,11 @@ class _FrameLazyLoader:
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation2D(mask=segmentation_mask, class_map=self.class_map)
+        elif issubclass(annotation_type, OpticalFlow):
+            flow_vectors = self.decoder.decode_optical_flow(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return OpticalFlow(vectors=flow_vectors)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             segmentation_mask = self.decoder.decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier

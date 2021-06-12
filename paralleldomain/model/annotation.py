@@ -66,6 +66,11 @@ class InstanceSegmentation2D(ImageMask):
     ...
 
 
+@dataclass
+class OpticalFlow(Annotation):
+    vectors: np.ndarray
+
+
 class SemanticSegmentation2D(ImageMask):
     def __init__(self, mask: np.ndarray, class_map: ClassMap):
         super().__init__(mask=mask)
@@ -199,3 +204,4 @@ class AnnotationTypes:
     SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D
     InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D
     PolygonSegmentation2D: Type[PolygonSegmentation2D] = PolygonSegmentation2D
+    OpticalFlow: Type[OpticalFlow] = OpticalFlow
