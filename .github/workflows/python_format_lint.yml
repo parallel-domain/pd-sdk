@@ -40,4 +40,4 @@ jobs:
       - uses: TrueBrain/actions-flake8@v2
         with:
           max_line_length: 120
-          ignore: F401, F407
+          ignore: "F401,F407"
