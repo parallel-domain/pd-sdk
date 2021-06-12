@@ -4,22 +4,10 @@ on:
     branches:
       - main
 jobs:
-  isort:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.6
-      - uses: jamescurtin/isort-action@master
-        with:
-          configuration: "--profile black --line-length 120"
-          requirementsFiles: "requirements.txt"
   black-format:
     # Check if the PR is not from a fork.
     # Due to token restrictions on public repository forks these workflows do not work for pull requests raised from forks.
     # Private repositories can be configured to enable workflows from forks to run without restriction.
-    needs: isort
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
