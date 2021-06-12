@@ -10,15 +10,15 @@ jobs:
       - name: black
         uses: lgeiger/black-action@v1.0.1
         with:
-          args: .
+          args: --line-length 120 .
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
       - name: Push changes
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          git config --global user.name 'Peter Evans'
-          git config --global user.email 'peter-evans@users.noreply.github.com'
+          git config --global user.name 'xxx'
+          git config --global user.email 'xxx@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout $GITHUB_HEAD_REF
           git commit -am "Automated changes"
