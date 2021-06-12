@@ -13,7 +13,7 @@ jobs:
           python-version: 3.6
       - uses: jamescurtin/isort-action@master
         with:
-          configuration: "--profile=black --line-length=120"
+          configuration: "--profile black --line-length 120"
           requirementsFiles: "requirements.txt"
   black-format:
     # Check if the PR is not from a fork.
