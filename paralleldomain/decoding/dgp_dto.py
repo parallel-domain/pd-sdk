@@ -173,14 +173,6 @@ class CalibrationDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class BoundingBox3DAttributesDTO(DataClassJsonMixin):
-    vehicle_type: str
-    point_cache: Optional[str] = None
-    parked_vehicle: Optional[str] = None
-
-
-@dataclass_json
-@dataclass
 class BoundingBox3DBoxDTO(DataClassJsonMixin):
     pose: PoseDTO
     width: float
@@ -197,7 +189,7 @@ class BoundingBox3DDTO(DataClassJsonMixin):
     instance_id: int
     num_points: int
     box: BoundingBox3DBoxDTO
-    attributes: BoundingBox3DAttributesDTO
+    attributes: Dict[str, Any]  # BoundingBox3DAttributesDTO
 
 
 @dataclass_json

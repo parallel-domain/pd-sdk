@@ -483,6 +483,7 @@ class _FrameLazyLoader:
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
+                    attributes=box_dto.attributes,
                 )
                 box_list.append(box)
 
