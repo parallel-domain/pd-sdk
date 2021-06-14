@@ -7,13 +7,16 @@ from paralleldomain.model.type_aliases import FrameId, SensorName
 
 
 class Frame:
-    def __init__(self, frame_id: FrameId, date_time: datetime,
-                 sensor_frame_loader: Callable[[FrameId, SensorName], SensorFrame],
-                 available_sensors_loader: Callable[[FrameId], List[SensorName]],
-                 ego_frame_loader: Callable[[FrameId], EgoFrame],
-                 available_cameras_loader: Callable[[FrameId], List[SensorName]],
-                 available_lidars_loader: Callable[[FrameId], List[SensorName]],
-                 ):
+    def __init__(
+        self,
+        frame_id: FrameId,
+        date_time: datetime,
+        sensor_frame_loader: Callable[[FrameId, SensorName], SensorFrame],
+        available_sensors_loader: Callable[[FrameId], List[SensorName]],
+        ego_frame_loader: Callable[[FrameId], EgoFrame],
+        available_cameras_loader: Callable[[FrameId], List[SensorName]],
+        available_lidars_loader: Callable[[FrameId], List[SensorName]],
+    ):
         self._ego_frame_loader = ego_frame_loader
         self._sensor_frame_loader = sensor_frame_loader
         self._available_sensors_loader = available_sensors_loader
