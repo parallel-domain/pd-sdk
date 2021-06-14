@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Callable, cast
+from typing import Callable, Dict, List, Optional, Tuple, cast
 
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
@@ -9,9 +9,9 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
 from paralleldomain.model.frame import Frame
-from paralleldomain.model.sensor import Sensor, SensorFrame, CameraSensor, LidarSensor
+from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 
 class SceneDecoderProtocol(Protocol):

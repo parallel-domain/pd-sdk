@@ -1,12 +1,7 @@
 from dataclasses import dataclass, field
-from dataclasses_json import (
-    dataclass_json,
-    Undefined,
-    CatchAll,
-    config,
-    DataClassJsonMixin,
-)
-from typing import List, Dict, Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+
+from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
 
 
 @dataclass_json
@@ -165,7 +160,7 @@ class CalibrationIntrinsicDTO(DataClassJsonMixin):
     k6: float = 0.0
     skew: float = 0.0
     fov: float = 0.0
-    fisheye: Union[bool,int] = 0
+    fisheye: Union[bool, int] = 0
 
 
 @dataclass_json
@@ -242,6 +237,7 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     iscrowd: bool
     box: BoundingBox2DBoxDTO
     attributes: BoundingBox2DAttributesDTO
+
 
 @dataclass_json
 @dataclass

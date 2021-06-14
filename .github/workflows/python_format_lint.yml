@@ -1,0 +1,43 @@
+name: "black-flake8"
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  black-format:
+    # Check if the PR is not from a fork.
+    # Due to token restrictions on public repository forks these workflows do not work for pull requests raised from forks.
+    # Private repositories can be configured to enable workflows from forks to run without restriction.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          ref: ${{ github.head_ref }}
+      - name: black
+        uses: lgeiger/black-action@v1.0.1
+        with:
+          args: --line-length 120 .
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'pd-github-actions'
+          git config --global user.email 'github-actions@paralleldomain.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "Black formatted"
+          git push
+  flake8-lint:
+    needs: black-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - uses: TrueBrain/actions-flake8@v2
+        with:
+          max_line_length: 120
+          ignore: "F401,F407"

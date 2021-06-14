@@ -1,4 +1,5 @@
 import pytest
+
 from paralleldomain import Scene
 from paralleldomain.model.frame import Frame
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Callable, Tuple, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import SensorFrame

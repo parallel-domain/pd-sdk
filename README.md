@@ -1,18 +1,14 @@
-```python
-from paralleldomain import Dataset
+# Parallel Domain SDK
 
-DATA = "/home/nisseknudsen/Data/artifacts/9040ecc0-add7-11eb-b7f0-70cf4959843a"
+## Installation
+`git clone git@github.com:parallel-domain/pd-sdk.git`
 
-ds = Dataset.from_path(DATA)
+`cd pd-sdk`
 
-ds.scenes.keys()
+`pip install -e .`
 
-print(ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations.available_annotation_types)
-# OR
-print(ds.scenes["scene_000000"].sensors["camera_04"].frames[0].annotations.available_annotation_types)
+## Developer Setup
+1. Follow Installation steps above
+2. `pre-commit install`
 
-# only Type 1 (BB3D) currently supported
-annotations = ds.scenes["scene_000000"].frames[0].sensors["camera_04"].annotations[1]  # returns map
-
-
-```
+Everytime you commit, pre-commit hooks execute on the staged files. These reduces time on CI when creating a PR for `main` branch.

@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime
-from typing import List, Dict, Callable
+from typing import Callable, Dict, List
 
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.ego import EgoFrame

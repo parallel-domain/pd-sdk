@@ -1,8 +1,9 @@
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from cloudpathlib import CloudPath
+
 from paralleldomain.utilities.any_path import AnyPath
-from pathlib import Path
 
 
 def test_resolving():

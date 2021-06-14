@@ -1,14 +1,16 @@
-import pytest
-from paralleldomain import Scene
+import os
 
-from paralleldomain.model.dataset import Dataset
+import pytest
+
+from paralleldomain import Scene
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp_decoder import DGPDecoder
+from paralleldomain.model.dataset import Dataset
 
 
 @pytest.fixture()
 def decoder() -> Decoder:
-    return DGPDecoder(dataset_path="replace this with a url to test!")
+    return DGPDecoder(dataset_path=os.environ["DATASET_PATH"])
 
 
 @pytest.fixture()
