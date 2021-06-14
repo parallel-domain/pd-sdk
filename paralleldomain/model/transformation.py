@@ -78,7 +78,7 @@ class Transformation:
     @property
     def inverse(self) -> "Transformation":
         q_inv = self.quaternion.inverse
-        t_inv = q_inv * self.translation
+        t_inv = -1 * q_inv.rotate(self.translation)
         T_inv = Transformation(q_inv, t_inv)
         return T_inv
 
