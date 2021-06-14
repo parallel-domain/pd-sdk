@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple, cast
 
+from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
@@ -35,6 +36,9 @@ class SceneDecoderProtocol(Protocol):
     def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         pass
 
+    def decode_ego_frame(self, scene_name: SceneName, frame_id: FrameId) -> EgoFrame:
+        pass
+
     def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
         pass
 
@@ -61,6 +65,9 @@ class Scene:
                 scene_name=self.name, frame_id=frame_id, sensor_name=sensor_name
             ),
         )
+
+    def _load_ego_frame(self, frame_id: FrameId) -> EgoFrame:
+        return self._decoder.decode_ego_frame(scene_name=self.name, frame_id=frame_id)
 
     def _load_frame_sensors_name(self, frame_id: FrameId) -> List[SensorName]:
         return LAZY_LOAD_CACHE.get_item(
@@ -109,6 +116,7 @@ class Scene:
             available_sensors_loader=self._load_frame_sensors_name,
             available_cameras_loader=self._load_frame_camera_sensors,
             available_lidars_loader=self._load_frame_lidar_sensors,
+            ego_frame_loader=self._load_ego_frame,
         )
 
     @property
@@ -145,20 +153,9 @@ class Scene:
         )
 
     def get_sensor(self, sensor_name: SensorName) -> Sensor:
-        return LAZY_LOAD_CACHE.get_item(
-            key=f"{self._unique_cache_key}-{sensor_name}-get_sensor",
-            loader=lambda: self._decoder.decode_sensor(
-                scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
-            ),
+        return self._decoder.decode_sensor(
+            scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
         )
-        # return self._decoder.decode_sensor(
-        #     scene_name=self.name,
-        #     sensor_name=sensor_name,
-        #     sensor_frame_factory=self._load_sensor_frame,
-        # )
-        # # return self._decoder.decode_sensor(sensor_name=self.name,
-        # #                                    scene_name=sensor_name,
-        # #                                    sensor_frame_factory=self._load_sensor_frame)
 
     @staticmethod
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":

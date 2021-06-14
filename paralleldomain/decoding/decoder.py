@@ -2,19 +2,8 @@ import abc
 from datetime import datetime
 from typing import Callable, Dict, List
 
-import numpy as np
-
-from paralleldomain.decoding.dgp_dto import (
-    AnnotationsBoundingBox3DDTO,
-    AnnotationsDTO,
-    CalibrationDTO,
-    CalibrationExtrinsicDTO,
-    CalibrationIntrinsicDTO,
-    DatasetDTO,
-    SceneDTO,
-)
-from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.dataset import DatasetMeta
+from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import Sensor, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
@@ -59,6 +48,10 @@ class Decoder(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
+        pass
+
+    @abc.abstractmethod
+    def decode_ego_frame(self, scene_name: SceneName, frame_id: FrameId) -> EgoFrame:
         pass
 
     @abc.abstractmethod
