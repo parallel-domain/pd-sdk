@@ -62,8 +62,19 @@ class ImageMask(Annotation):
         return self._mask
 
 
-class InstanceSegmentation2D(ImageMask):
-    ...
+@dataclass
+class InstanceSegmentation2D(Annotation):
+    instance_ids: np.ndarray
+
+    def __post_init__(self):
+        if len(self.instance_ids.shape) != 3:
+            raise ValueError("Instance Segmentation instance_ids have to have shape (H x W x 1)")
+        if self.instance_ids.dtype != np.int:
+            raise ValueError(
+                f"Instance Segmentation instance_ids has to contain only integers but has {self.instance_ids.dtype}!"
+            )
+        if self.instance_ids.shape[2] != 1:
+            raise ValueError("Instance Segmentation instance_ids has to have only 1 channel!")
 
 
 @dataclass
@@ -71,14 +82,20 @@ class OpticalFlow(Annotation):
     vectors: np.ndarray
 
 
-class SemanticSegmentation2D(ImageMask):
-    def __init__(self, mask: np.ndarray, class_map: ClassMap):
-        super().__init__(mask=mask)
-        self.class_map = class_map
+@dataclass
+class SemanticSegmentation2D(Annotation):
+    class_ids: np.ndarray
+    class_map: ClassMap
 
-    @property
-    def labels(self) -> np.ndarray:
-        return self._mask[:, :, 0]
+    def __post_init__(self):
+        if len(self.class_ids.shape) != 3:
+            raise ValueError("Semantic Segmentation class_ids have to have shape (H x W x 1)")
+        if self.class_ids.dtype != np.int:
+            raise ValueError(
+                f"Semantic Segmentation class_ids has to contain only integers but has {self.class_ids.dtype}!"
+            )
+        if self.class_ids.shape[2] != 1:
+            raise ValueError("Semantic Segmentation class_ids has to have only 1 channel!")
 
 
 class PolygonSegmentation2D(Annotation, VirtualAnnotation):
