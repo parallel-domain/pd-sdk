@@ -3,6 +3,7 @@ import logging
 from collections import namedtuple
 from datetime import datetime
 from functools import lru_cache
+from json import JSONDecodeError
 from typing import BinaryIO, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
 
 import imageio
@@ -475,6 +476,14 @@ class _FrameLazyLoader:
             box_list = []
             for box_dto in dto.annotations:
                 pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
+
+                attr_parsed = {}
+                for k, v in box_dto.attributes.items():
+                    try:
+                        attr_parsed[k] = json.loads(v)
+                    except JSONDecodeError:
+                        attr_parsed[k] = v
+
                 box = BoundingBox3D(
                     pose=pose,
                     width=box_dto.box.width,
@@ -483,7 +492,7 @@ class _FrameLazyLoader:
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
-                    attributes=box_dto.attributes,
+                    attributes=attr_parsed,
                 )
                 box_list.append(box)
 
@@ -493,6 +502,14 @@ class _FrameLazyLoader:
 
             box_list = []
             for box_dto in dto.annotations:
+
+                attr_parsed = {}
+                for k, v in box_dto.attributes.items():
+                    try:
+                        attr_parsed[k] = json.loads(v)
+                    except JSONDecodeError:
+                        attr_parsed[k] = v
+
                 box = BoundingBox2D(
                     x=box_dto.box.x,
                     y=box_dto.box.y,
@@ -500,7 +517,7 @@ class _FrameLazyLoader:
                     height=box_dto.box.h,
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
-                    attributes=box_dto.attributes,
+                    attributes=attr_parsed,
                 )
                 box_list.append(box)
 
