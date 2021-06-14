@@ -47,6 +47,38 @@ class TestSensorFrame:
             assert isinstance(box.class_id, int)
             assert isinstance(boxes.class_map[box.class_id], str)
 
+    def test_instance_seg_loading(self, scene: Scene, dataset: Dataset):
+        assert AnnotationTypes.InstanceSegmentation2D in dataset.available_annotation_types
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[5])
+        camera_sensor = next(iter(frame.camera_frames))
+        id_mask = camera_sensor.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
+
+        assert id_mask is not None
+        instance_ids = id_mask.instance_ids
+        assert instance_ids.shape[2] == 1
+        assert len(instance_ids.shape) == 3
+
+        image = camera_sensor.image.rgb
+        assert image.shape[:2] == instance_ids.shape[:2]
+
+    def test_sem_seg_loading(self, scene: Scene, dataset: Dataset):
+        assert AnnotationTypes.SemanticSegmentation2D in dataset.available_annotation_types
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[5])
+        camera_sensor = next(iter(frame.camera_frames))
+        semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+
+        assert semseg is not None
+        class_ids = semseg.class_ids
+        assert class_ids.shape[2] == 1
+        assert len(class_ids.shape) == 3
+
+        image = camera_sensor.image.rgb
+        assert image.shape[:2] == class_ids.shape[:2]
+
     def test_optical_flow_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
