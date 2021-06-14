@@ -16,7 +16,7 @@ class EgoFrame:
     This Objects contains informations of a frame of the Ego vehicle/drone/person the sensor rig was attached to.
     """
 
-    def __init__(self,  unique_cache_key: str, pose_loader: Callable[[], EgoPose]):
+    def __init__(self, unique_cache_key: str, pose_loader: Callable[[], EgoPose]):
         self._unique_cache_key = unique_cache_key
         self._pose_loader = pose_loader
 

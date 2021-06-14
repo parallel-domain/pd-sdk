@@ -67,9 +67,7 @@ class Scene:
         )
 
     def _load_ego_frame(self, frame_id: FrameId) -> EgoFrame:
-        return self._decoder.decode_ego_frame(
-                scene_name=self.name, frame_id=frame_id
-            )
+        return self._decoder.decode_ego_frame(scene_name=self.name, frame_id=frame_id)
 
     def _load_frame_sensors_name(self, frame_id: FrameId) -> List[SensorName]:
         return LAZY_LOAD_CACHE.get_item(
@@ -118,7 +116,7 @@ class Scene:
             available_sensors_loader=self._load_frame_sensors_name,
             available_cameras_loader=self._load_frame_camera_sensors,
             available_lidars_loader=self._load_frame_lidar_sensors,
-            ego_frame_loader=self._load_ego_frame
+            ego_frame_loader=self._load_ego_frame,
         )
 
     @property
@@ -156,8 +154,8 @@ class Scene:
 
     def get_sensor(self, sensor_name: SensorName) -> Sensor:
         return self._decoder.decode_sensor(
-                scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
-            )
+            scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
+        )
 
     @staticmethod
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
