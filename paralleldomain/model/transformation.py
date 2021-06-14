@@ -75,6 +75,13 @@ class Transformation:
     def translation(self) -> np.ndarray:
         return self._t
 
+    @property
+    def inverse(self) -> "Transformation":
+        q_inv = self.quaternion.inverse
+        t_inv = q_inv * self.translation
+        T_inv = Transformation(q_inv, t_inv)
+        return T_inv
+
     @staticmethod
     def from_transformation_matrix(mat: np.ndarray) -> "Transformation":
         quat = Quaternion(matrix=mat)
