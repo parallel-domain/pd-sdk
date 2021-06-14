@@ -1,7 +1,10 @@
+import math
+import random
 from typing import Optional, Union
 
 import numpy as np
 import pytest
+from pyquaternion import Quaternion
 
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.coordinate_system import CoordinateSystem
@@ -87,3 +90,47 @@ def test_transformation_from_rpy(
     )
     transformed = transform @ source
     assert all(np.isclose(target, transformed))
+
+
+def test_transformation_inverse():
+    random_state = random.Random(1337)
+
+    # Identity Matrix (no rotation, no translation)
+    trans_0 = Transformation.from_transformation_matrix(np.eye(4))
+    trans_0_inverse = trans_0.inverse
+    trans_0_identity = trans_0_inverse @ trans_0
+    assert np.allclose(trans_0_identity.transformation_matrix, np.eye(4))
+
+    # Random Rotation (no translation)
+    trans_1 = Transformation.from_euler_angles(
+        yaw=random_state.uniform(-1, 1) * math.pi,
+        pitch=random_state.uniform(-1, 1) * math.pi,
+        roll=random_state.uniform(-1, 1) * math.pi,
+        is_degrees=False,
+    )
+    trans_1_inverse = trans_1.inverse
+    trans_1_identity = trans_1_inverse @ trans_1
+    assert np.allclose(trans_1_identity.transformation_matrix, np.eye(4))
+
+    # Random Transformation
+    trans_2 = Transformation.from_euler_angles(
+        yaw=random_state.uniform(-1, 1) * math.pi,
+        pitch=random_state.uniform(-1, 1) * math.pi,
+        roll=random_state.uniform(-1, 1) * math.pi,
+        translation=np.asarray(
+            [random_state.uniform(-200, 200), random_state.uniform(-200, 200), random_state.uniform(-200, 200)]
+        ),
+        is_degrees=False,
+    )
+    trans_2_inverse = trans_2.inverse
+    trans_2_identity = trans_2_inverse @ trans_2
+    assert np.allclose(trans_2_identity.transformation_matrix, np.eye(4))
+
+    # Random Translation (no rotation)
+    trans_3 = Transformation(
+        Quaternion(),
+        np.asarray([random_state.uniform(-200, 200), random_state.uniform(-200, 200), random_state.uniform(-200, 200)]),
+    )
+    trans_3_inverse = trans_3.inverse
+    trans_3_identity = trans_3_inverse @ trans_3
+    assert np.allclose(trans_3_identity.transformation_matrix, np.eye(4))
