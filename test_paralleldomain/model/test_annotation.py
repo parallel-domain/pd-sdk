@@ -1,4 +1,5 @@
 import time
+from typing import Any, Dict
 
 import numpy as np
 import pytest
@@ -42,7 +43,7 @@ class TestSensorFrame:
             assert isinstance(box.y, int)
             assert isinstance(box.width, int)
             assert isinstance(box.height, int)
-            assert isinstance(box.visibility, float)
+            assert isinstance(box.attributes, Dict)
             assert isinstance(box.class_id, int)
             assert isinstance(boxes.class_map[box.class_id], str)
 
