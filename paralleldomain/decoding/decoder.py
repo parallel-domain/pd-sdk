@@ -4,8 +4,8 @@ from typing import Callable, Dict, List
 
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.ego import EgoFrame
-from paralleldomain.model.sensor import SensorFrame, Sensor
-from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName
+from paralleldomain.model.sensor import Sensor, SensorFrame
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 
 class Decoder(metaclass=abc.ABCMeta):

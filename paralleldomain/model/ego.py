@@ -2,7 +2,7 @@ from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
-    from typing import Protocol, Callable
+    from typing import Callable, Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 

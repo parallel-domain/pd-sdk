@@ -9,8 +9,6 @@ import imageio
 import numpy as np
 from pyquaternion import Quaternion
 
-from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp_dto import (
     AnnotationsBoundingBox2DDTO,
@@ -43,6 +41,7 @@ from paralleldomain.model.annotation import (
 )
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
+from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.sensor import (
     CameraSensor,
     ImageData,
