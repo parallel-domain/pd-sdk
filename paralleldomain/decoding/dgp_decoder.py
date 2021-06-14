@@ -374,7 +374,7 @@ class DGPDecoder(Decoder):
             sensor_frame = self.decode_sensor_frame(scene_name=scene_name, frame_id=frame_id, sensor_name=sensor_name)
             ext_inv = np.linalg.inv(sensor_frame.extrinsic.transformation_matrix)
             vehicle_pose = ext_inv @ sensor_frame.pose.transformation_matrix
-            return cast(EgoPose.from_transformation_matrix(vehicle_pose), EgoPose)
+            return EgoPose.from_transformation_matrix(vehicle_pose)
 
         return EgoFrame(unique_cache_key=unique_cache_key, pose_loader=_load_pose)
 

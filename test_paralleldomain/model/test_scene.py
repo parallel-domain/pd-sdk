@@ -58,5 +58,5 @@ class TestSceneSensors:
         sensor_name = scene.sensor_names[0]
         pre_size = LAZY_LOAD_CACHE.currsize
         sensor = scene.get_sensor(sensor_name=sensor_name)
-        assert pre_size + getsizeof(sensor) == LAZY_LOAD_CACHE.currsize
+        assert pre_size == LAZY_LOAD_CACHE.currsize  # Sensor objects are not cached Atm!
         assert sensor.name == sensor_name

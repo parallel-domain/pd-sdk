@@ -82,11 +82,11 @@ class Transformation:
         T_inv = Transformation(q_inv, t_inv)
         return T_inv
 
-    @staticmethod
-    def from_transformation_matrix(mat: np.ndarray) -> "Transformation":
+    @classmethod
+    def from_transformation_matrix(cls, mat: np.ndarray) -> "Transformation":
         quat = Quaternion(matrix=mat)
         translation = mat[:3, 3]
-        return Transformation(quaternion=quat, translation=translation)
+        return cls(quaternion=quat, translation=translation)
 
     @classmethod
     def from_euler_angles(
