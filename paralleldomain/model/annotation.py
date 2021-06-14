@@ -36,7 +36,7 @@ class BoundingBox2D(Annotation):
     height: int  # in absolute pixel coordinates
     class_id: int
     instance_id: int
-    visibility: float
+    attributes: Dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
@@ -142,7 +142,7 @@ class BoundingBox3D:
     attributes: Dict[str, Any] = field(default_factory=dict)
 
     def __repr__(self):
-        rep = f"Class ID: {self.class_id} {self.pose}"
+        rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}, Pose: {self.pose}"
         return rep
 
     @property

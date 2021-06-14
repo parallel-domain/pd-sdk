@@ -189,7 +189,7 @@ class BoundingBox3DDTO(DataClassJsonMixin):
     instance_id: int
     num_points: int
     box: BoundingBox3DBoxDTO
-    attributes: Dict[str, Any]  # BoundingBox3DAttributesDTO
+    attributes: Dict[str, Any]
 
 
 @dataclass_json
@@ -202,14 +202,6 @@ class AnnotationsDTO(DataClassJsonMixin):
 @dataclass
 class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
     annotations: List[BoundingBox3DDTO]
-
-
-@dataclass_json
-@dataclass
-class BoundingBox2DAttributesDTO(DataClassJsonMixin):
-    vehicle_type: str
-    user_data: Optional[str] = None
-    parked_vehicle: Optional[str] = None
 
 
 @dataclass_json
@@ -228,7 +220,7 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     instance_id: int
     iscrowd: bool
     box: BoundingBox2DBoxDTO
-    attributes: BoundingBox2DAttributesDTO
+    attributes: Dict[str, Any]
 
 
 @dataclass_json

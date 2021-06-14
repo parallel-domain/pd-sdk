@@ -493,8 +493,6 @@ class _FrameLazyLoader:
 
             box_list = []
             for box_dto in dto.annotations:
-                user_data = json.loads(box_dto.attributes.user_data)
-
                 box = BoundingBox2D(
                     x=box_dto.box.x,
                     y=box_dto.box.y,
@@ -502,7 +500,7 @@ class _FrameLazyLoader:
                     height=box_dto.box.h,
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
-                    visibility=float(user_data["visibility"]),
+                    attributes=box_dto.attributes,
                 )
                 box_list.append(box)
 
