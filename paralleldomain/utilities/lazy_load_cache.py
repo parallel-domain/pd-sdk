@@ -51,7 +51,7 @@ class LazyLoadCache(cachetools.TTLCache):
     @property
     def free_space(self) -> int:
         """The maximum size of the caches free space."""
-        return psutil.virtual_memory().free * self.max_ram_usage_factor
+        return max(0, psutil.virtual_memory().free, psutil.virtual_memory().total * (1.0 - self.max_ram_usage_factor))
 
 
 _cache_max_ram_usage_factor = os.environ.get("CACHE_MAX_USAGE_FACOTR", 0.8)  # 80% free space max
