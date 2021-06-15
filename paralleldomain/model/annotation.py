@@ -49,22 +49,19 @@ class BoundingBoxes2D(Annotation):
     class_map: ClassMap
 
 
-class ImageMask(Annotation):
-    def __init__(self, mask: np.ndarray):
-        self._mask = mask
-
-    @property
-    def rgb(self) -> np.ndarray:
-        return self._mask[:, :, :3]
-
-    @property
-    def rgba(self) -> np.ndarray:
-        return self._mask
-
-
 @dataclass
 class InstanceSegmentation2D(Annotation):
     instance_ids: np.ndarray
+
+    @property
+    def rgb_encoded(self) -> np.ndarray:
+        """Converts Instace ID mask to RGB representation, with R being the first 8 bit and B being the last 8 bit.
+
+        :return: `np.ndarray`
+        """
+        return np.concatenate(
+            [self.instance_ids & 0xFF, self.instance_ids >> 8 & 0xFF, self.instance_ids >> 16 & 0xFF], axis=-1
+        ).astype(np.uint8)
 
     def __post_init__(self):
         if len(self.instance_ids.shape) != 3:
@@ -86,6 +83,16 @@ class OpticalFlow(Annotation):
 class SemanticSegmentation2D(Annotation):
     class_ids: np.ndarray
     class_map: ClassMap
+
+    @property
+    def rgb_encoded(self) -> np.ndarray:
+        """Converts Class ID mask to RGB representation, with R being the first 8 bit and B being the last 8 bit.
+
+        :return: `np.ndarray`
+        """
+        return np.concatenate(
+            [self.class_ids & 0xFF, self.class_ids >> 8 & 0xFF, self.class_ids >> 16 & 0xFF], axis=-1
+        ).astype(np.uint8)
 
     def __post_init__(self):
         if len(self.class_ids.shape) != 3:
@@ -115,7 +122,7 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
         return self._polygons
 
     def _mask_to_polygons(self) -> None:
-        polygons = mask_to_polygons(self._semseg2d.labels)
+        polygons = mask_to_polygons(self._semseg2d.class_ids)
         self._polygons = [Polygon2D.from_rasterio_polygon(p[0]) for p in polygons]
 
     def _build_polygon_tree(self) -> None:
