@@ -377,7 +377,10 @@ class DGPDecoder(Decoder):
 
     @staticmethod
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
-        return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        try:
+            return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+        except ValueError:
+            return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class _FrameLazyLoader:
