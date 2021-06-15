@@ -138,13 +138,6 @@ _default_labels: List[DGPLabel] = [
 default_map = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
 
 
-def pack_int_sequence(sequence: np.ndarray) -> np.int32:
-    out = 0
-    for i, val in enumerate(sequence):
-        out = (val << (8 * i)) | out
-    return out
-
-
 class DGPDecoder(Decoder):
     def __init__(
         self,
@@ -253,7 +246,9 @@ class DGPDecoder(Decoder):
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
             image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
-            return image_data[..., :1].astype(np.int)
+
+            class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
+            return class_ids.astype(np.int)
 
     def decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
