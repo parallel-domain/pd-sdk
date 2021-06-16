@@ -488,7 +488,7 @@ class _FrameLazyLoader:
                     pose=pose,
                     width=box_dto.box.width,
                     length=box_dto.box.length,
-                    height=box_dto.box.width,
+                    height=box_dto.box.height,
                     class_id=box_dto.class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
