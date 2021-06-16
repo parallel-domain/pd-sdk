@@ -477,7 +477,9 @@ class _FrameLazyLoader:
             for box_dto in dto.annotations:
                 pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
 
-                attr_parsed = {}
+                # Add Truncation, Occlusion
+                attr_parsed = {"occlusion": box_dto.box.occlusion, "truncation": box_dto.box.truncation}
+                # Read + parse other attributes
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = json.loads(v)
