@@ -226,7 +226,6 @@ class DGPDecoder(Decoder):
 
     def decode_bounding_boxes_2d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox2DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        print(annotation_path)
         with annotation_path.open("r") as f:
             return AnnotationsBoundingBox2DDTO.from_dict(json.load(f))
 
