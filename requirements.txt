@@ -14,8 +14,7 @@ virtualenvwrapper==4.8.4
 zipp==3.4.1
 ujson==4.0.2
 dataclasses_json==0.5.3
-cloudpathlib[all]>=0.4.0,<1.0.0
-smart-open==5.0.0
+cloudpathlib[all]>=0.4.1,<1.0.0
 imageio==2.9.0
 Shapely==1.7.1
 rasterio==1.2.3
