@@ -366,11 +366,13 @@ class DGPDecoder(Decoder):
         unique_cache_key = f"{self._dataset_path}-{scene_name}-{frame_id}-ego_frame"
 
         def _load_pose() -> EgoPose:
+            print("POSER")
             sensor_name = next(iter(self.decode_available_sensor_names(scene_name=scene_name, frame_id=frame_id)))
             sensor_frame = self.decode_sensor_frame(scene_name=scene_name, frame_id=frame_id, sensor_name=sensor_name)
-            ext_inv = np.linalg.inv(sensor_frame.extrinsic.transformation_matrix)
-            vehicle_pose = ext_inv @ sensor_frame.pose.transformation_matrix
-            return EgoPose.from_transformation_matrix(vehicle_pose)
+            # ext_inv = np.linalg.inv(sensor_frame.extrinsic.transformation_matrix)
+            # vehicle_pose = ext_inv @ sensor_frame.pose.transformation_matrix
+            vehicle_pose = (sensor_frame.extrinsic @ sensor_frame.pose.inverse).inverse
+            return EgoPose.from_transformation_matrix(vehicle_pose.transformation_matrix)
 
         return EgoFrame(unique_cache_key=unique_cache_key, pose_loader=_load_pose)
 
