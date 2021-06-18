@@ -122,7 +122,7 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
         return self._polygons
 
     def _mask_to_polygons(self) -> None:
-        polygons = mask_to_polygons(self._semseg2d.class_ids)
+        polygons = mask_to_polygons(self._semseg2d.class_ids[..., 0])
         self._polygons = [Polygon2D.from_rasterio_polygon(p[0]) for p in polygons]
 
     def _build_polygon_tree(self) -> None:
