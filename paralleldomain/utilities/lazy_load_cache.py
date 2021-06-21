@@ -54,7 +54,7 @@ class LazyLoadCache(cachetools.TTLCache):
         return max(0, psutil.virtual_memory().free, psutil.virtual_memory().total * (1.0 - self.max_ram_usage_factor))
 
 
-_cache_max_ram_usage_factor = os.environ.get("CACHE_MAX_USAGE_FACOTR", 0.8)  # 80% free space max
-_cache_max_time_to_live = os.environ.get("CACHE_TIME_TO_LIVE_SECONDS", 600)  # 10 mins default
+_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACOTR", 0.8))  # 80% free space max
+_cache_max_time_to_live = int(os.environ.get("CACHE_TIME_TO_LIVE_SECONDS", 600))  # 10 mins default
 
 LAZY_LOAD_CACHE = LazyLoadCache(ttl=_cache_max_time_to_live, max_ram_usage_factor=_cache_max_ram_usage_factor)
