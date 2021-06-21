@@ -454,11 +454,13 @@ class _FrameLazyLoader:
 
     def load_image(self) -> Optional[ImageData]:
         if self.datum.image:
+            unique_cache_key = f"{self._unique_cache_key_prefix}-image"
             return ImageData(
                 load_data_rgba=lambda: self.decoder.decode_image_rgb(
                     scene_name=self.scene_name,
                     cloud_identifier=self.datum.image.filename,
                 ),
+                unique_cache_key=unique_cache_key,
             )
 
     def load_sensor_pose(self) -> SensorPose:
