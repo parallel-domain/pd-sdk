@@ -233,15 +233,13 @@ class PointInfo(Enum):
 
 
 class ImageData(SensorData):
-    def __init__(self, load_data_rgba: Callable[[], np.ndarray]):
+    def __init__(self, unique_cache_key: str, load_data_rgba: Callable[[], np.ndarray]):
+        self._unique_cache_key = unique_cache_key
         self._load_data_rgb_call = load_data_rgba
-        self._cloud_data_rgba: Optional[np.ndarray] = None
 
     @property
     def _data_rgba(self) -> np.ndarray:
-        if self._cloud_data_rgba is None:
-            self._cloud_data_rgba = self._load_data_rgb_call()
-        return self._cloud_data_rgba
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_rgb_call)
 
     @property
     def rgba(self) -> np.ndarray:

@@ -5,6 +5,7 @@ import numpy as np
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
+from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 
 class TestSensorFrame:
@@ -21,13 +22,12 @@ class TestSensorFrame:
         assert xyz.shape[0] > 0
 
     def test_lazy_cloud_caching(self, decoder: Decoder):
+        LAZY_LOAD_CACHE.clear()
         dataset = Dataset.from_decoder(decoder=decoder)
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
         assert cloud is not None
         start = time.time()
@@ -39,9 +39,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
         start = time.time()
         xyz = cloud.xyz
@@ -54,9 +52,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
         start = time.time()
         xyz = cloud.xyz
@@ -69,9 +65,7 @@ class TestSensorFrame:
         scene = dataset.get_scene(scene_name=dataset.scene_names[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
         start = time.time()
         xyz = cloud.xyz
