@@ -12,7 +12,7 @@ from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, Boun
 class TestSensorFrame:
     def test_box_3d_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         lidar_sensor = next(iter(frame.lidar_frames))
         boxes = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
 
@@ -30,12 +30,11 @@ class TestSensorFrame:
         assert AnnotationTypes.BoundingBoxes2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
 
         assert isinstance(boxes.boxes, list)
-        assert len(boxes.boxes) > 0
 
         for box in boxes.boxes:
             assert isinstance(box, BoundingBox2D)
@@ -51,7 +50,7 @@ class TestSensorFrame:
         assert AnnotationTypes.InstanceSegmentation2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         id_mask = camera_sensor.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
 
@@ -67,7 +66,7 @@ class TestSensorFrame:
         assert AnnotationTypes.SemanticSegmentation2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
 
@@ -83,7 +82,7 @@ class TestSensorFrame:
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
 
@@ -96,7 +95,7 @@ class TestSensorFrame:
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
 
         rgb = camera_sensor.image.rgb
