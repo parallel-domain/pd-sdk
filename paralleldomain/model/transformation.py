@@ -1,5 +1,3 @@
-from __future__ import annotations as ann
-
 from typing import List, Optional, Union
 
 import numpy as np
