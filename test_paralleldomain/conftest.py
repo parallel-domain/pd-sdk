@@ -4,7 +4,7 @@ import pytest
 
 from paralleldomain import Scene
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.decoding.dgp_decoder import DGPDecoder
+from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.model.dataset import Dataset
 
 
