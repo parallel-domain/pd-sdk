@@ -29,7 +29,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SemanticSegmentation3D,
 )
-from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -47,7 +47,9 @@ class DGPFrameLazyLoader:
         class_map: ClassMap,
         calibration_key: str,
         datum: SceneDataDatum,
+        custom_id_map: Optional[ClassIdMap] = None,
     ):
+        self.custom_id_map = custom_id_map
         self._dataset_path = dataset_path
         self.class_map = class_map
         self.datum = datum
@@ -141,13 +143,16 @@ class DGPFrameLazyLoader:
                         attr_parsed[k] = json.loads(v)
                     except JSONDecodeError:
                         attr_parsed[k] = v
+                class_id = box_dto.class_id
+                if self.custom_id_map is not None:
+                    class_id = self.custom_id_map[class_id]
 
                 box = BoundingBox3D(
                     pose=pose,
                     width=box_dto.box.width,
                     length=box_dto.box.length,
                     height=box_dto.box.height,
-                    class_id=box_dto.class_id,
+                    class_id=class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
                     attributes=attr_parsed,
@@ -168,12 +173,16 @@ class DGPFrameLazyLoader:
                     except JSONDecodeError:
                         attr_parsed[k] = v
 
+                class_id = box_dto.class_id
+                if self.custom_id_map is not None:
+                    class_id = self.custom_id_map[class_id]
+
                 box = BoundingBox2D(
                     x=box_dto.box.x,
                     y=box_dto.box.y,
                     width=box_dto.box.w,
                     height=box_dto.box.h,
-                    class_id=box_dto.class_id,
+                    class_id=class_id,
                     instance_id=box_dto.instance_id,
                     attributes=attr_parsed,
                 )
@@ -184,6 +193,8 @@ class DGPFrameLazyLoader:
             segmentation_mask = self._decode_semantic_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
+            if self.custom_id_map is not None:
+                segmentation_mask = self.custom_id_map[segmentation_mask]
             return SemanticSegmentation3D(mask=segmentation_mask, class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
@@ -194,6 +205,8 @@ class DGPFrameLazyLoader:
             class_ids = self._decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
+            if self.custom_id_map is not None:
+                class_ids = self.custom_id_map[class_ids]
             return SemanticSegmentation2D(class_ids=class_ids, class_map=self.class_map)
         elif issubclass(annotation_type, OpticalFlow):
             flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
