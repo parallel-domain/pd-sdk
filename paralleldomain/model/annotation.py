@@ -210,7 +210,7 @@ class Polygon2D:
         self._parent = parent
 
     @staticmethod
-    def from_rasterio_polygon(polygon_dict: Dict[str:Any]):
+    def from_rasterio_polygon(polygon_dict: Dict[str, Any]):
         coordinates = polygon_dict["coordinates"]
         polygon = Polygon(coordinates[0], holes=coordinates[1:])
 
