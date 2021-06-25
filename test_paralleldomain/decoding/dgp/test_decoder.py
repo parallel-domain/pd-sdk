@@ -9,7 +9,7 @@ from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 
 
-class TestClassIdMap:
+class TestDecoderWithClassIdMap:
     def test_map_all_to_same_semseg2d(self):
         custom_map = ClassMap(class_id_to_class_name={1337: "All"})
         custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
