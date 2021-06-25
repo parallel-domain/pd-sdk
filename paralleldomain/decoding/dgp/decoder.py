@@ -8,7 +8,7 @@ from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DEFAULT_CLASS_MAP
 from paralleldomain.decoding.dgp.dtos import DatasetDTO, DatasetMetaDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
-from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
@@ -24,7 +24,20 @@ class DGPDecoder(Decoder):
         dataset_path: Union[str, AnyPath],
         max_scene_dtos_to_cache: int = 10,
         custom_map: Optional[ClassMap] = None,
+        custom_id_map: Optional[ClassIdMap] = None,
     ):
+        if custom_id_map is not None and custom_map is None:
+            raise ValueError("A custom map has to be provided in order to match the custom id map!")
+
+        if custom_id_map is not None and custom_map is not None:
+            custom_map_ids = custom_map.class_ids
+            if not all([target in custom_map_ids for target in custom_id_map.target_ids]):
+                missing = set(custom_id_map.target_ids) - set(custom_map_ids)
+                raise ValueError(
+                    f"Not all target ids in the given custom id map are present in the custom map! Missing: {missing}"
+                )
+
+        self.custom_id_map = custom_id_map
         self.class_map = DEFAULT_CLASS_MAP if custom_map is None else custom_map
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
@@ -155,6 +168,7 @@ class DGPDecoder(Decoder):
                 unique_cache_key_prefix=unique_cache_key,
                 dataset_path=self._dataset_path,
                 class_map=self.class_map,
+                custom_id_map=self.custom_id_map,
                 scene_name=scene_name,
                 sensor_name=sensor_name,
                 calibration_key=sample.calibration_key,
