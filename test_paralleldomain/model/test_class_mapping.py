@@ -1,6 +1,12 @@
+import os
+
+import numpy as np
 import pytest
 
-from paralleldomain.model.class_mapping import ClassMap, LabelMapping, OnLabelNotDefined
+from paralleldomain import Dataset
+from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.class_mapping import ClassIdMap, ClassMap, LabelMapping, OnLabelNotDefined
 
 
 class TestClassMap:
@@ -54,3 +60,29 @@ class TestLabelMapping:
                 assert chained_map[label] == "Rider"
             else:
                 assert chained_map[label] == "thing"
+
+
+class TestClassIdMap:
+    def test_map_ids(self):
+        custom_id_map = ClassIdMap(class_id_to_class_id={i: i + 2 for i in range(100)})
+
+        for i in range(100):
+            assert custom_id_map[i] == i + 2
+
+    def test_map_key_error(self):
+        custom_id_map = ClassIdMap(class_id_to_class_id={i: i + 2 for i in range(100)})
+
+        with pytest.raises(KeyError):
+            _ = custom_id_map[2222]
+
+    def test_map_numpy_array(self):
+        custom_id_map = ClassIdMap(class_id_to_class_id={i: i + 2 for i in range(100)})
+        source = np.arange(0, 5)
+        target = np.arange(2, 7)
+        mapped = custom_id_map[source]
+        assert np.all(target == mapped)
+
+        source = np.arange(0, 9).reshape((3, 3, 1))
+        target = np.arange(2, 11).reshape((3, 3, 1))
+        mapped = custom_id_map[source]
+        assert np.all(target == mapped)

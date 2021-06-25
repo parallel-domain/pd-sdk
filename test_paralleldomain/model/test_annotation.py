@@ -31,7 +31,7 @@ class TestSensorFrame:
 
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[5])
-        camera_sensor = next(iter(frame.camera_frames))
+        camera_sensor = next(iter([f for f in frame.camera_frames if "virtual" not in f.sensor_name]))
         boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
 
         assert isinstance(boxes.boxes, list)

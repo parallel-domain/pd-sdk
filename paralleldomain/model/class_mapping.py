@@ -2,7 +2,32 @@ import abc
 from enum import Enum
 from typing import Dict, ItemsView, List, Optional, TypeVar, Union
 
+import numpy as np
+
 T = TypeVar("T")
+TClassId = TypeVar("TClassId", int, np.ndarray)
+
+
+class ClassIdMap:
+    def __init__(self, class_id_to_class_id: Dict[int, int]):
+        self.class_id_to_class_id = class_id_to_class_id
+
+    @property
+    def source_ids(self) -> List[int]:
+        return list(self.class_id_to_class_id.keys())
+
+    @property
+    def target_ids(self) -> List[int]:
+        return list(self.class_id_to_class_id.values())
+
+    def items(self) -> ItemsView[int, int]:
+        return self.class_id_to_class_id.items()
+
+    def __getitem__(self, key: TClassId) -> TClassId:
+        if isinstance(key, int):
+            return self.class_id_to_class_id[key]
+        else:
+            return np.vectorize(self.class_id_to_class_id.get)(key)
 
 
 class ClassMap:

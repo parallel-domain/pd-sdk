@@ -46,7 +46,7 @@ Simply load locally or remotely hosted Parallel Domain datasets (DGP format) int
 
 ```python
 from paralleldomain import Dataset
-from paralleldomain.decoding.dgp_decoder import DGPDecoder
+from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.model.annotation import AnnotationTypes
 
 DATASET_PATH = "/content/gdrive/MyDrive/Datasets/public_pdviz_6"
