@@ -20,6 +20,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PYTEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
       - name: Test with pytest
         run: |
-          DATASET_PATH='${{ secrets.DGP_DATASET_PATH }}' AWS_ACCESS_KEY='${{ secrets.PYTEST_AWS_ACCESS_KEY_ID }}' AWS_SECRET_KEY='${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}' pytest
+          DATASET_PATH='${{ secrets.DGP_DATASET_PATH }}' pytest
