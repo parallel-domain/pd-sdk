@@ -65,9 +65,9 @@ class DGPFrameLazyLoader:
             sensor_name=self.sensor_name,
         )
 
-        if dto.fisheye is True:
+        if dto.fisheye is True or dto.fisheye == 1:
             camera_model = "fisheye"
-        elif dto.fisheye is False:
+        elif dto.fisheye is False or dto.fisheye == 0:
             camera_model = "brown_conrady"
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
