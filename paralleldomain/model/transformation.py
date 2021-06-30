@@ -11,13 +11,7 @@ from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTE
 class Transformation:
     def __init__(self, quaternion: Quaternion = None, translation: Union[np.ndarray, List] = None):
         self._Rq = quaternion if quaternion is not None else Quaternion(w=1, x=0, y=0, z=0)
-        self._t = (
-            np.asarray(translation).reshape(
-                3,
-            )
-            if translation is not None
-            else np.array([0, 0, 0])
-        )
+        self._t = np.asarray(translation).reshape(3) if translation is not None else np.array([0, 0, 0])
 
     def __repr__(self):
         rep = f"R: {self.rpy}, t: {self.translation}"
