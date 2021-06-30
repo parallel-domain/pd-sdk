@@ -1,5 +1,6 @@
+import contextlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, ContextManager, Dict, Generator, List
 
 try:
     from typing import Protocol
@@ -62,6 +63,11 @@ class Dataset:
     def get_scene(self, scene_name: SceneName) -> Scene:
         self._load_scene(scene_name=scene_name)
         return self._scenes[scene_name]
+
+    @contextlib.contextmanager
+    def get_editable_scene(self, scene_name: SceneName) -> ContextManager[Scene]:
+        with self.get_scene(scene_name=scene_name).editable() as scene:
+            yield scene
 
     @staticmethod
     def from_decoder(decoder: DatasetDecoderProtocol) -> "Dataset":

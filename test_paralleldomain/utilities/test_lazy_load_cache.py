@@ -66,3 +66,34 @@ def test_max_time():
     mock1_loader.load.assert_called_once()
     time.sleep(2)
     assert cache.currsize == 0
+
+
+def test_delete_lock():
+    cache = LazyLoadCache(ttl=2)
+    mock1_loader = mock.MagicMock()
+    cache.lock_prefix(prefix="key")
+    cache.get_item(key="key1", loader=mock1_loader.load)
+    assert cache.currsize == getsizeof(mock.MagicMock())
+    mock1_loader.load.assert_called_once()
+    time.sleep(2)
+    assert cache.currsize == getsizeof(mock.MagicMock())
+    cache.unlock_prefix(prefix="key")
+    assert cache.currsize == 0
+
+
+def test_delete_lock_2():
+    cache = LazyLoadCache(ttl=2)
+    mock1_loader = mock.MagicMock()
+    cache.lock_prefix(prefix="key")
+    cache.get_item(key="bb", loader=mock.MagicMock())
+    cache.get_item(key="bb2", loader=mock.MagicMock())
+    cache.get_item(key="key1", loader=mock1_loader.load)
+    cache.get_item(key="bb3", loader=mock.MagicMock())
+    time.sleep(2)
+    cache.get_item(key="aa", loader=mock.MagicMock())
+    assert cache.currsize == 2 * getsizeof(mock.MagicMock())
+    mock1_loader.load.assert_called_once()
+    time.sleep(2)
+    assert cache.currsize == getsizeof(mock.MagicMock())
+    cache.unlock_prefix(prefix="key")
+    assert cache.currsize == 0

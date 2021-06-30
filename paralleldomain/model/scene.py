@@ -1,5 +1,6 @@
+import contextlib
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Tuple, cast
+from typing import Callable, ContextManager, Dict, Generator, List, Optional, Tuple, cast
 
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
@@ -57,6 +58,21 @@ class Scene:
         self._unique_cache_key = decoder.get_unique_scene_id(scene_name=name)
         self._description = description
         self._decoder = decoder
+        self._cache_is_locked = False
+
+    def lock_cache_for_scene_data(self):
+        LAZY_LOAD_CACHE.lock_prefix(prefix=self._unique_cache_key)
+        self._cache_is_locked = True
+
+    def unlock_cache_for_scene_data(self):
+        LAZY_LOAD_CACHE.unlock_prefix(prefix=self._unique_cache_key)
+        self._cache_is_locked = False
+
+    @contextlib.contextmanager
+    def editable(self) -> ContextManager["Scene"]:
+        self.lock_cache_for_scene_data()
+        yield self
+        self.unlock_cache_for_scene_data()
 
     def _load_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         return LAZY_LOAD_CACHE.get_item(
@@ -125,11 +141,11 @@ class Scene:
 
     @property
     def cameras(self) -> List[CameraSensor]:
-        return [cast(self.get_sensor(sensor_name=sensor_name), CameraSensor) for sensor_name in self.camera_names]
+        return [cast(CameraSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.camera_names]
 
     @property
     def lidars(self) -> List[LidarSensor]:
-        return [cast(self.get_sensor(sensor_name=sensor_name), LidarSensor) for sensor_name in self.lidar_names]
+        return [cast(LidarSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.lidar_names]
 
     @property
     def sensor_names(self) -> List[str]:
@@ -161,3 +177,12 @@ class Scene:
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
         return Scene(name=scene_name, description=description, decoder=decoder)
+
+    def remove_sensor(self, sensor_name: SensorName):
+        if not self._cache_is_locked:
+            sx_msg = (
+                "In order to make sure changes are not removed in the cache you need to call "
+                "lock_cache_for_scene_data in order to keep those changes from being removed!"
+            )
+            raise Exception(sx_msg)
+        self.sensor_names.remove(sensor_name)
