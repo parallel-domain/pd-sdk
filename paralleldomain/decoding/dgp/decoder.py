@@ -12,6 +12,7 @@ from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
+from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -25,6 +26,7 @@ class DGPDecoder(Decoder):
         max_scene_dtos_to_cache: int = 10,
         custom_map: Optional[ClassMap] = None,
         custom_id_map: Optional[ClassIdMap] = None,
+        custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         if custom_id_map is not None and custom_map is None:
             raise ValueError("A custom map has to be provided in order to match the custom id map!")
@@ -39,6 +41,9 @@ class DGPDecoder(Decoder):
 
         self.custom_id_map = custom_id_map
         self.class_map = DEFAULT_CLASS_MAP if custom_map is None else custom_map
+        self.custom_reference_to_box_bottom = (
+            Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
+        )
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.decode_scene = lru_cache(max_scene_dtos_to_cache)(self.decode_scene)
@@ -169,6 +174,7 @@ class DGPDecoder(Decoder):
                 dataset_path=self._dataset_path,
                 class_map=self.class_map,
                 custom_id_map=self.custom_id_map,
+                custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
                 scene_name=scene_name,
                 sensor_name=sensor_name,
                 calibration_key=sample.calibration_key,
@@ -183,8 +189,8 @@ class DGPDecoder(Decoder):
         def _load_pose() -> EgoPose:
             sensor_name = next(iter(self.decode_available_sensor_names(scene_name=scene_name, frame_id=frame_id)))
             sensor_frame = self.decode_sensor_frame(scene_name=scene_name, frame_id=frame_id, sensor_name=sensor_name)
-            vehicle_pose = (sensor_frame.extrinsic @ sensor_frame.pose.inverse).inverse
-            return EgoPose.from_transformation_matrix(vehicle_pose.transformation_matrix)
+            vehicle_pose = sensor_frame.pose @ sensor_frame.extrinsic.inverse
+            return EgoPose(quaternion=vehicle_pose.quaternion, translation=vehicle_pose.translation)
 
         return EgoFrame(unique_cache_key=unique_cache_key, pose_loader=_load_pose)
 

@@ -31,6 +31,7 @@ from paralleldomain.model.annotation import (
 )
 from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrinsic, SensorIntrinsic, SensorPose
+from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -47,6 +48,7 @@ class DGPFrameLazyLoader:
         class_map: ClassMap,
         calibration_key: str,
         datum: SceneDataDatum,
+        custom_reference_to_box_bottom: Transformation,
         custom_id_map: Optional[ClassIdMap] = None,
     ):
         self.custom_id_map = custom_id_map
@@ -57,6 +59,7 @@ class DGPFrameLazyLoader:
         self.sensor_name = sensor_name
         self.scene_name = scene_name
         self.calibration_key = calibration_key
+        self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
 
     def load_intrinsic(self) -> SensorIntrinsic:
         dto = self._decode_intrinsic_calibration(
@@ -65,9 +68,9 @@ class DGPFrameLazyLoader:
             sensor_name=self.sensor_name,
         )
 
-        if dto.fisheye is True:
+        if dto.fisheye is True or dto.fisheye == 1:
             camera_model = "fisheye"
-        elif dto.fisheye is False:
+        elif dto.fisheye is False or dto.fisheye == 0:
             camera_model = "brown_conrady"
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
@@ -96,7 +99,11 @@ class DGPFrameLazyLoader:
             calibration_key=self.calibration_key,
             sensor_name=self.sensor_name,
         )
-        return _pose_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
+        sensor_to_box_bottom = _pose_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
+        sensor_to_custom_reference = (
+            self._custom_reference_to_box_bottom.inverse @ sensor_to_box_bottom
+        )  # from center-bottom to center rear-axle
+        return sensor_to_custom_reference
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
         if self.datum.point_cloud:
