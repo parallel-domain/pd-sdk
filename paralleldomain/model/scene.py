@@ -99,7 +99,7 @@ class Scene:
 
     @property
     def frame_ids(self) -> List[str]:
-        return list(self.frame_id_to_date_time_map.keys())
+        return sorted(self.frame_id_to_date_time_map, key=self.frame_id_to_date_time_map.get)
 
     @property
     def frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
