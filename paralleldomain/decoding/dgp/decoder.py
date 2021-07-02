@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DEFAULT_CLASS_MAP
@@ -114,6 +114,10 @@ class DGPDecoder(Decoder):
     def decode_scene_description(self, scene_name: SceneName) -> str:
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.description
+
+    def decode_scene_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        return scene_dto.metadata.to_dict()
 
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self.decode_scene(scene_name=scene_name)
