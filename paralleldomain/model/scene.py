@@ -1,6 +1,6 @@
 import contextlib
 from datetime import datetime
-from typing import Callable, ContextManager, Dict, Generator, List, Optional, Tuple, cast
+from typing import Any, Callable, ContextManager, Dict, Generator, List, Optional, Tuple, cast
 
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
@@ -20,6 +20,9 @@ class SceneDecoderProtocol(Protocol):
         pass
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
+        pass
+
+    def decode_scene_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         pass
 
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
@@ -53,10 +56,11 @@ class SceneDecoderProtocol(Protocol):
 
 
 class Scene:
-    def __init__(self, name: SceneName, description: str, decoder: SceneDecoderProtocol):
+    def __init__(self, name: SceneName, description: str, metadata: Dict[str, Any], decoder: SceneDecoderProtocol):
         self._name = name
         self._unique_cache_key = decoder.get_unique_scene_id(scene_name=name)
         self._description = description
+        self._metadata = metadata
         self._decoder = decoder
         self._cache_is_locked = False
 
@@ -108,6 +112,10 @@ class Scene:
     @property
     def description(self) -> str:
         return self._description
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        return self._metadata
 
     @property
     def frames(self) -> List[Frame]:
@@ -176,7 +184,8 @@ class Scene:
     @staticmethod
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
-        return Scene(name=scene_name, description=description, decoder=decoder)
+        metadata = decoder.decode_scene_metadata(scene_name=scene_name)
+        return Scene(name=scene_name, description=description, metadata=metadata, decoder=decoder)
 
     def remove_sensor(self, sensor_name: SensorName):
         if not self._cache_is_locked:
