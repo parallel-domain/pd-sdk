@@ -250,6 +250,14 @@ class ImageData(SensorData):
         return self._data_rgba[:, :, :3]
 
     @property
+    def width(self) -> int:
+        return self._data_rgba.shape[1]
+
+    @property
+    def height(self) -> int:
+        return self._data_rgba.shape[0]
+
+    @property
     def coordinates(self) -> np.ndarray:
         shape = self._data_rgba.shape
         y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
