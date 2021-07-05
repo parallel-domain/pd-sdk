@@ -161,12 +161,10 @@ class Scene:
 
     @property
     def sensor_names(self) -> List[str]:
-        sensor_names = LAZY_LOAD_CACHE.get_item(
+        return LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-sensor_names",
             loader=lambda: self._decoder.decode_sensor_names(scene_name=self.name),
         )
-
-        return sorted(sensor_names)
 
     @property
     def camera_names(self) -> List[str]:

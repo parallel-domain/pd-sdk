@@ -125,15 +125,15 @@ class DGPDecoder(Decoder):
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data})
+        return sorted(list({datum.id.name for datum in scene_dto.data}))
 
     def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.image})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.image}))
 
     def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
     def decode_sensor(
         self,
