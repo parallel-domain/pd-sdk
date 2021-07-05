@@ -38,6 +38,10 @@ class BoundingBox2D(Annotation):
     instance_id: int
     attributes: Dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def area(self):
+        return self.width * self.height
+
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
         return rep
