@@ -173,7 +173,7 @@ class DGPFrameLazyLoader:
             box_list = []
             for box_dto in dto.annotations:
 
-                attr_parsed = {}
+                attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = json.loads(v)
