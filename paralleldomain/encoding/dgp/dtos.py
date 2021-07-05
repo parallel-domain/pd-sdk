@@ -75,9 +75,18 @@ class SceneDataDatumTypePointCloud(SceneDataDatumTypeGeneric):
 
 @dataclass_json
 @dataclass
-class SceneDataDatum(DataClassJsonMixin):
-    image: Optional[SceneDataDatumTypeImage] = None
-    point_cloud: Optional[SceneDataDatumTypePointCloud] = None
+class SceneDataDatum:
+    ...
+
+
+@dataclass
+class SceneDataDatumImage(SceneDataDatum):
+    image: SceneDataDatumTypeImage
+
+
+@dataclass
+class SceneDataDatumPointCloud(SceneDataDatum):
+    point_cloud: SceneDataDatumTypePointCloud
 
 
 @dataclass_json
@@ -220,6 +229,7 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     instance_id: int
     iscrowd: bool
     box: BoundingBox2DBoxDTO
+    area: int
     attributes: Dict[str, Any]
 
 
