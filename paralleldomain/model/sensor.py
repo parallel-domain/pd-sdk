@@ -281,6 +281,10 @@ class PointCloudData(SensorData):
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_call)
 
     @property
+    def length(self) -> int:
+        return len(self._data)
+
+    @property
     def xyz(self) -> np.ndarray:
         xyz_index = [
             self._get_index(PointInfo.X),

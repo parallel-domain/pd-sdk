@@ -496,7 +496,7 @@ class DGPEncoder(Encoder):
             ("TIMESTAMP", "<u8"),
         ]
 
-        row_count = len(pc.xyz)
+        row_count = pc.length
         pc_data = np.empty(row_count, dtype=pc_dtypes)
 
         pc_data["X"] = pc.xyz[:, 0]
