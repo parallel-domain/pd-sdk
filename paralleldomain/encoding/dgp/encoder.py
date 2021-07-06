@@ -54,8 +54,6 @@ from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
 
-CPU_COUNT = multiprocessing.cpu_count()
-
 
 def json_write(obj: object, fp: Union[Path, CloudPath, str], append_sha1: bool = False) -> str:
     fp = AnyPath(fp)
@@ -154,34 +152,40 @@ class DGPEncoder(Encoder):
 
     def __init__(
         self,
-        dataset_path: AnyPath,
+        dataset: Dataset,
+        output_path: AnyPath,
         custom_map: Optional[ClassMap] = None,
         custom_id_map: Optional[ClassIdMap] = None,
         annotation_types: Optional[List[AnnotationType]] = None,
+        frame_slice: Optional[slice] = None,
+        thread_count: Optional[int] = None,
     ):
+        self.dataset = dataset
         self.custom_map = custom_map
         self.custom_id_map = custom_id_map
         self.annotation_types = list(self._annotation_type_map.keys()) if annotation_types is None else annotation_types
-        self._dataset_path: Union[Path, CloudPath] = AnyPath(dataset_path)
+        self._dataset_path: Union[Path, CloudPath] = AnyPath(output_path)
+        self._frame_slice: slice = slice(None, None, None) if frame_slice is None else frame_slice
+        self._thread_count: int = multiprocessing.cpu_count() if thread_count is None else thread_count
+        self._scene_paths: List[str] = []
 
-    def encode_dataset(self, dataset: Dataset):
-        scene_names = dataset.scene_names
-        scene_paths = []
-        for s in scene_names:
-            scene_paths.append(self.encode_scene(dataset.get_scene(s)))
+    def finalize(self):
+        self._save_dataset_json()
 
-        self._save_dataset_json(dataset, scene_paths=scene_paths)
+    def encode_dataset(self):
+        for s in self.dataset.scene_names:
+            self.encode_scene(self.dataset.get_scene(s))
 
     def encode_scene(self, scene: Scene) -> str:
         scene_data = []
         scene_samples = []
 
         for sn in scene.sensor_names:
-            sensor_frames = [f.get_sensor(sn) for f in scene.frames[0:MAX_FRAMES]]
+            sensor_frames = [f.get_sensor(sn) for f in scene.frames[self._frame_slice]]
             sensor_data = self.encode_sensor_frames_by_sensor(sensor_frames=sensor_frames, scene_name=scene.name)
             scene_data.append(sensor_data)
 
-        for f in scene.frames[0:MAX_FRAMES]:
+        for f in scene.frames[self._frame_slice]:
             sensor_frames = [f.get_sensor(sn) for sn in scene.sensor_names]
             frame_data = self.encode_sensor_frames_by_frame(frame=f, sensor_frames=sensor_frames, scene_name=scene.name)
             scene_samples.append(frame_data)
@@ -192,7 +196,10 @@ class DGPEncoder(Encoder):
 
         scene_data = [sensor_datum for sensor_data in scene_data for sensor_datum in sensor_data]  # flatten list
 
-        return self._save_scene_json(scene=scene, scene_samples=scene_samples, scene_data=scene_data)
+        scene_path = self._save_scene_json(scene=scene, scene_samples=scene_samples, scene_data=scene_data)
+        self._scene_paths.append(scene_path)
+
+        return scene_path
 
     def encode_sensor_frames_by_frame(self, frame: Frame, sensor_frames: List[SensorFrame], scene_name: str):
         frame_data = SceneSampleDTO(
@@ -209,8 +216,8 @@ class DGPEncoder(Encoder):
     def encode_sensor_frames_by_sensor(self, sensor_frames: List[SensorFrame], scene_name: str):
         sorted_sensor_frames = sorted(sensor_frames, key=lambda x: x.date_time)
 
-        with parallel_backend("threading", n_jobs=CPU_COUNT):
-            sensor_data = Parallel(verbose=True)(
+        with parallel_backend("threading", n_jobs=self._thread_count):
+            sensor_data = Parallel()(
                 delayed(self.encode_sensor_frame)(sensor_frame=sf, scene_name=scene_name) for sf in sorted_sensor_frames
             )
 
@@ -550,16 +557,16 @@ class DGPEncoder(Encoder):
 
         return json_write(calib_dto.to_dict(), calibration_json_path, append_sha1=True).split(".")[0]
 
-    def _save_dataset_json(self, dataset: Dataset, scene_paths: List[str]):
+    def _save_dataset_json(self):
 
-        metadata_dto = DatasetMetaDTO(**dataset.meta_data.custom_attributes)
+        metadata_dto = DatasetMetaDTO(**self.dataset.meta_data.custom_attributes)
         metadata_dto.available_annotation_types = [
             int(self._annotation_type_map[a_type]) for a_type in self.annotation_types
         ]
 
         ds_dto = DatasetDTO(
             metadata=metadata_dto,  # needs refinement, currently assumes DGP->DGP
-            scene_splits={str(i): DatasetSceneSplitDTO(filenames=[s]) for i, s in enumerate(scene_paths)},
+            scene_splits={str(i): DatasetSceneSplitDTO(filenames=[s]) for i, s in enumerate(self._scene_paths)},
         )
 
         dataset_json_path = self._dataset_path / "scene_dataset.json"
@@ -587,40 +594,23 @@ class DGPEncoder(Encoder):
         return str(relative_path / filename)
 
 
-def main(dataset_input_path, dataset_output_path):
+def main(dataset_input_path, dataset_output_path, frame_slice):
     decoder = DGPDecoder(dataset_path=dataset_input_path)
     dataset = Dataset.from_decoder(decoder=decoder)
 
-    with dataset.get_editable_scene(scene_name=dataset.scene_names[0]) as scene:
-        for sn in []:
-            scene.remove_sensor(sn)
-
-        """encoder = DGPEncoder(
-            dataset_path=dataset_output_path,
-            annotation_types=[
-                AnnotationTypes.BoundingBoxes2D,
-                AnnotationTypes.BoundingBoxes3D,
-                AnnotationTypes.OpticalFlow,
-                AnnotationTypes.SemanticSegmentation2D,
-                AnnotationTypes.SemanticSegmentation3D,
-                AnnotationTypes.InstanceSegmentation2D,
-                AnnotationTypes.InstanceSegmentation3D,
-            ],
-        )"""
-        encoder = DGPEncoder(dataset_path=dataset_output_path)
-        encoder.encode_dataset(dataset)
+    with DGPEncoder(dataset=dataset, output_path=dataset_output_path, frame_slice=frame_slice) as encoder:
+        with dataset.get_editable_scene(scene_name=dataset.scene_names[0]) as scene:
+            encoder.encode_scene(scene)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert DGP to DGP")
     parser.add_argument("-i", "--input", help="<Required> pass input local / s3 path for DGP dataset", required=True)
-
     parser.add_argument("-o", "--output", help="<Required> pass output local / s3 path for DGP dataset", required=True)
-
-    parser.add_argument("-m", "--max", const=None, type=int, help="Set the number of max frames to be encoded")
+    parser.add_argument("--start", help="Frame Slicing Start", default=None, type=int)
+    parser.add_argument("--stop", help="Frame Slicing Stop", default=None, type=int)
+    parser.add_argument("--step", help="Frame Slicing Step", default=None, type=int)
 
     args = parser.parse_args()
 
-    MAX_FRAMES = args.max
-
-    main(args.input, args.output)
+    main(args.input, args.output, slice(args.start, args.stop, args.step))
