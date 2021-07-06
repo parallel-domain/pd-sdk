@@ -174,12 +174,8 @@ class BoundingBox3D:
         return rep
 
     @property
-    def size(self) -> np.ndarray:
-        return np.array([self.length, self.width, self.height])  # assuming FLU
-
-    @property
-    def position(self) -> np.ndarray:
-        return self.pose.translation
+    def volume(self) -> float:
+        return self.length * self.width * self.height
 
 
 class Polygon2D:
