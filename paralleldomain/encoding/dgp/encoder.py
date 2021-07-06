@@ -46,7 +46,7 @@ from paralleldomain.encoding.dgp.dtos import (
     TranslationDTO,
 )
 from paralleldomain.encoding.encoder import Encoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox3D
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import SensorFrame
@@ -55,7 +55,7 @@ from paralleldomain.utilities.any_path import AnyPath
 logger = logging.getLogger(__name__)
 
 
-def json_write(obj: object, fp: Union[Path, CloudPath, str], append_sha1: bool = False) -> str:
+def _json_write(obj: object, fp: Union[Path, CloudPath, str], append_sha1: bool = False) -> str:
     fp = AnyPath(fp)
     fp.parent.mkdir(parents=True, exist_ok=True)
 
@@ -77,7 +77,7 @@ def json_write(obj: object, fp: Union[Path, CloudPath, str], append_sha1: bool =
     return fp.name
 
 
-def png_write(obj: object, fp: Union[Path, CloudPath, str]) -> str:
+def _png_write(obj: object, fp: Union[Path, CloudPath, str]) -> str:
     fp = AnyPath(fp)
     fp.parent.mkdir(parents=True, exist_ok=True)
 
@@ -87,7 +87,7 @@ def png_write(obj: object, fp: Union[Path, CloudPath, str]) -> str:
     return fp.name
 
 
-def npz_write(npz_kwargs: Dict[str, np.ndarray], fp: Union[Path, CloudPath, str]) -> str:
+def _npz_write(npz_kwargs: Dict[str, np.ndarray], fp: Union[Path, CloudPath, str]) -> str:
     fp = AnyPath(fp)
     fp.parent.mkdir(parents=True, exist_ok=True)
 
@@ -97,24 +97,25 @@ def npz_write(npz_kwargs: Dict[str, np.ndarray], fp: Union[Path, CloudPath, str]
     return fp.name
 
 
-def attribute_key_dump(obj: object) -> str:
+def _attribute_key_dump(obj: object) -> str:
     return str(obj)
 
 
-def attribute_value_dump(obj: object) -> str:
+def _attribute_value_dump(obj: object) -> str:
     if isinstance(obj, Dict) or isinstance(obj, List):
         return json.dumps(obj, indent=2)
     else:
         return str(obj)
 
 
-def vectors_to_rgba(vectors: np.ndarray) -> np.ndarray:
+def _vectors_to_rgba(vectors: np.ndarray) -> np.ndarray:
     return np.concatenate(
         [vectors[..., [0]] >> 8, vectors[..., [0]] & 0xFF, vectors[..., [1]] >> 8, vectors[..., [1]] & 0xFF], axis=-1
     ).astype(np.uint8)
 
 
-def num_points_in_box(xyz_one: np.ndarray, box: BoundingBox3D) -> np.ndarray:
+"""
+def _num_points_in_box(xyz_one: np.ndarray, box: BoundingBox3D) -> np.ndarray:
     to_local_box = box.pose.inverse
     point_in_local_box_coords = (to_local_box @ xyz_one.T).T
     box_size = np.array([box.length, box.width, box.height])
@@ -124,6 +125,7 @@ def num_points_in_box(xyz_one: np.ndarray, box: BoundingBox3D) -> np.ndarray:
     points_smaller_than_max = np.all(point_in_local_box_coords[:, :3] <= max_point, axis=-1)
     is_point_in_aa_bb = np.logical_and(points_greater_than_min, points_smaller_than_max)
     return point_in_local_box_coords[is_point_in_aa_bb].shape[0]
+"""
 
 
 # noinspection InsecureHash
@@ -182,12 +184,14 @@ class DGPEncoder(Encoder):
 
         for sn in scene.sensor_names:
             sensor_frames = [f.get_sensor(sn) for f in scene.frames[self._frame_slice]]
-            sensor_data = self.encode_sensor_frames_by_sensor(sensor_frames=sensor_frames, scene_name=scene.name)
+            sensor_data = self._encode_sensor_frames_by_sensor(sensor_frames=sensor_frames, scene_name=scene.name)
             scene_data.append(sensor_data)
 
         for f in scene.frames[self._frame_slice]:
             sensor_frames = [f.get_sensor(sn) for sn in scene.sensor_names]
-            frame_data = self.encode_sensor_frames_by_frame(frame=f, sensor_frames=sensor_frames, scene_name=scene.name)
+            frame_data = self._encode_sensor_frames_by_frame(
+                frame=f, sensor_frames=sensor_frames, scene_name=scene.name
+            )
             scene_samples.append(frame_data)
 
         for i, s_sample in enumerate(scene_samples):
@@ -201,7 +205,7 @@ class DGPEncoder(Encoder):
 
         return scene_path
 
-    def encode_sensor_frames_by_frame(self, frame: Frame, sensor_frames: List[SensorFrame], scene_name: str):
+    def _encode_sensor_frames_by_frame(self, frame: Frame, sensor_frames: List[SensorFrame], scene_name: str):
         frame_data = SceneSampleDTO(
             id=SceneSampleIdDTO(
                 log="", timestamp=frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), name="", index=frame.frame_id
@@ -213,12 +217,13 @@ class DGPEncoder(Encoder):
 
         return frame_data
 
-    def encode_sensor_frames_by_sensor(self, sensor_frames: List[SensorFrame], scene_name: str):
+    def _encode_sensor_frames_by_sensor(self, sensor_frames: List[SensorFrame], scene_name: str):
         sorted_sensor_frames = sorted(sensor_frames, key=lambda x: x.date_time)
 
         with parallel_backend("threading", n_jobs=self._thread_count):
             sensor_data = Parallel()(
-                delayed(self.encode_sensor_frame)(sensor_frame=sf, scene_name=scene_name) for sf in sorted_sensor_frames
+                delayed(self._encode_sensor_frame)(sensor_frame=sf, scene_name=scene_name)
+                for sf in sorted_sensor_frames
             )
 
         padding = 2 * [None]
@@ -229,7 +234,7 @@ class DGPEncoder(Encoder):
 
         return sensor_data
 
-    def encode_sensor_frame(self, sensor_frame: SensorFrame, scene_name: str):
+    def _encode_sensor_frame(self, sensor_frame: SensorFrame, scene_name: str):
         data_key = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
 
         if sensor_frame.point_cloud is not None:
@@ -356,7 +361,7 @@ class DGPEncoder(Encoder):
                 class_id=b.class_id,
                 instance_id=b.instance_id,
                 num_points=b.num_points,
-                attributes={attribute_key_dump(k): attribute_value_dump(v) for k, v in b.attributes.items()},
+                attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in b.attributes.items()},
                 box=BoundingBox3DBoxDTO(
                     width=b.width,
                     length=b.length,
@@ -383,7 +388,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.json"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / json_write(bb3d_dto.to_dict(), output_path, append_sha1=True))
+        return str(relative_path / _json_write(bb3d_dto.to_dict(), output_path, append_sha1=True))
 
     def _save_bounding_box_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         bb2d_dto = AnnotationsBoundingBox2DDTO(annotations=[])
@@ -399,7 +404,7 @@ class DGPEncoder(Encoder):
                 instance_id=b.instance_id,
                 area=b.area,
                 iscrowd=is_crowd,
-                attributes={attribute_key_dump(k): attribute_value_dump(v) for k, v in b.attributes.items()},
+                attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in b.attributes.items()},
                 box=BoundingBox2DBoxDTO(x=b.x, y=b.y, w=b.width, h=b.height),
             )
 
@@ -409,7 +414,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.json"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / json_write(bb2d_dto.to_dict(), output_path, append_sha1=True))
+        return str(relative_path / _json_write(bb2d_dto.to_dict(), output_path, append_sha1=True))
 
     def _save_semantic_segmentation_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         relative_path = Path("semantic_segmentation_2d") / sensor_frame.sensor_name
@@ -418,7 +423,7 @@ class DGPEncoder(Encoder):
 
         return str(
             relative_path
-            / png_write(sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D).rgb_encoded, output_path)
+            / _png_write(sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D).rgb_encoded, output_path)
         )
 
     def _save_semantic_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -428,7 +433,7 @@ class DGPEncoder(Encoder):
 
         return str(
             relative_path
-            / npz_write(
+            / _npz_write(
                 {
                     "segmentation": sensor_frame.get_annotations(
                         AnnotationTypes.SemanticSegmentation3D
@@ -445,7 +450,7 @@ class DGPEncoder(Encoder):
 
         return str(
             relative_path
-            / png_write(sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D).rgb_encoded, output_path)
+            / _png_write(sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D).rgb_encoded, output_path)
         )
 
     def _save_instance_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -455,7 +460,7 @@ class DGPEncoder(Encoder):
 
         return str(
             relative_path
-            / npz_write(
+            / _npz_write(
                 {
                     "instance": sensor_frame.get_annotations(
                         AnnotationTypes.InstanceSegmentation3D
@@ -472,8 +477,8 @@ class DGPEncoder(Encoder):
 
         return str(
             relative_path
-            / png_write(
-                vectors_to_rgba(sensor_frame.get_annotations(AnnotationTypes.OpticalFlow).vectors),
+            / _png_write(
+                _vectors_to_rgba(sensor_frame.get_annotations(AnnotationTypes.OpticalFlow).vectors),
                 output_path,
             )
         )
@@ -483,7 +488,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.png"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / png_write(sensor_frame.image.rgba, output_path))
+        return str(relative_path / _png_write(sensor_frame.image.rgba, output_path))
 
     def _save_point_cloud(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         relative_path = Path("point_cloud") / sensor_frame.sensor_name
@@ -516,7 +521,7 @@ class DGPEncoder(Encoder):
         pc_data["RING_ID"] = pc.ring[:, 0]
         pc_data["TIMESTAMP"] = pc.ts[:, 0]
 
-        return str(relative_path / npz_write({"data": pc_data}, output_path))
+        return str(relative_path / _npz_write({"data": pc_data}, output_path))
 
     def _save_calibration_json(self, sensor_frames: List[SensorFrame], scene_name: str) -> str:
         calib_dto = CalibrationDTO(names=[], extrinsics=[], intrinsics=[])
@@ -555,7 +560,7 @@ class DGPEncoder(Encoder):
 
         calibration_json_path = self._dataset_path / scene_name / "calibration" / ".json"
 
-        return json_write(calib_dto.to_dict(), calibration_json_path, append_sha1=True).split(".")[0]
+        return _json_write(calib_dto.to_dict(), calibration_json_path, append_sha1=True).split(".")[0]
 
     def _save_dataset_json(self):
 
@@ -570,7 +575,7 @@ class DGPEncoder(Encoder):
         )
 
         dataset_json_path = self._dataset_path / "scene_dataset.json"
-        json_write(ds_dto.to_dict(), dataset_json_path)
+        _json_write(ds_dto.to_dict(), dataset_json_path)
 
     def _save_scene_json(
         self, scene: Scene, scene_samples: List[SceneSampleDTO], scene_data: List[SceneDataDTO]
@@ -589,7 +594,7 @@ class DGPEncoder(Encoder):
         filename = "scene.json"
         output_path = self._dataset_path / relative_path / filename
 
-        filename = json_write(scene_dto.to_dict(), output_path, append_sha1=True)
+        filename = _json_write(scene_dto.to_dict(), output_path, append_sha1=True)
 
         return str(relative_path / filename)
 
