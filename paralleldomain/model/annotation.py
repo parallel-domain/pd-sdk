@@ -143,13 +143,13 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
 
 @dataclass
 class SemanticSegmentation3D(Annotation):
-    mask: np.ndarray
+    class_ids: np.ndarray
     class_map: ClassMap
 
 
 @dataclass
 class InstanceSegmentation3D(Annotation):
-    mask: np.ndarray
+    instance_ids: np.ndarray
 
 
 @dataclass
