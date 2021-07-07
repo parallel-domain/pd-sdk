@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Type, TypeVar, Union, cast
+from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -233,13 +233,23 @@ class PointInfo(Enum):
 
 
 class ImageData(SensorData):
-    def __init__(self, unique_cache_key: str, load_data_rgba: Callable[[], np.ndarray]):
+    def __init__(
+        self,
+        unique_cache_key: str,
+        load_data_rgba: Callable[[], np.ndarray],
+        load_image_dims: Callable[[], Tuple[int, int, int]],
+    ):
+        self._load_image_dims = load_image_dims
         self._unique_cache_key = unique_cache_key
         self._load_data_rgb_call = load_data_rgba
 
     @property
     def _data_rgba(self) -> np.ndarray:
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_rgb_call)
+
+    @property
+    def _image_dims(self) -> Tuple[int, int, int]:
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image_dims", loader=self._load_image_dims)
 
     @property
     def rgba(self) -> np.ndarray:
@@ -251,11 +261,15 @@ class ImageData(SensorData):
 
     @property
     def width(self) -> int:
-        return self._data_rgba.shape[1]
+        return self._image_dims[1]
 
     @property
     def height(self) -> int:
-        return self._data_rgba.shape[0]
+        return self._image_dims[0]
+
+    @property
+    def channels(self) -> int:
+        return self._image_dims[2]
 
     @property
     def coordinates(self) -> np.ndarray:

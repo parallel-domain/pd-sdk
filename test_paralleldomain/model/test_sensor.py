@@ -74,3 +74,18 @@ class TestSensorFrame:
         assert xyz.shape[0] > 0
         assert time4 < time1
         assert time3 < 1
+
+    def test_lazy_image_loading(self, scene: Scene):
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+        sensor_frame = next(iter(frame.camera_frames))
+        image = sensor_frame.image
+        assert image is not None
+        assert isinstance(image.height, int)
+        assert isinstance(image.width, int)
+        assert isinstance(image.channels, int)
+        rgb = image.rgb
+        assert rgb is not None
+        assert len(rgb.shape) == 3
+        assert rgb.shape[0] == image.height
+        assert rgb.shape[1] == image.width
