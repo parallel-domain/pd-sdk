@@ -92,7 +92,7 @@ def _npz_write(npz_kwargs: Dict[str, np.ndarray], fp: Union[Path, CloudPath, str
     fp.parent.mkdir(parents=True, exist_ok=True)
 
     with fp.open("wb") as npz_file:
-        np.savez(npz_file, **npz_kwargs)
+        np.savez_compressed(npz_file, **npz_kwargs)
 
     return fp.name
 
@@ -145,7 +145,7 @@ class DGPEncoder(Encoder):
         AnnotationTypes.SemanticSegmentation3D: "3",
         AnnotationTypes.InstanceSegmentation2D: "4",
         AnnotationTypes.InstanceSegmentation3D: "5",
-        # "6": Annotation,  # Depth
+        AnnotationTypes.Depth: "6",
         # "7": Annotation,  # Surface Normals 3D
         AnnotationTypes.OpticalFlow: "8",
         # "9": Annotation,  # Motion Vectors 3D aka Scene Flow
@@ -248,6 +248,8 @@ class DGPEncoder(Encoder):
                         a_value = self._save_semantic_segmentation_3d(sensor_frame=sensor_frame, scene_name=scene_name)
                     elif a_type is AnnotationTypes.InstanceSegmentation3D:
                         a_value = self._save_instance_segmentation_3d(sensor_frame=sensor_frame, scene_name=scene_name)
+                    elif a_type is AnnotationTypes.Depth:
+                        a_value = self._save_depth(sensor_frame=sensor_frame, scene_name=scene_name)
                     else:
                         a_value = "NOT_IMPLEMENTED"
 
@@ -289,6 +291,8 @@ class DGPEncoder(Encoder):
                         a_value = self._save_instance_segmentation_2d(sensor_frame=sensor_frame, scene_name=scene_name)
                     elif a_type is AnnotationTypes.OpticalFlow:
                         a_value = self._save_motion_vectors_2d(sensor_frame=sensor_frame, scene_name=scene_name)
+                    elif a_type is AnnotationTypes.Depth:
+                        a_value = self._save_depth(sensor_frame=sensor_frame, scene_name=scene_name)
                     else:
                         a_value = "NOT_IMPLEMENTED"
 
@@ -479,6 +483,19 @@ class DGPEncoder(Encoder):
             relative_path
             / _png_write(
                 _vectors_to_rgba(sensor_frame.get_annotations(AnnotationTypes.OpticalFlow).vectors),
+                output_path,
+            )
+        )
+
+    def _save_depth(self, sensor_frame: SensorFrame, scene_name: str) -> str:
+        relative_path = Path("depth") / sensor_frame.sensor_name
+        filename = f"{int(sensor_frame.frame_id):018d}.npz"
+        output_path = self._dataset_path / scene_name / relative_path / filename
+
+        return str(
+            relative_path
+            / _npz_write(
+                {"data": sensor_frame.get_annotations(AnnotationTypes.Depth).depth[:, :, 0]},
                 output_path,
             )
         )
