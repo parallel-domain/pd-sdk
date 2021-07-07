@@ -23,6 +23,7 @@ from paralleldomain.model.annotation import (
     BoundingBox3D,
     BoundingBoxes2D,
     BoundingBoxes3D,
+    Depth,
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
@@ -215,14 +216,17 @@ class DGPFrameLazyLoader:
             if self.custom_id_map is not None:
                 class_ids = self.custom_id_map[class_ids]
             return SemanticSegmentation2D(class_ids=class_ids, class_map=self.class_map)
-        elif issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
-            return OpticalFlow(vectors=flow_vectors)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
+        elif issubclass(annotation_type, OpticalFlow):
+            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return OpticalFlow(vectors=flow_vectors)
+        elif issubclass(annotation_type, Depth):
+            depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Depth(depth=depth_mask)
 
     def load_available_annotation_types(
         self,
@@ -303,6 +307,13 @@ class DGPFrameLazyLoader:
             vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
             return vectors
+
+    def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            npz_data = np.load(cast(BinaryIO, cloud_binary))
+
+            return np.expand_dims(npz_data.f.data, axis=-1)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

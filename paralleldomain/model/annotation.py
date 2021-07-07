@@ -84,6 +84,11 @@ class OpticalFlow(Annotation):
 
 
 @dataclass
+class Depth(Annotation):
+    depth: np.ndarray
+
+
+@dataclass
 class SemanticSegmentation2D(Annotation):
     class_ids: np.ndarray
     class_map: ClassMap
@@ -229,3 +234,4 @@ class AnnotationTypes:
     InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D
     PolygonSegmentation2D: Type[PolygonSegmentation2D] = PolygonSegmentation2D
     OpticalFlow: Type[OpticalFlow] = OpticalFlow
+    Depth: Type[Depth] = Depth
