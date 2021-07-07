@@ -127,6 +127,7 @@ class DGPFrameLazyLoader:
                     cloud_identifier=self.datum.image.filename,
                 ),
                 unique_cache_key=unique_cache_key,
+                load_image_dims=lambda: (self.datum.image.height, self.datum.image.width, self.datum.image.channels),
             )
 
     def load_sensor_pose(self) -> SensorPose:
