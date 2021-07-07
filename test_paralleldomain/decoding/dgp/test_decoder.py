@@ -50,7 +50,7 @@ class TestDecoderWithClassIdMap:
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.lidar_frames))
         semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation3D)
-        assert np.all(semseg.mask == 1337)
+        assert np.all(semseg.class_ids == 1337)
 
     def test_map_all_to_same_bbox3d(self):
         custom_map = ClassMap(class_id_to_class_name={1337: "All"})

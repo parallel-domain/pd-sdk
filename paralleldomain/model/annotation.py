@@ -38,6 +38,10 @@ class BoundingBox2D(Annotation):
     instance_id: int
     attributes: Dict[str, Any] = field(default_factory=dict)
 
+    @property
+    def area(self):
+        return self.width * self.height
+
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
         return rep
@@ -139,13 +143,13 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
 
 @dataclass
 class SemanticSegmentation3D(Annotation):
-    mask: np.ndarray
+    class_ids: np.ndarray
     class_map: ClassMap
 
 
 @dataclass
 class InstanceSegmentation3D(Annotation):
-    mask: np.ndarray
+    instance_ids: np.ndarray
 
 
 @dataclass
@@ -170,12 +174,8 @@ class BoundingBox3D:
         return rep
 
     @property
-    def size(self) -> np.ndarray:
-        return np.array([self.length, self.width, self.height])  # assuming FLU
-
-    @property
-    def position(self) -> np.ndarray:
-        return self.pose.translation
+    def volume(self) -> float:
+        return self.length * self.width * self.height
 
 
 class Polygon2D:

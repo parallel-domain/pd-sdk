@@ -173,7 +173,7 @@ class DGPFrameLazyLoader:
             box_list = []
             for box_dto in dto.annotations:
 
-                attr_parsed = {}
+                attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = json.loads(v)
@@ -202,12 +202,12 @@ class DGPFrameLazyLoader:
             )
             if self.custom_id_map is not None:
                 segmentation_mask = self.custom_id_map[segmentation_mask]
-            return SemanticSegmentation3D(mask=segmentation_mask, class_map=self.class_map)
+            return SemanticSegmentation3D(class_ids=segmentation_mask, class_map=self.class_map)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return InstanceSegmentation3D(mask=instance_mask)
+            return InstanceSegmentation3D(instance_ids=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
             class_ids = self._decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier

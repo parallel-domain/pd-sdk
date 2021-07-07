@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DEFAULT_CLASS_MAP
@@ -115,21 +115,25 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.description
 
+    def decode_scene_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        return scene_dto.metadata.to_dict()
+
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data})
+        return sorted(list({datum.id.name for datum in scene_dto.data}))
 
     def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.image})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.image}))
 
     def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
     def decode_sensor(
         self,

@@ -41,4 +41,4 @@ repos:
     rev: 3.8.4
     hooks:
       - id: flake8
-        args: [ "--max-line-length=120", "--ignore=F401,F407" ]
+        args: [ "--max-line-length=120", "--ignore=F401,F407,W503" ]
