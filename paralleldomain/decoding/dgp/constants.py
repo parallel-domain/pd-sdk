@@ -23,6 +23,11 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "10": Annotation,  # Surface normals 2D
 }
 
+ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
+    v: k for k, v in ANNOTATION_TYPE_MAP.items() if v is not Annotation
+}
+
+"""
 DGPLabel = namedtuple(
     "Label",
     [
@@ -79,3 +84,4 @@ _default_labels: List[DGPLabel] = [
 ]
 
 DEFAULT_CLASS_MAP = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
+"""

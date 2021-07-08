@@ -375,6 +375,10 @@ class SemanticSegmentation3D(Annotation):
     class_ids: np.ndarray
     class_map: ClassMap
 
+    def update_classes(self, class_id_map: ClassIdMap, class_label_map: ClassMap) -> None:
+        self.class_ids = class_id_map[self.class_ids]
+        self.class_map = class_label_map
+
 
 @dataclass
 class InstanceSegmentation3D(Annotation):

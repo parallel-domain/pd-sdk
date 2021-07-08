@@ -2,7 +2,7 @@ import abc
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, ItemsView, List, Optional, TypeVar, Union
+from typing import Any, Dict, ItemsView, List, Optional, TypeVar, Union
 
 import numpy as np
 
@@ -33,20 +33,11 @@ class ClassIdMap:
 
 
 @dataclass
-class ColorRGB:
-    r: int
-    g: int
-    b: int
-
-
-@dataclass
 class ClassDetail:
     name: str
     id: int
     instanced: bool = False
-    color: ColorRGB = field(
-        default_factory=lambda: ColorRGB(r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255))
-    )
+    meta: Dict[str, Any] = field(default_factory=lambda: {})
 
 
 class ClassMap:
@@ -59,13 +50,17 @@ class ClassMap:
 
     @property
     def class_names(self) -> List[str]:
-        return [c.name for cid in self.class_ids for c in self._class_id_to_class_detail[cid]]
+        return [self._class_id_to_class_detail[cid].name for cid in self.class_ids]
 
     def items(self) -> ItemsView[int, ClassDetail]:
         return self._class_id_to_class_detail.items()
 
     def __getitem__(self, key: int) -> ClassDetail:
         return self._class_id_to_class_detail[key]
+
+    @staticmethod
+    def from_id_label_dict(id_label_dict: Dict[int, str]) -> "ClassMap":
+        return ClassMap(classes=[ClassDetail(id=k, name=v) for k, v in id_label_dict.items()])
 
 
 class OnLabelNotDefined(Enum):
@@ -100,7 +95,7 @@ class LabelMapping:
                         id=class_id,
                         name=self[class_detail.name],
                         instanced=class_detail.instanced,
-                        color=class_detail.color,
+                        meta=class_detail.meta,
                     )
                     for class_id, class_detail in other.items()
                     if self[class_detail.name] is not None

@@ -246,3 +246,25 @@ class DatasetMetaDTO:
 class DatasetDTO:
     meta_data: DatasetMetaDTO
     scene_names: List[str]
+
+
+@dataclass
+class OntologyItemColorDTO:
+    r: int
+    g: int
+    b: int
+
+
+@dataclass
+class OntologyItemDTO:
+    name: str
+    id: int
+    color: OntologyItemColorDTO
+    isthing: bool
+    supercategory: str
+
+
+@dataclass_json
+@dataclass
+class OntologyFileDTO:
+    items: List[OntologyItemDTO]
