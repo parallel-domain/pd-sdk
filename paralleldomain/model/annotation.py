@@ -96,31 +96,34 @@ class BoundingBoxes2D(Annotation):
         y_coords = []
         target = self.get_instance(target_id)
         source = self.get_instance(source_id)
-        for b in [source, target]:
-            x_coords.append(b.x)
-            x_coords.append(b.x + b.width)
-            y_coords.append(b.y)
-            y_coords.append(b.y + b.height)
+        if source is not None:
+            for b in [source, target]:
+                x_coords.append(b.x)
+                x_coords.append(b.x + b.width)
+                y_coords.append(b.y)
+                y_coords.append(b.y + b.height)
 
-        x_ul_new = min(x_coords)
-        x_width_new = max(x_coords) - x_ul_new
-        y_ul_new = min(y_coords)
-        y_height_new = max(y_coords) - y_ul_new
+            x_ul_new = min(x_coords)
+            x_width_new = max(x_coords) - x_ul_new
+            y_ul_new = min(y_coords)
+            y_height_new = max(y_coords) - y_ul_new
 
-        merged = BoundingBox2D(
-            x=x_ul_new,
-            y=y_ul_new,
-            width=x_width_new,
-            height=y_height_new,
-            class_id=target.class_id,
-            instance_id=target.instance_id,
-            attributes=target.attributes,
-        )
+            merged = BoundingBox2D(
+                x=x_ul_new,
+                y=y_ul_new,
+                width=x_width_new,
+                height=y_height_new,
+                class_id=target.class_id,
+                instance_id=target.instance_id,
+                attributes=target.attributes,
+            )
 
-        if replace_target:
-            self.update_instance(target_id, merged)
+            if replace_target:
+                self.update_instance(target_id, merged)
 
-        return merged
+            return merged
+        else:
+            return target
 
     def update_classes(self, class_id_map: ClassIdMap, class_label_map: ClassMap) -> None:
         for b in self.boxes:
@@ -194,54 +197,57 @@ class BoundingBoxes3D(Annotation):
         target = self.get_instance(target_id)
         source = self.get_instance(source_id)
 
-        source_faces = np.array(
-            [
-                [source.length / 2, 0.0, 0.0, 1.0],
-                [-1 * source.length / 2, 0.0, 0.0, 1.0],
-                [0.0, source.width / 2, 0.0, 1.0],
-                [0.0, -1.0 * source.width / 2, 0.0, 1.0],
-                [0.0, 0.0, source.height / 2, 1.0],
-                [0.0, 0.0, -1 * source.height / 2, 1.0],
-            ]
-        )
-        target_faces = np.array(
-            [
-                [target.length / 2, 0.0, 0.0, 1.0],
-                [-1 * target.length / 2, 0.0, 0.0, 1.0],
-                [0.0, target.width / 2, 0.0, 1.0],
-                [0.0, -1.0 * target.width / 2, 0.0, 1.0],
-                [0.0, 0.0, target.height / 2, 1.0],
-                [0.0, 0.0, -1 * target.height / 2, 1.0],
-            ]
-        )
-        sensor_frame_faces = source.pose @ source_faces.transpose()
-        bike_frame_faces = (target.pose.inverse @ sensor_frame_faces).transpose()
-        max_faces = np.where(np.abs(target_faces) > np.abs(bike_frame_faces), target_faces, bike_frame_faces)
-        length = max_faces[0, 0] - max_faces[1, 0]
-        width = max_faces[2, 1] - max_faces[3, 1]
-        height = max_faces[4, 2] - max_faces[5, 2]
-        center = np.array(
-            [max_faces[1, 0] + 0.5 * length, max_faces[3, 1] + 0.5 * width, max_faces[5, 2] + 0.5 * height, 1.0]
-        )
-        translation = target.pose @ center
-        fused_pose = AnnotationPose(quaternion=target.pose.quaternion, translation=translation[:3])
-        attributes = target.attributes
-        # attributes.update(source.attributes)
-        merged = BoundingBox3D(
-            pose=fused_pose,
-            length=length,
-            width=width,
-            height=height,
-            class_id=target.class_id,
-            instance_id=target.instance_id,
-            num_points=(target.num_points + source.num_points),
-            attributes=attributes,
-        )
+        if source is not None:
+            source_faces = np.array(
+                [
+                    [source.length / 2, 0.0, 0.0, 1.0],
+                    [-1 * source.length / 2, 0.0, 0.0, 1.0],
+                    [0.0, source.width / 2, 0.0, 1.0],
+                    [0.0, -1.0 * source.width / 2, 0.0, 1.0],
+                    [0.0, 0.0, source.height / 2, 1.0],
+                    [0.0, 0.0, -1 * source.height / 2, 1.0],
+                ]
+            )
+            target_faces = np.array(
+                [
+                    [target.length / 2, 0.0, 0.0, 1.0],
+                    [-1 * target.length / 2, 0.0, 0.0, 1.0],
+                    [0.0, target.width / 2, 0.0, 1.0],
+                    [0.0, -1.0 * target.width / 2, 0.0, 1.0],
+                    [0.0, 0.0, target.height / 2, 1.0],
+                    [0.0, 0.0, -1 * target.height / 2, 1.0],
+                ]
+            )
+            sensor_frame_faces = source.pose @ source_faces.transpose()
+            bike_frame_faces = (target.pose.inverse @ sensor_frame_faces).transpose()
+            max_faces = np.where(np.abs(target_faces) > np.abs(bike_frame_faces), target_faces, bike_frame_faces)
+            length = max_faces[0, 0] - max_faces[1, 0]
+            width = max_faces[2, 1] - max_faces[3, 1]
+            height = max_faces[4, 2] - max_faces[5, 2]
+            center = np.array(
+                [max_faces[1, 0] + 0.5 * length, max_faces[3, 1] + 0.5 * width, max_faces[5, 2] + 0.5 * height, 1.0]
+            )
+            translation = target.pose @ center
+            fused_pose = AnnotationPose(quaternion=target.pose.quaternion, translation=translation[:3])
+            attributes = target.attributes
+            # attributes.update(source.attributes)
+            merged = BoundingBox3D(
+                pose=fused_pose,
+                length=length,
+                width=width,
+                height=height,
+                class_id=target.class_id,
+                instance_id=target.instance_id,
+                num_points=(target.num_points + source.num_points),
+                attributes=attributes,
+            )
 
-        if replace_target:
-            self.update_instance(target_id, merged)
+            if replace_target:
+                self.update_instance(target_id, merged)
 
-        return merged
+            return merged
+        else:
+            return target
 
     def update_classes(self, class_id_map: ClassIdMap, class_label_map: ClassMap) -> None:
         for b in self.boxes:
