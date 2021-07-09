@@ -11,10 +11,10 @@ from paralleldomain.model.class_mapping import ClassIdMap, ClassMap, LabelMappin
 
 class TestClassMap:
     def test_id_to_str(self):
-        class_map = ClassMap(class_id_to_class_name={i: str(i + 2) for i in range(42)})
+        class_map = ClassMap.from_id_label_dict({i: str(i + 2) for i in range(42)})
 
         for i in range(42):
-            assert class_map[i] == str(i + 2)
+            assert class_map[i].name == str(i + 2)
 
         with pytest.raises(KeyError):
             _ = class_map[42]

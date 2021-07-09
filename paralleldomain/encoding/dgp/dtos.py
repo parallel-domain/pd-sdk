@@ -262,3 +262,25 @@ class DatasetSceneSplitDTO:
 class DatasetDTO:
     metadata: DatasetMetaDTO
     scene_splits: Dict[str, DatasetSceneSplitDTO]
+
+
+@dataclass
+class OntologyItemColorDTO:
+    r: int
+    g: int
+    b: int
+
+
+@dataclass
+class OntologyItemDTO:
+    name: str
+    id: int
+    color: OntologyItemColorDTO
+    isthing: bool
+    supercategory: str
+
+
+@dataclass_json
+@dataclass
+class OntologyFileDTO:
+    items: List[OntologyItemDTO]
