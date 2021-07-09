@@ -95,7 +95,7 @@ class SceneMetadataPDDTO(DataClassJsonMixin):
     wetness: float
     street_lights: float
     batch_id: int
-    region_type: str = field(metadata=config(field_name="region"))
+    region_type: str
     scene_type: Optional[str] = None
 
 
