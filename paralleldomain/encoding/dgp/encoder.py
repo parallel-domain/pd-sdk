@@ -30,6 +30,9 @@ from paralleldomain.encoding.dgp.dtos import (
     DatasetDTO,
     DatasetMetaDTO,
     DatasetSceneSplitDTO,
+    OntologyFileDTO,
+    OntologyItemColorDTO,
+    OntologyItemDTO,
     PoseDTO,
     RotationDTO,
     SceneDataDatum,
@@ -198,9 +201,48 @@ class DGPEncoder(Encoder):
             data_keys = [s_data[i].key for s_data in scene_data]
             s_sample.datum_keys = data_keys
 
+        ontology_dict: Dict[str, str] = {}
+        for a_type in self.annotation_types:
+            for sn in scene.sensor_names:
+                sn_frame_0 = scene.get_sensor(sn).get_frame(scene.frame_ids[0])
+                if a_type in sn_frame_0.available_annotation_types:
+                    a_value = sn_frame_0.get_annotations(a_type)
+                    try:
+                        a_class_map: ClassMap = a_value.class_map
+                    except AttributeError:
+                        # "annotations" like OpticalFlow, Depth, Instanced do not know class_map concept
+                        a_class_map: ClassMap = ClassMap.from_id_label_dict({})
+
+                    ontology = OntologyFileDTO(
+                        items=[
+                            OntologyItemDTO(
+                                name=cd.name,
+                                id=cd.id,
+                                isthing=cd.instanced,
+                                color=OntologyItemColorDTO(
+                                    r=0 if "color" not in cd.meta else cd.meta["color"]["r"],
+                                    g=0 if "color" not in cd.meta else cd.meta["color"]["g"],
+                                    b=0 if "color" not in cd.meta else cd.meta["color"]["b"],
+                                ),
+                                supercategory="",
+                            )
+                            for _, cd in a_class_map.items()
+                        ]
+                    )
+
+                    relative_path = Path("ontology")
+                    filename = ".json"
+                    output_path = self._dataset_path / scene.name / relative_path / filename
+
+                    filename = _json_write(ontology.to_dict(), output_path, append_sha1=True)
+                    ontology_dict[self._annotation_type_map[a_type]] = filename.split(".")[0]
+                    break
+
         scene_data = [sensor_datum for sensor_data in scene_data for sensor_datum in sensor_data]  # flatten list
 
-        scene_path = self._save_scene_json(scene=scene, scene_samples=scene_samples, scene_data=scene_data)
+        scene_path = self._save_scene_json(
+            scene=scene, scene_samples=scene_samples, scene_data=scene_data, ontologies=ontology_dict
+        )
         self._scene_paths.append(scene_path)
 
         return scene_path
@@ -595,13 +637,17 @@ class DGPEncoder(Encoder):
         _json_write(ds_dto.to_dict(), dataset_json_path)
 
     def _save_scene_json(
-        self, scene: Scene, scene_samples: List[SceneSampleDTO], scene_data: List[SceneDataDTO]
+        self,
+        scene: Scene,
+        scene_samples: List[SceneSampleDTO],
+        scene_data: List[SceneDataDTO],
+        ontologies: Dict[str, str],
     ) -> str:
         scene_dto = SceneDTO(
             name=scene.name,
             description=scene.description,
             log="",
-            ontologies={},
+            ontologies=ontologies,
             metadata=SceneMetadataDTO.from_dict(scene.metadata),
             samples=scene_samples,
             data=scene_data,
@@ -622,6 +668,20 @@ def main(dataset_input_path, dataset_output_path, frame_slice):
 
     with DGPEncoder(dataset=dataset, output_path=dataset_output_path, frame_slice=frame_slice) as encoder:
         with dataset.get_editable_scene(scene_name=dataset.scene_names[0]) as scene:
+            """
+            for sn in ["lidar_bl", "lidar_br", "lidar_fl", "Right", "Left", "Rear"]:
+                scene.remove_sensor(sn)
+
+            custom_map = ClassMap.from_id_label_dict({1337: "All"})
+            custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
+
+            frame_ids = scene.frame_ids
+            for fid in frame_ids:
+                sf = scene.get_sensor("Front").get_frame(fid)
+                semseg2d = sf.get_annotations(AnnotationTypes.SemanticSegmentation2D)
+                semseg2d.update_classes(custom_id_map, custom_map)
+            """
+
             encoder.encode_scene(scene)
 
 
