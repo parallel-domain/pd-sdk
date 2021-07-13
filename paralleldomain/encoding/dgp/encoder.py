@@ -331,7 +331,6 @@ class DGPEncoder(Encoder):
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
                 ),
                 self.annotation_types,
-                chunksize=2,
             )
             filename = self._save_point_cloud(sensor_frame=sensor_frame, scene_name=scene_name)
             annotations = {r[0]: r[1] for r in res if r is not None}
@@ -363,7 +362,6 @@ class DGPEncoder(Encoder):
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
                 ),
                 self.annotation_types,
-                chunksize=2,
             )
 
             filename = self._save_rgb(sensor_frame=sensor_frame, scene_name=scene_name)
