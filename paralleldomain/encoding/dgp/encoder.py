@@ -269,7 +269,7 @@ class DGPEncoder(Encoder):
         sensor_data = DGPEncoder._thread_pool.map(
             lambda sf: self._encode_sensor_frame(sensor_frame=sf, scene_name=scene_name),
             sorted_sensor_frames,
-            chunksize=max(int(len(sorted_sensor_frames) / (self._thread_count / 2)), 1),
+            chunksize=max(int(len(sorted_sensor_frames) / (self._thread_count * 0.75)), 1),
         )
 
         padding = 2 * [None]
