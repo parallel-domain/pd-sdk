@@ -687,7 +687,7 @@ class DGPEncoder(Encoder):
 
             return (sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic)
 
-        res = DGPEncoder._thread_pool.map(get_calibration, sensor_frames)
+        res = map(get_calibration, sensor_frames)
 
         for r_name, r_extrinsic, r_intrinsic in res:
             calib_dto.names.append(r_name)
