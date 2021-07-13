@@ -326,16 +326,19 @@ class DGPEncoder(Encoder):
         data_key = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
 
         if sensor_frame.point_cloud is not None:
+            filename = DGPEncoder._thread_pool.apply_async(
+                self._save_point_cloud, kwds=dict(sensor_frame=sensor_frame, scene_name=scene_name)
+            )
             res = DGPEncoder._thread_pool.map(
                 lambda at: self._encode_cloud_annotation_types(
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
                 ),
                 self.annotation_types,
             )
-            filename = self._save_point_cloud(sensor_frame=sensor_frame, scene_name=scene_name)
+
             annotations = {r[0]: r[1] for r in res if r is not None}
             point_cloud = SceneDataDatumTypePointCloud(
-                filename=filename,
+                filename=filename.get(),
                 annotations=annotations,
                 point_format=["X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP"],
                 pose=PoseDTO(
@@ -357,6 +360,11 @@ class DGPEncoder(Encoder):
             scene_datum_dto = SceneDataDatumPointCloud(point_cloud=point_cloud)
         elif sensor_frame.image is not None:
             # annotations = {}
+
+            filename = DGPEncoder._thread_pool.apply_async(
+                self._save_rgb, kwds=dict(sensor_frame=sensor_frame, scene_name=scene_name)
+            )
+
             res = DGPEncoder._thread_pool.map(
                 lambda at: self._encode_image_annotation_types(
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
@@ -364,10 +372,9 @@ class DGPEncoder(Encoder):
                 self.annotation_types,
             )
 
-            filename = self._save_rgb(sensor_frame=sensor_frame, scene_name=scene_name)
             annotations = {r[0]: r[1] for r in res if r is not None}
             image = SceneDataDatumTypeImage(
-                filename=filename,
+                filename=filename.get(),
                 height=sensor_frame.image.height,
                 width=sensor_frame.image.width,
                 channels=sensor_frame.image.rgba.shape[2],
