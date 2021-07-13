@@ -1,5 +1,6 @@
 import os
 from sys import getsizeof
+from threading import Lock
 from typing import Any, Callable, Dict, Hashable, Set, Type, TypeVar, Union
 
 import cachetools
@@ -10,6 +11,7 @@ CachedItemType = TypeVar("CachedItemType")
 
 
 class LazyLoadCache(TTLCache):
+    _delete_lock = Lock()
     _type_to_size: Dict[Type, Union[int, Callable[[Any], int]]] = dict()
 
     def __init__(self, ttl: int, max_ram_usage_factor: float = 0.8):
@@ -70,21 +72,22 @@ class LazyLoadCache(TTLCache):
 
     def expire(self, time=None):
         """Remove expired items from the cache."""
-        if time is None:
-            time = self._TTLCache__timer()
-        root = self._TTLCache__root
-        curr = root.next
-        links = self._TTLCache__links
-        cache_delitem = Cache.__delitem__
-        while curr is not root and curr.expire < time:
-            if curr.key is not None and not self._is_locked_key(key=curr.key):
-                cache_delitem(self, curr.key)
-                del links[curr.key]
-                next = curr.next
-                curr.unlink()
-                curr = next
-            else:
-                curr = curr.next
+        with LazyLoadCache._delete_lock:
+            if time is None:
+                time = self._TTLCache__timer()
+            root = self._TTLCache__root
+            curr = root.next
+            links = self._TTLCache__links
+            cache_delitem = Cache.__delitem__
+            while curr is not root and curr.expire < time:
+                if curr.key is not None and not self._is_locked_key(key=curr.key):
+                    cache_delitem(self, curr.key)
+                    del links[curr.key]
+                    next = curr.next
+                    curr.unlink()
+                    curr = next
+                else:
+                    curr = curr.next
 
     def _is_locked_key(self, key: str):
         return any([key.startswith(locked) for locked in self._lock_prefixes])
@@ -98,20 +101,21 @@ class LazyLoadCache(TTLCache):
             self.expire(time)
             found_key_to_remove = False
             num_locked_items = 0
-            while not found_key_to_remove:
-                try:
-                    key = next(iter(self._TTLCache__links))
-                    is_locked = self._is_locked_key(key=key)
-                    found_key_to_remove = not is_locked
-                    if is_locked:
-                        num_locked_items += 1
-                        continue
-                except StopIteration:
-                    if num_locked_items == 0:
-                        raise KeyError("%s is empty" % type(self).__name__) from None
-                    return None
-                else:
-                    return (key, self.pop(key))
+            with LazyLoadCache._delete_lock:
+                while not found_key_to_remove:
+                    try:
+                        key = next(iter(self._TTLCache__links))
+                        is_locked = self._is_locked_key(key=key)
+                        found_key_to_remove = not is_locked
+                        if is_locked:
+                            num_locked_items += 1
+                            continue
+                    except StopIteration:
+                        if num_locked_items == 0:
+                            raise KeyError("%s is empty" % type(self).__name__) from None
+                        return None
+                    else:
+                        return (key, self.pop(key))
 
 
 class LazyLoadingMixin:
