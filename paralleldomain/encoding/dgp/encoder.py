@@ -467,7 +467,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.json"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / _json_write(bb3d_dto.to_dict(), output_path, append_sha1=True))
+        return str((relative_path / _json_write(bb3d_dto.to_dict(), output_path, append_sha1=True)).as_posix())
 
     def _save_bounding_box_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         bb2d_dto = AnnotationsBoundingBox2DDTO(annotations=[])
@@ -493,7 +493,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.json"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / _json_write(bb2d_dto.to_dict(), output_path, append_sha1=True))
+        return str((relative_path / _json_write(bb2d_dto.to_dict(), output_path, append_sha1=True)).as_posix())
 
     def _save_semantic_segmentation_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         relative_path = Path("semantic_segmentation_2d") / sensor_frame.sensor_name
@@ -501,8 +501,12 @@ class DGPEncoder(Encoder):
         output_path = self._dataset_path / scene_name / relative_path / filename
 
         return str(
-            relative_path
-            / _png_write(sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D).rgb_encoded, output_path)
+            (
+                relative_path
+                / _png_write(
+                    sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D).rgb_encoded, output_path
+                )
+            ).as_posix()
         )
 
     def _save_semantic_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -511,15 +515,17 @@ class DGPEncoder(Encoder):
         output_path = self._dataset_path / scene_name / relative_path / filename
 
         return str(
-            relative_path
-            / _npz_write(
-                {
-                    "segmentation": sensor_frame.get_annotations(
-                        AnnotationTypes.SemanticSegmentation3D
-                    ).class_ids.astype(np.uint32)
-                },
-                output_path,
-            )
+            (
+                relative_path
+                / _npz_write(
+                    {
+                        "segmentation": sensor_frame.get_annotations(
+                            AnnotationTypes.SemanticSegmentation3D
+                        ).class_ids.astype(np.uint32)
+                    },
+                    output_path,
+                )
+            ).as_posix()
         )
 
     def _save_instance_segmentation_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -528,8 +534,12 @@ class DGPEncoder(Encoder):
         output_path = self._dataset_path / scene_name / relative_path / filename
 
         return str(
-            relative_path
-            / _png_write(sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D).rgb_encoded, output_path)
+            (
+                relative_path
+                / _png_write(
+                    sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D).rgb_encoded, output_path
+                )
+            ).as_posix()
         )
 
     def _save_instance_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -538,15 +548,17 @@ class DGPEncoder(Encoder):
         output_path = self._dataset_path / scene_name / relative_path / filename
 
         return str(
-            relative_path
-            / _npz_write(
-                {
-                    "instance": sensor_frame.get_annotations(
-                        AnnotationTypes.InstanceSegmentation3D
-                    ).instance_ids.astype(np.uint32)
-                },
-                output_path,
-            )
+            (
+                relative_path
+                / _npz_write(
+                    {
+                        "instance": sensor_frame.get_annotations(
+                            AnnotationTypes.InstanceSegmentation3D
+                        ).instance_ids.astype(np.uint32)
+                    },
+                    output_path,
+                )
+            ).as_posix()
         )
 
     def _save_motion_vectors_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -568,11 +580,13 @@ class DGPEncoder(Encoder):
         output_path = self._dataset_path / scene_name / relative_path / filename
 
         return str(
-            relative_path
-            / _npz_write(
-                {"data": sensor_frame.get_annotations(AnnotationTypes.Depth).depth[:, :, 0]},
-                output_path,
-            )
+            (
+                relative_path
+                / _npz_write(
+                    {"data": sensor_frame.get_annotations(AnnotationTypes.Depth).depth[:, :, 0]},
+                    output_path,
+                )
+            ).as_posix()
         )
 
     def _save_rgb(self, sensor_frame: SensorFrame, scene_name: str) -> str:
@@ -580,7 +594,7 @@ class DGPEncoder(Encoder):
         filename = f"{int(sensor_frame.frame_id):018d}.png"
         output_path = self._dataset_path / scene_name / relative_path / filename
 
-        return str(relative_path / _png_write(sensor_frame.image.rgba, output_path))
+        return str((relative_path / _png_write(sensor_frame.image.rgba, output_path)).as_posix())
 
     def _save_point_cloud(self, sensor_frame: SensorFrame, scene_name: str) -> str:
         relative_path = Path("point_cloud") / sensor_frame.sensor_name
@@ -613,7 +627,7 @@ class DGPEncoder(Encoder):
         pc_data["RING_ID"] = pc.ring[:, 0]
         pc_data["TIMESTAMP"] = pc.ts[:, 0]
 
-        return str(relative_path / _npz_write({"data": pc_data}, output_path))
+        return str((relative_path / _npz_write({"data": pc_data}, output_path)).as_posix())
 
     def _save_calibration_json(self, sensor_frames: List[SensorFrame], scene_name: str) -> str:
         calib_dto = CalibrationDTO(names=[], extrinsics=[], intrinsics=[])
@@ -698,7 +712,7 @@ class DGPEncoder(Encoder):
 
         filename = _json_write(scene_dto.to_dict(), output_path, append_sha1=True)
 
-        return str(relative_path / filename)
+        return str((relative_path / filename).as_posix())
 
 
 def main(dataset_input_path, dataset_output_path, frame_slice):
