@@ -618,37 +618,43 @@ class DGPEncoder(Encoder):
     def _save_calibration_json(self, sensor_frames: List[SensorFrame], scene_name: str) -> str:
         calib_dto = CalibrationDTO(names=[], extrinsics=[], intrinsics=[])
 
-        for sf in sensor_frames:
+        def get_calibration(sf: SensorFrame) -> Tuple[str, CalibrationExtrinsicDTO, CalibrationIntrinsicDTO]:
             intr = sf.intrinsic
             extr = sf.extrinsic
-            calib_dto.names.append(sf.sensor_name)
-            calib_dto.extrinsics.append(
-                CalibrationExtrinsicDTO(
-                    translation=TranslationDTO(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
-                    rotation=RotationDTO(
-                        qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
-                    ),
-                )
+
+            calib_dto_extrinsic = CalibrationExtrinsicDTO(
+                translation=TranslationDTO(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=RotationDTO(
+                    qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
+                ),
             )
-            calib_dto.intrinsics.append(
-                CalibrationIntrinsicDTO(
-                    fx=intr.fx,
-                    fy=intr.fy,
-                    cx=intr.cx,
-                    cy=intr.cy,
-                    skew=intr.skew,
-                    fov=intr.fov,
-                    k1=intr.k1,
-                    k2=intr.k2,
-                    k3=intr.k3,
-                    k4=intr.k4,
-                    k5=intr.k5,
-                    k6=intr.k6,
-                    p1=intr.p1,
-                    p2=intr.p2,
-                    fisheye=self._fisheye_camera_model_map[intr.camera_model],
-                )
+
+            calib_dto_intrinsic = CalibrationIntrinsicDTO(
+                fx=intr.fx,
+                fy=intr.fy,
+                cx=intr.cx,
+                cy=intr.cy,
+                skew=intr.skew,
+                fov=intr.fov,
+                k1=intr.k1,
+                k2=intr.k2,
+                k3=intr.k3,
+                k4=intr.k4,
+                k5=intr.k5,
+                k6=intr.k6,
+                p1=intr.p1,
+                p2=intr.p2,
+                fisheye=self._fisheye_camera_model_map[intr.camera_model],
             )
+
+            return (sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic)
+
+        res = DGPEncoder._thread_pool.map(get_calibration, sensor_frames)
+
+        for r_name, r_extrinsic, r_intrinsic in res:
+            calib_dto.names.append(r_name)
+            calib_dto.extrinsics.append(r_extrinsic)
+            calib_dto.intrinsics.append(r_intrinsic)
 
         calibration_json_path = self._dataset_path / scene_name / "calibration" / ".json"
 
