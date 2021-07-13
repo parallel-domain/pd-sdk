@@ -267,7 +267,9 @@ class DGPEncoder(Encoder):
         sorted_sensor_frames = sorted(sensor_frames, key=lambda x: x.date_time)
 
         sensor_data = DGPEncoder._thread_pool.map(
-            lambda sf: self._encode_sensor_frame(sensor_frame=sf, scene_name=scene_name), sorted_sensor_frames
+            lambda sf: self._encode_sensor_frame(sensor_frame=sf, scene_name=scene_name),
+            sorted_sensor_frames,
+            chunksize=max(int(len(sorted_sensor_frames) / (self._thread_count / 2)), 1),
         )
 
         padding = 2 * [None]
@@ -324,14 +326,15 @@ class DGPEncoder(Encoder):
         data_key = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
 
         if sensor_frame.point_cloud is not None:
-            res = DGPEncoder._thread_pool.map_async(
+            res = DGPEncoder._thread_pool.map(
                 lambda at: self._encode_cloud_annotation_types(
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
                 ),
                 self.annotation_types,
+                chunksize=2,
             )
             filename = self._save_point_cloud(sensor_frame=sensor_frame, scene_name=scene_name)
-            annotations = {r[0]: r[1] for r in res.get() if r is not None}
+            annotations = {r[0]: r[1] for r in res if r is not None}
             point_cloud = SceneDataDatumTypePointCloud(
                 filename=filename,
                 annotations=annotations,
@@ -355,15 +358,16 @@ class DGPEncoder(Encoder):
             scene_datum_dto = SceneDataDatumPointCloud(point_cloud=point_cloud)
         elif sensor_frame.image is not None:
             # annotations = {}
-            res = DGPEncoder._thread_pool.map_async(
+            res = DGPEncoder._thread_pool.map(
                 lambda at: self._encode_image_annotation_types(
                     scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
                 ),
                 self.annotation_types,
+                chunksize=2,
             )
 
             filename = self._save_rgb(sensor_frame=sensor_frame, scene_name=scene_name)
-            annotations = {r[0]: r[1] for r in res.get() if r is not None}
+            annotations = {r[0]: r[1] for r in res if r is not None}
             image = SceneDataDatumTypeImage(
                 filename=filename,
                 height=sensor_frame.image.height,
