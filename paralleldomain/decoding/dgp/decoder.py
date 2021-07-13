@@ -111,6 +111,7 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.metadata.to_dict()
 
+    @lru_cache(maxsize=1)
     def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
