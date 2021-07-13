@@ -208,7 +208,7 @@ class DGPEncoder(Encoder):
         ontology_dict: Dict[str, str] = {}
         for a_type in self.annotation_types:
             for sn in scene.sensor_names:
-                sn_frame_0 = scene.get_sensor(sn).get_frame(scene.frame_ids[0])
+                sn_frame_0 = scene.get_sensor(sn).get_frame(scene.frame_ids[self._frame_slice][0])
                 if a_type in sn_frame_0.available_annotation_types:
                     a_value = sn_frame_0.get_annotations(a_type)
                     try:
