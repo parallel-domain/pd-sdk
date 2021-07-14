@@ -707,7 +707,7 @@ class DGPEncoder(Encoder):
 
         ds_dto = DatasetDTO(
             metadata=metadata_dto,  # needs refinement, currently assumes DGP->DGP
-            scene_splits={str(i): DatasetSceneSplitDTO(filenames=[s]) for i, s in enumerate(self._scene_paths)},
+            scene_splits={"0": DatasetSceneSplitDTO(filenames=[s for s in self._scene_paths])},
         )
 
         dataset_json_path = self._dataset_path / "scene_dataset.json"
