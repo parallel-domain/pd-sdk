@@ -17,7 +17,8 @@ class LazyLoadCache(TTLCache):
     def __init__(self, ttl: int, max_ram_usage_factor: float = 0.8):
         self.max_ram_usage_factor = max_ram_usage_factor
         self._lock_prefixes: Set[str] = set()
-        super().__init__(maxsize=self.free_space, ttl=ttl)
+        self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
+        super().__init__(maxsize=self.maximum_allowed_space, ttl=ttl)
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
         if key not in self:
@@ -38,7 +39,9 @@ class LazyLoadCache(TTLCache):
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
             while size > self.free_space:
-                self.popitem()
+                popped_item = self.popitem()
+                if popped_item is None:
+                    break  # we can't find anything to delete in cache, so we just add it anyways
         if key in self._Cache__data:
             diffsize = size - self._Cache__size[key]
         else:
@@ -55,7 +58,8 @@ class LazyLoadCache(TTLCache):
     @property
     def free_space(self) -> int:
         """The maximum size of the caches free space."""
-        return max(0, psutil.virtual_memory().free, psutil.virtual_memory().total * (1.0 - self.max_ram_usage_factor))
+        remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
+        return int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
 
     def clear_prefix(self, prefix: str):
         for key in self:
@@ -102,9 +106,10 @@ class LazyLoadCache(TTLCache):
             found_key_to_remove = False
             num_locked_items = 0
             with LazyLoadCache._delete_lock:
+                key_iter = iter(self._TTLCache__links)
                 while not found_key_to_remove:
                     try:
-                        key = next(iter(self._TTLCache__links))
+                        key = next(key_iter)
                         is_locked = self._is_locked_key(key=key)
                         found_key_to_remove = not is_locked
                         if is_locked:
