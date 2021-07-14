@@ -3,6 +3,7 @@ from __future__ import annotations as ann
 from contextlib import suppress
 from dataclasses import dataclass, field
 from itertools import filterfalse
+from sys import getsizeof
 from typing import Any, Dict, List, Optional, Type
 
 import numpy as np
@@ -47,6 +48,9 @@ class BoundingBox2D(Annotation):
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
         return rep
+
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 6 * 8  # 6 * 8 bytes ints or floats
 
 
 @dataclass
@@ -127,6 +131,9 @@ class BoundingBoxes2D(Annotation):
             b.class_id = class_id_map[b.class_id]
         self.class_map = class_label_map
 
+    def __sizeof__(self):
+        return sum([getsizeof(b) for b in self.boxes])
+
 
 @dataclass
 class BoundingBox3D:
@@ -142,6 +149,9 @@ class BoundingBox3D:
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}, Pose: {self.pose}"
         return rep
+
+    def __sizeof__(self):
+        return getsizeof(self.pose) + getsizeof(self.attributes) + 6 * 8  # 6 * 8 bytes ints or floats
 
     @property
     def volume(self) -> float:
@@ -248,6 +258,9 @@ class BoundingBoxes3D(Annotation):
             b.class_id = class_id_map[b.class_id]
         self.class_map = class_label_map
 
+    def __sizeof__(self):
+        return sum([getsizeof(b) for b in self.boxes])
+
 
 @dataclass
 class SemanticSegmentation2D(Annotation):
@@ -287,6 +300,9 @@ class SemanticSegmentation2D(Annotation):
         if self.class_ids.shape[2] != 1:
             raise ValueError("Semantic Segmentation class_ids has to have only 1 channel!")
 
+    def __sizeof__(self):
+        return getsizeof(self.class_ids)
+
 
 @dataclass
 class InstanceSegmentation2D(Annotation):
@@ -306,6 +322,9 @@ class InstanceSegmentation2D(Annotation):
 
     def update(self, mask: np.ndarray, instance_id: int) -> None:
         self.instance_ids[mask] = instance_id
+
+    def __sizeof__(self):
+        return getsizeof(self.instance_ids)
 
     @property
     def rgb_encoded(self) -> np.ndarray:
@@ -332,10 +351,16 @@ class InstanceSegmentation2D(Annotation):
 class OpticalFlow(Annotation):
     vectors: np.ndarray
 
+    def __sizeof__(self):
+        return getsizeof(self.vectors)
+
 
 @dataclass
 class Depth(Annotation):
     depth: np.ndarray
+
+    def __sizeof__(self):
+        return getsizeof(self.depth)
 
 
 class PolygonSegmentation2D(Annotation, VirtualAnnotation):
@@ -379,10 +404,16 @@ class SemanticSegmentation3D(Annotation):
         self.class_ids = class_id_map[self.class_ids]
         self.class_map = class_label_map
 
+    def __sizeof__(self):
+        return getsizeof(self.class_ids)
+
 
 @dataclass
 class InstanceSegmentation3D(Annotation):
     instance_ids: np.ndarray
+
+    def __sizeof__(self):
+        return getsizeof(self.instance_ids)
 
 
 class Polygon2D:
