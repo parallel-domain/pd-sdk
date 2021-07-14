@@ -580,7 +580,7 @@ class DGPEncoder(Encoder):
         )
 
     def _save_motion_vectors_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "instance_segmentation_3d"
+        annotation_dir = "motion_vectors_2d"
         sensor_dir = sensor_frame.sensor_name
         filename = f"{int(sensor_frame.frame_id):018d}.png"
         output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
