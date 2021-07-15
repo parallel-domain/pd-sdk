@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import hashlib
 import json
 import logging
@@ -168,12 +169,14 @@ class DGPEncoder(Encoder):
         annotation_types: Optional[List[AnnotationType]] = None,
         frame_slice: Optional[slice] = None,
         thread_count: Optional[int] = None,
+        new_uuid: str = None
     ):
         self.dataset = dataset
+        self.new_uuid = new_uuid or str(uuid.uuid4())
         self.custom_map = custom_map
         self.custom_id_map = custom_id_map
         self.annotation_types = list(self._annotation_type_map.keys()) if annotation_types is None else annotation_types
-        self._dataset_path: Union[Path, CloudPath] = AnyPath(output_path)
+        self._dataset_path: Union[Path, CloudPath] = AnyPath(output_path / self.new_uuid / "dataset")
         self._frame_slice: slice = slice(None, None, None) if frame_slice is None else frame_slice
         self._thread_count: int = multiprocessing.cpu_count() if thread_count is None else thread_count
         self._scene_paths: List[str] = []
@@ -701,6 +704,8 @@ class DGPEncoder(Encoder):
     def _save_dataset_json(self):
 
         metadata_dto = DatasetMetaDTO(**self.dataset.meta_data.custom_attributes)
+        metadata_dto.name = self.new_uuid
+        metadata_dto.creation_date = datetime.datetime.utcnow().isoformat() + "Z"
         metadata_dto.available_annotation_types = [
             int(self._annotation_type_map[a_type]) for a_type in self.annotation_types
         ]
