@@ -31,5 +31,5 @@ jobs:
           LOCAL_DATASET_PATH=$(mktemp -d)
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
           echo "Downloaded to local copy in $LOCAL_DATASET_PATH"
-          DATASET_PATH="$LOCAL_DATASET_PATH" pytest
+          DATASET_PATH="${{ secrets.DGP_DATASET_PATH }}" pytest
           echo "Finished Tests"
