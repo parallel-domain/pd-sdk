@@ -95,10 +95,14 @@ class TestSensorFrame:
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.camera_frames))
-        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
+        frame = scene.get_frame(frame_id=frame_ids[0])
 
+        camera_sensor = next(
+            (x for x in frame.camera_frames if AnnotationTypes.OpticalFlow in x.available_annotation_types), None
+        )
+        assert camera_sensor is not None
+
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
         assert flow is not None
         image = camera_sensor.image.rgb
         assert flow.vectors.shape[2] == 2
