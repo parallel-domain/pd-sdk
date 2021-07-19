@@ -1,5 +1,3 @@
-from __future__ import annotations as ann
-
 from contextlib import suppress
 from dataclasses import dataclass, field
 from itertools import filterfalse
@@ -347,7 +345,7 @@ class PolygonSegmentation2D(Annotation, VirtualAnnotation):
         self._polygons = None
 
     @property
-    def polygons(self) -> List[Polygon2D]:
+    def polygons(self) -> List["Polygon2D"]:
         if self._polygons is None:
             self._mask_to_polygons()
             self._build_polygon_tree()
@@ -413,7 +411,7 @@ class Polygon2D:
     def interior_points(self):
         return [tuple(ip.coords) for ip in self._polygon.interiors]
 
-    def set_parent(self, parent: Polygon2D):
+    def set_parent(self, parent: "Polygon2D"):
         self._parent = parent
 
     @staticmethod
