@@ -26,10 +26,8 @@ jobs:
           aws-access-key-id: ${{ secrets.PYTEST_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
-      - name: Download Test Dataset
+      - name: Download  & Test with pytest
         run: |
           LOCAL_DATASET_PATH=$(mktemp -d)
-          aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
-      - name: Test with pytest
-        run: |
+                    aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
           DATASET_PATH="$LOCAL_DATASET_PATH" pytest
