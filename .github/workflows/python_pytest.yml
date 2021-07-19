@@ -28,4 +28,6 @@ jobs:
           aws-region: us-east-2
       - name: Test with pytest
         run: |
-          DATASET_PATH='${{ secrets.DGP_DATASET_PATH }}' pytest
+          DATASET_PATH=$(mktemp -d)
+          aws s3 sync "${{ secrets.DGP_DATASET_PATH }}"
+          pytest
