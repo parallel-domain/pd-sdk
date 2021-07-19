@@ -29,5 +29,5 @@ jobs:
       - name: Test with pytest
         run: |
           DATASET_PATH=$(mktemp -d)
-          aws s3 sync "${{ secrets.DGP_DATASET_PATH }}"
+          aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$DATASET_PATH"
           pytest
