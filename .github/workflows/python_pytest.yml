@@ -2,14 +2,14 @@ name: Python package
 on:
   push:
     branches:
-      - nisse/pytest
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.6, 3.7, 3.8, 3.9]
+        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -31,6 +31,4 @@ jobs:
         run: |
           LOCAL_DATASET_PATH=$(mktemp -d)
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
-          echo "Downloaded to local copy in $LOCAL_DATASET_PATH"
           DATASET_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 pytest --verbose
-          echo "Finished Tests"
