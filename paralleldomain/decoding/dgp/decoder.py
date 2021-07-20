@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime
 from functools import lru_cache
+from pathlib import PosixPath
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import iso8601
@@ -60,50 +61,51 @@ class DGPDecoder(Decoder):
     @lru_cache(maxsize=1)
     def decode_dataset(self) -> DatasetDTO:
         dataset_cloud_path: AnyPath = self._dataset_path
-        scene_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
-        if not scene_json_path.exists():
-            files_with_prefix = [name.name for name in dataset_cloud_path.iterdir() if "scene_dataset" in name.name]
-            if len(files_with_prefix) == 0:
-                logger.error(
-                    f"No scene_dataset.json or file starting with scene_dataset found under {dataset_cloud_path}!"
-                )
-            scene_json_path: AnyPath = dataset_cloud_path / files_with_prefix[-1]
+        scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
+        if not scene_dataset_json_path.exists():
+            raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
 
-        with scene_json_path.open(mode="r") as f:
-            scene_dataset = json.load(f)
+        with scene_dataset_json_path.open(mode="r") as f:
+            scene_dataset_json = json.load(f)
+        scene_dataset_dto = DatasetDTO.from_dict(scene_dataset_json)
 
-        meta_data = DatasetMetaDTO.from_dict(scene_dataset["metadata"])
-        scene_names: List[str] = scene_dataset["scene_splits"]["0"]["filenames"]
-        return DatasetDTO(meta_data=meta_data, scene_names=scene_names)
+        return scene_dataset_dto
 
     def decode_scene(self, scene_name: str) -> SceneDTO:
-        scene_folder = self._dataset_path / scene_name
-        potential_scene_files = [
-            name.name for name in scene_folder.iterdir() if name.name.startswith("scene") and name.name.endswith("json")
-        ]
+        scene_names = self.decode_scene_names()
+        scene_index = scene_names.index(scene_name)
 
-        if len(potential_scene_files) == 0:
-            logger.error(f"No sceneXXX.json found under {scene_folder}!")
+        scene_paths = self.decode_scene_paths()
+        scene_path = scene_paths[scene_index]
 
-        scene_file = scene_folder / potential_scene_files[0]
+        scene_file = self._dataset_path / scene_path
+
         with scene_file.open("r") as f:
             scene_data = json.load(f)
-            scene_dto = SceneDTO.from_dict(scene_data)
-            return scene_dto
+
+        scene_dto = SceneDTO.from_dict(scene_data)
+        return scene_dto
 
     # ------------------------------------------------
     def get_unique_scene_id(self, scene_name: SceneName) -> str:
         return f"{self._dataset_path}-{scene_name}"
 
-    def decode_scene_names(self) -> List[SceneName]:
+    def decode_scene_names(self) -> List[str]:
+        return [p.parent.name for p in self.decode_scene_paths()]
+
+    def decode_scene_paths(self) -> List[PosixPath]:
         dto = self.decode_dataset()
-        return [AnyPath(path).parent.name for path in dto.scene_names]
+        return [
+            PosixPath(path)
+            for split_key in sorted(dto.scene_splits.keys())
+            for path in dto.scene_splits[split_key].filenames
+        ]
 
     def decode_dataset_meta_data(self) -> DatasetMeta:
         dto = self.decode_dataset()
-        meta_dict = dto.meta_data.to_dict()
-        anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.meta_data.available_annotation_types]
-        return DatasetMeta(name=dto.meta_data.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
+        meta_dict = dto.metadata.to_dict()
+        anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
+        return DatasetMeta(name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
         scene_dto = self.decode_scene(scene_name=scene_name)
