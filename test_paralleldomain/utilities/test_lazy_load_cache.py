@@ -56,6 +56,7 @@ def test_max_size():
         assert "key4" in cache
         assert "key2" in cache
 
+
 def test_max_time():
     cache = LazyLoadCache(ttl=2)
     mock1_loader = mock.MagicMock()
