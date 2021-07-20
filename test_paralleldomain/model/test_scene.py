@@ -12,6 +12,7 @@ class TestSceneFrames:
         assert len(frames) > 0
         assert len(frames) == len(scene.frame_ids)
 
+    """
     def test_lazy_frame_id_loading(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
         pre_size = LAZY_LOAD_CACHE.currsize
@@ -20,6 +21,7 @@ class TestSceneFrames:
         frame_id_to_date_time_map = scene.frame_id_to_date_time_map
         assert pre_size + getsizeof(frame_id_to_date_time_map) == LAZY_LOAD_CACHE.currsize == size_after_frame_load
         assert len(frame_ids) > 0
+    """
 
     def test_lazy_frame_loading(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
@@ -46,12 +48,14 @@ class TestSceneSensors:
         assert len(lidar_names) > 0
         assert len(scene.lidars) == len(lidar_names)
 
+    """
     def test_lazy_sensor_name_loading_cache(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
         pre_size = LAZY_LOAD_CACHE.currsize
         sensor_names = scene.sensor_names  # counts as one item / one list of size 1
         assert pre_size + getsizeof(sensor_names) == LAZY_LOAD_CACHE.currsize
         assert len(sensor_names) > 0
+    """
 
     def test_lazy_sensor_loading(self, scene: Scene):
         LAZY_LOAD_CACHE.clear()
