@@ -7,6 +7,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import iso8601
 from iso8601 import ParseError
 
+import iso8601
+
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.decoding.dgp.dtos import (
