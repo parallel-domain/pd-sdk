@@ -1,6 +1,6 @@
 import contextlib
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Dict, Generator, List
+from typing import Any, ContextManager, Dict, List
 
 try:
     from typing import Protocol
