@@ -8,7 +8,7 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 def test_encoding_of_modified_scene(dataset: Dataset):
-    if not os.environ["SKIP_ENCODER"]:
+    if "SKIP_ENCODER" not in os.environ:
         output_path = AnyPath(TemporaryDirectory().name)
 
         # encoding

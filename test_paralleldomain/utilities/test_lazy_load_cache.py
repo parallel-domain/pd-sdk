@@ -8,7 +8,7 @@ from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 
 def test_max_size():
-    if not os.environ["SKIP_CACHE"]:
+    if "SKIP_CACHE" not in os.environ:
         with patch("psutil.virtual_memory") as mocked_virtual_memory:
             mocked_virtual_memory.return_value.free = 2 * getsizeof(mock.MagicMock()) + 1
             mocked_virtual_memory.return_value.total = 5 * getsizeof(mock.MagicMock())
