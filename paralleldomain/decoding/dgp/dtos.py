@@ -243,9 +243,15 @@ class DatasetMetaDTO:
 
 @dataclass_json
 @dataclass
+class DatasetSceneSplitDTO:
+    filenames: List[str]
+
+
+@dataclass_json
+@dataclass
 class DatasetDTO:
-    meta_data: DatasetMetaDTO
-    scene_names: List[str]
+    metadata: DatasetMetaDTO
+    scene_splits: Dict[str, DatasetSceneSplitDTO]
 
 
 @dataclass
