@@ -42,7 +42,7 @@ class TestSensorFrame:
         assert AnnotationTypes.BoundingBoxes2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter([f for f in frame.camera_frames if "virtual" not in f.sensor_name]))
         boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
 
@@ -63,7 +63,7 @@ class TestSensorFrame:
         assert AnnotationTypes.InstanceSegmentation2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         id_mask = camera_sensor.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
 
@@ -79,7 +79,7 @@ class TestSensorFrame:
         assert AnnotationTypes.SemanticSegmentation2D in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
 
@@ -95,10 +95,14 @@ class TestSensorFrame:
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
-        camera_sensor = next(iter(frame.camera_frames))
-        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
+        frame = scene.get_frame(frame_id=frame_ids[0])
 
+        camera_sensor = next(
+            (x for x in frame.camera_frames if AnnotationTypes.OpticalFlow in x.available_annotation_types), None
+        )
+        assert camera_sensor is not None
+
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
         assert flow is not None
         image = camera_sensor.image.rgb
         assert flow.vectors.shape[2] == 2
@@ -108,7 +112,7 @@ class TestSensorFrame:
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
         frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[5])
+        frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
 
         rgb = camera_sensor.image.rgb

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
@@ -33,7 +31,7 @@ class Sensor:
     def __init__(
         self,
         sensor_name: SensorName,
-        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+        sensor_frame_factory: Callable[[FrameId, SensorName], "SensorFrame"],
     ):
         self._sensor_frame_factory = sensor_frame_factory
         self._sensor_name = sensor_name
@@ -43,7 +41,7 @@ class Sensor:
     def name(self) -> str:
         return self._sensor_name
 
-    def get_frame(self, frame_id: FrameId) -> SensorFrame:
+    def get_frame(self, frame_id: FrameId) -> "SensorFrame":
         return self._sensor_frame_factory(frame_id, self._sensor_name)
 
 
@@ -56,19 +54,19 @@ class LidarSensor(Sensor):
 
 
 class SensorFrameLazyLoaderProtocol(Protocol):
-    def load_extrinsic(self) -> SensorExtrinsic:
+    def load_extrinsic(self) -> "SensorExtrinsic":
         pass
 
-    def load_intrinsic(self) -> SensorIntrinsic:
+    def load_intrinsic(self) -> "SensorIntrinsic":
         pass
 
-    def load_sensor_pose(self) -> SensorPose:
+    def load_sensor_pose(self) -> "SensorPose":
         pass
 
-    def load_point_cloud(self) -> Optional[PointCloudData]:
+    def load_point_cloud(self) -> Optional["PointCloudData"]:
         pass
 
-    def load_image(self) -> Optional[ImageData]:
+    def load_image(self) -> Optional["ImageData"]:
         pass
 
     def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
@@ -96,19 +94,19 @@ class SensorFrame:
         self._sensor_name = sensor_name
 
     @property
-    def extrinsic(self) -> SensorExtrinsic:
+    def extrinsic(self) -> "SensorExtrinsic":
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "extrinsic", loader=self._lazy_loader.load_extrinsic
         )
 
     @property
-    def intrinsic(self) -> SensorIntrinsic:
+    def intrinsic(self) -> "SensorIntrinsic":
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "intrinsic", loader=self._lazy_loader.load_intrinsic
         )
 
     @property
-    def pose(self) -> SensorPose:
+    def pose(self) -> "SensorPose":
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "pose", loader=self._lazy_loader.load_sensor_pose)
 
     @property
@@ -124,13 +122,13 @@ class SensorFrame:
         return self._date_time
 
     @property
-    def point_cloud(self) -> Optional[PointCloudData]:
+    def point_cloud(self) -> Optional["PointCloudData"]:
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "point_cloud", loader=self._lazy_loader.load_point_cloud
         )
 
     @property
-    def image(self) -> Optional[ImageData]:
+    def image(self) -> Optional["ImageData"]:
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image", loader=self._lazy_loader.load_image)
 
     @property
