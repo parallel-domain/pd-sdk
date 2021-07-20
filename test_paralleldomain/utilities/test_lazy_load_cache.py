@@ -11,10 +11,10 @@ def test_max_size():
         mocked_virtual_memory.return_value.free = 2 * getsizeof(mock.MagicMock()) + 1
         mocked_virtual_memory.return_value.total = 5 * getsizeof(mock.MagicMock())
 
-        cache = LazyLoadCache(ttl=1555555, max_ram_usage_factor=1.0)
+        cache = LazyLoadCache(max_ram_usage_factor=1.0)
 
         def _pop_fake():
-            super(LazyLoadCache, cache).popitem()
+            LazyLoadCache.popitem(cache)
             mocked_virtual_memory.return_value.free += getsizeof(mock.MagicMock())
 
         cache.popitem = _pop_fake
@@ -55,7 +55,6 @@ def test_max_size():
         assert "key3" not in cache
         assert "key4" in cache
         assert "key2" in cache
-
 
 def test_max_time():
     cache = LazyLoadCache(ttl=2)
