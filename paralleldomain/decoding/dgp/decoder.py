@@ -4,6 +4,8 @@ from datetime import datetime
 from functools import lru_cache
 from typing import Callable, Dict, List, Optional, Union
 
+import iso8601
+
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DEFAULT_CLASS_MAP
 from paralleldomain.decoding.dgp.dtos import DatasetDTO, DatasetMetaDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
@@ -196,7 +198,4 @@ class DGPDecoder(Decoder):
 
     @staticmethod
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
-        try:
-            return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
-        except ValueError:
-            return datetime.strptime(sample.id.timestamp, "%Y-%m-%dT%H:%M:%SZ")
+        return iso8601.parse_date(sample.id.timestamp)
