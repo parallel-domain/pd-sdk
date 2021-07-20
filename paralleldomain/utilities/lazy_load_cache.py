@@ -30,7 +30,6 @@ class LazyLoadCache(Cache):
 
         with self._key_load_locks[key]:
             if key not in self:
-                print(f"load {key}")
                 self[key] = loader()
             return self[key]
 
@@ -54,7 +53,6 @@ class LazyLoadCache(Cache):
             while size > self.free_space:
                 popped_item = self.popitem()
                 if popped_item is None:
-                    print(f"we can't find anything to delete in cache, so we just add {key} anyways")
                     break  # we can't find anything to delete in cache, so we just add it anyways
 
         if key in self._Cache__data:
@@ -68,7 +66,6 @@ class LazyLoadCache(Cache):
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
         with LazyLoadCache._delete_lock:
-            print(f"delete {key}")
             cache_delitem(self, key)
             del self.__order[key]
 
@@ -114,7 +111,6 @@ class LazyLoadCache(Cache):
     def __update(self, key):
         try:
             self.__order.move_to_end(key)
-            print(f"moved {key} to back")
         except KeyError:
             self.__order[key] = None
 
@@ -152,6 +148,6 @@ class LazyLoadCache(Cache):
         return size
 
 
-_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACOTR", 0.5))  # 50% free space max
+_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.5))  # 50% free space max
 
 LAZY_LOAD_CACHE = LazyLoadCache(max_ram_usage_factor=_cache_max_ram_usage_factor)

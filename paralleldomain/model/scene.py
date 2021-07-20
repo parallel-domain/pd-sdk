@@ -1,6 +1,9 @@
+import contextlib
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, Callable, ContextManager, Dict, Generator, List, Optional, Tuple, Type, cast
 
+from paralleldomain.model.annotation import Annotation
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -19,6 +22,9 @@ class SceneDecoderProtocol(Protocol):
         pass
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
+        pass
+
+    def decode_scene_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         pass
 
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
@@ -52,11 +58,28 @@ class SceneDecoderProtocol(Protocol):
 
 
 class Scene:
-    def __init__(self, name: SceneName, description: str, decoder: SceneDecoderProtocol):
+    def __init__(self, name: SceneName, description: str, metadata: Dict[str, Any], decoder: SceneDecoderProtocol):
         self._name = name
         self._unique_cache_key = decoder.get_unique_scene_id(scene_name=name)
         self._description = description
+        self._metadata = metadata
         self._decoder = decoder
+        self._cache_is_locked = False
+        self._removed_sensor_names = set()
+
+    def lock_cache_for_scene_data(self):
+        LAZY_LOAD_CACHE.lock_prefix(prefix=self._unique_cache_key)
+        self._cache_is_locked = True
+
+    def unlock_cache_for_scene_data(self):
+        LAZY_LOAD_CACHE.unlock_prefix(prefix=self._unique_cache_key)
+        self._cache_is_locked = False
+
+    @contextlib.contextmanager
+    def editable(self) -> ContextManager["Scene"]:
+        self.lock_cache_for_scene_data()
+        yield self
+        self.unlock_cache_for_scene_data()
 
     def _load_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         return LAZY_LOAD_CACHE.get_item(
@@ -70,10 +93,12 @@ class Scene:
         return self._decoder.decode_ego_frame(scene_name=self.name, frame_id=frame_id)
 
     def _load_frame_sensors_name(self, frame_id: FrameId) -> List[SensorName]:
-        return LAZY_LOAD_CACHE.get_item(
+        temp_sensor_names = LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-{frame_id}-available_sensors",
             loader=lambda: self._decoder.decode_available_sensor_names(scene_name=self.name, frame_id=frame_id),
         )
+
+        return [sn for sn in temp_sensor_names if sn not in self._removed_sensor_names]
 
     def _load_frame_camera_sensors(self, frame_id: FrameId) -> List[SensorName]:
         all_frame_sensors = self._load_frame_sensors_name(frame_id=frame_id)
@@ -92,6 +117,10 @@ class Scene:
     @property
     def description(self) -> str:
         return self._description
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        return self._metadata
 
     @property
     def frames(self) -> List[Frame]:
@@ -125,11 +154,11 @@ class Scene:
 
     @property
     def cameras(self) -> List[CameraSensor]:
-        return [cast(self.get_sensor(sensor_name=sensor_name), CameraSensor) for sensor_name in self.camera_names]
+        return [cast(CameraSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.camera_names]
 
     @property
     def lidars(self) -> List[LidarSensor]:
-        return [cast(self.get_sensor(sensor_name=sensor_name), LidarSensor) for sensor_name in self.lidar_names]
+        return [cast(LidarSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.lidar_names]
 
     @property
     def sensor_names(self) -> List[str]:
@@ -157,7 +186,18 @@ class Scene:
             scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
         )
 
+    def remove_sensor(self, sensor_name: SensorName):
+        if not self._cache_is_locked:
+            sx_msg = (
+                "In order to make sure changes are not removed in the cache you need to call "
+                "lock_cache_for_scene_data in order to keep those changes from being removed!"
+            )
+            raise Exception(sx_msg)
+        self.sensor_names.remove(sensor_name)
+        self._removed_sensor_names.add(sensor_name)
+
     @staticmethod
     def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
-        return Scene(name=scene_name, description=description, decoder=decoder)
+        metadata = decoder.decode_scene_metadata(scene_name=scene_name)
+        return Scene(name=scene_name, description=description, metadata=metadata, decoder=decoder)

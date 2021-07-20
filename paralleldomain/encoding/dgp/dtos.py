@@ -31,7 +31,7 @@ class PoseDTO(DataClassJsonMixin):
 @dataclass_json
 @dataclass
 class IdDTO(DataClassJsonMixin):
-    timestamp: str
+    timestamp: str  # TODO: Read as proper datetime object
     index: str
     log: str
     name: str
@@ -75,9 +75,18 @@ class SceneDataDatumTypePointCloud(SceneDataDatumTypeGeneric):
 
 @dataclass_json
 @dataclass
-class SceneDataDatum(DataClassJsonMixin):
-    image: Optional[SceneDataDatumTypeImage] = None
-    point_cloud: Optional[SceneDataDatumTypePointCloud] = None
+class SceneDataDatum:
+    ...
+
+
+@dataclass
+class SceneDataDatumImage(SceneDataDatum):
+    image: SceneDataDatumTypeImage
+
+
+@dataclass
+class SceneDataDatumPointCloud(SceneDataDatum):
+    point_cloud: SceneDataDatumTypePointCloud
 
 
 @dataclass_json
@@ -220,6 +229,7 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     instance_id: int
     iscrowd: bool
     box: BoundingBox2DBoxDTO
+    area: int
     attributes: Dict[str, Any]
 
 
@@ -243,9 +253,15 @@ class DatasetMetaDTO:
 
 @dataclass_json
 @dataclass
+class DatasetSceneSplitDTO:
+    filenames: List[str]
+
+
+@dataclass_json
+@dataclass
 class DatasetDTO:
-    meta_data: DatasetMetaDTO
-    scene_names: List[str]
+    metadata: DatasetMetaDTO
+    scene_splits: Dict[str, DatasetSceneSplitDTO]
 
 
 @dataclass

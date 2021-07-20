@@ -6,7 +6,12 @@ import imageio
 import numpy as np
 from pyquaternion import Quaternion
 
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.decoding.dgp.constants import (
+    ANNOTATION_TYPE_MAP,
+    ANNOTATION_TYPE_MAP_INV,
+    DGP_TO_INTERNAL_CS,
+    TransformType,
+)
 from paralleldomain.decoding.dgp.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -23,6 +28,7 @@ from paralleldomain.model.annotation import (
     BoundingBox3D,
     BoundingBoxes2D,
     BoundingBoxes3D,
+    Depth,
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
@@ -45,7 +51,7 @@ class DGPFrameLazyLoader:
         dataset_path: AnyPath,
         scene_name: SceneName,
         sensor_name: SensorName,
-        class_map: ClassMap,
+        class_maps: Dict[str, ClassMap],
         calibration_key: str,
         datum: SceneDataDatum,
         custom_reference_to_box_bottom: Transformation,
@@ -53,7 +59,7 @@ class DGPFrameLazyLoader:
     ):
         self.custom_id_map = custom_id_map
         self._dataset_path = dataset_path
-        self.class_map = class_map
+        self.class_maps = class_maps
         self.datum = datum
         self._unique_cache_key_prefix = unique_cache_key_prefix
         self.sensor_name = sensor_name
@@ -126,6 +132,7 @@ class DGPFrameLazyLoader:
                     cloud_identifier=self.datum.image.filename,
                 ),
                 unique_cache_key=unique_cache_key,
+                load_image_dims=lambda: (self.datum.image.height, self.datum.image.width, self.datum.image.channels),
             )
 
     def load_sensor_pose(self) -> SensorPose:
@@ -166,14 +173,14 @@ class DGPFrameLazyLoader:
                 )
                 box_list.append(box)
 
-            return BoundingBoxes3D(boxes=box_list, class_map=self.class_map)
+            return BoundingBoxes3D(boxes=box_list, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]])
         elif issubclass(annotation_type, BoundingBoxes2D):
             dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
 
-                attr_parsed = {}
+                attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = json.loads(v)
@@ -195,34 +202,41 @@ class DGPFrameLazyLoader:
                 )
                 box_list.append(box)
 
-            return BoundingBoxes2D(boxes=box_list, class_map=self.class_map)
+            return BoundingBoxes2D(boxes=box_list, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]])
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self._decode_semantic_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             if self.custom_id_map is not None:
                 segmentation_mask = self.custom_id_map[segmentation_mask]
-            return SemanticSegmentation3D(mask=segmentation_mask, class_map=self.class_map)
+            return SemanticSegmentation3D(
+                class_ids=segmentation_mask, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]]
+            )
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            return InstanceSegmentation3D(mask=instance_mask)
+            return InstanceSegmentation3D(instance_ids=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
             class_ids = self._decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             if self.custom_id_map is not None:
                 class_ids = self.custom_id_map[class_ids]
-            return SemanticSegmentation2D(class_ids=class_ids, class_map=self.class_map)
-        elif issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
-            return OpticalFlow(vectors=flow_vectors)
+            return SemanticSegmentation2D(
+                class_ids=class_ids, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]]
+            )
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
+        elif issubclass(annotation_type, OpticalFlow):
+            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return OpticalFlow(vectors=flow_vectors)
+        elif issubclass(annotation_type, Depth):
+            depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Depth(depth=depth_mask)
 
     def load_available_annotation_types(
         self,
@@ -303,6 +317,13 @@ class DGPFrameLazyLoader:
             vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
             return vectors
+
+    def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        with annotation_path.open(mode="rb") as cloud_binary:
+            npz_data = np.load(cast(BinaryIO, cloud_binary))
+
+            return np.expand_dims(npz_data.f.data, axis=-1)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

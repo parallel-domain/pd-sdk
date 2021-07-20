@@ -40,4 +40,33 @@ jobs:
       - uses: TrueBrain/actions-flake8@v2
         with:
           max_line_length: 120
-          ignore: "F401,F407"
+          ignore: "F401,F407,W503"
+  pytest:
+    needs: flake8-lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PYTEST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Download  & Test with pytest
+        run: |
+          LOCAL_DATASET_PATH=$(mktemp -d)
+          aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
+          DATASET_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose

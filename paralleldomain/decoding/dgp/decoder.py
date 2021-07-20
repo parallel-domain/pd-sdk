@@ -2,15 +2,22 @@ import json
 import logging
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import iso8601
 
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DEFAULT_CLASS_MAP
-from paralleldomain.decoding.dgp.dtos import DatasetDTO, DatasetMetaDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
+from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.decoding.dgp.dtos import (
+    DatasetDTO,
+    DatasetMetaDTO,
+    OntologyFileDTO,
+    SceneDataDTO,
+    SceneDTO,
+    SceneSampleDTO,
+)
 from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
-from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
@@ -26,23 +33,8 @@ class DGPDecoder(Decoder):
         self,
         dataset_path: Union[str, AnyPath],
         max_scene_dtos_to_cache: int = 10,
-        custom_map: Optional[ClassMap] = None,
-        custom_id_map: Optional[ClassIdMap] = None,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
-        if custom_id_map is not None and custom_map is None:
-            raise ValueError("A custom map has to be provided in order to match the custom id map!")
-
-        if custom_id_map is not None and custom_map is not None:
-            custom_map_ids = custom_map.class_ids
-            if not all([target in custom_map_ids for target in custom_id_map.target_ids]):
-                missing = set(custom_id_map.target_ids) - set(custom_map_ids)
-                raise ValueError(
-                    f"Not all target ids in the given custom id map are present in the custom map! Missing: {missing}"
-                )
-
-        self.custom_id_map = custom_id_map
-        self.class_map = DEFAULT_CLASS_MAP if custom_map is None else custom_map
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -117,21 +109,48 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.description
 
+    def decode_scene_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        return scene_dto.metadata.to_dict()
+
+    @lru_cache(maxsize=1)
+    def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+        scene_dto = self.decode_scene(scene_name=scene_name)
+        ontologies = {}
+        for annotation_key, ontology_file in scene_dto.ontologies.items():
+            with open(self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json") as fp:
+                ontology_data = json.load(fp)
+
+            ontology_dto = OntologyFileDTO.from_dict(ontology_data)
+            ontologies[annotation_key] = ClassMap(
+                classes=[
+                    ClassDetail(
+                        name=o.name,
+                        id=o.id,
+                        instanced=o.isthing,
+                        meta={"color": {"r": o.color.r, "g": o.color.g, "b": o.color.b}},
+                    )
+                    for o in ontology_dto.items
+                ]
+            )
+
+        return ontologies
+
     def decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
 
     def decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data})
+        return sorted(list({datum.id.name for datum in scene_dto.data}))
 
     def decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.image})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.image}))
 
     def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self.decode_scene(scene_name=scene_name)
-        return list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud})
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
     def decode_sensor(
         self,
@@ -161,7 +180,8 @@ class DGPDecoder(Decoder):
         sample = self._sample_by_index(scene_name=scene_name)[frame_id]
         # all sensor data of the sensor
         sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
-
+        # read ontology -> Dict[str, ClassMap]
+        class_maps = self.decode_ontologies(scene_name)
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
@@ -174,8 +194,7 @@ class DGPDecoder(Decoder):
             lazy_loader=DGPFrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
                 dataset_path=self._dataset_path,
-                class_map=self.class_map,
-                custom_id_map=self.custom_id_map,
+                class_maps=class_maps,
                 custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
                 scene_name=scene_name,
                 sensor_name=sensor_name,

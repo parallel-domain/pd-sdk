@@ -1,6 +1,8 @@
 import abc
+import random
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, ItemsView, List, Optional, TypeVar, Union
+from typing import Any, Dict, ItemsView, List, Optional, TypeVar, Union
 
 import numpy as np
 
@@ -30,23 +32,35 @@ class ClassIdMap:
             return np.vectorize(self.class_id_to_class_id.get)(key)
 
 
+@dataclass
+class ClassDetail:
+    name: str
+    id: int
+    instanced: bool = False
+    meta: Dict[str, Any] = field(default_factory=lambda: {})
+
+
 class ClassMap:
-    def __init__(self, class_id_to_class_name: Dict[int, str]):
-        self._class_id_to_class_name = class_id_to_class_name
+    def __init__(self, classes: List[ClassDetail]):
+        self._class_id_to_class_detail = {c.id: c for c in classes}
 
     @property
     def class_ids(self) -> List[int]:
-        return list(self._class_id_to_class_name.keys())
+        return sorted(list(self._class_id_to_class_detail.keys()))
 
     @property
     def class_names(self) -> List[str]:
-        return list(self._class_id_to_class_name.values())
+        return [self._class_id_to_class_detail[cid].name for cid in self.class_ids]
 
-    def items(self) -> ItemsView[int, str]:
-        return self._class_id_to_class_name.items()
+    def items(self) -> ItemsView[int, ClassDetail]:
+        return self._class_id_to_class_detail.items()
 
-    def __getitem__(self, key: int) -> str:
-        return self._class_id_to_class_name[key]
+    def __getitem__(self, key: int) -> ClassDetail:
+        return self._class_id_to_class_detail[key]
+
+    @staticmethod
+    def from_id_label_dict(id_label_dict: Dict[int, str]) -> "ClassMap":
+        return ClassMap(classes=[ClassDetail(id=k, name=v) for k, v in id_label_dict.items()])
 
 
 class OnLabelNotDefined(Enum):
@@ -76,9 +90,16 @@ class LabelMapping:
     def __matmul__(self, other: T) -> T:
         if isinstance(other, ClassMap):
             return ClassMap(
-                class_id_to_class_name={
-                    class_id: self[class_name] for class_id, class_name in other.items() if self[class_name] is not None
-                }
+                classes=[
+                    ClassDetail(
+                        id=class_id,
+                        name=self[class_detail.name],
+                        instanced=class_detail.instanced,
+                        meta=class_detail.meta,
+                    )
+                    for class_id, class_detail in other.items()
+                    if self[class_detail.name] is not None
+                ]
             )
         elif isinstance(other, LabelMapping):
             return LabelMapping(

@@ -16,13 +16,18 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "3": AnnotationTypes.SemanticSegmentation3D,
     "4": AnnotationTypes.InstanceSegmentation2D,
     "5": AnnotationTypes.InstanceSegmentation3D,
-    "6": Annotation,  # Depth
+    "6": AnnotationTypes.Depth,  # Depth
     "7": Annotation,  # Surface Normals 3D
     "8": AnnotationTypes.OpticalFlow,
     "9": Annotation,  # Motion Vectors 3D aka Scene Flow
     "10": Annotation,  # Surface normals 2D
 }
 
+ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
+    v: k for k, v in ANNOTATION_TYPE_MAP.items() if v is not Annotation
+}
+
+"""
 DGPLabel = namedtuple(
     "Label",
     [
@@ -79,3 +84,4 @@ _default_labels: List[DGPLabel] = [
 ]
 
 DEFAULT_CLASS_MAP = ClassMap(class_id_to_class_name={label.id: label.name for label in _default_labels})
+"""

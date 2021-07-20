@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Type, TypeVar, Union, cast
+from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -33,7 +31,7 @@ class Sensor:
     def __init__(
         self,
         sensor_name: SensorName,
-        sensor_frame_factory: Callable[[FrameId, SensorName], SensorFrame],
+        sensor_frame_factory: Callable[[FrameId, SensorName], "SensorFrame"],
     ):
         self._sensor_frame_factory = sensor_frame_factory
         self._sensor_name = sensor_name
@@ -43,7 +41,7 @@ class Sensor:
     def name(self) -> str:
         return self._sensor_name
 
-    def get_frame(self, frame_id: FrameId) -> SensorFrame:
+    def get_frame(self, frame_id: FrameId) -> "SensorFrame":
         return self._sensor_frame_factory(frame_id, self._sensor_name)
 
 
@@ -56,19 +54,19 @@ class LidarSensor(Sensor):
 
 
 class SensorFrameLazyLoaderProtocol(Protocol):
-    def load_extrinsic(self) -> SensorExtrinsic:
+    def load_extrinsic(self) -> "SensorExtrinsic":
         pass
 
-    def load_intrinsic(self) -> SensorIntrinsic:
+    def load_intrinsic(self) -> "SensorIntrinsic":
         pass
 
-    def load_sensor_pose(self) -> SensorPose:
+    def load_sensor_pose(self) -> "SensorPose":
         pass
 
-    def load_point_cloud(self) -> Optional[PointCloudData]:
+    def load_point_cloud(self) -> Optional["PointCloudData"]:
         pass
 
-    def load_image(self) -> Optional[ImageData]:
+    def load_image(self) -> Optional["ImageData"]:
         pass
 
     def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
@@ -96,19 +94,19 @@ class SensorFrame:
         self._sensor_name = sensor_name
 
     @property
-    def extrinsic(self) -> SensorExtrinsic:
+    def extrinsic(self) -> "SensorExtrinsic":
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "extrinsic", loader=self._lazy_loader.load_extrinsic
         )
 
     @property
-    def intrinsic(self) -> SensorIntrinsic:
+    def intrinsic(self) -> "SensorIntrinsic":
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "intrinsic", loader=self._lazy_loader.load_intrinsic
         )
 
     @property
-    def pose(self) -> SensorPose:
+    def pose(self) -> "SensorPose":
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "pose", loader=self._lazy_loader.load_sensor_pose)
 
     @property
@@ -124,13 +122,13 @@ class SensorFrame:
         return self._date_time
 
     @property
-    def point_cloud(self) -> Optional[PointCloudData]:
+    def point_cloud(self) -> Optional["PointCloudData"]:
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + "point_cloud", loader=self._lazy_loader.load_point_cloud
         )
 
     @property
-    def image(self) -> Optional[ImageData]:
+    def image(self) -> Optional["ImageData"]:
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image", loader=self._lazy_loader.load_image)
 
     @property
@@ -233,7 +231,13 @@ class PointInfo(Enum):
 
 
 class ImageData(SensorData):
-    def __init__(self, unique_cache_key: str, load_data_rgba: Callable[[], np.ndarray]):
+    def __init__(
+        self,
+        unique_cache_key: str,
+        load_data_rgba: Callable[[], np.ndarray],
+        load_image_dims: Callable[[], Tuple[int, int, int]],
+    ):
+        self._load_image_dims = load_image_dims
         self._unique_cache_key = unique_cache_key
         self._load_data_rgb_call = load_data_rgba
 
@@ -242,12 +246,28 @@ class ImageData(SensorData):
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_rgb_call)
 
     @property
+    def _image_dims(self) -> Tuple[int, int, int]:
+        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image_dims", loader=self._load_image_dims)
+
+    @property
     def rgba(self) -> np.ndarray:
         return self._data_rgba
 
     @property
     def rgb(self) -> np.ndarray:
         return self._data_rgba[:, :, :3]
+
+    @property
+    def width(self) -> int:
+        return self._image_dims[1]
+
+    @property
+    def height(self) -> int:
+        return self._image_dims[0]
+
+    @property
+    def channels(self) -> int:
+        return self._image_dims[2]
 
     @property
     def coordinates(self) -> np.ndarray:
@@ -271,6 +291,10 @@ class PointCloudData(SensorData):
     @property
     def _data(self) -> np.ndarray:
         return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_call)
+
+    @property
+    def length(self) -> int:
+        return len(self._data)
 
     @property
     def xyz(self) -> np.ndarray:
