@@ -31,7 +31,7 @@ class PoseDTO(DataClassJsonMixin):
 @dataclass_json
 @dataclass
 class IdDTO(DataClassJsonMixin):
-    timestamp: str  # TODO: Read as proper datetime object
+    timestamp: str
     index: str
     log: str
     name: str
