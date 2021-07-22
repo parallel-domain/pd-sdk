@@ -1,26 +1,34 @@
 import argparse
 import concurrent.futures
 import os
+import time
 import uuid
 from typing import Any, List, Optional
 
 from paralleldomain import Dataset
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.encoding.utils import io
 from paralleldomain.utilities.any_path import AnyPath
 
 
 class SceneEncoder:
     def __init__(self, dataset: Dataset, scene_name: str, output_path: AnyPath):
-        self._dataset = dataset
-        self._scene_name = scene_name
-        self._output_path = output_path
+        self._dataset: Dataset = dataset
+        self._scene_name: str = scene_name
+        self._output_path: AnyPath = output_path
+
+        self._prepare_output_directories()
+
+    def _prepare_output_directories(self) -> None:
+        self._output_path.mkdir(exist_ok=True, parents=True)
 
     def run(self) -> Any:
+        io.write_json({"hey": 2}, self._output_path / "myfile.txt")
         print(f"Successfully encoded {self._scene_name}")
         return str(uuid.uuid4())
 
     @staticmethod
-    def encode(dataset: Dataset, scene_name: str, output_path: AnyPath):
+    def encode(dataset: Dataset, scene_name: str, output_path: AnyPath) -> Any:
         return SceneEncoder(dataset=dataset, scene_name=scene_name, output_path=output_path).run()
 
 
@@ -56,7 +64,8 @@ class DatasetEncoder:
             for scene_name, scene_encoder_result in zip(
                 self._scene_names,
                 scene_executor.map(
-                    lambda sn: type(self).scene_encoder.encode(self._dataset, sn, self._output_path), self._scene_names
+                    lambda sn: type(self).scene_encoder.encode(self._dataset, sn, self._output_path / sn),
+                    self._scene_names,
                 ),
             ):
                 print(f"{scene_name}: {scene_encoder_result}")
