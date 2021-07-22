@@ -15,6 +15,7 @@ def write_json(obj: Union[Dict, List], path: AnyPath):
 def write_png(obj: np.ndarray, path: AnyPath):
     with path.open("wb") as fp:
         Image.fromarray(obj).save(fp, format="png")
+    print(f"Finished writing {str(path)}")
 
 
 def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):
