@@ -1,14 +1,16 @@
 import argparse
-import concurrent.futures
 import os
-import time
 import uuid
-from typing import Any, List, Optional
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ThreadPool
+from typing import Any, List, Optional, TypeVar
 
-from paralleldomain import Dataset
+from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
-from paralleldomain.encoding.utils import io
+from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
+
+T = TypeVar("T")
 
 
 class SceneEncoder:
@@ -16,20 +18,78 @@ class SceneEncoder:
         self._dataset: Dataset = dataset
         self._scene_name: str = scene_name
         self._output_path: AnyPath = output_path
+        self._scene: Scene = dataset.get_scene(scene_name)
+        self._task_pool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
 
         self._prepare_output_directories()
+
+    def _run_async(self, func, *args, **kwargs):
+        return self._task_pool.apply_async(func, args=args, kwds=dict(**kwargs))
 
     def _prepare_output_directories(self) -> None:
         self._output_path.mkdir(exist_ok=True, parents=True)
 
-    def run(self) -> Any:
-        io.write_json({"hey": 2}, self._output_path / "myfile.txt")
+    def _encode_camera_frame(self, camera_frame: SensorFrame):
+        ...
+
+    def _encode_lidar_frame(self, lidar_frame: SensorFrame):
+        ...
+
+    def _encode_camera(self, camera_name: str):
+        with ThreadPoolExecutor(max_workers=10) as camera_frame_executor:
+            for frame_id, camera_frame_encoder_result in zip(
+                self._scene.frame_ids,
+                camera_frame_executor.map(
+                    lambda fid: self._encode_camera_frame(self._scene.get_frame(fid).get_sensor(camera_name)),
+                    self._scene.frame_ids,
+                ),
+            ):
+                print(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
+
+    def _encode_cameras(self):
+        with ThreadPoolExecutor(max_workers=4) as camera_executor:
+            for camera_name, camera_encoder_result in zip(
+                self._scene.camera_names, camera_executor.map(self._encode_camera, self._scene.camera_names)
+            ):
+                print(f"{camera_name}: {camera_encoder_result}")
+
+    def _encode_lidar(self, lidar_name: str):
+        with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
+            for frame_id, lidar_frame_encoder_result in zip(
+                self._scene.frame_ids,
+                lidar_frame_executor.map(
+                    lambda fid: self._encode_lidar_frame(self._scene.get_frame(fid).get_sensor(lidar_name)),
+                    self._scene.frame_ids,
+                ),
+            ):
+                print(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
+
+    def _encode_lidars(self):
+        with ThreadPoolExecutor(max_workers=4) as lidar_executor:
+            for lidar_name, lidar_encoder_result in zip(
+                self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names)
+            ):
+                print(f"{lidar_name}: {lidar_encoder_result}")
+
+    def _encode_sensors(self):
+        self._encode_cameras()
+        self._encode_lidars()
+
+    def _run_encoding(self) -> Any:
+        self._encode_sensors()
         print(f"Successfully encoded {self._scene_name}")
         return str(uuid.uuid4())
 
-    @staticmethod
-    def encode(dataset: Dataset, scene_name: str, output_path: AnyPath) -> Any:
-        return SceneEncoder(dataset=dataset, scene_name=scene_name, output_path=output_path).run()
+    def run(self) -> Any:
+        encoding_result = self._run_encoding()
+        self._task_pool.close()
+        self._task_pool.join()
+
+        return encoding_result
+
+    @classmethod
+    def encode(cls, dataset: Dataset, scene_name: str, output_path: AnyPath) -> Any:
+        return cls(dataset=dataset, scene_name=scene_name, output_path=output_path).run()
 
 
 class DatasetEncoder:
@@ -59,12 +119,15 @@ class DatasetEncoder:
             scene_slice = slice(scene_start, scene_stop)
             self._scene_names = self._dataset.scene_names[scene_slice]
 
+    def _call_scene_encoder(self, scene_name: str) -> Any:
+        return type(self).scene_encoder.encode(self._dataset, scene_name, self._output_path / scene_name)
+
     def run(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self._n_processes) as scene_executor:
+        with ThreadPoolExecutor(max_workers=self._n_processes) as scene_executor:
             for scene_name, scene_encoder_result in zip(
                 self._scene_names,
                 scene_executor.map(
-                    lambda sn: type(self).scene_encoder.encode(self._dataset, sn, self._output_path / sn),
+                    self._call_scene_encoder,
                     self._scene_names,
                 ),
             ):
