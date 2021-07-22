@@ -11,6 +11,7 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_rgb(self, sensor_frame: SensorFrame):
         output_path = self._output_path / "rgb" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.png"
         self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
+
         return output_path
 
     def _encode_point_cloud(self, sensor_frame: SensorFrame):
@@ -44,7 +45,7 @@ class DGPSceneEncoder(SceneEncoder):
         pc_data["RING_ID"] = pc.ring[:, 0]
         pc_data["TIMESTAMP"] = pc.ts[:, 0]
 
-        self._run_async(func=fsio.write_npz, data=pc_data)
+        self._run_async(func=fsio.write_npz, obj={"data": pc_data}, path=output_path)
 
         return output_path
 
