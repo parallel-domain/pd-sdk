@@ -1,10 +1,8 @@
 import contextlib
 from datetime import datetime
-from typing import Any, Callable, ContextManager, Dict, Generator, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, ContextManager, Dict, List, cast
 
-from paralleldomain.model.annotation import Annotation
-from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.ego import EgoFrame, EgoPose
+from paralleldomain.model.ego import EgoFrame
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
