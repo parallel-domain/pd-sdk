@@ -1,16 +1,18 @@
 import argparse
+import logging
 import os
+import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from typing import Any, List, Optional, TypeVar
 
+from coloredlogs import ColoredFormatter
+
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
-
-T = TypeVar("T")
 
 
 class SceneEncoder:
@@ -44,14 +46,16 @@ class SceneEncoder:
                     self._scene.frame_ids,
                 ),
             ):
-                print(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
+                ...
+                # print(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
 
     def _encode_cameras(self):
         with ThreadPoolExecutor(max_workers=4) as camera_executor:
             for camera_name, camera_encoder_result in zip(
                 self._scene.camera_names, camera_executor.map(self._encode_camera, self._scene.camera_names)
             ):
-                print(f"{camera_name}: {camera_encoder_result}")
+                ...
+                # print(f"{camera_name}: {camera_encoder_result}")
 
     def _encode_lidar(self, lidar_name: str):
         with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
@@ -62,14 +66,16 @@ class SceneEncoder:
                     self._scene.frame_ids,
                 ),
             ):
-                print(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
+                ...
+                # print(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
 
     def _encode_lidars(self):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             for lidar_name, lidar_encoder_result in zip(
                 self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names)
             ):
-                print(f"{lidar_name}: {lidar_encoder_result}")
+                ...
+                # print(f"{lidar_name}: {lidar_encoder_result}")
 
     def _encode_sensors(self):
         self._encode_cameras()
@@ -139,7 +145,21 @@ class DatasetEncoder:
         self._dataset = Dataset.from_decoder(decoder=decoder)
 
 
+def setup_loggers(logger_names: List[str], log_level: int = logging.INFO):
+    for logger_name in logger_names:
+        logger = logging.getLogger(name=logger_name)
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+        logger.setLevel(log_level)
+        formatter = ColoredFormatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
+        handler = logging.StreamHandler(stream=sys.stdout)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+
 if __name__ == "__main__":
+    setup_loggers(["__main__"])
+
     parser = argparse.ArgumentParser(description="Runs a data encoders")
     parser.add_argument("-i", "--input", type=str, help="A local or cloud path to a DGP dataset", required=True)
     parser.add_argument("-o", "--output", type=str, help="A local or cloud path for the encoded dataset", required=True)
