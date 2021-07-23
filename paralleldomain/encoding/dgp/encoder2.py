@@ -1,10 +1,16 @@
 import argparse
+import logging
+import sys
+from typing import List
 
 import numpy as np
+from coloredlogs import ColoredFormatter
 
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.encoding.utils import fsio
 from paralleldomain.model.sensor import SensorFrame
+
+logger = logging.getLogger(__name__)
 
 
 class DGPSceneEncoder(SceneEncoder):
@@ -68,7 +74,21 @@ class DGPDatasetEncoder(DatasetEncoder):
     scene_encoder = DGPSceneEncoder
 
 
+def setup_loggers(logger_names: List[str], log_level: int = logging.INFO):
+    for logger_name in logger_names:
+        logger = logging.getLogger(name=logger_name)
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+        logger.setLevel(log_level)
+        formatter = ColoredFormatter(fmt="%(asctime)s %(name)s[%(thread)d] %(funcName)s() %(levelname)s %(message)s")
+        handler = logging.StreamHandler(stream=sys.stdout)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+
 if __name__ == "__main__":
+    setup_loggers([__name__])
+
     parser = argparse.ArgumentParser(description="Runs a data encoders")
     parser.add_argument("-i", "--input", type=str, help="A local or cloud path to a DGP dataset", required=True)
     parser.add_argument("-o", "--output", type=str, help="A local or cloud path for the encoded dataset", required=True)
