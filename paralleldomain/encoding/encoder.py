@@ -11,11 +11,16 @@ from coloredlogs import ColoredFormatter
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.encoding.utils.log import setup_loggers
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
 
+logger = logging.getLogger(__name__)
+
 
 class SceneEncoder:
+    _logger: logging.Logger = None
+
     def __init__(self, dataset: Dataset, scene_name: str, output_path: AnyPath):
         self._dataset: Dataset = dataset
         self._scene_name: str = scene_name
@@ -46,16 +51,14 @@ class SceneEncoder:
                     self._scene.frame_ids,
                 ),
             ):
-                ...
-                # print(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
+                self.logger().info(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
 
     def _encode_cameras(self):
         with ThreadPoolExecutor(max_workers=4) as camera_executor:
             for camera_name, camera_encoder_result in zip(
                 self._scene.camera_names, camera_executor.map(self._encode_camera, self._scene.camera_names)
             ):
-                ...
-                # print(f"{camera_name}: {camera_encoder_result}")
+                self.logger().info(f"{camera_name}: {camera_encoder_result}")
 
     def _encode_lidar(self, lidar_name: str):
         with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
@@ -66,16 +69,14 @@ class SceneEncoder:
                     self._scene.frame_ids,
                 ),
             ):
-                ...
-                # print(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
+                self.logger().info(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
 
     def _encode_lidars(self):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             for lidar_name, lidar_encoder_result in zip(
                 self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names)
             ):
-                ...
-                # print(f"{lidar_name}: {lidar_encoder_result}")
+                self.logger().info(f"{lidar_name}: {lidar_encoder_result}")
 
     def _encode_sensors(self):
         self._encode_cameras()
@@ -83,7 +84,7 @@ class SceneEncoder:
 
     def _run_encoding(self) -> Any:
         self._encode_sensors()
-        print(f"Successfully encoded {self._scene_name}")
+        self.logger().info(f"Successfully encoded {self._scene_name}")
         return str(uuid.uuid4())
 
     def run(self) -> Any:
@@ -97,9 +98,17 @@ class SceneEncoder:
     def encode(cls, dataset: Dataset, scene_name: str, output_path: AnyPath) -> Any:
         return cls(dataset=dataset, scene_name=scene_name, output_path=output_path).run()
 
+    @classmethod
+    def logger(cls):
+        if cls._logger is None:
+            cls._logger = logging.getLogger(name=cls.__name__)
+            setup_loggers([cls.__name__], log_level=logging.DEBUG)
+        return cls._logger
+
 
 class DatasetEncoder:
     scene_encoder: SceneEncoder = SceneEncoder
+    _logger: logging.Logger = None
 
     def __init__(
         self,
@@ -137,29 +146,22 @@ class DatasetEncoder:
                     self._scene_names,
                 ),
             ):
-                print(f"{scene_name}: {scene_encoder_result}")
+                self.logger().info(f"{scene_name}: {scene_encoder_result}")
 
     def _load_dataset(self) -> None:
         """Simple dataset loader - naively assumes input is DGP format"""
         decoder = DGPDecoder(dataset_path=self._input_path)
         self._dataset = Dataset.from_decoder(decoder=decoder)
 
-
-def setup_loggers(logger_names: List[str], log_level: int = logging.INFO):
-    for logger_name in logger_names:
-        logger = logging.getLogger(name=logger_name)
-        for handler in logger.handlers:
-            logger.removeHandler(handler)
-        logger.setLevel(log_level)
-        formatter = ColoredFormatter(fmt="%(asctime)s %(name)s[%(process)d] %(levelname)s %(message)s")
-        handler = logging.StreamHandler(stream=sys.stdout)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    @classmethod
+    def logger(cls):
+        if cls._logger is None:
+            cls._logger = logging.getLogger(name=cls.__name__)
+            setup_loggers([cls.__name__], log_level=logging.DEBUG)
+        return cls._logger
 
 
 if __name__ == "__main__":
-    setup_loggers(["__main__"])
-
     parser = argparse.ArgumentParser(description="Runs a data encoders")
     parser.add_argument("-i", "--input", type=str, help="A local or cloud path to a DGP dataset", required=True)
     parser.add_argument("-o", "--output", type=str, help="A local or cloud path for the encoded dataset", required=True)
