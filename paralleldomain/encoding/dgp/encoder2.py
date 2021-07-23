@@ -1,10 +1,7 @@
 import argparse
 import logging
-import sys
-from typing import List
 
 import numpy as np
-from coloredlogs import ColoredFormatter
 
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.encoding.utils import fsio

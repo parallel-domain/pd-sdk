@@ -1,13 +1,10 @@
 import argparse
 import logging
 import os
-import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
-from typing import Any, List, Optional, TypeVar
-
-from coloredlogs import ColoredFormatter
+from typing import Any, List, Optional
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
