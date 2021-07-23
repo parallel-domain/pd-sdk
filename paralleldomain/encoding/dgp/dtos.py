@@ -1,7 +1,21 @@
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
+
+from paralleldomain.model.annotation import BoundingBox2D
+
+
+def _attribute_key_dump(obj: object) -> str:
+    return str(obj)
+
+
+def _attribute_value_dump(obj: object) -> str:
+    if isinstance(obj, Dict) or isinstance(obj, List):
+        return json.dumps(obj, indent=2)
+    else:
+        return str(obj)
 
 
 @dataclass_json
@@ -231,6 +245,24 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     box: BoundingBox2DBoxDTO
     area: int
     attributes: Dict[str, Any]
+
+    @staticmethod
+    def from_BoundingBox2D(box: BoundingBox2D) -> "BoundingBox2DDTO":
+        try:
+            is_crowd = box.attributes["iscrowd"]
+            del box.attributes["iscrowd"]
+        except KeyError:
+            is_crowd = False
+        box_dto = BoundingBox2DDTO(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            area=box.area,
+            iscrowd=is_crowd,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox2DBoxDTO(x=box.x, y=box.y, w=box.width, h=box.height),
+        )
+
+        return box_dto
 
 
 @dataclass_json

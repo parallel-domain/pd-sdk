@@ -1,13 +1,20 @@
 import argparse
 import logging
+from typing import List
 
 import numpy as np
 
-from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
+from paralleldomain.encoding.dgp.dtos import BoundingBox2DDTO
+from paralleldomain.encoding.encoder import DatasetEncoder, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utils import fsio
+from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D
 from paralleldomain.model.sensor import SensorFrame
 
 logger = logging.getLogger(__name__)
+
+
+class BoundingBox2DFilter(ObjectFilter):
+    ...
 
 
 class DGPSceneEncoder(SceneEncoder):
@@ -52,7 +59,15 @@ class DGPSceneEncoder(SceneEncoder):
 
         return output_path
 
+    def _encode_bounding_box_2d(self, box: BoundingBox2D) -> BoundingBox2DDTO:
+        return BoundingBox2DDTO.from_BoundingBox2D(box)
+
+    def _encode_bounding_boxes_2d(self, sensor_frame: SensorFrame):
+        boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
+        _ = BoundingBox2DFilter.run([self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
+
     def _encode_camera_frame(self, camera_frame: SensorFrame):
+        self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
         self._encode_rgb(sensor_frame=camera_frame)
 
     def _encode_lidar_frame(self, lidar_frame: SensorFrame):

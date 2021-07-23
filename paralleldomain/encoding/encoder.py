@@ -2,9 +2,10 @@ import argparse
 import logging
 import os
 import uuid
+from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
-from typing import Any, List, Optional
+from typing import Any, Generator, List, Optional, Union
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
@@ -13,6 +14,27 @@ from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
+
+
+class ObjectFilter:
+    @staticmethod
+    def pre_filter(objects: Union[Generator, List]) -> Generator:
+        return (o for o in objects)
+
+    @staticmethod
+    def map(objects: Union[Generator, List]) -> Generator:
+        return (o for o in objects)
+
+    @staticmethod
+    def post_filter(objects: Union[Generator, List]) -> Generator:
+        return (o for o in objects)
+
+    @classmethod
+    def run(cls, objects: List) -> List:
+        _pre_filter = cls.pre_filter(objects=objects)
+        _map = cls.map(objects=_pre_filter)
+        _post_filter = cls.post_filter(objects=_map)
+        return list(_post_filter)
 
 
 class SceneEncoder:
