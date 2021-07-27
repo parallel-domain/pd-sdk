@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from paralleldomain.encoding.dgp.dtos import BoundingBox2DDTO
+from paralleldomain.encoding.dgp.dtos import AnnotationsBoundingBox2DDTO, BoundingBox2DDTO
 from paralleldomain.encoding.encoder import DatasetEncoder, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utils import fsio
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D
@@ -64,7 +64,13 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_bounding_boxes_2d(self, sensor_frame: SensorFrame):
         boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
-        _ = BoundingBox2DFilter.run([self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
+        box2d_dto = BoundingBox2DFilter.run([self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
+        boxes2d_dto = AnnotationsBoundingBox2DDTO(annotations=box2d_dto)
+
+        output_path = (
+            self._output_path / "bounding_box_2d" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.json"
+        )
+        self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path)
 
     def _encode_camera_frame(self, camera_frame: SensorFrame):
         self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
@@ -77,6 +83,7 @@ class DGPSceneEncoder(SceneEncoder):
         super()._prepare_output_directories()
         for camera_name in self._scene.camera_names:
             (self._output_path / "rgb" / camera_name).mkdir(exist_ok=True, parents=True)
+            (self._output_path / "bounding_box_2d" / camera_name).mkdir(exist_ok=True, parents=True)
 
         for lidar_name in self._scene.lidar_names:
             (self._output_path / "point_cloud" / lidar_name).mkdir(exist_ok=True, parents=True)
