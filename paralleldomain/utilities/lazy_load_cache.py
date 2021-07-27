@@ -5,6 +5,7 @@ from sys import getsizeof
 from threading import RLock
 from typing import Any, Callable, Dict, Hashable, Set, Type, TypeVar, Union
 
+import numpy as np
 import psutil
 from cachetools import Cache
 
@@ -156,6 +157,8 @@ class LazyLoadCache(Cache):
         elif isinstance(value, dict):
             for k, v in value.items():
                 size += getsizeof(v)
+        elif isinstance(value, np.ndarray):
+            size = value.nbytes
         else:
             pass
         return size
