@@ -170,6 +170,6 @@ class LazyLoadCache(Cache):
         return size
 
 
-_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 50% free space max
+_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
 
 LAZY_LOAD_CACHE = LazyLoadCache(max_ram_usage_factor=_cache_max_ram_usage_factor)
