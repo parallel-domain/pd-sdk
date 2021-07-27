@@ -25,7 +25,7 @@ class LazyLoadCache(Cache):
         self.max_ram_usage_factor = max_ram_usage_factor
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
         logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
-        logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)} GB.")
+        logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._lock_prefixes: Set[str] = set()
         self._key_load_locks: Dict[Hashable, RLock] = dict()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
@@ -59,7 +59,7 @@ class LazyLoadCache(Cache):
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
         if SHOW_CACHE_LOGS:
-            logger.debug(f"add item {key} with size {naturalsize(size)} MB")
+            logger.debug(f"add item {key} with size {naturalsize(size)}")
         if size > self.maxsize:
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
@@ -97,7 +97,7 @@ class LazyLoadCache(Cache):
         free_space = int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
 
         if SHOW_CACHE_LOGS:
-            logger.debug(f"current cache free space {naturalsize(free_space)} MB")
+            logger.debug(f"current cache free space {naturalsize(free_space)}")
         return free_space
 
     def popitem(self):
