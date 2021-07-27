@@ -13,6 +13,8 @@ CachedItemType = TypeVar("CachedItemType")
 
 logger = logging.getLogger(__name__)
 
+SHOW_CACHE_LOGS = os.environ.get("SHOW_CACHE_LOGS", False)
+
 
 class LazyLoadCache(Cache):
     _delete_lock = RLock()
@@ -38,7 +40,8 @@ class LazyLoadCache(Cache):
 
         with self._key_load_locks[key]:
             if key not in self:
-                logger.debug(f"load key {key} to cache")
+                if SHOW_CACHE_LOGS:
+                    logger.debug(f"load key {key} to cache")
                 self[key] = loader()
             return self[key]
 
@@ -56,7 +59,8 @@ class LazyLoadCache(Cache):
 
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
-        logger.debug(f"add item {key} with size {round(size / (1024.0 ** 2), 2)} MB")
+        if SHOW_CACHE_LOGS:
+            logger.debug(f"add item {key} with size {round(size / (1024.0 ** 2), 2)} MB")
         if size > self.maxsize:
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
@@ -77,7 +81,8 @@ class LazyLoadCache(Cache):
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
         with LazyLoadCache._delete_lock:
-            logger.debug(f"delete {key} from cache")
+            if SHOW_CACHE_LOGS:
+                logger.debug(f"delete {key} from cache")
             cache_delitem(self, key)
             del self.__order[key]
 
@@ -91,7 +96,9 @@ class LazyLoadCache(Cache):
         """The maximum size of the caches free space."""
         remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
         free_space = int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
-        logger.debug(f"current cache free space {round(free_space / (1024.0 ** 2), 2)} MB")
+
+        if SHOW_CACHE_LOGS:
+            logger.debug(f"current cache free space {round(free_space / (1024.0 ** 2), 2)} MB")
         return free_space
 
     def popitem(self):
