@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
 
-from paralleldomain.model.annotation import BoundingBox2D
+from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
 
 
 def _attribute_key_dump(obj: object) -> str:
@@ -213,6 +213,47 @@ class BoundingBox3DDTO(DataClassJsonMixin):
     num_points: int
     box: BoundingBox3DBoxDTO
     attributes: Dict[str, Any]
+
+    @staticmethod
+    def from_BoundingBox3D(box: BoundingBox3D) -> "BoundingBox3DDTO":
+        try:
+            occlusion = box.attributes["occlusion"]
+            del box.attributes["occlusion"]
+        except KeyError:
+            occlusion = 0
+
+        try:
+            truncation = box.attributes["truncation"]
+            del box.attributes["truncation"]
+        except KeyError:
+            truncation = 0
+
+        box_dto = BoundingBox3DDTO(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            num_points=box.num_points,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox3DBoxDTO(
+                width=box.width,
+                length=box.length,
+                height=box.height,
+                occlusion=occlusion,
+                truncation=truncation,
+                pose=PoseDTO(
+                    translation=TranslationDTO(
+                        x=box.pose.translation[0], y=box.pose.translation[1], z=box.pose.translation[2]
+                    ),
+                    rotation=RotationDTO(
+                        qw=box.pose.quaternion.w,
+                        qx=box.pose.quaternion.x,
+                        qy=box.pose.quaternion.y,
+                        qz=box.pose.quaternion.z,
+                    ),
+                ),
+            ),
+        )
+
+        return box_dto
 
 
 @dataclass_json

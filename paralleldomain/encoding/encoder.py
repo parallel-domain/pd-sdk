@@ -18,22 +18,22 @@ logger = logging.getLogger(__name__)
 
 class ObjectFilter:
     @staticmethod
-    def pre_filter(objects: Union[Generator, List]) -> Generator:
+    def filter_pre_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @staticmethod
-    def map(objects: Union[Generator, List]) -> Generator:
+    def transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @staticmethod
-    def post_filter(objects: Union[Generator, List]) -> Generator:
+    def filter_post_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @classmethod
     def run(cls, objects: List) -> List:
-        _pre_filter = cls.pre_filter(objects=objects)
-        _map = cls.map(objects=_pre_filter)
-        _post_filter = cls.post_filter(objects=_map)
+        _pre_filter = cls.filter_pre_transform(objects=objects)
+        _map = cls.transform(objects=_pre_filter)
+        _post_filter = cls.filter_post_transform(objects=_map)
         return list(_post_filter)
 
 
