@@ -134,7 +134,6 @@ class SceneEncoder:
     def logger(cls):
         if cls._logger is None:
             cls._logger = logging.getLogger(name=cls.__name__)
-            setup_loggers([cls.__name__], log_level=logging.DEBUG)
         return cls._logger
 
 
@@ -189,7 +188,6 @@ class DatasetEncoder:
     def logger(cls):
         if cls._logger is None:
             cls._logger = logging.getLogger(name=cls.__name__)
-            setup_loggers([cls.__name__], log_level=logging.DEBUG)
         return cls._logger
 
 
