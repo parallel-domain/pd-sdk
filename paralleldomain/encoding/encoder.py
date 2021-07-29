@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from typing import Any, Generator, List, Optional, Union
 
+import numpy as np
+
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.utils.log import setup_loggers
@@ -31,10 +33,21 @@ class ObjectFilter:
 
     @classmethod
     def run(cls, objects: List) -> List:
-        _pre_filter = cls.filter_pre_transform(objects=objects)
-        _map = cls.transform(objects=_pre_filter)
-        _post_filter = cls.filter_post_transform(objects=_map)
-        return list(_post_filter)
+        _pre_filtered = cls.filter_pre_transform(objects=objects)
+        _transformed = cls.transform(objects=_pre_filtered)
+        _post_filtered = cls.filter_post_transform(objects=_transformed)
+        return list(_post_filtered)
+
+
+class MaskFilter:
+    @staticmethod
+    def transform(mask: np.ndarray) -> np.ndarray:
+        return mask
+
+    @classmethod
+    def run(cls, mask: np.ndarray) -> np.ndarray:
+        _transformed = cls.transform(mask)
+        return _transformed
 
 
 class SceneEncoder:

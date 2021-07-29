@@ -10,8 +10,9 @@ from paralleldomain.encoding.dgp.dtos import (
     BoundingBox2DDTO,
     BoundingBox3DDTO,
 )
-from paralleldomain.encoding.encoder import DatasetEncoder, ObjectFilter, SceneEncoder
+from paralleldomain.encoding.encoder import DatasetEncoder, MaskFilter, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utils import fsio
+from paralleldomain.encoding.utils.mask import encode_as_rgb8
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
 
@@ -24,6 +25,12 @@ class BoundingBox2DFilter(ObjectFilter):
 
 class BoundingBox3DFilter(ObjectFilter):
     ...
+
+
+class SemanticSegmentation2DFilter(MaskFilter):
+    @staticmethod
+    def transform(mask: np.ndarray) -> np.ndarray:
+        return encode_as_rgb8(mask)
 
 
 class DGPSceneEncoder(SceneEncoder):
@@ -86,7 +93,7 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_bounding_boxes_3d(self, sensor_frame: SensorFrame):
         boxes3d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
-        box3d_dto = BoundingBox3DFilter.run([self._encode_bounding_box_3d(b) for b in boxes3d.boxes])
+        box3d_dto = BoundingBox3DFilter.run(objects=[self._encode_bounding_box_3d(b) for b in boxes3d.boxes])
         boxes3d_dto = AnnotationsBoundingBox3DDTO(annotations=box3d_dto)
 
         output_path = (
@@ -94,7 +101,21 @@ class DGPSceneEncoder(SceneEncoder):
         )
         self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path)
 
+    def _encode_semantic_segmentation_2d(self, sensor_frame: SensorFrame):
+        semseg2d = sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D)
+        mask_out = SemanticSegmentation2DFilter.run(mask=semseg2d.class_ids)
+
+        output_path = (
+            self._output_path
+            / "semantic_segmentation_2d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.png"
+        )
+
+        self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+
     def _encode_camera_frame(self, camera_frame: SensorFrame):
+        self._encode_semantic_segmentation_2d(sensor_frame=camera_frame)
         self._encode_bounding_boxes_3d(sensor_frame=camera_frame)
         self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
         self._encode_rgb(sensor_frame=camera_frame)
@@ -109,6 +130,7 @@ class DGPSceneEncoder(SceneEncoder):
             (self._output_path / "rgb" / camera_name).mkdir(exist_ok=True, parents=True)
             (self._output_path / "bounding_box_2d" / camera_name).mkdir(exist_ok=True, parents=True)
             (self._output_path / "bounding_box_3d" / camera_name).mkdir(exist_ok=True, parents=True)
+            (self._output_path / "semantic_segmentation_2d" / camera_name).mkdir(exist_ok=True, parents=True)
 
         for lidar_name in self._scene.lidar_names:
             (self._output_path / "point_cloud" / lidar_name).mkdir(exist_ok=True, parents=True)

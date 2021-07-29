@@ -19,3 +19,7 @@ def replace_values(mask: np.ndarray, old_values: List[object], new_value: object
     boolean_mask = boolean_mask_by_values(mask=mask, values=old_values)
     mask[boolean_mask] = new_value
     return mask
+
+
+def encode_as_rgb8(mask: np.ndarray) -> np.ndarray:
+    return np.concatenate([mask & 0xFF, mask >> 8 & 0xFF, mask >> 16 & 0xFF], axis=-1).astype(np.uint8)
