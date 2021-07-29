@@ -1,5 +1,7 @@
 import argparse
 import logging
+from multiprocessing.pool import AsyncResult
+from typing import Dict
 from urllib.parse import urlparse
 
 import numpy as np
@@ -189,21 +191,33 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
 
-    def _encode_camera_frame(self, camera_frame: SensorFrame):
-        path_bounding_boxes_2d = self._encode_bounding_boxes_2d(sensor_frame=camera_frame)  # noqa: F841
-        path_depth = self._encode_depth(sensor_frame=camera_frame)  # noqa: F841
-        path_motion_vectors_2d = self._encode_motion_vectors_2d(sensor_frame=camera_frame)  # noqa: F841
-        path_semantic_segmentation_2d = self._encode_semantic_segmentation_2d(sensor_frame=camera_frame)  # noqa: F841
-        path_instance_segmentation_2d = self._encode_instance_segmentation_2d(sensor_frame=camera_frame)  # noqa: F841
-        path_bounding_boxes_3d = self._encode_bounding_boxes_3d(sensor_frame=camera_frame)  # noqa: F841
-        path_rgb = self._encode_rgb(sensor_frame=camera_frame)  # noqa: F841
+    def _encode_camera_frame(self, camera_frame: SensorFrame) -> Dict[str, Dict[str, AsyncResult]]:
+        return dict(
+            annotations={
+                "0": self._encode_bounding_boxes_2d(sensor_frame=camera_frame),
+                "1": self._encode_bounding_boxes_3d(sensor_frame=camera_frame),
+                "2": self._encode_semantic_segmentation_2d(sensor_frame=camera_frame),
+                "4": self._encode_instance_segmentation_2d(sensor_frame=camera_frame),
+                "6": self._encode_depth(sensor_frame=camera_frame),
+                "8": self._encode_motion_vectors_2d(sensor_frame=camera_frame),
+            },
+            sensor_data={
+                "rgb": self._encode_rgb(sensor_frame=camera_frame),
+            },
+        )
 
-    def _encode_lidar_frame(self, lidar_frame: SensorFrame):
-        path_instance_segmentation_3d = self._encode_instance_segmentation_3d(sensor_frame=lidar_frame)  # noqa: F841
-        path_semantic_segmentation_3d = self._encode_semantic_segmentation_3d(sensor_frame=lidar_frame)  # noqa: F841
-        path_depth = self._encode_depth(sensor_frame=lidar_frame)  # noqa: F841
-        path_bounding_boxes_3d = self._encode_bounding_boxes_3d(sensor_frame=lidar_frame)  # noqa: F841
-        path_point_cloud = self._encode_point_cloud(sensor_frame=lidar_frame)  # noqa: F841
+    def _encode_lidar_frame(self, lidar_frame: SensorFrame) -> Dict[str, Dict[str, AsyncResult]]:
+        return dict(
+            annotations={
+                "5": self._encode_instance_segmentation_3d(sensor_frame=lidar_frame),
+                "3": self._encode_semantic_segmentation_3d(sensor_frame=lidar_frame),
+                "6": self._encode_depth(sensor_frame=lidar_frame),
+                "1": self._encode_bounding_boxes_3d(sensor_frame=lidar_frame),
+            },
+            sensor_data={
+                "point_cloud": self._encode_point_cloud(sensor_frame=lidar_frame),
+            },
+        )
 
     def _prepare_output_directories(self) -> None:
         super()._prepare_output_directories()
