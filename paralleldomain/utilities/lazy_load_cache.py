@@ -1,13 +1,20 @@
 import collections
+import logging
 import os
 from sys import getsizeof
 from threading import RLock
 from typing import Callable, Dict, Hashable, Set, TypeVar
 
+import numpy as np
 import psutil
 from cachetools import Cache
+from humanize import naturalsize
 
 CachedItemType = TypeVar("CachedItemType")
+
+logger = logging.getLogger(__name__)
+
+SHOW_CACHE_LOGS = os.environ.get("SHOW_CACHE_LOGS", False)
 
 
 class LazyLoadCache(Cache):
@@ -17,6 +24,8 @@ class LazyLoadCache(Cache):
     def __init__(self, max_ram_usage_factor: float = 0.8):
         self.max_ram_usage_factor = max_ram_usage_factor
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
+        logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
+        logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._lock_prefixes: Set[str] = set()
         self._key_load_locks: Dict[Hashable, RLock] = dict()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
@@ -30,6 +39,8 @@ class LazyLoadCache(Cache):
 
         with self._key_load_locks[key]:
             if key not in self:
+                if SHOW_CACHE_LOGS:
+                    logger.debug(f"load key {key} to cache")
                 self[key] = loader()
             return self[key]
 
@@ -47,12 +58,15 @@ class LazyLoadCache(Cache):
 
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
+        if SHOW_CACHE_LOGS:
+            logger.debug(f"add item {key} with size {naturalsize(size)}")
         if size > self.maxsize:
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
             while size > self.free_space:
                 popped_item = self.popitem()
                 if popped_item is None:
+                    logger.debug(f"we can't find anything to delete in cache, so we just add {key} anyways")
                     break  # we can't find anything to delete in cache, so we just add it anyways
 
         if key in self._Cache__data:
@@ -66,6 +80,8 @@ class LazyLoadCache(Cache):
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
         with LazyLoadCache._delete_lock:
+            if SHOW_CACHE_LOGS:
+                logger.debug(f"delete {key} from cache")
             cache_delitem(self, key)
             del self.__order[key]
 
@@ -78,7 +94,11 @@ class LazyLoadCache(Cache):
     def free_space(self) -> int:
         """The maximum size of the caches free space."""
         remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
-        return int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
+        free_space = int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
+
+        if SHOW_CACHE_LOGS:
+            logger.debug(f"current cache free space {naturalsize(free_space)}")
+        return free_space
 
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
@@ -143,11 +163,13 @@ class LazyLoadCache(Cache):
         elif isinstance(value, dict):
             for k, v in value.items():
                 size += getsizeof(v)
+        elif isinstance(value, np.ndarray):
+            size = value.nbytes
         else:
             pass
         return size
 
 
-_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.5))  # 50% free space max
+_cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
 
 LAZY_LOAD_CACHE = LazyLoadCache(max_ram_usage_factor=_cache_max_ram_usage_factor)

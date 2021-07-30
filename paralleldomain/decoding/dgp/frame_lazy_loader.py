@@ -277,7 +277,7 @@ class DGPFrameLazyLoader:
     def _decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png"))
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary)))
             return image_data
 
     def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
