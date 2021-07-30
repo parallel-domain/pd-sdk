@@ -76,14 +76,10 @@ class SceneEncoder:
 
     def _encode_camera(self, camera_name: str):
         with ThreadPoolExecutor(max_workers=10) as camera_frame_executor:
-            for frame_id, camera_frame_encoder_result in zip(
+            camera_frame_executor.map(
+                lambda fid: self._encode_camera_frame(self._scene.get_frame(fid).get_sensor(camera_name)),
                 self._scene.frame_ids,
-                camera_frame_executor.map(
-                    lambda fid: self._encode_camera_frame(self._scene.get_frame(fid).get_sensor(camera_name)),
-                    self._scene.frame_ids,
-                ),
-            ):
-                self.logger().info(f"{camera_name} - {frame_id}: {camera_frame_encoder_result}")
+            ),
 
     def _encode_cameras(self):
         with ThreadPoolExecutor(max_workers=4) as camera_executor:
