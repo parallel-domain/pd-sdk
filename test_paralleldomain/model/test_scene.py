@@ -82,6 +82,10 @@ class TestSceneSensors:
             assert num_sensors - 1 == len(editable_scene.sensors)
             assert remove_name not in editable_scene.sensor_names
 
+    def test_ontology_loading(self, scene: Scene):
+        ontology = scene.get_ontology(AnnotationTypes.BoundingBoxes2D)
+        assert ontology
+
     """
     def test_change_annotations(self, scene: Scene):
         with scene.editable() as editable_scene:

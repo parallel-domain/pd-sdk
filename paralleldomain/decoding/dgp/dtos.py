@@ -254,6 +254,7 @@ class DatasetDTO:
     scene_splits: Dict[str, DatasetSceneSplitDTO]
 
 
+@dataclass_json
 @dataclass
 class OntologyItemColorDTO:
     r: int
@@ -261,6 +262,7 @@ class OntologyItemColorDTO:
     b: int
 
 
+@dataclass_json
 @dataclass
 class OntologyItemDTO:
     name: str
