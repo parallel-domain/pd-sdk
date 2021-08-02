@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import os
 from typing import Dict, List, Union
 
 import numpy as np
@@ -47,3 +48,9 @@ def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):
         np.savez_compressed(fp, **obj)
     logger.debug(f"Finished writing {str(path)}")
     return path
+
+
+def relative_path(path: AnyPath, start: AnyPath) -> AnyPath:
+    result = os.path.relpath(path=str(path), start=str(start))
+
+    return AnyPath(result)

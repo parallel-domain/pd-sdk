@@ -17,6 +17,9 @@ from paralleldomain.encoding.dgp.dtos import (
     AnnotationsBoundingBox3DDTO,
     BoundingBox2DDTO,
     BoundingBox3DDTO,
+    CalibrationDTO,
+    CalibrationExtrinsicDTO,
+    CalibrationIntrinsicDTO,
     PoseDTO,
     RotationDTO,
     SceneDataDatumImage,
@@ -33,10 +36,12 @@ from paralleldomain.encoding.dgp.dtos import (
 )
 from paralleldomain.encoding.encoder import DatasetEncoder, MaskFilter, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utils import fsio
+from paralleldomain.encoding.utils.fsio import relative_path
 from paralleldomain.encoding.utils.log import setup_loggers
 from paralleldomain.encoding.utils.mask import encode_2int16_as_rgba8, encode_int32_as_rgb8
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +81,17 @@ class InstanceSegmentation3DFilter(SemanticSegmentation3DFilter):
 
 
 class DGPSceneEncoder(SceneEncoder):
+    _fisheye_camera_model_map: Dict[str, int] = defaultdict(
+        lambda: 2,
+        {
+            "brown_conrady": 0,
+            "fisheye": 1,
+        },
+    )
+
+    def _relative_path(self, path: AnyPath) -> AnyPath:
+        return relative_path(path, self._output_path)
+
     def _encode_rgb(self, sensor_frame: SensorFrame):
         output_path = self._output_path / "rgb" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.png"
         return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
@@ -224,12 +240,14 @@ class DGPSceneEncoder(SceneEncoder):
             annotations = result_dict["annotations"]
 
             scene_datum_dto = SceneDataDatumTypeImage(
-                filename=sensor_data["rgb"].get().as_posix(),
+                filename=self._relative_path(sensor_data["rgb"].get()).as_posix(),
                 height=camera_frame.image.height,
                 width=camera_frame.image.width,
                 # replace with Decoder attribute - if accessing .image.rgbs.shape[2] image needs to be loaded :(
                 channels=4,
-                annotations={k: v.get().as_posix() for k, v in annotations.items() if v is not None},
+                annotations={
+                    k: self._relative_path(v.get()).as_posix() for k, v in annotations.items() if v is not None
+                },
                 pose=PoseDTO(
                     translation=TranslationDTO(
                         x=camera_frame.pose.translation[0],
@@ -289,9 +307,11 @@ class DGPSceneEncoder(SceneEncoder):
             annotations = result_dict["annotations"]
 
             scene_datum_dto = SceneDataDatumTypePointCloud(
-                filename=sensor_data["point_cloud"].get().as_posix(),
+                filename=self._relative_path(sensor_data["point_cloud"].get()).as_posix(),
                 point_format=["X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP"],
-                annotations={k: v.get().as_posix() for k, v in annotations.items() if v is not None},
+                annotations={
+                    k: self._relative_path(v.get()).as_posix() for k, v in annotations.items() if v is not None
+                },
                 pose=PoseDTO(
                     translation=TranslationDTO(
                         x=lidar_frame.pose.translation[0],
@@ -404,7 +424,56 @@ class DGPSceneEncoder(SceneEncoder):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             return zip(self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names))
 
-    def _encode_scene_json(self, scene_sensor_data: Dict[str, Dict[str, SceneDataDTO]]):
+    def _encode_calibrations(self) -> AsyncResult:
+        sensor_frames = []
+        frame_ids = self._scene.frame_ids
+        for sn in self._scene.sensor_names:
+            sensor_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
+
+        calib_dto = CalibrationDTO(names=[], extrinsics=[], intrinsics=[])
+
+        def get_calibration(sf: SensorFrame) -> Tuple[str, CalibrationExtrinsicDTO, CalibrationIntrinsicDTO]:
+            intr = sf.intrinsic
+            extr = sf.extrinsic
+
+            calib_dto_extrinsic = CalibrationExtrinsicDTO(
+                translation=TranslationDTO(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=RotationDTO(
+                    qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
+                ),
+            )
+
+            calib_dto_intrinsic = CalibrationIntrinsicDTO(
+                fx=intr.fx,
+                fy=intr.fy,
+                cx=intr.cx,
+                cy=intr.cy,
+                skew=intr.skew,
+                fov=intr.fov,
+                k1=intr.k1,
+                k2=intr.k2,
+                k3=intr.k3,
+                k4=intr.k4,
+                k5=intr.k5,
+                k6=intr.k6,
+                p1=intr.p1,
+                p2=intr.p2,
+                fisheye=self._fisheye_camera_model_map[intr.camera_model],
+            )
+
+            return (sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic)
+
+        res = map(get_calibration, sensor_frames)
+
+        for r_name, r_extrinsic, r_intrinsic in res:
+            calib_dto.names.append(r_name)
+            calib_dto.extrinsics.append(r_extrinsic)
+            calib_dto.intrinsics.append(r_intrinsic)
+
+        output_path = self._output_path / "calibration" / ".json"
+        return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
+
+    def _encode_scene_json(self, scene_sensor_data: Dict[str, Dict[str, SceneDataDTO]], calibration_file: AsyncResult):
         scene_data = []
         scene_samples = []
         for fid in self._scene.frame_ids:
@@ -422,8 +491,7 @@ class DGPSceneEncoder(SceneEncoder):
                         index=frame.frame_id,
                     ),
                     datum_keys=[d.key for d in frame_data],
-                    # self._save_calibration_json(sensor_frames=sensor_frames, scene_name=scene_name),
-                    calibration_key="",
+                    calibration_key=self._relative_path(calibration_file.get()).as_posix(),
                     metadata={},
                 )
             )
@@ -453,11 +521,13 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _run_encoding(self):
         scene_sensor_data = self._encode_sensors()
-        return self._encode_scene_json(scene_sensor_data=scene_sensor_data)
+        calibration_file = self._encode_calibrations()
+        return self._encode_scene_json(scene_sensor_data=scene_sensor_data, calibration_file=calibration_file)
 
     def _prepare_output_directories(self) -> None:
         super()._prepare_output_directories()
         if not urlparse(str(self._output_path)).scheme:  # Local FS - needs existing directories
+            (self._output_path / "calibration").mkdir(exist_ok=True, parents=True)
             for camera_name in self._scene.camera_names:
                 (self._output_path / "rgb" / camera_name).mkdir(exist_ok=True, parents=True)
                 (self._output_path / "bounding_box_2d" / camera_name).mkdir(exist_ok=True, parents=True)
