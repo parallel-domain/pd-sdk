@@ -42,7 +42,9 @@ class SceneDecoderProtocol(Protocol):
     def decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         pass
 
-    def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
+    def decode_sensor_frame(
+        self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName, ontologies: Dict[str, ClassMap]
+    ) -> SensorFrame:
         pass
 
     def decode_ego_frame(self, scene_name: SceneName, frame_id: FrameId) -> EgoFrame:
@@ -64,11 +66,19 @@ class SceneDecoderProtocol(Protocol):
 
 
 class Scene:
-    def __init__(self, name: SceneName, description: str, metadata: Dict[str, Any], decoder: SceneDecoderProtocol):
+    def __init__(
+        self,
+        name: SceneName,
+        description: str,
+        metadata: Dict[str, Any],
+        available_annotation_types: List[AnnotationType],
+        decoder: SceneDecoderProtocol,
+    ):
         self._name = name
         self._unique_cache_key = decoder.get_unique_scene_id(scene_name=name)
         self._description = description
         self._metadata = metadata
+        self._available_annotation_types = available_annotation_types
         self._decoder = decoder
         self._cache_is_locked = False
         self._removed_sensor_names = set()
@@ -91,7 +101,10 @@ class Scene:
         return LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-{frame_id}-{sensor_name}-SensorFrame",
             loader=lambda: self._decoder.decode_sensor_frame(
-                scene_name=self.name, frame_id=frame_id, sensor_name=sensor_name
+                scene_name=self.name,
+                frame_id=frame_id,
+                sensor_name=sensor_name,
+                ontologies={self._annotation_type_identifiers[k]: v for k, v in self.ontologies.items()},
             ),
         )
 
@@ -197,16 +210,21 @@ class Scene:
         available_annotation_types = {v: k for k, v in ANNOTATION_TYPE_MAP.items()}
         return available_annotation_types
 
+    @property
+    def ontologies(self) -> Dict[AnnotationType, ClassMap]:
+        return {a_type: self.get_ontology(a_type) for a_type in self._available_annotation_types}
+
     def get_ontology(self, annotation_type: Type[T]) -> ClassMap:
+        if annotation_type not in self._available_annotation_types:
+            raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
+
         identifier = self._annotation_type_identifiers[annotation_type]
         ontologies = LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-ontologies",
             loader=lambda: self._decoder.decode_ontologies(scene_name=self.name),
         )
-        if identifier not in ontologies:
-            raise ValueError(f"No ontology found for {annotation_type} in this scene!")
-        else:
-            return ontologies[identifier]
+
+        return ontologies[identifier]
 
     def remove_sensor(self, sensor_name: SensorName):
         if not self._cache_is_locked:
@@ -219,7 +237,15 @@ class Scene:
         self._removed_sensor_names.add(sensor_name)
 
     @staticmethod
-    def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
+    def from_decoder(
+        scene_name: SceneName, available_annotation_types: List[AnnotationType], decoder: SceneDecoderProtocol
+    ) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
         metadata = decoder.decode_scene_metadata(scene_name=scene_name)
-        return Scene(name=scene_name, description=description, metadata=metadata, decoder=decoder)
+        return Scene(
+            name=scene_name,
+            description=description,
+            metadata=metadata,
+            available_annotation_types=available_annotation_types,
+            decoder=decoder,
+        )

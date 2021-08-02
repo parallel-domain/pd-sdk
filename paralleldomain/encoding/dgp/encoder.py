@@ -422,6 +422,10 @@ class DGPSceneEncoder(SceneEncoder):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             return zip(self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names))
 
+    def _encode_ontologies(self) -> AsyncResult:
+        ...
+        # annotation_types = [AnnotationTypes.BoundingBoxes2D, AnnotationTypes.BoundingBoxes3D]
+
     def _encode_calibrations(self) -> AsyncResult:
         sensor_frames = []
         frame_ids = self._scene.frame_ids
