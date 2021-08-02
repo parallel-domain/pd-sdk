@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
 
 from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
+from paralleldomain.model.class_mapping import ClassMap
 
 
 def _attribute_key_dump(obj: object) -> str:
@@ -357,3 +358,22 @@ class OntologyItemDTO:
 @dataclass
 class OntologyFileDTO:
     items: List[OntologyItemDTO]
+
+    @staticmethod
+    def from_ClassMap(class_map: ClassMap) -> "OntologyFileDTO":
+        return OntologyFileDTO(
+            items=[
+                OntologyItemDTO(
+                    id=cid,
+                    name=cval.name,
+                    color=OntologyItemColorDTO(
+                        r=cval.meta["color"]["r"],
+                        g=cval.meta["color"]["g"],
+                        b=cval.meta["color"]["b"],
+                    ),
+                    isthing=cval.instanced,
+                    supercategory="",
+                )
+                for cid, cval in class_map.items()
+            ]
+        )

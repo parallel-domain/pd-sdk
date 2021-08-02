@@ -156,6 +156,10 @@ class Scene:
             loader=lambda: self._decoder.decode_frame_id_to_date_time_map(scene_name=self.name),
         )
 
+    @property
+    def available_annotation_types(self):
+        return self._available_annotation_types
+
     def get_frame(self, frame_id: FrameId) -> Frame:
         return Frame(
             frame_id=frame_id,

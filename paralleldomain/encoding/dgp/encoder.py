@@ -10,6 +10,9 @@ from urllib.parse import urlparse
 
 import numpy as np
 
+from paralleldomain import Dataset
+from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.encoding.dgp.constants import ANNOTATION_TYPE_MAP_INV
 from paralleldomain.encoding.dgp.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -18,6 +21,7 @@ from paralleldomain.encoding.dgp.dtos import (
     CalibrationDTO,
     CalibrationExtrinsicDTO,
     CalibrationIntrinsicDTO,
+    OntologyFileDTO,
     PoseDTO,
     RotationDTO,
     SceneDataDatumImage,
@@ -34,10 +38,10 @@ from paralleldomain.encoding.dgp.dtos import (
 )
 from paralleldomain.encoding.encoder import DatasetEncoder, MaskFilter, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utils import fsio
-from paralleldomain.encoding.utils.fsio import relative_path
+from paralleldomain.encoding.utils.fsio import relative_path, write_json
 from paralleldomain.encoding.utils.log import setup_loggers
 from paralleldomain.encoding.utils.mask import encode_2int16_as_rgba8, encode_int32_as_rgb8
-from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
+from paralleldomain.model.annotation import Annotation, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -422,9 +426,19 @@ class DGPSceneEncoder(SceneEncoder):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             return zip(self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names))
 
-    def _encode_ontologies(self) -> AsyncResult:
-        ...
-        # annotation_types = [AnnotationTypes.BoundingBoxes2D, AnnotationTypes.BoundingBoxes3D]
+    def _encode_ontologies(self) -> Dict[str, AsyncResult]:
+        ontology_dtos = {
+            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_ClassMap(self._scene.get_ontology(a_type))
+            for a_type in self._scene.available_annotation_types
+            if a_type is not Annotation  # equiv: not implemented, yet!
+        }
+
+        output_path = self._output_path / "ontologies" / ".json"
+
+        return {
+            k: self._run_async(func=write_json, obj=v.to_dict(), path=output_path, append_sha1=True)
+            for k, v in ontology_dtos.items()
+        }
 
     def _encode_calibrations(self) -> AsyncResult:
         sensor_frames = []
@@ -475,7 +489,12 @@ class DGPSceneEncoder(SceneEncoder):
         output_path = self._output_path / "calibration" / ".json"
         return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
 
-    def _encode_scene_json(self, scene_sensor_data: Dict[str, Dict[str, SceneDataDTO]], calibration_file: AsyncResult):
+    def _encode_scene_json(
+        self,
+        scene_sensor_data: Dict[str, Dict[str, SceneDataDTO]],
+        calibration_file: AsyncResult,
+        ontologies_files: Dict[str, AsyncResult],
+    ):
         scene_data = []
         scene_samples = []
         for fid in self._scene.frame_ids:
@@ -493,7 +512,7 @@ class DGPSceneEncoder(SceneEncoder):
                         index=frame.frame_id,
                     ),
                     datum_keys=[d.key for d in frame_data],
-                    calibration_key=self._relative_path(calibration_file.get()).as_posix(),
+                    calibration_key=calibration_file.get().stem,
                     metadata={},
                 )
             )
@@ -502,7 +521,7 @@ class DGPSceneEncoder(SceneEncoder):
             name=self._scene.name,
             description=self._scene.description,
             log="",
-            ontologies={},  # TODO
+            ontologies={k: v.get().stem for k, v in ontologies_files.items()},
             metadata=SceneMetadataDTO.from_dict(self._scene.metadata),
             samples=scene_samples,
             data=scene_data,
@@ -524,12 +543,16 @@ class DGPSceneEncoder(SceneEncoder):
     def _run_encoding(self):
         scene_sensor_data = self._encode_sensors()
         calibration_file = self._encode_calibrations()
-        return self._encode_scene_json(scene_sensor_data=scene_sensor_data, calibration_file=calibration_file)
+        ontologies_files = self._encode_ontologies()
+        return self._encode_scene_json(
+            scene_sensor_data=scene_sensor_data, calibration_file=calibration_file, ontologies_files=ontologies_files
+        )
 
     def _prepare_output_directories(self) -> None:
         super()._prepare_output_directories()
         if not urlparse(str(self._output_path)).scheme:  # Local FS - needs existing directories
             (self._output_path / "calibration").mkdir(exist_ok=True, parents=True)
+            (self._output_path / "ontologies").mkdir(exist_ok=True, parents=True)
             for camera_name in self._scene.camera_names:
                 (self._output_path / "rgb" / camera_name).mkdir(exist_ok=True, parents=True)
                 (self._output_path / "bounding_box_2d" / camera_name).mkdir(exist_ok=True, parents=True)
@@ -548,6 +571,25 @@ class DGPSceneEncoder(SceneEncoder):
 
 class DGPDatasetEncoder(DatasetEncoder):
     scene_encoder = DGPSceneEncoder
+
+    @staticmethod
+    def from_path(
+        input_path: str,
+        output_path: str,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ):
+        decoder = DGPDecoder(dataset_path=input_path)
+        return DGPDatasetEncoder.from_dataset(
+            dataset=Dataset.from_decoder(decoder=decoder),
+            output_path=output_path,
+            scene_names=scene_names,
+            scene_start=scene_start,
+            scene_stop=scene_stop,
+            n_parallel=n_parallel,
+        )
 
 
 if __name__ == "__main__":
@@ -590,7 +632,7 @@ if __name__ == "__main__":
 
     setup_loggers([__name__, DGPDatasetEncoder.__name__, DGPSceneEncoder.__name__, "fsio"], log_level=logging.DEBUG)
 
-    DGPDatasetEncoder(
+    DGPDatasetEncoder.from_path(
         input_path=args.input,
         output_path=args.output,
         scene_names=args.scene_names,

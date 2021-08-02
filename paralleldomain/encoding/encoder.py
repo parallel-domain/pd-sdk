@@ -2,9 +2,11 @@ import argparse
 import logging
 import os
 import uuid
+from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from typing import Any, Generator, List, Optional, Union
+from urllib.parse import urlparse
 
 import numpy as np
 
@@ -64,7 +66,8 @@ class SceneEncoder:
         return self._task_pool.apply_async(func, args=args, kwds=dict(**kwargs))
 
     def _prepare_output_directories(self) -> None:
-        self._output_path.mkdir(exist_ok=True, parents=True)
+        if not urlparse(str(self._output_path)).scheme:
+            self._output_path.mkdir(exist_ok=True, parents=True)
 
     def _encode_camera_frame(self, camera_frame: SensorFrame):
         ...
@@ -137,18 +140,16 @@ class DatasetEncoder:
 
     def __init__(
         self,
-        input_path: str,
+        dataset: Dataset,
         output_path: str,
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ):
-        self._input_path = AnyPath(input_path)
+        self._dataset = dataset
         self._output_path = AnyPath(output_path)
         self._n_processes = min(max(n_parallel, 1), os.cpu_count())
-
-        self._load_dataset()
 
         if scene_names is not None:
             for sn in scene_names:
@@ -173,10 +174,36 @@ class DatasetEncoder:
             ):
                 self.logger().info(f"{scene_name}: {scene_encoder_result}")
 
-    def _load_dataset(self) -> None:
-        """Simple dataset loader - naively assumes input is DGP format"""
-        decoder = DGPDecoder(dataset_path=self._input_path)
-        self._dataset = Dataset.from_decoder(decoder=decoder)
+    @classmethod
+    def from_dataset(
+        cls,
+        dataset: Dataset,
+        output_path: str,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ):
+        return cls(
+            dataset=dataset,
+            output_path=output_path,
+            scene_names=scene_names,
+            scene_start=scene_start,
+            scene_stop=scene_stop,
+            n_parallel=n_parallel,
+        )
+
+    @classmethod
+    def from_path(
+        cls,
+        input_path: str,
+        output_path: str,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ):
+        raise NotImplementedError("An Encoder needs to override this method with a fitting Decoder")
 
     @classmethod
     def logger(cls):
@@ -223,7 +250,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    DatasetEncoder(
+    DatasetEncoder.from_path(
         input_path=args.input,
         output_path=args.output,
         scene_names=args.scene_names,

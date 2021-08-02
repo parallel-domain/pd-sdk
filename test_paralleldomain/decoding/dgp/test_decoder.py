@@ -1,5 +1,6 @@
+import os
+
 import numpy as np
-import osself.get_ontology
 import pytest
 
 from paralleldomain import Dataset
