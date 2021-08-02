@@ -1,7 +1,10 @@
 import contextlib
 from datetime import datetime
-from typing import Any, Callable, ContextManager, Dict, List, cast
+from typing import Any, Callable, ContextManager, Dict, List, Type, TypeVar, cast
 
+from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoFrame
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -12,7 +15,9 @@ except ImportError:
 
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+
+T = TypeVar("T")
 
 
 class SceneDecoderProtocol(Protocol):
@@ -44,6 +49,9 @@ class SceneDecoderProtocol(Protocol):
         pass
 
     def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
+        pass
+
+    def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         pass
 
     def decode_sensor(
@@ -183,6 +191,22 @@ class Scene:
         return self._decoder.decode_sensor(
             scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
         )
+
+    @property
+    def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:
+        available_annotation_types = {v: k for k, v in ANNOTATION_TYPE_MAP.items()}
+        return available_annotation_types
+
+    def get_ontology(self, annotation_type: Type[T]) -> ClassMap:
+        identifier = self._annotation_type_identifiers[annotation_type]
+        ontologies = LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-ontologies",
+            loader=lambda: self._decoder.decode_ontologies(scene_name=self.name),
+        )
+        if identifier not in ontologies:
+            raise ValueError(f"No ontology found for {annotation_type} in this scene!")
+        else:
+            return ontologies[identifier]
 
     def remove_sensor(self, sensor_name: SensorName):
         if not self._cache_is_locked:

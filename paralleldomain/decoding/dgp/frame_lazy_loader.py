@@ -238,6 +238,21 @@ class DGPFrameLazyLoader:
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
 
+    """def load_ontology(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> ClassMap:
+        ontology_dto = self._decode_ontology(scene_name=self.scene_name, ontology_key=self._ontologies_keys[identifier])
+        ontology = ClassMap(
+            classes=[
+                ClassDetail(
+                    name=item.name,
+                    id=item.id,
+                    instanced=item.isthing,
+                    meta=dict(supercategory=item.supercategory, color=dict(**item.color.to_dict())),
+                )
+                for item in ontology_dto.items
+            ]
+        )
+        return ontology"""
+
     def load_available_annotation_types(
         self,
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
@@ -253,6 +268,12 @@ class DGPFrameLazyLoader:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             pc_data = npz_data.f.data
             return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+
+    """def _decode_ontology(self, scene_name: str, ontology_key: str) -> OntologyFileDTO:
+        ontology_path = self._dataset_path / scene_name / "calibration" / f"{ontology_key}.json"
+        with ontology_path.open("r") as f:
+            ontology_dict = json.load(f)
+            return OntologyFileDTO.from_dict(ontology_dict)"""
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"

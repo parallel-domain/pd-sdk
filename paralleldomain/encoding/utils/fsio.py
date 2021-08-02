@@ -7,7 +7,6 @@ from typing import Dict, List, Union
 import numpy as np
 from PIL import Image
 
-from paralleldomain.encoding.utils.log import setup_loggers
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger("fsio")

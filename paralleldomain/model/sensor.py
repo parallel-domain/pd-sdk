@@ -136,7 +136,7 @@ class SensorFrame:
 
     def get_annotations(self, annotation_type: Type[T]) -> T:
         if annotation_type not in self._annotation_type_identifiers:
-            raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
+            raise ValueError(f"The annotation type {annotation_type} is not available in this sensor frame!")
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + annotation_type.__name__,
             loader=lambda: self._lazy_loader.load_annotations(

@@ -1,8 +1,6 @@
-from collections import namedtuple
-from typing import Dict, List, Type, TypeVar
+from typing import Dict, Type, TypeVar
 
 from paralleldomain.model.annotation import Annotation, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 

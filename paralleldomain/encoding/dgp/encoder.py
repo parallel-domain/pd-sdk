@@ -1,43 +1,25 @@
 import argparse
-import datetime
 import hashlib
-import json
 import logging
-import multiprocessing
 import uuid
 from collections import defaultdict
-from itertools import chain
-from multiprocessing.pool import ThreadPool
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ApplyResult, AsyncResult
+from typing import Dict, Iterator, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import numpy as np
-from cloudpathlib import CloudPath
-from joblib import Parallel, delayed, parallel_backend
-from more_itertools import windowed
-from PIL import Image
 
-from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.dgp.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
-    BoundingBox2DBoxDTO,
     BoundingBox2DDTO,
-    BoundingBox3DBoxDTO,
     BoundingBox3DDTO,
     CalibrationDTO,
     CalibrationExtrinsicDTO,
     CalibrationIntrinsicDTO,
-    DatasetDTO,
-    DatasetMetaDTO,
-    DatasetSceneSplitDTO,
-    OntologyFileDTO,
-    OntologyItemColorDTO,
-    OntologyItemDTO,
     PoseDTO,
     RotationDTO,
-    SceneDataDatum,
     SceneDataDatumImage,
     SceneDataDatumPointCloud,
     SceneDataDatumTypeImage,
@@ -50,94 +32,53 @@ from paralleldomain.encoding.dgp.dtos import (
     SceneSampleIdDTO,
     TranslationDTO,
 )
-from paralleldomain.encoding.encoder import Encoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
-from paralleldomain.model.frame import Frame
+from paralleldomain.encoding.encoder import DatasetEncoder, MaskFilter, ObjectFilter, SceneEncoder
+from paralleldomain.encoding.utils import fsio
+from paralleldomain.encoding.utils.fsio import relative_path
+from paralleldomain.encoding.utils.log import setup_loggers
+from paralleldomain.encoding.utils.mask import encode_2int16_as_rgba8, encode_int32_as_rgb8
+from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
-from paralleldomain.model.type_aliases import SceneName
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
 
 
-def _json_write(obj: object, fp: Union[Path, CloudPath, str], append_sha1: bool = False) -> str:
-    fp = AnyPath(fp)
-    fp.parent.mkdir(parents=True, exist_ok=True)
-
-    json_str = json.dumps(obj, indent=2)
-
-    if append_sha1:
-        json_str_sha256 = hashlib.sha1(json_str.encode()).hexdigest()
-        filename = fp.name.split(".")
-        if filename[0] == "":
-            filename[0] = json_str_sha256
-        else:
-            filename[0] = f"{filename[0]}_{json_str_sha256}"
-
-        fp = AnyPath(fp.parent / ".".join(filename))
-
-    with fp.open("w") as json_file:
-        json_file.write(json_str)
-
-    return fp.name
+class BoundingBox2DFilter(ObjectFilter):
+    ...
 
 
-def _png_write(obj: object, fp: Union[Path, CloudPath, str]) -> str:
-    fp = AnyPath(fp)
-    fp.parent.mkdir(parents=True, exist_ok=True)
-
-    with fp.open("wb") as png_file:
-        Image.fromarray(obj).save(png_file, "png")
-
-    return fp.name
+class BoundingBox3DFilter(ObjectFilter):
+    ...
 
 
-def _npz_write(npz_kwargs: Dict[str, np.ndarray], fp: Union[Path, CloudPath, str]) -> str:
-    fp = AnyPath(fp)
-    fp.parent.mkdir(parents=True, exist_ok=True)
-
-    with fp.open("wb") as npz_file:
-        np.savez_compressed(npz_file, **npz_kwargs)
-
-    return fp.name
+class SemanticSegmentation2DFilter(MaskFilter):
+    @staticmethod
+    def transform(mask: np.ndarray) -> np.ndarray:
+        return encode_int32_as_rgb8(mask)
 
 
-def _attribute_key_dump(obj: object) -> str:
-    return str(obj)
+class InstanceSegmentation2DFilter(SemanticSegmentation2DFilter):
+    ...
 
 
-def _attribute_value_dump(obj: object) -> str:
-    if isinstance(obj, Dict) or isinstance(obj, List):
-        return json.dumps(obj, indent=2)
-    else:
-        return str(obj)
+class OpticalFlowFilter(MaskFilter):
+    @staticmethod
+    def transform(mask: np.ndarray) -> np.ndarray:
+        return encode_2int16_as_rgba8(mask)
 
 
-def _vectors_to_rgba(vectors: np.ndarray) -> np.ndarray:
-    return np.concatenate(
-        [vectors[..., [0]] >> 8, vectors[..., [0]] & 0xFF, vectors[..., [1]] >> 8, vectors[..., [1]] & 0xFF], axis=-1
-    ).astype(np.uint8)
+class SemanticSegmentation3DFilter(MaskFilter):
+    @staticmethod
+    def transform(mask: np.ndarray) -> np.ndarray:
+        return mask.astype(np.uint32)
 
 
-"""
-def _num_points_in_box(xyz_one: np.ndarray, box: BoundingBox3D) -> np.ndarray:
-    to_local_box = box.pose.inverse
-    point_in_local_box_coords = (to_local_box @ xyz_one.T).T
-    box_size = np.array([box.length, box.width, box.height])
-    min_point = -0.5 * box_size
-    max_point = 0.5 * box_size
-    points_greater_than_min = np.all(point_in_local_box_coords[:, :3] >= min_point, axis=-1)
-    points_smaller_than_max = np.all(point_in_local_box_coords[:, :3] <= max_point, axis=-1)
-    is_point_in_aa_bb = np.logical_and(points_greater_than_min, points_smaller_than_max)
-    return point_in_local_box_coords[is_point_in_aa_bb].shape[0]
-"""
+class InstanceSegmentation3DFilter(SemanticSegmentation3DFilter):
+    ...
 
 
-# noinspection InsecureHash
-class DGPEncoder(Encoder):
-    _thread_pool = ThreadPool()
-
+class DGPSceneEncoder(SceneEncoder):
     _fisheye_camera_model_map: Dict[str, int] = defaultdict(
         lambda: 2,
         {
@@ -146,487 +87,17 @@ class DGPEncoder(Encoder):
         },
     )
 
-    _annotation_type_map: Dict[AnnotationType, str] = {
-        AnnotationTypes.BoundingBoxes2D: "0",
-        AnnotationTypes.BoundingBoxes3D: "1",
-        AnnotationTypes.SemanticSegmentation2D: "2",
-        AnnotationTypes.SemanticSegmentation3D: "3",
-        AnnotationTypes.InstanceSegmentation2D: "4",
-        AnnotationTypes.InstanceSegmentation3D: "5",
-        AnnotationTypes.Depth: "6",
-        # "7": Annotation,  # Surface Normals 3D
-        AnnotationTypes.OpticalFlow: "8",
-        # "9": Annotation,  # Motion Vectors 3D aka Scene Flow
-        # "10": Annotation,  # Surface normals 2D
-    }
+    def _relative_path(self, path: AnyPath) -> AnyPath:
+        return relative_path(path, self._output_path)
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        output_path: AnyPath,
-        custom_map: Optional[ClassMap] = None,
-        custom_id_map: Optional[ClassIdMap] = None,
-        annotation_types: Optional[List[AnnotationType]] = None,
-        frame_slice: Optional[slice] = None,
-        thread_count: Optional[int] = None,
-        new_uuid: Optional[str] = None,
-    ):
-        self.dataset = dataset
-        self.new_uuid = new_uuid or str(uuid.uuid4())
-        self.custom_map = custom_map
-        self.custom_id_map = custom_id_map
-        self.annotation_types = list(self._annotation_type_map.keys()) if annotation_types is None else annotation_types
-        self._dataset_path: Union[Path, CloudPath] = AnyPath(output_path)
-        self._frame_slice: slice = slice(None, None, None) if frame_slice is None else frame_slice
-        self._thread_count: int = multiprocessing.cpu_count() if thread_count is None else thread_count
-        self._scene_paths: List[str] = []
+    def _encode_rgb(self, sensor_frame: SensorFrame):
+        output_path = self._output_path / "rgb" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.png"
+        return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
 
-    def finalize(self):
-        self._save_dataset_json()
-
-    def encode_dataset(self):
-        for s in self.dataset.scene_names:
-            self.encode_scene(self.dataset.get_scene(s))
-
-    def encode_scene(self, scene: Scene) -> str:
-        scene_data = []
-        scene_samples = []
-
-        for sn in scene.sensor_names:
-            sensor_frames = [f.get_sensor(sn) for f in scene.frames[self._frame_slice]]
-            sensor_data = self._encode_sensor_frames_by_sensor(sensor_frames=sensor_frames, scene_name=scene.name)
-            scene_data.append(sensor_data)
-
-        for f in scene.frames[self._frame_slice]:
-            sensor_frames = [f.get_sensor(sn) for sn in scene.sensor_names]
-            frame_data = self._encode_sensor_frames_by_frame(
-                frame=f, sensor_frames=sensor_frames, scene_name=scene.name
-            )
-            scene_samples.append(frame_data)
-
-        for i, s_sample in enumerate(scene_samples):
-            data_keys = [s_data[i].key for s_data in scene_data]
-            s_sample.datum_keys = data_keys
-
-        ontology_dict: Dict[str, str] = {}
-        for a_type in self.annotation_types:
-            for sn in scene.sensor_names:
-                sn_frame_0 = scene.get_sensor(sn).get_frame(scene.frame_ids[self._frame_slice][0])
-                if a_type in sn_frame_0.available_annotation_types:
-                    a_value = sn_frame_0.get_annotations(a_type)
-                    try:
-                        a_class_map: ClassMap = a_value.class_map
-                    except AttributeError:
-                        # "annotations" like OpticalFlow, Depth, Instanced do not know class_map concept
-                        a_class_map: ClassMap = ClassMap.from_id_label_dict({})
-
-                    ontology = OntologyFileDTO(
-                        items=[
-                            OntologyItemDTO(
-                                name=cd.name,
-                                id=cd.id,
-                                isthing=cd.instanced,
-                                color=OntologyItemColorDTO(
-                                    r=0 if "color" not in cd.meta else cd.meta["color"]["r"],
-                                    g=0 if "color" not in cd.meta else cd.meta["color"]["g"],
-                                    b=0 if "color" not in cd.meta else cd.meta["color"]["b"],
-                                ),
-                                supercategory="",
-                            )
-                            for _, cd in a_class_map.items()
-                        ]
-                    )
-
-                    relative_path = Path("ontology")
-                    filename = ".json"
-                    output_path = self._dataset_path / scene.name / relative_path / filename
-
-                    filename = _json_write(ontology.to_dict(), output_path, append_sha1=True)
-                    ontology_dict[self._annotation_type_map[a_type]] = filename.split(".")[0]
-                    break
-
-        scene_data = [sensor_datum for sensor_data in scene_data for sensor_datum in sensor_data]  # flatten list
-
-        scene_path = self._save_scene_json(
-            scene=scene, scene_samples=scene_samples, scene_data=scene_data, ontologies=ontology_dict
+    def _encode_point_cloud(self, sensor_frame: SensorFrame):
+        output_path = (
+            self._output_path / "point_cloud" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.npz"
         )
-        self._scene_paths.append(scene_path)
-
-        return scene_path
-
-    def _encode_sensor_frames_by_frame(self, frame: Frame, sensor_frames: List[SensorFrame], scene_name: str):
-        frame_data = SceneSampleDTO(
-            id=SceneSampleIdDTO(
-                log="", timestamp=frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), name="", index=frame.frame_id
-            ),
-            datum_keys=[],
-            calibration_key=self._save_calibration_json(sensor_frames=sensor_frames, scene_name=scene_name),
-            metadata={},
-        )
-
-        return frame_data
-
-    def _encode_sensor_frames_by_sensor(self, sensor_frames: List[SensorFrame], scene_name: str):
-        sorted_sensor_frames = sorted(sensor_frames, key=lambda x: x.date_time)
-
-        sensor_data = DGPEncoder._thread_pool.map(
-            lambda sf: self._encode_sensor_frame(sensor_frame=sf, scene_name=scene_name),
-            sorted_sensor_frames,
-            chunksize=max(int(len(sorted_sensor_frames) / (self._thread_count * 0.75)), 1),
-        )
-
-        padding = 2 * [None]
-        for window in windowed(chain(padding, sensor_data, padding), 3, fillvalue=None):
-            if window[1] is not None:
-                window[1].prev_key = "" if window[0] is None else window[0].key
-                window[1].next_key = "" if window[2] is None else window[2].key
-
-        return sensor_data
-
-    def _encode_image_annotation_types(
-        self, scene_name: SceneName, sensor_frame: SensorFrame, annotation_type: AnnotationType
-    ) -> Optional[Tuple[str, str]]:
-        if annotation_type in sensor_frame.available_annotation_types:
-            a_key = self._annotation_type_map[annotation_type]
-            if annotation_type is AnnotationTypes.BoundingBoxes2D:
-                a_value = self._save_bounding_box_2d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.BoundingBoxes3D:
-                a_value = self._save_bounding_box_3d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.SemanticSegmentation2D:
-                a_value = self._save_semantic_segmentation_2d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.InstanceSegmentation2D:
-                a_value = self._save_instance_segmentation_2d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.OpticalFlow:
-                a_value = self._save_motion_vectors_2d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.Depth:
-                a_value = self._save_depth(sensor_frame=sensor_frame, scene_name=scene_name)
-            else:
-                a_value = "NOT_IMPLEMENTED"
-
-            return a_key, a_value
-        return None
-
-    def _encode_cloud_annotation_types(
-        self, scene_name: SceneName, sensor_frame: SensorFrame, annotation_type: AnnotationType
-    ) -> Optional[Tuple[str, str]]:
-        if annotation_type in sensor_frame.available_annotation_types:
-            a_key = self._annotation_type_map[annotation_type]
-            if annotation_type is AnnotationTypes.BoundingBoxes3D:
-                a_value = self._save_bounding_box_3d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.SemanticSegmentation3D:
-                a_value = self._save_semantic_segmentation_3d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.InstanceSegmentation3D:
-                a_value = self._save_instance_segmentation_3d(sensor_frame=sensor_frame, scene_name=scene_name)
-            elif annotation_type is AnnotationTypes.Depth:
-                a_value = self._save_depth(sensor_frame=sensor_frame, scene_name=scene_name)
-            else:
-                a_value = "NOT_IMPLEMENTED"
-
-            return a_key, a_value
-        return None
-
-    def _encode_sensor_frame(self, sensor_frame: SensorFrame, scene_name: str):
-        data_key = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
-
-        if sensor_frame.point_cloud is not None:
-            filename = DGPEncoder._thread_pool.apply_async(
-                self._save_point_cloud, kwds=dict(sensor_frame=sensor_frame, scene_name=scene_name)
-            )
-            res = DGPEncoder._thread_pool.map(
-                lambda at: self._encode_cloud_annotation_types(
-                    scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
-                ),
-                self.annotation_types,
-            )
-
-            annotations = {r[0]: r[1] for r in res if r is not None}
-            point_cloud = SceneDataDatumTypePointCloud(
-                filename=filename.get(),
-                annotations=annotations,
-                point_format=["X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP"],
-                pose=PoseDTO(
-                    translation=TranslationDTO(
-                        x=sensor_frame.pose.translation[0],
-                        y=sensor_frame.pose.translation[1],
-                        z=sensor_frame.pose.translation[2],
-                    ),
-                    rotation=RotationDTO(
-                        qw=sensor_frame.pose.quaternion.w,
-                        qx=sensor_frame.pose.quaternion.x,
-                        qy=sensor_frame.pose.quaternion.y,
-                        qz=sensor_frame.pose.quaternion.z,
-                    ),
-                ),
-                point_fields=[],
-                metadata={},
-            )
-            scene_datum_dto = SceneDataDatumPointCloud(point_cloud=point_cloud)
-        elif sensor_frame.image is not None:
-            # annotations = {}
-
-            filename = DGPEncoder._thread_pool.apply_async(
-                self._save_rgb, kwds=dict(sensor_frame=sensor_frame, scene_name=scene_name)
-            )
-
-            res = DGPEncoder._thread_pool.map(
-                lambda at: self._encode_image_annotation_types(
-                    scene_name=scene_name, sensor_frame=sensor_frame, annotation_type=at
-                ),
-                self.annotation_types,
-            )
-
-            annotations = {r[0]: r[1] for r in res if r is not None}
-            image = SceneDataDatumTypeImage(
-                filename=filename.get(),
-                height=sensor_frame.image.height,
-                width=sensor_frame.image.width,
-                channels=sensor_frame.image.rgba.shape[2],
-                annotations=annotations,
-                pose=PoseDTO(
-                    translation=TranslationDTO(
-                        x=sensor_frame.pose.translation[0],
-                        y=sensor_frame.pose.translation[1],
-                        z=sensor_frame.pose.translation[2],
-                    ),
-                    rotation=RotationDTO(
-                        qw=sensor_frame.pose.quaternion.w,
-                        qx=sensor_frame.pose.quaternion.x,
-                        qy=sensor_frame.pose.quaternion.y,
-                        qz=sensor_frame.pose.quaternion.z,
-                    ),
-                ),
-                metadata={},
-            )
-
-            scene_datum_dto = SceneDataDatumImage(image=image)
-        else:
-            scene_datum_dto = SceneDataDatum()
-
-        scene_data_dto = SceneDataDTO(
-            id=SceneDataIdDTO(
-                log="",
-                name=sensor_frame.sensor_name,
-                timestamp=sensor_frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                index=str(sensor_frame.frame_id),
-            ),
-            key=data_key,
-            datum=scene_datum_dto,
-            next_key="",
-            prev_key="",
-        )
-
-        return scene_data_dto
-
-    def _save_bounding_box_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        bb3d_dto = AnnotationsBoundingBox3DDTO(annotations=[])
-        boxes = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D).boxes
-        for b in boxes:
-            try:
-                occlusion = b.attributes["occlusion"]
-                del b.attributes["occlusion"]
-            except KeyError:
-                occlusion = 0
-
-            try:
-                truncation = b.attributes["truncation"]
-                del b.attributes["truncation"]
-            except KeyError:
-                truncation = 0
-
-            """ Post-processed calculation of num_points - makes execution slow!
-            num_points=0
-            if sensor_frame.point_cloud is None
-            else num_points_in_box(sensor_frame.point_cloud.xyz_one, b),
-            """
-
-            box_dto = BoundingBox3DDTO(
-                class_id=b.class_id,
-                instance_id=b.instance_id,
-                num_points=b.num_points,
-                attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in b.attributes.items()},
-                box=BoundingBox3DBoxDTO(
-                    width=b.width,
-                    length=b.length,
-                    height=b.height,
-                    occlusion=occlusion,
-                    truncation=truncation,
-                    pose=PoseDTO(
-                        translation=TranslationDTO(
-                            x=b.pose.translation[0], y=b.pose.translation[1], z=b.pose.translation[2]
-                        ),
-                        rotation=RotationDTO(
-                            qw=b.pose.quaternion.w,
-                            qx=b.pose.quaternion.x,
-                            qy=b.pose.quaternion.y,
-                            qz=b.pose.quaternion.z,
-                        ),
-                    ),
-                ),
-            )
-
-            bb3d_dto.annotations.append(box_dto)
-
-        annotation_dir = "bounding_box_3d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.json"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir) / sensor_dir / _json_write(bb3d_dto.to_dict(), output_path, append_sha1=True)
-            ).as_posix()
-        )
-
-    def _save_bounding_box_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        bb2d_dto = AnnotationsBoundingBox2DDTO(annotations=[])
-        boxes = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D).boxes
-        for b in boxes:
-            try:
-                is_crowd = b.attributes["iscrowd"]
-                del b.attributes["iscrowd"]
-            except KeyError:
-                is_crowd = False
-            box_dto = BoundingBox2DDTO(
-                class_id=b.class_id,
-                instance_id=b.instance_id,
-                area=b.area,
-                iscrowd=is_crowd,
-                attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in b.attributes.items()},
-                box=BoundingBox2DBoxDTO(x=b.x, y=b.y, w=b.width, h=b.height),
-            )
-
-            bb2d_dto.annotations.append(box_dto)
-
-        annotation_dir = "bounding_box_2d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.json"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir) / sensor_dir / _json_write(bb2d_dto.to_dict(), output_path, append_sha1=True)
-            ).as_posix()
-        )
-
-    def _save_semantic_segmentation_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "semantic_segmentation_2d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.png"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir)
-                / sensor_dir
-                / _png_write(
-                    sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D).rgb_encoded, output_path
-                )
-            ).as_posix()
-        )
-
-    def _save_semantic_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "semantic_segmentation_3d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.npz"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir)
-                / sensor_dir
-                / _npz_write(
-                    {
-                        "segmentation": sensor_frame.get_annotations(
-                            AnnotationTypes.SemanticSegmentation3D
-                        ).class_ids.astype(np.uint32)
-                    },
-                    output_path,
-                )
-            ).as_posix()
-        )
-
-    def _save_instance_segmentation_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "instance_segmentation_2d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.png"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir)
-                / sensor_dir
-                / _png_write(
-                    sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D).rgb_encoded, output_path
-                )
-            ).as_posix()
-        )
-
-    def _save_instance_segmentation_3d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "instance_segmentation_3d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.npz"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir)
-                / sensor_dir
-                / _npz_write(
-                    {
-                        "instance": sensor_frame.get_annotations(
-                            AnnotationTypes.InstanceSegmentation3D
-                        ).instance_ids.astype(np.uint32)
-                    },
-                    output_path,
-                )
-            ).as_posix()
-        )
-
-    def _save_motion_vectors_2d(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "motion_vectors_2d"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.png"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            Path(annotation_dir)
-            / sensor_dir
-            / _png_write(
-                _vectors_to_rgba(sensor_frame.get_annotations(AnnotationTypes.OpticalFlow).vectors),
-                output_path,
-            )
-        )
-
-    def _save_depth(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "depth"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.npz"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str(
-            (
-                Path(annotation_dir)
-                / sensor_dir
-                / _npz_write(
-                    {"data": sensor_frame.get_annotations(AnnotationTypes.Depth).depth[:, :, 0]},
-                    output_path,
-                )
-            ).as_posix()
-        )
-
-    def _save_rgb(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "rgb"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.png"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
-
-        return str((Path(annotation_dir) / sensor_dir / _png_write(sensor_frame.image.rgba, output_path)).as_posix())
-
-    def _save_point_cloud(self, sensor_frame: SensorFrame, scene_name: str) -> str:
-        annotation_dir = "point_cloud"
-        sensor_dir = sensor_frame.sensor_name
-        filename = f"{int(sensor_frame.frame_id):018d}.npz"
-        output_path = self._dataset_path / scene_name / annotation_dir / sensor_dir / filename
 
         pc = sensor_frame.point_cloud
         pc_dtypes = [
@@ -654,9 +125,309 @@ class DGPEncoder(Encoder):
         pc_data["RING_ID"] = pc.ring[:, 0]
         pc_data["TIMESTAMP"] = pc.ts[:, 0]
 
-        return str((Path(annotation_dir) / sensor_dir / _npz_write({"data": pc_data}, output_path)).as_posix())
+        return self._run_async(func=fsio.write_npz, obj={"data": pc_data}, path=output_path)
 
-    def _save_calibration_json(self, sensor_frames: List[SensorFrame], scene_name: str) -> str:
+    def _encode_depth(self, sensor_frame: SensorFrame):
+        depth = sensor_frame.get_annotations(AnnotationTypes.Depth)
+
+        output_path = self._output_path / "depth" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.npz"
+        return self._run_async(func=fsio.write_npz, obj=dict(data=depth.depth[..., 0]), path=output_path)
+
+    def _encode_bounding_box_2d(self, box: BoundingBox2D) -> BoundingBox2DDTO:
+        return BoundingBox2DDTO.from_BoundingBox2D(box)
+
+    def _encode_bounding_boxes_2d(self, sensor_frame: SensorFrame):
+        boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
+        box2d_dto = BoundingBox2DFilter.run([self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
+        boxes2d_dto = AnnotationsBoundingBox2DDTO(annotations=box2d_dto)
+
+        output_path = (
+            self._output_path / "bounding_box_2d" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.json"
+        )
+        return self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path, append_sha1=True)
+
+    def _encode_bounding_box_3d(self, box: BoundingBox3D) -> BoundingBox3DDTO:
+        return BoundingBox3DDTO.from_BoundingBox3D(box)
+
+    def _encode_bounding_boxes_3d(self, sensor_frame: SensorFrame):
+        boxes3d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
+        box3d_dto = BoundingBox3DFilter.run(objects=[self._encode_bounding_box_3d(b) for b in boxes3d.boxes])
+        boxes3d_dto = AnnotationsBoundingBox3DDTO(annotations=box3d_dto)
+
+        output_path = (
+            self._output_path / "bounding_box_3d" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.json"
+        )
+        return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path)
+
+    def _encode_semantic_segmentation_2d(self, sensor_frame: SensorFrame):
+        semseg2d = sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D)
+        mask_out = SemanticSegmentation2DFilter.run(mask=semseg2d.class_ids)
+
+        output_path = (
+            self._output_path
+            / "semantic_segmentation_2d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.png"
+        )
+
+        return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+
+    def _encode_instance_segmentation_2d(self, sensor_frame: SensorFrame):
+        instance2d = sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation2D)
+        mask_out = InstanceSegmentation2DFilter.run(mask=instance2d.instance_ids)
+
+        output_path = (
+            self._output_path
+            / "instance_segmentation_2d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.png"
+        )
+
+        return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+
+    def _encode_motion_vectors_2d(self, sensor_frame: SensorFrame):
+        optical_flow = sensor_frame.get_annotations(AnnotationTypes.OpticalFlow)
+        mask_out = OpticalFlowFilter.run(mask=optical_flow.vectors)
+
+        output_path = (
+            self._output_path
+            / "motion_vectors_2d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.png"
+        )
+
+        return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+
+    def _encode_semantic_segmentation_3d(self, sensor_frame: SensorFrame):
+        semseg3d = sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation3D)
+        mask_out = SemanticSegmentation3DFilter.run(semseg3d.class_ids)
+
+        output_path = (
+            self._output_path
+            / "semantic_segmentation_3d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.npz"
+        )
+
+        return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
+
+    def _encode_instance_segmentation_3d(self, sensor_frame: SensorFrame):
+        instance3d = sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation3D)
+        mask_out = InstanceSegmentation3DFilter.run(instance3d.instance_ids)
+
+        output_path = (
+            self._output_path
+            / "instance_segmentation_3d"
+            / sensor_frame.sensor_name
+            / f"{int(sensor_frame.frame_id):018d}.npz"
+        )
+
+        return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
+
+    def _process_encode_camera_results(
+        self,
+        camera_name: str,
+        camera_encoding_results: Iterator[Tuple[str, Dict[str, Dict[str, ApplyResult]]]],
+    ):
+        scene_data_dtos = []
+
+        camera = self._scene.get_sensor(camera_name)
+        for frame_id, result_dict in camera_encoding_results:
+            camera_frame = camera.get_frame(frame_id)
+            sensor_data = result_dict["sensor_data"]
+            annotations = result_dict["annotations"]
+
+            scene_datum_dto = SceneDataDatumTypeImage(
+                filename=self._relative_path(sensor_data["rgb"].get()).as_posix(),
+                height=camera_frame.image.height,
+                width=camera_frame.image.width,
+                # replace with Decoder attribute - if accessing .image.rgbs.shape[2] image needs to be loaded :(
+                channels=4,
+                annotations={
+                    k: self._relative_path(v.get()).as_posix() for k, v in annotations.items() if v is not None
+                },
+                pose=PoseDTO(
+                    translation=TranslationDTO(
+                        x=camera_frame.pose.translation[0],
+                        y=camera_frame.pose.translation[1],
+                        z=camera_frame.pose.translation[2],
+                    ),
+                    rotation=RotationDTO(
+                        qw=camera_frame.pose.quaternion.w,
+                        qx=camera_frame.pose.quaternion.x,
+                        qy=camera_frame.pose.quaternion.y,
+                        qz=camera_frame.pose.quaternion.z,
+                    ),
+                ),
+                metadata={},
+            )
+            scene_data_dtos.append(
+                SceneDataDTO(
+                    id=SceneDataIdDTO(
+                        log="",
+                        name=camera_frame.sensor_name,
+                        timestamp=camera_frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        index=str(camera_frame.frame_id),
+                    ),
+                    key="",
+                    datum=SceneDataDatumImage(image=scene_datum_dto),
+                    next_key="",
+                    prev_key="",
+                )
+            )
+
+        scene_data_count = len(scene_data_dtos)
+        # noinspection InsecureHash
+        keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
+
+        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
+            prev_key = keys[idx - 1] if idx > 0 else ""
+            key = keys[idx]
+            next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
+
+            scene_data_dto.prev_key = prev_key
+            scene_data_dto.key = key
+            scene_data_dto.next_key = next_key
+
+        return {sd.id.index: sd for sd in scene_data_dtos}
+
+    def _process_encode_lidar_results(
+        self,
+        lidar_name: str,
+        lidar_encoding_results: Iterator[Tuple[str, Dict[str, Dict[str, ApplyResult]]]],
+    ):
+        scene_data_dtos = []
+
+        lidar = self._scene.get_sensor(lidar_name)
+        for frame_id, result_dict in lidar_encoding_results:
+            lidar_frame = lidar.get_frame(frame_id)
+            sensor_data = result_dict["sensor_data"]
+            annotations = result_dict["annotations"]
+
+            scene_datum_dto = SceneDataDatumTypePointCloud(
+                filename=self._relative_path(sensor_data["point_cloud"].get()).as_posix(),
+                point_format=["X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP"],
+                annotations={
+                    k: self._relative_path(v.get()).as_posix() for k, v in annotations.items() if v is not None
+                },
+                pose=PoseDTO(
+                    translation=TranslationDTO(
+                        x=lidar_frame.pose.translation[0],
+                        y=lidar_frame.pose.translation[1],
+                        z=lidar_frame.pose.translation[2],
+                    ),
+                    rotation=RotationDTO(
+                        qw=lidar_frame.pose.quaternion.w,
+                        qx=lidar_frame.pose.quaternion.x,
+                        qy=lidar_frame.pose.quaternion.y,
+                        qz=lidar_frame.pose.quaternion.z,
+                    ),
+                ),
+                point_fields=[],
+                metadata={},
+            )
+            scene_data_dtos.append(
+                SceneDataDTO(
+                    id=SceneDataIdDTO(
+                        log="",
+                        name=lidar_frame.sensor_name,
+                        timestamp=lidar_frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        index=str(lidar_frame.frame_id),
+                    ),
+                    key="",
+                    datum=SceneDataDatumPointCloud(point_cloud=scene_datum_dto),
+                    next_key="",
+                    prev_key="",
+                )
+            )
+
+        scene_data_count = len(scene_data_dtos)
+        # noinspection InsecureHash
+        keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
+
+        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
+            prev_key = keys[idx - 1] if idx > 0 else ""
+            key = keys[idx]
+            next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
+
+            scene_data_dto.prev_key = prev_key
+            scene_data_dto.key = key
+            scene_data_dto.next_key = next_key
+
+        return {sd.id.index: sd for sd in scene_data_dtos}
+
+    def _encode_camera_frame(
+        self, camera_frame: SensorFrame, last_frame: Optional[bool] = False
+    ) -> Dict[str, Dict[str, AsyncResult]]:
+        return dict(
+            annotations={
+                "0": self._encode_bounding_boxes_2d(sensor_frame=camera_frame),
+                "1": self._encode_bounding_boxes_3d(sensor_frame=camera_frame),
+                "2": self._encode_semantic_segmentation_2d(sensor_frame=camera_frame),
+                "4": self._encode_instance_segmentation_2d(sensor_frame=camera_frame),
+                "6": self._encode_depth(sensor_frame=camera_frame),
+                "8": self._encode_motion_vectors_2d(sensor_frame=camera_frame) if not last_frame else None,
+                "10": None,  # surface_normals_2d
+            },
+            sensor_data={
+                "rgb": self._encode_rgb(sensor_frame=camera_frame),
+            },
+        )
+
+    def _encode_lidar_frame(self, lidar_frame: SensorFrame) -> Dict[str, Dict[str, AsyncResult]]:
+        return dict(
+            annotations={
+                "1": self._encode_bounding_boxes_3d(sensor_frame=lidar_frame),
+                "3": self._encode_semantic_segmentation_3d(sensor_frame=lidar_frame),
+                "5": self._encode_instance_segmentation_3d(sensor_frame=lidar_frame),
+                "6": None,  # self._encode_depth(sensor_frame=lidar_frame),
+                "7": None,  # surface_normals_3d
+                "9": None,  # motion_vectors_3d
+            },
+            sensor_data={
+                "point_cloud": self._encode_point_cloud(sensor_frame=lidar_frame),
+            },
+        )
+
+    def _encode_camera(self, camera_name: str) -> List[SceneDataDTO]:
+        with ThreadPoolExecutor(max_workers=10) as camera_frame_executor:
+            camera_encoding_results = zip(
+                self._scene.frame_ids,
+                camera_frame_executor.map(
+                    lambda fid: self._encode_camera_frame(
+                        self._scene.get_frame(fid).get_sensor(camera_name),
+                        last_frame=(self._scene.frame_ids.index(fid) == (len(self._scene.frame_ids) - 1)),
+                    ),
+                    self._scene.frame_ids,
+                ),
+            )
+        return self._process_encode_camera_results(camera_name, camera_encoding_results)
+
+    def _encode_lidar(self, lidar_name: str) -> List[SceneDataDTO]:
+        with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
+            lidar_encoding_results = zip(
+                self._scene.frame_ids,
+                lidar_frame_executor.map(
+                    lambda fid: self._encode_lidar_frame(self._scene.get_frame(fid).get_sensor(lidar_name)),
+                    self._scene.frame_ids,
+                ),
+            )
+        return self._process_encode_lidar_results(lidar_name, lidar_encoding_results)
+
+    def _encode_cameras(self) -> Iterator[Tuple[str, List]]:
+        with ThreadPoolExecutor(max_workers=4) as camera_executor:
+            return zip(self._scene.camera_names, camera_executor.map(self._encode_camera, self._scene.camera_names))
+
+    def _encode_lidars(self) -> Iterator[Tuple[str, List]]:
+        with ThreadPoolExecutor(max_workers=4) as lidar_executor:
+            return zip(self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names))
+
+    def _encode_calibrations(self) -> AsyncResult:
+        sensor_frames = []
+        frame_ids = self._scene.frame_ids
+        for sn in self._scene.sensor_names:
+            sensor_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
+
         calib_dto = CalibrationDTO(names=[], extrinsics=[], intrinsics=[])
 
         def get_calibration(sf: SensorFrame) -> Tuple[str, CalibrationExtrinsicDTO, CalibrationIntrinsicDTO]:
@@ -697,84 +468,129 @@ class DGPEncoder(Encoder):
             calib_dto.extrinsics.append(r_extrinsic)
             calib_dto.intrinsics.append(r_intrinsic)
 
-        calibration_json_path = self._dataset_path / scene_name / "calibration" / ".json"
+        output_path = self._output_path / "calibration" / ".json"
+        return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
 
-        return _json_write(calib_dto.to_dict(), calibration_json_path, append_sha1=True).split(".")[0]
+    def _encode_scene_json(self, scene_sensor_data: Dict[str, Dict[str, SceneDataDTO]], calibration_file: AsyncResult):
+        scene_data = []
+        scene_samples = []
+        for fid in self._scene.frame_ids:
+            frame = self._scene.get_frame(fid)
+            frame_data = [
+                scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]
+            ]
+            scene_data.extend(frame_data)
+            scene_samples.append(
+                SceneSampleDTO(
+                    id=SceneSampleIdDTO(
+                        log="",
+                        timestamp=frame.date_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        name="",
+                        index=frame.frame_id,
+                    ),
+                    datum_keys=[d.key for d in frame_data],
+                    calibration_key=self._relative_path(calibration_file.get()).as_posix(),
+                    metadata={},
+                )
+            )
 
-    def _save_dataset_json(self):
-
-        metadata_dto = DatasetMetaDTO(**self.dataset.meta_data.custom_attributes)
-        metadata_dto.name = self.new_uuid
-        metadata_dto.creation_date = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        metadata_dto.available_annotation_types = [
-            int(self._annotation_type_map[a_type]) for a_type in self.annotation_types
-        ]
-
-        ds_dto = DatasetDTO(
-            metadata=metadata_dto,  # needs refinement, currently assumes DGP->DGP
-            scene_splits={"0": DatasetSceneSplitDTO(filenames=[s for s in self._scene_paths])},
-        )
-
-        dataset_json_path = self._dataset_path / "scene_dataset.json"
-        _json_write(ds_dto.to_dict(), dataset_json_path)
-
-    def _save_scene_json(
-        self,
-        scene: Scene,
-        scene_samples: List[SceneSampleDTO],
-        scene_data: List[SceneDataDTO],
-        ontologies: Dict[str, str],
-    ) -> str:
         scene_dto = SceneDTO(
-            name=scene.name,
-            description=scene.description,
+            name=self._scene.name,
+            description=self._scene.description,
             log="",
-            ontologies=ontologies,
-            metadata=SceneMetadataDTO.from_dict(scene.metadata),
+            ontologies={},  # TODO
+            metadata=SceneMetadataDTO.from_dict(self._scene.metadata),
             samples=scene_samples,
             data=scene_data,
         )
 
-        relative_path = Path(scene.name)
-        filename = "scene.json"
-        output_path = self._dataset_path / relative_path / filename
+        output_path = self._output_path / "scene.json"
+        return fsio.write_json(obj=scene_dto.to_dict(), path=output_path, append_sha1=True)
 
-        filename = _json_write(scene_dto.to_dict(), output_path, append_sha1=True)
+    def _encode_sensors(self):
+        scene_camera_data = self._encode_cameras()
+        scene_lidar_data = self._encode_lidars()
 
-        return str((relative_path / filename).as_posix())
+        scene_sensor_data = {}
+        scene_sensor_data.update(dict(scene_camera_data))
+        scene_sensor_data.update(dict(scene_lidar_data))
+
+        return scene_sensor_data
+
+    def _run_encoding(self):
+        scene_sensor_data = self._encode_sensors()
+        calibration_file = self._encode_calibrations()
+        return self._encode_scene_json(scene_sensor_data=scene_sensor_data, calibration_file=calibration_file)
+
+    def _prepare_output_directories(self) -> None:
+        super()._prepare_output_directories()
+        if not urlparse(str(self._output_path)).scheme:  # Local FS - needs existing directories
+            (self._output_path / "calibration").mkdir(exist_ok=True, parents=True)
+            for camera_name in self._scene.camera_names:
+                (self._output_path / "rgb" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "bounding_box_2d" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "bounding_box_3d" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "semantic_segmentation_2d" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "instance_segmentation_2d" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "motion_vectors_2d" / camera_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "depth" / camera_name).mkdir(exist_ok=True, parents=True)
+            for lidar_name in self._scene.lidar_names:
+                (self._output_path / "point_cloud" / lidar_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "bounding_box_3d" / lidar_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "depth" / lidar_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "semantic_segmentation_3d" / lidar_name).mkdir(exist_ok=True, parents=True)
+                (self._output_path / "instance_segmentation_3d" / lidar_name).mkdir(exist_ok=True, parents=True)
 
 
-def main(dataset_input_path, dataset_output_path, frame_slice):
-    decoder = DGPDecoder(dataset_path=dataset_input_path)
-    dataset = Dataset.from_decoder(decoder=decoder)
-
-    with DGPEncoder(dataset=dataset, output_path=dataset_output_path, frame_slice=frame_slice) as encoder:
-        with dataset.get_editable_scene(scene_name=dataset.scene_names[0]) as scene:
-            """
-            for sn in ["lidar_bl", "lidar_br", "lidar_fl", "Right", "Left", "Rear"]:
-                scene.remove_sensor(sn)
-
-            custom_map = ClassMap.from_id_label_dict({1337: "All"})
-            custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
-
-            frame_ids = scene.frame_ids
-            for fid in frame_ids:
-                sf = scene.get_sensor("Front").get_frame(fid)
-                semseg2d = sf.get_annotations(AnnotationTypes.SemanticSegmentation2D)
-                semseg2d.update_classes(custom_id_map, custom_map)
-            """
-
-            encoder.encode_scene(scene)
+class DGPDatasetEncoder(DatasetEncoder):
+    scene_encoder = DGPSceneEncoder
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert DGP to DGP")
-    parser.add_argument("-i", "--input", help="<Required> pass input local / s3 path for DGP dataset", required=True)
-    parser.add_argument("-o", "--output", help="<Required> pass output local / s3 path for DGP dataset", required=True)
-    parser.add_argument("--start", help="Frame Slicing Start", default=None, type=int)
-    parser.add_argument("--stop", help="Frame Slicing Stop", default=None, type=int)
-    parser.add_argument("--step", help="Frame Slicing Step", default=None, type=int)
+    parser = argparse.ArgumentParser(description="Runs a data encoders")
+    parser.add_argument("-i", "--input", type=str, help="A local or cloud path to a DGP dataset", required=True)
+    parser.add_argument("-o", "--output", type=str, help="A local or cloud path for the encoded dataset", required=True)
+    parser.add_argument(
+        "--scene_names",
+        nargs="*",
+        type=str,
+        help="""Define one or multiple specific scenes to be processed.
+                When provided, overwrites any scene_start and scene_stop arguments""",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "--scene_start",
+        type=int,
+        help="An integer defining the start index for scene processing",
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "--scene_stop",
+        type=int,
+        help="An integer defining the stop index for scene processing",
+        required=False,
+        default=None,
+    )
+
+    parser.add_argument(
+        "--n_parallel",
+        type=int,
+        help="Define how many scenes should be processed in parallel",
+        required=False,
+        default=1,
+    )
 
     args = parser.parse_args()
 
-    main(args.input, args.output, slice(args.start, args.stop, args.step))
+    setup_loggers([__name__, DGPDatasetEncoder.__name__, DGPSceneEncoder.__name__, "fsio"], log_level=logging.DEBUG)
+
+    DGPDatasetEncoder(
+        input_path=args.input,
+        output_path=args.output,
+        scene_names=args.scene_names,
+        scene_start=args.scene_start,
+        scene_stop=args.scene_stop,
+        n_parallel=args.n_parallel,
+    ).run()
