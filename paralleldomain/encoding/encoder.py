@@ -180,9 +180,9 @@ class DatasetEncoder:
 
     _camera_names: List[str] = None  # Adapt if should be limited to a set of cameras, or empty list for no cameras
     _lidar_names: List[str] = None  # Adapt if should be limited to a set of lidars, or empty list for no lidars
-    _annotation_types: List[AnnotationType] = [
-        AnnotationTypes.BoundingBoxes3D
-    ]  # Adapt if should be limited to a set of annotation types, or empty list for no annotations
+    _annotation_types: List[
+        AnnotationType
+    ] = None  # Adapt if should be limited to a set of annotation types, or empty list for no annotations
 
     def __init__(
         self,
