@@ -12,6 +12,8 @@ import numpy as np
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.encoding.utilities.fsio import relative_path
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -53,14 +55,39 @@ class MaskFilter:
 class SceneEncoder:
     _logger: logging.Logger = None
 
-    def __init__(self, dataset: Dataset, scene_name: str, output_path: AnyPath):
+    _camera_names: List[str] = None
+    _lidar_names: List[str] = None
+    _annotation_types: List[AnnotationType] = None
+
+    def __init__(
+        self,
+        dataset: Dataset,
+        scene_name: str,
+        output_path: AnyPath,
+        camera_names: Optional[List[str]] = None,
+        lidar_names: Optional[List[str]] = None,
+        annotation_types: Optional[List[AnnotationType]] = None,
+    ):
         self._dataset: Dataset = dataset
         self._scene_name: str = scene_name
         self._output_path: AnyPath = output_path
         self._scene: Scene = dataset.get_scene(scene_name)
         self._task_pool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
 
+        self._camera_names = self._scene.camera_names if camera_names is None else camera_names
+        self._lidar_names = self._scene.lidar_names if lidar_names is None else lidar_names
+        self._annotation_types = (
+            self._scene.available_annotation_types if annotation_types is None else annotation_types
+        )
+
         self._prepare_output_directories()
+
+    @property
+    def _sensor_names(self) -> List[str]:
+        return self._camera_names + self._lidar_names
+
+    def _relative_path(self, path: AnyPath) -> AnyPath:
+        return relative_path(path, self._output_path)
 
     def _run_async(self, func, *args, **kwargs):
         return self._task_pool.apply_async(func, args=args, kwds=dict(**kwargs))
@@ -85,7 +112,7 @@ class SceneEncoder:
     def _encode_cameras(self):
         with ThreadPoolExecutor(max_workers=4) as camera_executor:
             for camera_name, camera_encoder_result in zip(
-                self._scene.camera_names, camera_executor.map(self._encode_camera, self._scene.camera_names)
+                self._camera_names, camera_executor.map(self._encode_camera, self._camera_names)
             ):
                 self.logger().info(f"{camera_name}: {camera_encoder_result}")
 
@@ -103,7 +130,7 @@ class SceneEncoder:
     def _encode_lidars(self):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             for lidar_name, lidar_encoder_result in zip(
-                self._scene.lidar_names, lidar_executor.map(self._encode_lidar, self._scene.lidar_names)
+                self._lidar_names, lidar_executor.map(self._encode_lidar, self._lidar_names)
             ):
                 self.logger().info(f"{lidar_name}: {lidar_encoder_result}")
 
@@ -124,8 +151,23 @@ class SceneEncoder:
         return encoding_result
 
     @classmethod
-    def encode(cls, dataset: Dataset, scene_name: str, output_path: AnyPath) -> Any:
-        return cls(dataset=dataset, scene_name=scene_name, output_path=output_path).run()
+    def encode(
+        cls,
+        dataset: Dataset,
+        scene_name: str,
+        output_path: AnyPath,
+        camera_names: Optional[List[str]] = None,
+        lidar_names: Optional[List[str]] = None,
+        annotation_types: Optional[List[AnnotationType]] = None,
+    ) -> Any:
+        return cls(
+            dataset=dataset,
+            scene_name=scene_name,
+            output_path=output_path,
+            camera_names=camera_names,
+            lidar_names=lidar_names,
+            annotation_types=annotation_types,
+        ).run()
 
     @classmethod
     def logger(cls):
@@ -138,6 +180,12 @@ class DatasetEncoder:
     scene_encoder: SceneEncoder = SceneEncoder
     _logger: logging.Logger = None
 
+    _camera_names: List[str] = None  # Adapt if should be limited to a set of cameras, or empty list for no cameras
+    _lidar_names: List[str] = None  # Adapt if should be limited to a set of lidars, or empty list for no lidars
+    _annotation_types: List[AnnotationType] = [
+        AnnotationTypes.BoundingBoxes3D
+    ]  # Adapt if should be limited to a set of annotation types, or empty list for no annotations
+
     def __init__(
         self,
         dataset: Dataset,
@@ -149,7 +197,7 @@ class DatasetEncoder:
     ):
         self._dataset = dataset
         self._output_path = AnyPath(output_path)
-        self._n_processes = min(max(n_parallel, 1), os.cpu_count())
+        self._n_parallel = min(max(n_parallel, 1), os.cpu_count())
 
         if scene_names is not None:
             for sn in scene_names:
@@ -161,10 +209,20 @@ class DatasetEncoder:
             self._scene_names = self._dataset.scene_names[scene_slice]
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
-        return type(self).scene_encoder.encode(self._dataset, scene_name, self._output_path / scene_name)
+        return type(self).scene_encoder.encode(
+            dataset=self._dataset,
+            scene_name=scene_name,
+            output_path=self._output_path / scene_name,
+            camera_names=self._camera_names,
+            lidar_names=self._lidar_names,
+            annotation_types=self._annotation_types,
+        )
+
+    def _relative_path(self, path: AnyPath) -> AnyPath:
+        return relative_path(path, self._output_path)
 
     def run(self):
-        with ThreadPoolExecutor(max_workers=self._n_processes) as scene_executor:
+        with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
             for scene_name, scene_encoder_result in zip(
                 self._scene_names,
                 scene_executor.map(
