@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import uuid
-from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from typing import Any, Generator, List, Optional, Union
@@ -11,7 +10,6 @@ from urllib.parse import urlparse
 import numpy as np
 
 from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.utilities.fsio import relative_path
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.sensor import SensorFrame

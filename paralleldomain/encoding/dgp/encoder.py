@@ -42,7 +42,7 @@ from paralleldomain.encoding.dgp.dtos import (
 )
 from paralleldomain.encoding.encoder import DatasetEncoder, MaskFilter, ObjectFilter, SceneEncoder
 from paralleldomain.encoding.utilities import fsio
-from paralleldomain.encoding.utilities.fsio import relative_path, write_json
+from paralleldomain.encoding.utilities.fsio import write_json
 from paralleldomain.encoding.utilities.log import setup_loggers
 from paralleldomain.encoding.utilities.mask import encode_2int16_as_rgba8, encode_int32_as_rgb8
 from paralleldomain.model.annotation import Annotation, AnnotationTypes, BoundingBox2D, BoundingBox3D
