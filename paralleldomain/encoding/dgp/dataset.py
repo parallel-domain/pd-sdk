@@ -10,10 +10,10 @@ from paralleldomain.encoding.dgp.constants import ANNOTATION_TYPE_MAP_INV
 from paralleldomain.encoding.dgp.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
-from paralleldomain.encoding.utilities import fsio
-from paralleldomain.encoding.utilities.log import setup_loggers
 from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.logging import setup_loggers
 
 logger = logging.getLogger(__name__)
 

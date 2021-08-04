@@ -4,7 +4,6 @@ from tempfile import TemporaryDirectory
 from paralleldomain import Dataset
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.dgp.dataset import DGPDatasetEncoder
-from paralleldomain.utilities.any_path import AnyPath
 
 
 def test_encoding_of_modified_scene(dataset: Dataset):

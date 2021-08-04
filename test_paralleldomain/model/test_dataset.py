@@ -1,5 +1,3 @@
-import pytest
-
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.model.dataset import Dataset
 

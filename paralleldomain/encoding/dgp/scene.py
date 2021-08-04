@@ -43,11 +43,11 @@ from paralleldomain.encoding.dgp.transformer import (
     SemanticSegmentation3DTransformer,
 )
 from paralleldomain.encoding.encoder import SceneEncoder
-from paralleldomain.encoding.utilities import fsio
-from paralleldomain.encoding.utilities.fsio import write_json
 from paralleldomain.model.annotation import Annotation, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import write_json
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +422,7 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_ontologies(self) -> Dict[str, AsyncResult]:
         ontology_dtos = {
-            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(self._scene.get_ontology(a_type))
+            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(self._scene.get_class_map(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
         }

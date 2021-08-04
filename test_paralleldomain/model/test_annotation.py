@@ -1,23 +1,12 @@
-import time
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
-import pytest
 
 from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
-from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 
 
 class TestSensorFrame:
-    def test_access_class_map(self, scene: Scene):
-        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes3D)
-        assert scene.get_ontology(annotation_type=AnnotationTypes.SemanticSegmentation3D)
-        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes2D)
-        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes3D)
-        assert scene.get_ontology(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-
     def test_box_3d_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
@@ -32,7 +21,6 @@ class TestSensorFrame:
             assert isinstance(box.pose.translation, np.ndarray)
             assert isinstance(box.pose.transformation_matrix, np.ndarray)
             assert isinstance(box.class_id, int)
-            assert isinstance(boxes.class_map[box.class_id].name, str)
 
     def test_box_2d_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.BoundingBoxes2D in dataset.available_annotation_types
@@ -53,7 +41,6 @@ class TestSensorFrame:
             assert isinstance(box.height, int)
             assert isinstance(box.attributes, Dict)
             assert isinstance(box.class_id, int)
-            assert isinstance(boxes.class_map[box.class_id].name, str)
 
     def test_instance_seg_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.InstanceSegmentation2D in dataset.available_annotation_types
@@ -116,50 +103,6 @@ class TestSensorFrame:
         for y in range(rgb.shape[0]):
             for x in range(rgb.shape[1]):
                 assert np.all(coordinates[y, x] == np.array([y, x]))
-
-    def test_map_all_to_same_semseg2d(self, dataset: Dataset):
-        custom_map = ClassMap.from_id_label_dict({1337: "All"})
-        custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.camera_frames))
-        semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-        semseg.update_classes(class_id_map=custom_id_map, class_label_map=custom_map)
-        assert np.all(semseg.class_ids == 1337)
-
-    def test_map_all_to_same_bbox2d(self, dataset: Dataset):
-        custom_map = ClassMap.from_id_label_dict({1337: "All"})
-        custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.camera_frames))
-        boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
-        boxes.update_classes(class_id_map=custom_id_map, class_label_map=custom_map)
-        assert all([box.class_id == 1337 for box in boxes.boxes])
-
-    def test_map_all_to_same_semseg3d(self, dataset: Dataset):
-        custom_map = ClassMap.from_id_label_dict({1337: "All"})
-        custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.lidar_frames))
-        semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation3D)
-        semseg.update_classes(class_id_map=custom_id_map, class_label_map=custom_map)
-        assert np.all(semseg.class_ids == 1337)
-
-    def test_map_all_to_same_bbox3d(self, dataset: Dataset):
-        custom_map = ClassMap.from_id_label_dict({1337: "All"})
-        custom_id_map = ClassIdMap(class_id_to_class_id={i: 1337 for i in range(256)})
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.lidar_frames))
-        boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
-        boxes.update_classes(class_id_map=custom_id_map, class_label_map=custom_map)
-        assert all([box.class_id == 1337 for box in boxes.boxes])
 
     """
     @pytest.skip

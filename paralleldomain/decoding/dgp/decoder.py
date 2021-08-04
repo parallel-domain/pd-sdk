@@ -108,7 +108,7 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.metadata.to_dict()
 
-    def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+    def decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():

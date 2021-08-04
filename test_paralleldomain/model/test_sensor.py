@@ -1,10 +1,7 @@
 import time
 
-import numpy as np
-
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 
