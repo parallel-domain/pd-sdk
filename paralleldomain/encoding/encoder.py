@@ -11,7 +11,7 @@ import numpy as np
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.encoding.utilities.fsio import relative_path
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
 

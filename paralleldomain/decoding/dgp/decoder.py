@@ -169,15 +169,12 @@ class DGPDecoder(Decoder):
         sensor_data = self._data_by_key(scene_name=scene_name)
         return [sensor_data[key].id.name for key in sample.datum_keys]
 
-    def decode_sensor_frame(
-        self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName, ontologies: Dict[str, ClassMap]
-    ) -> SensorFrame:
+    def decode_sensor_frame(self, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
         # sample of current frame
         sample = self._sample_by_index(scene_name=scene_name)[frame_id]
         # all sensor data of the sensor
         sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
         # read ontology -> Dict[str, ClassMap]
-        class_maps = ontologies
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
@@ -190,7 +187,6 @@ class DGPDecoder(Decoder):
             lazy_loader=DGPFrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
                 dataset_path=self._dataset_path,
-                class_maps=class_maps,
                 custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
                 scene_name=scene_name,
                 sensor_name=sensor_name,

@@ -6,12 +6,7 @@ import imageio
 import numpy as np
 from pyquaternion import Quaternion
 
-from paralleldomain.decoding.dgp.constants import (
-    ANNOTATION_TYPE_MAP,
-    ANNOTATION_TYPE_MAP_INV,
-    DGP_TO_INTERNAL_CS,
-    TransformType,
-)
+from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
 from paralleldomain.decoding.dgp.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -35,7 +30,6 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SemanticSegmentation3D,
 )
-from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
@@ -51,15 +45,11 @@ class DGPFrameLazyLoader:
         dataset_path: AnyPath,
         scene_name: SceneName,
         sensor_name: SensorName,
-        class_maps: Dict[str, ClassMap],
         calibration_key: str,
         datum: SceneDataDatum,
         custom_reference_to_box_bottom: Transformation,
-        custom_id_map: Optional[ClassIdMap] = None,
     ):
-        self.custom_id_map = custom_id_map
         self._dataset_path = dataset_path
-        self.class_maps = class_maps
         self.datum = datum
         self._unique_cache_key_prefix = unique_cache_key_prefix
         self.sensor_name = sensor_name
@@ -158,8 +148,6 @@ class DGPFrameLazyLoader:
                     except JSONDecodeError:
                         attr_parsed[k] = v
                 class_id = box_dto.class_id
-                if self.custom_id_map is not None:
-                    class_id = self.custom_id_map[class_id]
 
                 box = BoundingBox3D(
                     pose=pose,
@@ -173,7 +161,7 @@ class DGPFrameLazyLoader:
                 )
                 box_list.append(box)
 
-            return BoundingBoxes3D(boxes=box_list, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]])
+            return BoundingBoxes3D(boxes=box_list)
         elif issubclass(annotation_type, BoundingBoxes2D):
             dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
 
@@ -188,8 +176,6 @@ class DGPFrameLazyLoader:
                         attr_parsed[k] = v
 
                 class_id = box_dto.class_id
-                if self.custom_id_map is not None:
-                    class_id = self.custom_id_map[class_id]
 
                 box = BoundingBox2D(
                     x=box_dto.box.x,
@@ -202,16 +188,12 @@ class DGPFrameLazyLoader:
                 )
                 box_list.append(box)
 
-            return BoundingBoxes2D(boxes=box_list, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]])
+            return BoundingBoxes2D(boxes=box_list)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self._decode_semantic_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            if self.custom_id_map is not None:
-                segmentation_mask = self.custom_id_map[segmentation_mask]
-            return SemanticSegmentation3D(
-                class_ids=segmentation_mask, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]]
-            )
+            return SemanticSegmentation3D(class_ids=segmentation_mask)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
@@ -221,11 +203,7 @@ class DGPFrameLazyLoader:
             class_ids = self._decode_semantic_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
-            if self.custom_id_map is not None:
-                class_ids = self.custom_id_map[class_ids]
-            return SemanticSegmentation2D(
-                class_ids=class_ids, class_map=self.class_maps[ANNOTATION_TYPE_MAP_INV[annotation_type]]
-            )
+            return SemanticSegmentation2D(class_ids=class_ids)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
                 scene_name=self.scene_name, annotation_identifier=identifier
@@ -237,21 +215,6 @@ class DGPFrameLazyLoader:
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
-
-    """def load_ontology(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> ClassMap:
-        ontology_dto = self._decode_ontology(scene_name=self.scene_name, ontology_key=self._ontologies_keys[identifier])
-        ontology = ClassMap(
-            classes=[
-                ClassDetail(
-                    name=item.name,
-                    id=item.id,
-                    instanced=item.isthing,
-                    meta=dict(supercategory=item.supercategory, color=dict(**item.color.to_dict())),
-                )
-                for item in ontology_dto.items
-            ]
-        )
-        return ontology"""
 
     def load_available_annotation_types(
         self,
@@ -268,12 +231,6 @@ class DGPFrameLazyLoader:
             npz_data = np.load(cast(BinaryIO, cloud_binary))
             pc_data = npz_data.f.data
             return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
-
-    """def _decode_ontology(self, scene_name: str, ontology_key: str) -> OntologyFileDTO:
-        ontology_path = self._dataset_path / scene_name / "calibration" / f"{ontology_key}.json"
-        with ontology_path.open("r") as f:
-            ontology_dict = json.load(f)
-            return OntologyFileDTO.from_dict(ontology_dict)"""
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
