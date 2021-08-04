@@ -104,7 +104,6 @@ class Scene:
                 scene_name=self.name,
                 frame_id=frame_id,
                 sensor_name=sensor_name,
-                ontologies={self._annotation_type_identifiers[k]: v for k, v in self.ontologies.items()},
             ),
         )
 

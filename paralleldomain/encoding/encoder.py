@@ -2,9 +2,10 @@ import argparse
 import logging
 import os
 import uuid
+from abc import abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
-from typing import Any, Generator, List, Optional, Union
+from typing import Any, Generator, List, Optional, Type, Union
 from urllib.parse import urlparse
 
 import numpy as np
@@ -18,63 +19,57 @@ from paralleldomain.utilities.any_path import AnyPath
 logger = logging.getLogger(__name__)
 
 
-class ObjectFilter:
+class ObjectTransformer:
     @staticmethod
-    def filter_pre_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
+    def _filter_pre_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @staticmethod
-    def transform(objects: Union[Generator, List]) -> Union[Generator, List]:
+    def _transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @staticmethod
-    def filter_post_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
+    def _filter_post_transform(objects: Union[Generator, List]) -> Union[Generator, List]:
         return (o for o in objects)
 
     @classmethod
-    def run(cls, objects: List) -> List:
-        _pre_filtered = cls.filter_pre_transform(objects=objects)
-        _transformed = cls.transform(objects=_pre_filtered)
-        _post_filtered = cls.filter_post_transform(objects=_transformed)
+    def transform(cls, objects: List) -> List:
+        _pre_filtered = cls._filter_pre_transform(objects=objects)
+        _transformed = cls._transform(objects=_pre_filtered)
+        _post_filtered = cls._filter_post_transform(objects=_transformed)
         return list(_post_filtered)
 
 
-class MaskFilter:
+class MaskTransformer:
     @staticmethod
-    def transform(mask: np.ndarray) -> np.ndarray:
+    def _transform(mask: np.ndarray) -> np.ndarray:
         return mask
 
     @classmethod
-    def run(cls, mask: np.ndarray) -> np.ndarray:
-        _transformed = cls.transform(mask)
+    def transform(cls, mask: np.ndarray) -> np.ndarray:
+        _transformed = cls._transform(mask)
         return _transformed
 
 
 class SceneEncoder:
-    _logger: logging.Logger = None
-
-    _camera_names: List[str] = None
-    _lidar_names: List[str] = None
-    _annotation_types: List[AnnotationType] = None
-
     def __init__(
         self,
         dataset: Dataset,
         scene_name: str,
         output_path: AnyPath,
-        camera_names: Optional[List[str]] = None,
-        lidar_names: Optional[List[str]] = None,
-        annotation_types: Optional[List[AnnotationType]] = None,
+        camera_names: Optional[Union[List[str], None]] = None,
+        lidar_names: Optional[Union[List[str], None]] = None,
+        annotation_types: Optional[Union[List[AnnotationType], None]] = None,
     ):
         self._dataset: Dataset = dataset
         self._scene_name: str = scene_name
         self._output_path: AnyPath = output_path
         self._scene: Scene = dataset.get_scene(scene_name)
-        self._task_pool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
+        self._task_pool: ThreadPool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
 
-        self._camera_names = self._scene.camera_names if camera_names is None else camera_names
-        self._lidar_names = self._scene.lidar_names if lidar_names is None else lidar_names
-        self._annotation_types = (
+        self._camera_names: Union[List[str], None] = self._scene.camera_names if camera_names is None else camera_names
+        self._lidar_names: Union[List[str], None] = self._scene.lidar_names if lidar_names is None else lidar_names
+        self._annotation_types: Union[List[AnnotationType], None] = (
             self._scene.available_annotation_types if annotation_types is None else annotation_types
         )
 
@@ -94,9 +89,11 @@ class SceneEncoder:
         if not urlparse(str(self._output_path)).scheme:
             self._output_path.mkdir(exist_ok=True, parents=True)
 
+    @abstractmethod
     def _encode_camera_frame(self, camera_frame: SensorFrame):
         ...
 
+    @abstractmethod
     def _encode_lidar_frame(self, lidar_frame: SensorFrame):
         ...
 
@@ -112,7 +109,7 @@ class SceneEncoder:
             for camera_name, camera_encoder_result in zip(
                 self._camera_names, camera_executor.map(self._encode_camera, self._camera_names)
             ):
-                self.logger().info(f"{camera_name}: {camera_encoder_result}")
+                logger.info(f"{camera_name}: {camera_encoder_result}")
 
     def _encode_lidar(self, lidar_name: str):
         with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
@@ -123,14 +120,14 @@ class SceneEncoder:
                     self._scene.frame_ids,
                 ),
             ):
-                self.logger().info(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
+                logger.info(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
 
     def _encode_lidars(self):
         with ThreadPoolExecutor(max_workers=4) as lidar_executor:
             for lidar_name, lidar_encoder_result in zip(
                 self._lidar_names, lidar_executor.map(self._encode_lidar, self._lidar_names)
             ):
-                self.logger().info(f"{lidar_name}: {lidar_encoder_result}")
+                logger.info(f"{lidar_name}: {lidar_encoder_result}")
 
     def _encode_sensors(self):
         self._encode_cameras()
@@ -138,52 +135,18 @@ class SceneEncoder:
 
     def _run_encoding(self) -> Any:
         self._encode_sensors()
-        self.logger().info(f"Successfully encoded {self._scene_name}")
+        logger.info(f"Successfully encoded {self._scene_name}")
         return str(uuid.uuid4())
 
-    def run(self) -> Any:
+    def encode_scene(self) -> Any:
         encoding_result = self._run_encoding()
         self._task_pool.close()
         self._task_pool.join()
 
         return encoding_result
 
-    @classmethod
-    def encode(
-        cls,
-        dataset: Dataset,
-        scene_name: str,
-        output_path: AnyPath,
-        camera_names: Optional[List[str]] = None,
-        lidar_names: Optional[List[str]] = None,
-        annotation_types: Optional[List[AnnotationType]] = None,
-    ) -> Any:
-        return cls(
-            dataset=dataset,
-            scene_name=scene_name,
-            output_path=output_path,
-            camera_names=camera_names,
-            lidar_names=lidar_names,
-            annotation_types=annotation_types,
-        ).run()
-
-    @classmethod
-    def logger(cls):
-        if cls._logger is None:
-            cls._logger = logging.getLogger(name=cls.__name__)
-        return cls._logger
-
 
 class DatasetEncoder:
-    scene_encoder: SceneEncoder = SceneEncoder
-    _logger: logging.Logger = None
-
-    _camera_names: List[str] = None  # Adapt if should be limited to a set of cameras, or empty list for no cameras
-    _lidar_names: List[str] = None  # Adapt if should be limited to a set of lidars, or empty list for no lidars
-    _annotation_types: List[
-        AnnotationType
-    ] = None  # Adapt if should be limited to a set of annotation types, or empty list for no annotations
-
     def __init__(
         self,
         dataset: Dataset,
@@ -197,6 +160,15 @@ class DatasetEncoder:
         self._output_path = AnyPath(output_path)
         self._n_parallel = min(max(n_parallel, 1), os.cpu_count())
 
+        # Adapt to use specific SceneEncoder type
+        self._scene_encoder: Type[SceneEncoder] = SceneEncoder
+        # Adapt if should be limited to a set of cameras, or empty list for no cameras
+        self._camera_names: Union[List[str], None] = None
+        # Adapt if should be limited to a set of lidars, or empty list for no lidars
+        self._lidar_names: Union[List[str], None] = None
+        # Adapt if should be limited to a set of annotation types, or empty list for no annotations
+        self._annotation_types: Union[List[AnnotationType], None] = None
+
         if scene_names is not None:
             for sn in scene_names:
                 if sn not in self._dataset.scene_names:
@@ -207,7 +179,7 @@ class DatasetEncoder:
             self._scene_names = self._dataset.scene_names[scene_slice]
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
-        return type(self).scene_encoder.encode(
+        encoder = self._scene_encoder(
             dataset=self._dataset,
             scene_name=scene_name,
             output_path=self._output_path / scene_name,
@@ -215,11 +187,12 @@ class DatasetEncoder:
             lidar_names=self._lidar_names,
             annotation_types=self._annotation_types,
         )
+        return encoder.encode_scene()
 
     def _relative_path(self, path: AnyPath) -> AnyPath:
         return relative_path(path, self._output_path)
 
-    def run(self):
+    def encode_dataset(self):
         with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
             for scene_name, scene_encoder_result in zip(
                 self._scene_names,
@@ -228,7 +201,7 @@ class DatasetEncoder:
                     self._scene_names,
                 ),
             ):
-                self.logger().info(f"{scene_name}: {scene_encoder_result}")
+                logger.info(f"{scene_name}: {scene_encoder_result}")
 
     @classmethod
     def from_dataset(
@@ -260,12 +233,6 @@ class DatasetEncoder:
         n_parallel: Optional[int] = 1,
     ):
         raise NotImplementedError("An Encoder needs to override this method with a fitting Decoder")
-
-    @classmethod
-    def logger(cls):
-        if cls._logger is None:
-            cls._logger = logging.getLogger(name=cls.__name__)
-        return cls._logger
 
 
 if __name__ == "__main__":
@@ -313,4 +280,4 @@ if __name__ == "__main__":
         scene_start=args.scene_start,
         scene_stop=args.scene_stop,
         n_parallel=args.n_parallel,
-    ).run()
+    )._transform()

@@ -13,7 +13,7 @@ def test_encoding_of_modified_scene(dataset: Dataset):
 
         # encoding
         encoder = DGPDatasetEncoder.from_dataset(dataset=dataset, output_path=output_path)
-        encoder.run()
+        encoder._transform()
 
         # decoding the encoded
         decoder = DGPDecoder(dataset_path=output_path)
