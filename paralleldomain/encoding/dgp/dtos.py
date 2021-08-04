@@ -216,7 +216,7 @@ class BoundingBox3DDTO(DataClassJsonMixin):
     attributes: Dict[str, Any]
 
     @staticmethod
-    def from_BoundingBox3D(box: BoundingBox3D) -> "BoundingBox3DDTO":
+    def from_bounding_box(box: BoundingBox3D) -> "BoundingBox3DDTO":
         try:
             occlusion = box.attributes["occlusion"]
             del box.attributes["occlusion"]
@@ -289,7 +289,7 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     attributes: Dict[str, Any]
 
     @staticmethod
-    def from_BoundingBox2D(box: BoundingBox2D) -> "BoundingBox2DDTO":
+    def from_bounding_box(box: BoundingBox2D) -> "BoundingBox2DDTO":
         try:
             is_crowd = box.attributes["iscrowd"]
             del box.attributes["iscrowd"]
@@ -360,7 +360,7 @@ class OntologyFileDTO:
     items: List[OntologyItemDTO]
 
     @staticmethod
-    def from_ClassMap(class_map: ClassMap) -> "OntologyFileDTO":
+    def from_class_map(class_map: ClassMap) -> "OntologyFileDTO":
         return OntologyFileDTO(
             items=[
                 OntologyItemDTO(

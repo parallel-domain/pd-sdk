@@ -144,7 +144,7 @@ class DGPSceneEncoder(SceneEncoder):
             return None
 
     def _encode_bounding_box_2d(self, box: BoundingBox2D) -> BoundingBox2DDTO:
-        return BoundingBox2DDTO.from_BoundingBox2D(box)
+        return BoundingBox2DDTO.from_bounding_box(box)
 
     def _encode_bounding_boxes_2d(self, sensor_frame: SensorFrame) -> AsyncResult:
         boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
@@ -157,7 +157,7 @@ class DGPSceneEncoder(SceneEncoder):
         return self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path, append_sha1=True)
 
     def _encode_bounding_box_3d(self, box: BoundingBox3D) -> BoundingBox3DDTO:
-        return BoundingBox3DDTO.from_BoundingBox3D(box)
+        return BoundingBox3DDTO.from_bounding_box(box)
 
     def _encode_bounding_boxes_3d(self, sensor_frame: SensorFrame) -> AsyncResult:
         boxes3d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
@@ -456,7 +456,7 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_ontologies(self) -> Dict[str, AsyncResult]:
         ontology_dtos = {
-            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_ClassMap(self._scene.get_ontology(a_type))
+            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(self._scene.get_ontology(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
         }
