@@ -1,5 +1,4 @@
 import os
-import time
 from sys import getsizeof
 from unittest import mock
 from unittest.mock import patch

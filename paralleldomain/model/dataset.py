@@ -40,7 +40,9 @@ class Dataset:
 
     def _load_scene(self, scene_name: SceneName):
         if scene_name not in self._scenes:
-            self._scenes[scene_name] = Scene.from_decoder(scene_name=scene_name, decoder=self._decoder)
+            self._scenes[scene_name] = Scene.from_decoder(
+                scene_name=scene_name, decoder=self._decoder, available_annotation_types=self.available_annotation_types
+            )
 
     @property
     def scene_names(self) -> List[SceneName]:

@@ -9,14 +9,7 @@ import iso8601
 
 from paralleldomain.decoding.decoder import Decoder
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
-from paralleldomain.decoding.dgp.dtos import (
-    DatasetDTO,
-    DatasetMetaDTO,
-    OntologyFileDTO,
-    SceneDataDTO,
-    SceneDTO,
-    SceneSampleDTO,
-)
+from paralleldomain.decoding.dgp.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -115,8 +108,7 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.metadata.to_dict()
 
-    @lru_cache(maxsize=1)
-    def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+    def decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
@@ -183,7 +175,6 @@ class DGPDecoder(Decoder):
         # all sensor data of the sensor
         sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
         # read ontology -> Dict[str, ClassMap]
-        class_maps = self.decode_ontologies(scene_name)
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
@@ -196,7 +187,6 @@ class DGPDecoder(Decoder):
             lazy_loader=DGPFrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
                 dataset_path=self._dataset_path,
-                class_maps=class_maps,
                 custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
                 scene_name=scene_name,
                 sensor_name=sensor_name,

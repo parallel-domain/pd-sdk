@@ -1,7 +1,22 @@
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
+
+from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
+from paralleldomain.model.class_mapping import ClassMap
+
+
+def _attribute_key_dump(obj: object) -> str:
+    return str(obj)
+
+
+def _attribute_value_dump(obj: object) -> str:
+    if isinstance(obj, Dict) or isinstance(obj, List):
+        return json.dumps(obj, indent=2)
+    else:
+        return str(obj)
 
 
 @dataclass_json
@@ -200,6 +215,47 @@ class BoundingBox3DDTO(DataClassJsonMixin):
     box: BoundingBox3DBoxDTO
     attributes: Dict[str, Any]
 
+    @staticmethod
+    def from_bounding_box(box: BoundingBox3D) -> "BoundingBox3DDTO":
+        try:
+            occlusion = box.attributes["occlusion"]
+            del box.attributes["occlusion"]
+        except KeyError:
+            occlusion = 0
+
+        try:
+            truncation = box.attributes["truncation"]
+            del box.attributes["truncation"]
+        except KeyError:
+            truncation = 0
+
+        box_dto = BoundingBox3DDTO(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            num_points=box.num_points,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox3DBoxDTO(
+                width=box.width,
+                length=box.length,
+                height=box.height,
+                occlusion=occlusion,
+                truncation=truncation,
+                pose=PoseDTO(
+                    translation=TranslationDTO(
+                        x=box.pose.translation[0], y=box.pose.translation[1], z=box.pose.translation[2]
+                    ),
+                    rotation=RotationDTO(
+                        qw=box.pose.quaternion.w,
+                        qx=box.pose.quaternion.x,
+                        qy=box.pose.quaternion.y,
+                        qz=box.pose.quaternion.z,
+                    ),
+                ),
+            ),
+        )
+
+        return box_dto
+
 
 @dataclass_json
 @dataclass
@@ -231,6 +287,24 @@ class BoundingBox2DDTO(DataClassJsonMixin):
     box: BoundingBox2DBoxDTO
     area: int
     attributes: Dict[str, Any]
+
+    @staticmethod
+    def from_bounding_box(box: BoundingBox2D) -> "BoundingBox2DDTO":
+        try:
+            is_crowd = box.attributes["iscrowd"]
+            del box.attributes["iscrowd"]
+        except KeyError:
+            is_crowd = False
+        box_dto = BoundingBox2DDTO(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            area=box.area,
+            iscrowd=is_crowd,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox2DBoxDTO(x=box.x, y=box.y, w=box.width, h=box.height),
+        )
+
+        return box_dto
 
 
 @dataclass_json
@@ -284,3 +358,22 @@ class OntologyItemDTO:
 @dataclass
 class OntologyFileDTO:
     items: List[OntologyItemDTO]
+
+    @staticmethod
+    def from_class_map(class_map: ClassMap) -> "OntologyFileDTO":
+        return OntologyFileDTO(
+            items=[
+                OntologyItemDTO(
+                    id=cid,
+                    name=cval.name,
+                    color=OntologyItemColorDTO(
+                        r=cval.meta["color"]["r"],
+                        g=cval.meta["color"]["g"],
+                        b=cval.meta["color"]["b"],
+                    ),
+                    isthing=cval.instanced,
+                    supercategory="",
+                )
+                for cid, cval in class_map.items()
+            ]
+        )
