@@ -12,15 +12,11 @@ from paralleldomain.model.class_mapping import ClassIdMap, ClassMap
 
 class TestSensorFrame:
     def test_access_class_map(self, scene: Scene):
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        lidar_sensor = next(iter(frame.lidar_frames))
-        camera_sensor = next(iter(frame.camera_frames))
-        assert lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).class_map
-        assert lidar_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation3D).class_map
-        assert camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D).class_map
-        assert camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).class_map
-        assert camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D).class_map
+        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes3D)
+        assert scene.get_ontology(annotation_type=AnnotationTypes.SemanticSegmentation3D)
+        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes2D)
+        assert scene.get_ontology(annotation_type=AnnotationTypes.BoundingBoxes3D)
+        assert scene.get_ontology(annotation_type=AnnotationTypes.SemanticSegmentation2D)
 
     def test_box_3d_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
