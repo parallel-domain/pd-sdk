@@ -23,6 +23,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         self,
         dataset: Dataset,
         output_path: str,
+        dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
@@ -36,6 +37,8 @@ class DGPDatasetEncoder(DatasetEncoder):
             scene_stop=scene_stop,
             n_parallel=n_parallel,
         )
+        self._dataset_name: str = dataset_name
+
         self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
         # Adapt if should be limited to a set of cameras, or empty list for no cameras
         self._camera_names: Union[List[str], None] = ["camera_front"]
@@ -46,7 +49,7 @@ class DGPDatasetEncoder(DatasetEncoder):
 
     def _encode_dataset_json(self, scene_files: Dict[str, AnyPath]) -> AnyPath:
         metadata_dto = DatasetMetaDTO(**self._dataset.meta_data.custom_attributes)
-        metadata_dto.name = self._dataset.name
+        metadata_dto.name = self._dataset_name if self._dataset_name else self._dataset.name
         metadata_dto.creation_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         if self._annotation_types:
             metadata_dto.available_annotation_types = [
@@ -90,20 +93,41 @@ class DGPDatasetEncoder(DatasetEncoder):
 
         return self._encode_dataset_json(scene_files=scene_files)
 
-    @classmethod
+    @staticmethod
+    def from_dataset(
+        dataset: Dataset,
+        output_path: str,
+        dataset_name: str = None,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ):
+        return DGPDatasetEncoder(
+            dataset=dataset,
+            output_path=output_path,
+            dataset_name=dataset_name,
+            scene_names=scene_names,
+            scene_start=scene_start,
+            scene_stop=scene_stop,
+            n_parallel=n_parallel,
+        )
+
+    @staticmethod
     def from_path(
-        cls,
         input_path: str,
         output_path: str,
+        dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ) -> "DGPDatasetEncoder":
         decoder = DGPDecoder(dataset_path=input_path)
-        return cls.from_dataset(
+        return DGPDatasetEncoder.from_dataset(
             dataset=Dataset.from_decoder(decoder=decoder),
             output_path=output_path,
+            dataset_name=dataset_name,
             scene_names=scene_names,
             scene_start=scene_start,
             scene_stop=scene_stop,
@@ -140,6 +164,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--dataset_name",
+        type=str,
+        help="Define the output name of the encoded dataset. Leave empty to reuse input dataset name",
+        required=False,
+        default=None,
+    )
+
+    parser.add_argument(
         "--n_parallel",
         type=int,
         help="Define how many scenes should be processed in parallel",
@@ -154,6 +186,7 @@ if __name__ == "__main__":
     DGPDatasetEncoder.from_path(
         input_path=args.input,
         output_path=args.output,
+        dataset_name=args.dataset_name,
         scene_names=args.scene_names,
         scene_start=args.scene_start,
         scene_stop=args.scene_stop,
