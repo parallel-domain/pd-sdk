@@ -94,7 +94,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "rgb"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"  # noqa: E501
         )
         return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
 
@@ -103,7 +103,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "point_cloud"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
         )
 
         pc = sensor_frame.point_cloud
@@ -142,7 +142,7 @@ class DGPSceneEncoder(SceneEncoder):
                 self._output_path
                 / "depth"
                 / sensor_frame.sensor_name
-                / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
             )
             return self._run_async(func=fsio.write_npz, obj=dict(data=depth.depth[..., 0]), path=output_path)
         except ValueError:  # Some renderings can exclude LiDAR from having Depth annotations
@@ -160,7 +160,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "bounding_box_2d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
         return self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path, append_sha1=True)
 
@@ -176,7 +176,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "bounding_box_3d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
         return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path)
 
@@ -188,7 +188,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "semantic_segmentation_2d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"  # noqa: E501
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -201,7 +201,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "instance_segmentation_2d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"  # noqa: E501
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -214,7 +214,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "motion_vectors_2d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"  # noqa: E501
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -227,7 +227,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "semantic_segmentation_3d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
         )
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
@@ -240,7 +240,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "instance_segmentation_3d"
             / sensor_frame.sensor_name
-            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
         )
 
         return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
@@ -472,7 +472,7 @@ class DGPSceneEncoder(SceneEncoder):
             if a_type is not Annotation  # equiv: not implemented, yet!
         }
 
-        output_path = self._output_path / "ontology" / ".json"
+        output_path = self._output_path / "ontology" / ".json"  # noqa: E501
 
         return {
             k: self._run_async(func=write_json, obj=v.to_dict(), path=output_path, append_sha1=True)
@@ -525,7 +525,7 @@ class DGPSceneEncoder(SceneEncoder):
             calib_dto.extrinsics.append(r_extrinsic)
             calib_dto.intrinsics.append(r_intrinsic)
 
-        output_path = self._output_path / "calibration" / ".json"
+        output_path = self._output_path / "calibration" / ".json"  # noqa: E501
         return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
 
     def _encode_scene_json(
@@ -566,7 +566,7 @@ class DGPSceneEncoder(SceneEncoder):
             data=scene_data,
         )
 
-        output_path = self._output_path / "scene.json"
+        output_path = self._output_path / "scene.json"  # noqa: E501
         return fsio.write_json(obj=scene_dto.to_dict(), path=output_path, append_sha1=True)
 
     def _encode_sensors(self) -> Dict[str, Dict[str, SceneDataDTO]]:
