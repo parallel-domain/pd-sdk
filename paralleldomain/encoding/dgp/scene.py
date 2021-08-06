@@ -3,12 +3,14 @@ import logging
 import uuid
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from multiprocessing.pool import ApplyResult, AsyncResult
-from typing import Dict, Iterator, Optional, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import numpy as np
 
+from paralleldomain import Dataset
 from paralleldomain.encoding.dgp.constants import ANNOTATION_TYPE_MAP_INV
 from paralleldomain.encoding.dgp.dtos import (
     AnnotationsBoundingBox2DDTO,
@@ -43,7 +45,7 @@ from paralleldomain.encoding.dgp.transformer import (
     SemanticSegmentation3DTransformer,
 )
 from paralleldomain.encoding.encoder import SceneEncoder
-from paralleldomain.model.annotation import Annotation, AnnotationTypes, BoundingBox2D, BoundingBox3D
+from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
@@ -61,13 +63,47 @@ class DGPSceneEncoder(SceneEncoder):
         },
     )
 
+    def __init__(
+        self,
+        dataset: Dataset,
+        scene_name: str,
+        output_path: AnyPath,
+        camera_names: Optional[Union[List[str], None]] = None,
+        lidar_names: Optional[Union[List[str], None]] = None,
+        annotation_types: Optional[Union[List[AnnotationType], None]] = None,
+    ):
+        super().__init__(
+            dataset=dataset,
+            scene_name=scene_name,
+            output_path=output_path,
+            camera_names=camera_names,
+            lidar_names=lidar_names,
+            annotation_types=annotation_types,
+        )
+
+        scene = dataset.get_scene(scene_name=scene_name)
+        self._reference_timestamp: datetime = scene.get_frame(scene.frame_ids[0]).date_time
+        self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
+
+    def _offset_timestamp(self, compare_datetime: datetime) -> float:
+        diff = compare_datetime - self._reference_timestamp
+        return diff.total_seconds()
+
     def _encode_rgb(self, sensor_frame: SensorFrame) -> AsyncResult:
-        output_path = self._output_path / "rgb" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.png"
+        output_path = (
+            self._output_path
+            / "rgb"
+            / sensor_frame.sensor_name
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
+        )
         return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
 
     def _encode_point_cloud(self, sensor_frame: SensorFrame) -> AsyncResult:
         output_path = (
-            self._output_path / "point_cloud" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.npz"
+            self._output_path
+            / "point_cloud"
+            / sensor_frame.sensor_name
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
         )
 
         pc = sensor_frame.point_cloud
@@ -103,7 +139,10 @@ class DGPSceneEncoder(SceneEncoder):
             depth = sensor_frame.get_annotations(AnnotationTypes.Depth)
 
             output_path = (
-                self._output_path / "depth" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.npz"
+                self._output_path
+                / "depth"
+                / sensor_frame.sensor_name
+                / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
             )
             return self._run_async(func=fsio.write_npz, obj=dict(data=depth.depth[..., 0]), path=output_path)
         except ValueError:  # Some renderings can exclude LiDAR from having Depth annotations
@@ -118,7 +157,10 @@ class DGPSceneEncoder(SceneEncoder):
         boxes2d_dto = AnnotationsBoundingBox2DDTO(annotations=box2d_dto)
 
         output_path = (
-            self._output_path / "bounding_box_2d" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.json"
+            self._output_path
+            / "bounding_box_2d"
+            / sensor_frame.sensor_name
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"
         )
         return self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path, append_sha1=True)
 
@@ -131,7 +173,10 @@ class DGPSceneEncoder(SceneEncoder):
         boxes3d_dto = AnnotationsBoundingBox3DDTO(annotations=box3d_dto)
 
         output_path = (
-            self._output_path / "bounding_box_3d" / sensor_frame.sensor_name / f"{int(sensor_frame.frame_id):018d}.json"
+            self._output_path
+            / "bounding_box_3d"
+            / sensor_frame.sensor_name
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"
         )
         return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path)
 
@@ -143,7 +188,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "semantic_segmentation_2d"
             / sensor_frame.sensor_name
-            / f"{int(sensor_frame.frame_id):018d}.png"
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -156,7 +201,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "instance_segmentation_2d"
             / sensor_frame.sensor_name
-            / f"{int(sensor_frame.frame_id):018d}.png"
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -169,7 +214,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "motion_vectors_2d"
             / sensor_frame.sensor_name
-            / f"{int(sensor_frame.frame_id):018d}.png"
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"
         )
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
@@ -182,7 +227,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "semantic_segmentation_3d"
             / sensor_frame.sensor_name
-            / f"{int(sensor_frame.frame_id):018d}.npz"
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
         )
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
@@ -195,7 +240,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / "instance_segmentation_3d"
             / sensor_frame.sensor_name
-            / f"{int(sensor_frame.frame_id):018d}.npz"
+            / f"{int((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"
         )
 
         return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
