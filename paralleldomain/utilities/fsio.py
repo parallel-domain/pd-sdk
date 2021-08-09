@@ -2,10 +2,11 @@ import hashlib
 import json
 import logging
 import os
-from typing import Dict, List, Union
+from typing import Dict, Iterable, List, Optional, Union, cast
 
 import cv2
 import numpy as np
+from numpy.lib.npyio import NpzFile
 
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -33,6 +34,13 @@ def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False)
 
     logger.debug(f"Finished writing {str(path)}")
     return path
+
+
+def read_json(path: AnyPath) -> Union[Dict, List]:
+    with path.open("r") as fp:
+        json_data = json.load(fp)
+
+    return json_data
 
 
 def write_png(obj: np.ndarray, path: AnyPath):
@@ -67,6 +75,24 @@ def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):
         np.savez_compressed(fp, **obj)
     logger.debug(f"Finished writing {str(path)}")
     return path
+
+
+def read_npz(
+    path: AnyPath, files: Optional[Union[str, List[str]]] = None
+) -> Union[
+    Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]],
+    Union[np.ndarray, Iterable, int, float, tuple, dict],
+]:
+    if isinstance(files, str):
+        files = [files]
+
+    result = {}
+    with path.open(mode="rb") as fp:
+        npz_data = np.load(fp)
+        for f in files if files else npz_data.files:
+            result[f] = npz_data[f]
+
+    return result if len(result) != 1 else list(result.values())[0]
 
 
 def relative_path(path: AnyPath, start: AnyPath) -> AnyPath:

@@ -33,7 +33,7 @@ from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrins
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_png
+from paralleldomain.utilities.fsio import read_json, read_npz, read_png
 
 T = TypeVar("T")
 
@@ -227,16 +227,13 @@ class DGPFrameLazyLoader:
 
     def _decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
-        with cloud_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cloud_binary)
-            pc_data = npz_data.f.data
-            return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+        pc_data = read_npz(path=cloud_path, files="data")
+        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
-        with calibration_path.open("r") as f:
-            cal_dict = json.load(f)
-            return CalibrationDTO.from_dict(cal_dict)
+        cal_dict = read_json(path=calibration_path)
+        return CalibrationDTO.from_dict(cal_dict)
 
     def _decode_extrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
@@ -260,25 +257,25 @@ class DGPFrameLazyLoader:
 
     def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open("r") as f:
-            return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
+        bb_dict = read_json(path=annotation_path)
+        return AnnotationsBoundingBox3DDTO.from_dict(bb_dict)
 
     def _decode_bounding_boxes_2d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox2DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open("r") as f:
-            return AnnotationsBoundingBox2DDTO.from_dict(json.load(f))
+        bb_dict = read_json(path=annotation_path)
+        return AnnotationsBoundingBox2DDTO.from_dict(bb_dict)
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cloud_binary)
-            return npz_data.f.segmentation
+        segmentation_data = read_npz(path=annotation_path, files="segmentation")
+
+        return segmentation_data
 
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cloud_binary)
-            return npz_data.f.instance
+        instance_data = read_npz(path=annotation_path, files="instance")
+
+        return instance_data
 
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -298,10 +295,9 @@ class DGPFrameLazyLoader:
 
     def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+        depth_data = read_npz(path=annotation_path, files="data")
 
-            return np.expand_dims(npz_data.f.data, axis=-1)
+        return np.expand_dims(depth_data, axis=-1)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
