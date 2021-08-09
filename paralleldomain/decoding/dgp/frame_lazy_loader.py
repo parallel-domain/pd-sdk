@@ -2,7 +2,6 @@ import json
 from json import JSONDecodeError
 from typing import BinaryIO, Dict, Optional, Type, TypeVar, cast
 
-import imageio
 import numpy as np
 from pyquaternion import Quaternion
 
@@ -34,6 +33,7 @@ from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrins
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_png
 
 T = TypeVar("T")
 
@@ -228,7 +228,7 @@ class DGPFrameLazyLoader:
     def _decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            npz_data = np.load(cloud_binary)
             pc_data = npz_data.f.data
             return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
@@ -254,9 +254,9 @@ class DGPFrameLazyLoader:
 
     def _decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
-        with cloud_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary)))
-            return image_data
+        image_data = read_png(path=cloud_path)
+
+        return image_data
 
     def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -271,30 +271,30 @@ class DGPFrameLazyLoader:
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            npz_data = np.load(cloud_binary)
             return npz_data.f.segmentation
 
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            npz_data = np.load(cloud_binary)
             return npz_data.f.instance
 
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
-            class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
-            return class_ids
+        return class_ids
 
     def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
-            vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
-            return vectors
+        return vectors
 
     def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -305,11 +305,11 @@ class DGPFrameLazyLoader:
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
-            instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
-            return instance_ids
+        return instance_ids
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
