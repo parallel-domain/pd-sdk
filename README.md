@@ -27,12 +27,6 @@ Use this procedure if you plan to extend the code base or do adjustments
 Everytime you commit locally, pre-commit hooks execute on the staged files. These reduces time on CI when creating a PR
 for `main` branch. The first run takes a bit longer, but afterwards it should be less than a second.
 
-### Windows Users
-
-It is necessary to first install version 3.2.3 of GDAL compiled for the windows platform. We recommend one of the wheels located here: https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal
-
-It is also necessary to first install version 1.2.3 of rasterio for the windows platform. We recommend one of the wheels located here: https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio
-
 #### Tests
 
 When changing code, it is recommend to run tests. To do so, set the env
@@ -93,8 +87,8 @@ final resolution and empty spaces.
 ```python
 import math
 import numpy as np
-import imageio
-from IPython.display import Image  # only for Jupyter notebooks
+from paralleldomain.utilities.fsio import write_png
+from paralleldomain.utilities.any_path import AnyPath
 
 camera_count = len(cameras)
 
@@ -114,8 +108,7 @@ for i in range(tiles_width):
             j * image_height : (j + 1) * image_height, i * image_width : (i + 1) * image_width, :
         ] = camera_sensor.image.rgb
 
-imageio.imwrite("collage.jpg", image_out.astype(np.uint8))
-display(Image("collage.jpg"))  # only for Jupyter notebooks
+write_png(obj=image_out, path=AnyPath("collage.png"))  # usage of `AnyPath` allows to also pass cloud paths like s3
 ```
 
 ### Save Full Point Cloud to .pcd
