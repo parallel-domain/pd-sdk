@@ -283,7 +283,7 @@ class DGPFrameLazyLoader:
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(np.int)
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
 
             class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
             return class_ids
@@ -291,7 +291,7 @@ class DGPFrameLazyLoader:
     def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(np.int)
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
             vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
             return vectors
@@ -306,7 +306,7 @@ class DGPFrameLazyLoader:
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(np.int)
+            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
 
             instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
             return instance_ids

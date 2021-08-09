@@ -140,7 +140,7 @@ class SemanticSegmentation2D(Annotation):
     def __post_init__(self):
         if len(self.class_ids.shape) != 3:
             raise ValueError("Semantic Segmentation class_ids have to have shape (H x W x 1)")
-        if self.class_ids.dtype != np.int:
+        if self.class_ids.dtype != int:
             raise ValueError(
                 f"Semantic Segmentation class_ids has to contain only integers but has {self.class_ids.dtype}!"
             )
@@ -177,7 +177,7 @@ class InstanceSegmentation2D(Annotation):
     def __post_init__(self):
         if len(self.instance_ids.shape) != 3:
             raise ValueError("Instance Segmentation instance_ids have to have shape (H x W x 1)")
-        if self.instance_ids.dtype != np.int:
+        if self.instance_ids.dtype != int:
             raise ValueError(
                 f"Instance Segmentation instance_ids has to contain only integers but has {self.instance_ids.dtype}!"
             )
