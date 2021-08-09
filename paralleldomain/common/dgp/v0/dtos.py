@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 import ujson
-from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
+from dataclasses_json import CatchAll, Undefined, config, dataclass_json
 
 from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
 from paralleldomain.model.class_mapping import ClassMap
@@ -21,7 +21,7 @@ def _attribute_value_dump(obj: object) -> str:
 
 @dataclass_json
 @dataclass
-class TranslationDTO(DataClassJsonMixin):
+class TranslationDTO:
     x: float
     y: float
     z: float
@@ -29,7 +29,7 @@ class TranslationDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class RotationDTO(DataClassJsonMixin):
+class RotationDTO:
     qw: float
     qx: float
     qy: float
@@ -38,15 +38,15 @@ class RotationDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class PoseDTO(DataClassJsonMixin):
+class PoseDTO:
     translation: TranslationDTO
     rotation: RotationDTO
 
 
 @dataclass_json
 @dataclass
-class IdDTO(DataClassJsonMixin):
-    timestamp: str  # TODO: Read as proper datetime object
+class IdDTO:
+    timestamp: str
     index: str
     log: str
     name: str
@@ -66,7 +66,7 @@ class SceneSampleIdDTO(IdDTO):
 
 @dataclass_json
 @dataclass
-class SceneDataDatumTypeGeneric(DataClassJsonMixin):
+class SceneDataDatumTypeGeneric:
     pose: PoseDTO
     filename: str
     annotations: Dict[str, str]
@@ -90,23 +90,25 @@ class SceneDataDatumTypePointCloud(SceneDataDatumTypeGeneric):
 
 @dataclass_json
 @dataclass
-class SceneDataDatum:
-    ...
-
-
-@dataclass
-class SceneDataDatumImage(SceneDataDatum):
-    image: SceneDataDatumTypeImage
-
-
-@dataclass
-class SceneDataDatumPointCloud(SceneDataDatum):
-    point_cloud: SceneDataDatumTypePointCloud
+class SceneDataDatumImage:
+    image: Optional[SceneDataDatumTypeImage] = None
 
 
 @dataclass_json
 @dataclass
-class SceneMetadataPDDTO(DataClassJsonMixin):
+class SceneDataDatumPointCloud:
+    point_cloud: Optional[SceneDataDatumTypePointCloud] = None
+
+
+@dataclass_json
+@dataclass
+class SceneDataDatum(SceneDataDatumImage, SceneDataDatumPointCloud):
+    ...
+
+
+@dataclass_json
+@dataclass
+class SceneMetadataPDDTO:
     type_: str = field(metadata=config(field_name="@type"))
     location: str
     time_of_day: str
@@ -125,14 +127,14 @@ class SceneMetadataPDDTO(DataClassJsonMixin):
 
 @dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
-class SceneMetadataDTO(DataClassJsonMixin):
+class SceneMetadataDTO:
     PD: SceneMetadataPDDTO
     other: CatchAll
 
 
 @dataclass_json
 @dataclass
-class SceneDataDTO(DataClassJsonMixin):
+class SceneDataDTO:
     next_key: str
     datum: SceneDataDatum
     id: SceneDataIdDTO
@@ -142,7 +144,7 @@ class SceneDataDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class SceneSampleDTO(DataClassJsonMixin):
+class SceneSampleDTO:
     calibration_key: str
     id: SceneSampleIdDTO
     datum_keys: List[str]
@@ -151,7 +153,7 @@ class SceneSampleDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class SceneDTO(DataClassJsonMixin):
+class SceneDTO:
     name: str
     description: str
     log: str
@@ -169,11 +171,12 @@ class CalibrationExtrinsicDTO(PoseDTO):
 
 @dataclass_json
 @dataclass
-class CalibrationIntrinsicDTO(DataClassJsonMixin):
+class CalibrationIntrinsicDTO:
     cx: float
     cy: float
     fx: float
     fy: float
+    skew: float
     k1: float = 0.0
     k2: float = 0.0
     p1: float = 0.0
@@ -182,14 +185,13 @@ class CalibrationIntrinsicDTO(DataClassJsonMixin):
     k4: float = 0.0
     k5: float = 0.0
     k6: float = 0.0
-    skew: float = 0.0
     fov: float = 0.0
     fisheye: Union[bool, int] = 0
 
 
 @dataclass_json
 @dataclass
-class CalibrationDTO(DataClassJsonMixin):
+class CalibrationDTO:
     extrinsics: List[CalibrationExtrinsicDTO]
     names: List[str]
     intrinsics: List[CalibrationIntrinsicDTO]
@@ -197,7 +199,7 @@ class CalibrationDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class BoundingBox3DBoxDTO(DataClassJsonMixin):
+class BoundingBox3DBoxDTO:
     pose: PoseDTO
     width: float
     length: float
@@ -208,7 +210,7 @@ class BoundingBox3DBoxDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class BoundingBox3DDTO(DataClassJsonMixin):
+class BoundingBox3DDTO:
     class_id: int
     instance_id: int
     num_points: int
@@ -259,7 +261,7 @@ class BoundingBox3DDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class AnnotationsDTO(DataClassJsonMixin):
+class AnnotationsDTO:
     annotations: List[Any]
 
 
@@ -271,7 +273,7 @@ class AnnotationsBoundingBox3DDTO(AnnotationsDTO):
 
 @dataclass_json
 @dataclass
-class BoundingBox2DBoxDTO(DataClassJsonMixin):
+class BoundingBox2DBoxDTO:
     x: int
     y: int
     w: int
@@ -280,12 +282,12 @@ class BoundingBox2DBoxDTO(DataClassJsonMixin):
 
 @dataclass_json
 @dataclass
-class BoundingBox2DDTO(DataClassJsonMixin):
+class BoundingBox2DDTO:
     class_id: int
     instance_id: int
+    area: int
     iscrowd: bool
     box: BoundingBox2DBoxDTO
-    area: int
     attributes: Dict[str, Any]
 
     @staticmethod
@@ -338,6 +340,7 @@ class DatasetDTO:
     scene_splits: Dict[str, DatasetSceneSplitDTO]
 
 
+@dataclass_json
 @dataclass
 class OntologyItemColorDTO:
     r: int
@@ -345,6 +348,7 @@ class OntologyItemColorDTO:
     b: int
 
 
+@dataclass_json
 @dataclass
 class OntologyItemDTO:
     name: str
