@@ -6,9 +6,9 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import iso8601
 
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
-from paralleldomain.decoding.dgp.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta

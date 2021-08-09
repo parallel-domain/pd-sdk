@@ -5,8 +5,8 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
-from paralleldomain.decoding.dgp.dtos import (
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
     CalibrationDTO,
@@ -14,6 +14,8 @@ from paralleldomain.decoding.dgp.dtos import (
     CalibrationIntrinsicDTO,
     PoseDTO,
     SceneDataDatum,
+    SceneDataDatumImage,
+    SceneDataDatumPointCloud,
 )
 from paralleldomain.model.annotation import (
     AnnotationPose,
@@ -102,7 +104,8 @@ class DGPFrameLazyLoader:
         return sensor_to_custom_reference
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
-        if self.datum.point_cloud:
+        # if self.datum.point_cloud:
+        if isinstance(self.datum, SceneDataDatumPointCloud):
             unique_cache_key = f"{self._unique_cache_key_prefix}-point_cloud"
             return PointCloudData(
                 unique_cache_key=unique_cache_key,
@@ -114,7 +117,8 @@ class DGPFrameLazyLoader:
         return None
 
     def load_image(self) -> Optional[ImageData]:
-        if self.datum.image:
+        # if self.datum.image:
+        if isinstance(self.datum, SceneDataDatumImage):
             unique_cache_key = f"{self._unique_cache_key_prefix}-image"
             return ImageData(
                 load_data_rgba=lambda: self._decode_image_rgb(
