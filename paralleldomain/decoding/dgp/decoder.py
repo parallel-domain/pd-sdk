@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from functools import lru_cache
@@ -18,6 +17,7 @@ from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, Senso
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_json
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,7 @@ class DGPDecoder(Decoder):
         if not scene_dataset_json_path.exists():
             raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
 
-        with scene_dataset_json_path.open(mode="r") as f:
-            scene_dataset_json = json.load(f)
+        scene_dataset_json = read_json(path=scene_dataset_json_path)
         scene_dataset_dto = DatasetDTO.from_dict(scene_dataset_json)
 
         return scene_dataset_dto
@@ -73,8 +72,7 @@ class DGPDecoder(Decoder):
 
         scene_file = self._dataset_path / scene_path
 
-        with scene_file.open("r") as f:
-            scene_data = json.load(f)
+        scene_data = read_json(path=scene_file)
 
         scene_dto = SceneDTO.from_dict(scene_data)
         return scene_dto
@@ -112,8 +110,8 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
-            with open(self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json") as fp:
-                ontology_data = json.load(fp)
+            ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
+            ontology_data = read_json(path=ontology_path)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
             ontologies[annotation_key] = ClassMap(

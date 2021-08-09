@@ -1,12 +1,11 @@
 import hashlib
-import json
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Union, cast
+from typing import Dict, Iterable, List, Optional, Union
 
 import cv2
 import numpy as np
-from numpy.lib.npyio import NpzFile
+import ujson
 
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -14,7 +13,7 @@ logger = logging.getLogger("fsio")
 
 
 def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False):
-    json_obj = json.dumps(obj, indent=2)
+    json_obj = ujson.dumps(obj, indent=2, escape_forward_slashes=False)
 
     if append_sha1:
         # noinspection InsecureHash
@@ -38,7 +37,7 @@ def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False)
 
 def read_json(path: AnyPath) -> Union[Dict, List]:
     with path.open("r") as fp:
-        json_data = json.load(fp)
+        json_data = ujson.load(fp)
 
     return json_data
 

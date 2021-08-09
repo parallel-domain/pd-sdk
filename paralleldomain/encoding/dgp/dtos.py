@@ -1,7 +1,7 @@
-import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
+import ujson
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, config, dataclass_json
 
 from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
@@ -14,7 +14,7 @@ def _attribute_key_dump(obj: object) -> str:
 
 def _attribute_value_dump(obj: object) -> str:
     if isinstance(obj, Dict) or isinstance(obj, List):
-        return json.dumps(obj, indent=2)
+        return ujson.dumps(obj, indent=2, escape_forward_slashes=False)
     else:
         return str(obj)
 

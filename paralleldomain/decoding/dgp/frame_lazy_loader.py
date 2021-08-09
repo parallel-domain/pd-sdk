@@ -1,8 +1,8 @@
-import json
 from json import JSONDecodeError
-from typing import BinaryIO, Dict, Optional, Type, TypeVar, cast
+from typing import Dict, Optional, Type, TypeVar
 
 import numpy as np
+import ujson
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
@@ -144,8 +144,8 @@ class DGPFrameLazyLoader:
                 # Read + parse other attributes
                 for k, v in box_dto.attributes.items():
                     try:
-                        attr_parsed[k] = json.loads(v)
-                    except JSONDecodeError:
+                        attr_parsed[k] = ujson.loads(v)
+                    except (ValueError, JSONDecodeError):
                         attr_parsed[k] = v
                 class_id = box_dto.class_id
 
@@ -171,8 +171,8 @@ class DGPFrameLazyLoader:
                 attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
-                        attr_parsed[k] = json.loads(v)
-                    except JSONDecodeError:
+                        attr_parsed[k] = ujson.loads(v)
+                    except (ValueError, JSONDecodeError):
                         attr_parsed[k] = v
 
                 class_id = box_dto.class_id
