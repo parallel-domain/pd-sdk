@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from multiprocessing.pool import ThreadPool
 from pathlib import Path, PurePath
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 from s3path import S3Path
@@ -84,6 +84,27 @@ class AnyPath:
     @property
     def is_cloud_path(self) -> bool:
         return isinstance(self._backend, S3Path)
+
+    @property
+    def parent(self) -> "AnyPath":
+        parent = self._backend.parent
+        return self._create_valid_any_path(new_path=parent)
+
+    @property
+    def stem(self) -> str:
+        return self._backend.stem
+
+    @property
+    def suffixes(self) -> List[str]:
+        return self._backend.suffixes
+
+    @property
+    def suffix(self) -> str:
+        return self._backend.suffix
+
+    @property
+    def name(self) -> str:
+        return self._backend.name
 
     def stat(self):
         """
