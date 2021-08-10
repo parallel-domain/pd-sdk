@@ -1,11 +1,10 @@
-# we import from here just in case we change away from cloud lib in the future
-# then we just need to replace the AnyPath Reference
 import logging
+import os
 import shutil
 import subprocess
 from multiprocessing.pool import ThreadPool
 from pathlib import Path, PurePath
-from typing import Union
+from typing import Optional, Union
 from urllib.parse import urlparse
 
 from s3path import S3Path
@@ -22,13 +21,8 @@ class AnyPath:
         else:
             self._backend = Path(path)
 
-        # # Replace this and implement the actual methods we want to support
-        # names = set(list(PurePath.__dict__.keys()) + list(Path.__dict__.keys()))
-        # for method_name in names:
-        #     if not hasattr(self, method_name) and hasattr(self._backend, method_name):
-        #         setattr(self, method_name, getattr(self._backend, method_name))
-
-    def _create_valid_any_path(self, new_path: Union[Path, S3Path]) -> "AnyPath":
+    @staticmethod
+    def _create_valid_any_path(new_path: Union[Path, S3Path]) -> "AnyPath":
         if isinstance(new_path, S3Path):
             if str(new_path).startswith("/"):
                 new_path = str(new_path)[1:]
@@ -56,8 +50,10 @@ class AnyPath:
         """
         return self._backend.open(mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
 
-    def copytree(self, target: "AnyPath"):
+    def copytree(self, target: "AnyPath", max_num_threads: Optional[int] = None):
         target = AnyPath(str(target))
+        if max_num_threads is None:
+            max_num_threads = max(1, min(int(0.5 * os.cpu_count()), 10))
 
         def _copy(source: Path):
             if source.is_file():
@@ -68,7 +64,7 @@ class AnyPath:
                 with source.open("rb") as source_file, to.open("wb") as to_file:
                     shutil.copyfileobj(source_file, to_file)
 
-        with ThreadPool() as pool:
+        with ThreadPool(max_num_threads) as pool:
             pool.map(_copy, (i for i in self._backend.rglob("*")))
 
     def relative_to(self, other: str) -> "AnyPath":
