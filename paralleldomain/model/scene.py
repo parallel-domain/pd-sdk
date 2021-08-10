@@ -2,7 +2,7 @@ import contextlib
 from datetime import datetime
 from typing import Any, Callable, ContextManager, Dict, List, Type, TypeVar, cast
 
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoFrame
