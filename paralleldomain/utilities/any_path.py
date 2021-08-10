@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from multiprocessing.pool import ThreadPool
 from pathlib import Path, PurePath
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from s3path import S3Path
@@ -105,6 +105,10 @@ class AnyPath:
     @property
     def name(self) -> str:
         return self._backend.name
+
+    @property
+    def parts(self) -> Tuple[str]:
+        return self._backend.parts
 
     def stat(self):
         """
