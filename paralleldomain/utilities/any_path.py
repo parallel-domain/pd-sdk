@@ -110,6 +110,9 @@ class AnyPath:
     def parts(self) -> Tuple[str]:
         return self._backend.parts
 
+    def as_posix(self) -> str:
+        return self._backend.as_posix()
+
     def stat(self):
         """
         Returns information about this path (similarly to boto3's ObjectSummary).

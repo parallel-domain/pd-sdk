@@ -228,7 +228,7 @@ class DGPFrameLazyLoader:
     def _decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
         with cloud_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+            npz_data = np.load(cloud_binary)
             pc_data = npz_data.f.data
             return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
@@ -270,14 +270,14 @@ class DGPFrameLazyLoader:
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+        with annotation_path.open(mode="rb") as anno_binary:
+            npz_data = np.load(anno_binary)
             return npz_data.f.segmentation
 
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+        with annotation_path.open(mode="rb") as anno_binary:
+            npz_data = np.load(anno_binary)
             return npz_data.f.instance
 
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
@@ -298,8 +298,8 @@ class DGPFrameLazyLoader:
 
     def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cast(BinaryIO, cloud_binary))
+        with annotation_path.open(mode="rb") as anno_binary:
+            npz_data = np.load(anno_binary)
 
             return np.expand_dims(npz_data.f.data, axis=-1)
 
