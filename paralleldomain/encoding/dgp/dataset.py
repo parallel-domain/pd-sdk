@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
 from paralleldomain import Dataset
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV
+from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
-from paralleldomain.encoding.dgp.constants import ANNOTATION_TYPE_MAP_INV
-from paralleldomain.encoding.dgp.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType
