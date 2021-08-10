@@ -1,13 +1,12 @@
-import json
 from json import JSONDecodeError
-from typing import BinaryIO, Dict, Optional, Type, TypeVar, cast
+from typing import Dict, Optional, Type, TypeVar
 
-import imageio
 import numpy as np
+import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
-from paralleldomain.decoding.dgp.dtos import (
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
     CalibrationDTO,
@@ -15,6 +14,8 @@ from paralleldomain.decoding.dgp.dtos import (
     CalibrationIntrinsicDTO,
     PoseDTO,
     SceneDataDatum,
+    SceneDataDatumImage,
+    SceneDataDatumPointCloud,
 )
 from paralleldomain.model.annotation import (
     AnnotationPose,
@@ -34,6 +35,7 @@ from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrins
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_json, read_npz, read_png
 
 T = TypeVar("T")
 
@@ -102,7 +104,8 @@ class DGPFrameLazyLoader:
         return sensor_to_custom_reference
 
     def load_point_cloud(self) -> Optional[PointCloudData]:
-        if self.datum.point_cloud:
+        # if self.datum.point_cloud:
+        if isinstance(self.datum, SceneDataDatumPointCloud):
             unique_cache_key = f"{self._unique_cache_key_prefix}-point_cloud"
             return PointCloudData(
                 unique_cache_key=unique_cache_key,
@@ -114,7 +117,8 @@ class DGPFrameLazyLoader:
         return None
 
     def load_image(self) -> Optional[ImageData]:
-        if self.datum.image:
+        # if self.datum.image:
+        if isinstance(self.datum, SceneDataDatumImage):
             unique_cache_key = f"{self._unique_cache_key_prefix}-image"
             return ImageData(
                 load_data_rgba=lambda: self._decode_image_rgb(
@@ -144,8 +148,8 @@ class DGPFrameLazyLoader:
                 # Read + parse other attributes
                 for k, v in box_dto.attributes.items():
                     try:
-                        attr_parsed[k] = json.loads(v)
-                    except JSONDecodeError:
+                        attr_parsed[k] = ujson.loads(v)
+                    except (ValueError, JSONDecodeError):
                         attr_parsed[k] = v
                 class_id = box_dto.class_id
 
@@ -171,8 +175,8 @@ class DGPFrameLazyLoader:
                 attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
-                        attr_parsed[k] = json.loads(v)
-                    except JSONDecodeError:
+                        attr_parsed[k] = ujson.loads(v)
+                    except (ValueError, JSONDecodeError):
                         attr_parsed[k] = v
 
                 class_id = box_dto.class_id
@@ -227,16 +231,13 @@ class DGPFrameLazyLoader:
 
     def _decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
-        with cloud_path.open(mode="rb") as cloud_binary:
-            npz_data = np.load(cloud_binary)
-            pc_data = npz_data.f.data
-            return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+        pc_data = read_npz(path=cloud_path, files="data")
+        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
-        with calibration_path.open("r") as f:
-            cal_dict = json.load(f)
-            return CalibrationDTO.from_dict(cal_dict)
+        cal_dict = read_json(path=calibration_path)
+        return CalibrationDTO.from_dict(cal_dict)
 
     def _decode_extrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
@@ -254,62 +255,61 @@ class DGPFrameLazyLoader:
 
     def _decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
         cloud_path = self._dataset_path / scene_name / cloud_identifier
-        with cloud_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary)))
-            return image_data
+        image_data = read_png(path=cloud_path)
+
+        return image_data
 
     def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open("r") as f:
-            return AnnotationsBoundingBox3DDTO.from_dict(json.load(f))
+        bb_dict = read_json(path=annotation_path)
+        return AnnotationsBoundingBox3DDTO.from_dict(bb_dict)
 
     def _decode_bounding_boxes_2d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox2DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open("r") as f:
-            return AnnotationsBoundingBox2DDTO.from_dict(json.load(f))
+        bb_dict = read_json(path=annotation_path)
+        return AnnotationsBoundingBox2DDTO.from_dict(bb_dict)
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as anno_binary:
-            npz_data = np.load(anno_binary)
-            return npz_data.f.segmentation
+        segmentation_data = read_npz(path=annotation_path, files="segmentation")
+
+        return segmentation_data
 
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as anno_binary:
-            npz_data = np.load(anno_binary)
-            return npz_data.f.instance
+        instance_data = read_npz(path=annotation_path, files="instance")
+
+        return instance_data
 
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
-            class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
-            return class_ids
+        return class_ids
 
     def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
-            vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
-            return vectors
+        return vectors
 
     def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as anno_binary:
-            npz_data = np.load(anno_binary)
+        depth_data = read_npz(path=annotation_path, files="data")
 
-            return np.expand_dims(npz_data.f.data, axis=-1)
+        return np.expand_dims(depth_data, axis=-1)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        with annotation_path.open(mode="rb") as cloud_binary:
-            image_data = np.asarray(imageio.imread(cast(BinaryIO, cloud_binary), format="png")).astype(int)
+        image_data = read_png(path=annotation_path)
+        image_data = image_data.astype(int)
+        instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
-            instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
-            return instance_ids
+        return instance_ids
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:

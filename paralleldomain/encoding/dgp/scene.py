@@ -11,8 +11,8 @@ from urllib.parse import urlparse
 import numpy as np
 
 from paralleldomain import Dataset
-from paralleldomain.encoding.dgp.constants import ANNOTATION_TYPE_MAP_INV
-from paralleldomain.encoding.dgp.dtos import (
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV
+from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
     BoundingBox2DDTO,
@@ -282,6 +282,7 @@ class DGPSceneEncoder(SceneEncoder):
                 ),
                 metadata={},
             )
+            # noinspection PyTypeChecker
             scene_data_dtos.append(
                 SceneDataDTO(
                     id=SceneDataIdDTO(
@@ -347,6 +348,7 @@ class DGPSceneEncoder(SceneEncoder):
                 point_fields=[],
                 metadata={},
             )
+            # noinspection PyTypeChecker
             scene_data_dtos.append(
                 SceneDataDTO(
                     id=SceneDataIdDTO(
