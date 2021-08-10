@@ -112,7 +112,7 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
-            with open(self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json") as fp:
+            with (self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json").open() as fp:
                 ontology_data = json.load(fp)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
