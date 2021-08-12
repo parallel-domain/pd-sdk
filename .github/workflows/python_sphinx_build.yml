@@ -2,7 +2,7 @@ name: "sphinx"
 on:
   push:
     branches:
-      - nisse/v0.2.0-sphinx-api-docs
+      - main
 jobs:
   sphinx-build:
     runs-on: ubuntu-latest
