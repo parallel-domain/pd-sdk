@@ -7,12 +7,16 @@ jobs:
   sphinx-build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
       - uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
-          pre-build-command: "ls -l"
-          # pre-build-command: "pip install -r docs/requirements.txt"
+          pre-build-command: "pip install -r docs/requirements.txt"
           build-command: "sphinx-build -b html source build"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Docs
+          path: docs/build/
       - name: Commit documentation changes
         run: |
           git clone https://github.com/parallel-domain/pd-sdk.git --branch gh-pages --single-branch gh-pages
