@@ -7,7 +7,7 @@ jobs:
   sphinx-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
@@ -19,7 +19,7 @@ jobs:
           path: docs/build/
       - name: Commit documentation changes
         run: |
-          git clone https://github.com/parallel-domain/pd-sdk.git --branch gh-pages --single-branch gh-pages
+          git clone https://${{ secrets.GITHUB_TOKEN }}github.com/parallel-domain/pd-sdk.git --branch gh-pages --single-branch gh-pages
           cp -r docs/build/* gh-pages/
           cd gh-pages
           git config --local user.email "action@github.com"
