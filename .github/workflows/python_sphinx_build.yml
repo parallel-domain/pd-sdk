@@ -1,0 +1,31 @@
+name: "sphinx"
+on:
+  push:
+    branches:
+      - nisse/v0.2.0-sphinx-api-docs
+jobs:
+  sphinx-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
+          pre-build-command: "pip install -r requirements.txt"
+          build-command: "sphinx-build -b html source build"
+      - name: Commit documentation changes
+        run: |
+          git clone https://github.com/parallel-domain/pd-sdk.git --branch gh-pages --single-branch gh-pages
+          cp -r docs/build/* gh-pages/
+          cd gh-pages
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update documentation" -a || true
+          # The above command will fail if no changes were present, so we ignore
+          # the return code.
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: gh-pages
+          directory: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
