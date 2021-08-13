@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DatasetMeta:
-    """Stores name, annotation types and any custom meta attributes for a dataset"""
+    """*Dataclass*
+
+    Stores name, annotation types and any custom meta attributes for a dataset"""
 
     name: str
     """Dataset name."""
