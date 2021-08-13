@@ -1,21 +1,14 @@
-import json
 import logging
 from datetime import datetime
 from functools import lru_cache
+from pathlib import PosixPath
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import iso8601
 
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.decoder import Decoder
-from paralleldomain.decoding.dgp.constants import ANNOTATION_TYPE_MAP
-from paralleldomain.decoding.dgp.dtos import (
-    DatasetDTO,
-    DatasetMetaDTO,
-    OntologyFileDTO,
-    SceneDataDTO,
-    SceneDTO,
-    SceneSampleDTO,
-)
 from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -24,6 +17,7 @@ from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, Senso
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_json
 
 logger = logging.getLogger(__name__)
 
@@ -60,50 +54,49 @@ class DGPDecoder(Decoder):
     @lru_cache(maxsize=1)
     def decode_dataset(self) -> DatasetDTO:
         dataset_cloud_path: AnyPath = self._dataset_path
-        scene_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
-        if not scene_json_path.exists():
-            files_with_prefix = [name.name for name in dataset_cloud_path.iterdir() if "scene_dataset" in name.name]
-            if len(files_with_prefix) == 0:
-                logger.error(
-                    f"No scene_dataset.json or file starting with scene_dataset found under {dataset_cloud_path}!"
-                )
-            scene_json_path: AnyPath = dataset_cloud_path / files_with_prefix[-1]
+        scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
+        if not scene_dataset_json_path.exists():
+            raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
 
-        with scene_json_path.open(mode="r") as f:
-            scene_dataset = json.load(f)
+        scene_dataset_json = read_json(path=scene_dataset_json_path)
+        scene_dataset_dto = DatasetDTO.from_dict(scene_dataset_json)
 
-        meta_data = DatasetMetaDTO.from_dict(scene_dataset["metadata"])
-        scene_names: List[str] = scene_dataset["scene_splits"]["0"]["filenames"]
-        return DatasetDTO(meta_data=meta_data, scene_names=scene_names)
+        return scene_dataset_dto
 
     def decode_scene(self, scene_name: str) -> SceneDTO:
-        scene_folder = self._dataset_path / scene_name
-        potential_scene_files = [
-            name.name for name in scene_folder.iterdir() if name.name.startswith("scene") and name.name.endswith("json")
-        ]
+        scene_names = self.decode_scene_names()
+        scene_index = scene_names.index(scene_name)
 
-        if len(potential_scene_files) == 0:
-            logger.error(f"No sceneXXX.json found under {scene_folder}!")
+        scene_paths = self.decode_scene_paths()
+        scene_path = scene_paths[scene_index]
 
-        scene_file = scene_folder / potential_scene_files[0]
-        with scene_file.open("r") as f:
-            scene_data = json.load(f)
-            scene_dto = SceneDTO.from_dict(scene_data)
-            return scene_dto
+        scene_file = self._dataset_path / scene_path
+
+        scene_data = read_json(path=scene_file)
+
+        scene_dto = SceneDTO.from_dict(scene_data)
+        return scene_dto
 
     # ------------------------------------------------
     def get_unique_scene_id(self, scene_name: SceneName) -> str:
         return f"{self._dataset_path}-{scene_name}"
 
-    def decode_scene_names(self) -> List[SceneName]:
+    def decode_scene_names(self) -> List[str]:
+        return [p.parent.name for p in self.decode_scene_paths()]
+
+    def decode_scene_paths(self) -> List[PosixPath]:
         dto = self.decode_dataset()
-        return [AnyPath(path).parent.name for path in dto.scene_names]
+        return [
+            PosixPath(path)
+            for split_key in sorted(dto.scene_splits.keys())
+            for path in dto.scene_splits[split_key].filenames
+        ]
 
     def decode_dataset_meta_data(self) -> DatasetMeta:
         dto = self.decode_dataset()
-        meta_dict = dto.meta_data.to_dict()
-        anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.meta_data.available_annotation_types]
-        return DatasetMeta(name=dto.meta_data.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
+        meta_dict = dto.metadata.to_dict()
+        anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
+        return DatasetMeta(name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
 
     def decode_scene_description(self, scene_name: SceneName) -> str:
         scene_dto = self.decode_scene(scene_name=scene_name)
@@ -113,13 +106,12 @@ class DGPDecoder(Decoder):
         scene_dto = self.decode_scene(scene_name=scene_name)
         return scene_dto.metadata.to_dict()
 
-    @lru_cache(maxsize=1)
-    def decode_ontologies(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+    def decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         scene_dto = self.decode_scene(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
-            with (self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json").open() as fp:
-                ontology_data = json.load(fp)
+            ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
+            ontology_data = read_json(path=ontology_path)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
             ontologies[annotation_key] = ClassMap(
@@ -181,7 +173,6 @@ class DGPDecoder(Decoder):
         # all sensor data of the sensor
         sensor_data = self._data_by_key_with_name(scene_name=scene_name, data_name=sensor_name)
         # read ontology -> Dict[str, ClassMap]
-        class_maps = self.decode_ontologies(scene_name)
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
@@ -194,7 +185,6 @@ class DGPDecoder(Decoder):
             lazy_loader=DGPFrameLazyLoader(
                 unique_cache_key_prefix=unique_cache_key,
                 dataset_path=self._dataset_path,
-                class_maps=class_maps,
                 custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
                 scene_name=scene_name,
                 sensor_name=sensor_name,

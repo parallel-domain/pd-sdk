@@ -1,0 +1,24 @@
+name: "sphinx"
+on:
+  push:
+    branches:
+      - main
+jobs:
+  sphinx-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
+          pre-build-command: "pip install -r docs/requirements.txt"
+          build-command: "sphinx-build -b html source build"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Docs
+          path: docs/build/
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build

@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.1.2",
+    version="0.2.0",
     author=["Nisse Knudsen", "Phillip Thomas"],
     author_email=["nisse@paralleldomain.com", "phillip@paralleldomain.com"],
     packages=find_packages(exclude=["test_paralleldomain"]),
@@ -15,9 +15,9 @@ setup(
     install_requires=requirements,
     extras_require={
         "dev": [
-            "pytest>=5.3.1",
-            "pytest-cov>=2.8.1",
-        ]
+            "pytest>=5.3.1,<6.0.0",
+            "pytest-cov>=2.8.1,<3.0.0",
+        ],
     },
     zip_safe=False,
 )

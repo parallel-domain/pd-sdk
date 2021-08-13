@@ -3,7 +3,7 @@ import logging
 import os
 from sys import getsizeof
 from threading import RLock
-from typing import Any, Callable, Dict, Hashable, Set, Type, TypeVar, Union
+from typing import Callable, Dict, Hashable, Set, TypeVar
 
 import numpy as np
 import psutil

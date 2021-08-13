@@ -1,8 +1,3 @@
-from sys import getsizeof
-
-import numpy as np
-import pytest
-
 from paralleldomain import Scene
 from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
@@ -67,31 +62,9 @@ class TestSceneSensors:
         assert pre_size == LAZY_LOAD_CACHE.currsize  # Sensor objects are not cached Atm!
         assert sensor.name == sensor_name
 
-    def test_remove_sensor_no_lock_error(self, scene: Scene):
-        with pytest.raises(Exception):
-            scene.remove_sensor(sensor_name=scene.sensor_names[0])
-
-    def test_remove_sensor(self, scene: Scene):
-        with scene.editable() as editable_scene:
-            num_sensors_names = len(editable_scene.sensor_names)
-            num_sensors = len(editable_scene.sensors)
-            assert num_sensors_names == num_sensors
-            remove_name = editable_scene.sensor_names[0]
-            editable_scene.remove_sensor(sensor_name=remove_name)
-            assert len(editable_scene.sensor_names) == len(editable_scene.sensors)
-            assert num_sensors - 1 == len(editable_scene.sensors)
-            assert remove_name not in editable_scene.sensor_names
-
-    """
-    def test_change_annotations(self, scene: Scene):
-        with scene.editable() as editable_scene:
-            cam = editable_scene.cameras[0]
-            sensor_frame = cam.get_frame(frame_id=editable_scene.frame_ids[0])
-            semseg = sensor_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-            semseg.class_ids[...] = 1337
-            LAZY_LOAD_CACHE.expire()
-
-            sensor_frame2 = editable_scene.cameras[0].get_frame(frame_id=editable_scene.frame_ids[0])
-            semseg2 = sensor_frame2.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-            assert np.all(semseg2.class_ids == 1337)
-    """
+    def test_access_class_map(self, scene: Scene):
+        assert scene.get_class_map(annotation_type=AnnotationTypes.BoundingBoxes3D)
+        assert scene.get_class_map(annotation_type=AnnotationTypes.SemanticSegmentation3D)
+        assert scene.get_class_map(annotation_type=AnnotationTypes.BoundingBoxes2D)
+        assert scene.get_class_map(annotation_type=AnnotationTypes.BoundingBoxes3D)
+        assert scene.get_class_map(annotation_type=AnnotationTypes.SemanticSegmentation2D)

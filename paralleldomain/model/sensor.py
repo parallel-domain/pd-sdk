@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -12,15 +12,7 @@ except ImportError:
 
 import numpy as np
 
-from paralleldomain.model.annotation import (
-    Annotation,
-    AnnotationType,
-    BoundingBox3D,
-    InstanceSegmentation2D,
-    PolygonSegmentation2D,
-    SemanticSegmentation2D,
-    VirtualAnnotation,
-)
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
 
@@ -143,25 +135,8 @@ class SensorFrame:
         )
 
     def get_annotations(self, annotation_type: Type[T]) -> T:
-        if issubclass(annotation_type, VirtualAnnotation):
-            if annotation_type is PolygonSegmentation2D:
-
-                def load_polygons_from_masks():
-                    assert any(
-                        [
-                            SemanticSegmentation2D in self.available_annotation_types,
-                            # InstanceSegmentation2D in self.available_annotation_types
-                        ]
-                    )
-                    semseg2d = self.get_annotations(SemanticSegmentation2D)
-                    return PolygonSegmentation2D(semseg2d=semseg2d)
-
-                return LAZY_LOAD_CACHE.get_item(
-                    key=self._unique_cache_key + annotation_type.__name__, loader=load_polygons_from_masks
-                )
-
-        elif annotation_type not in self._annotation_type_identifiers:
-            raise ValueError(f"The annotaiton type {annotation_type} is not available in this sensor frame!")
+        if annotation_type not in self._annotation_type_identifiers:
+            raise ValueError(f"The annotation type {annotation_type} is not available in this sensor frame!")
         return LAZY_LOAD_CACHE.get_item(
             key=self._unique_cache_key + annotation_type.__name__,
             loader=lambda: self._lazy_loader.load_annotations(

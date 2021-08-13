@@ -1,10 +1,11 @@
 import contextlib
 from datetime import datetime
-from typing import Any, Callable, ContextManager, Dict, Generator, List, Optional, Tuple, Type, cast
+from typing import Any, Callable, ContextManager, Dict, List, Type, TypeVar, cast
 
-from paralleldomain.model.annotation import Annotation
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.ego import EgoFrame, EgoPose
+from paralleldomain.model.ego import EgoFrame
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
@@ -14,7 +15,9 @@ except ImportError:
 
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+
+T = TypeVar("T")
 
 
 class SceneDecoderProtocol(Protocol):
@@ -48,6 +51,9 @@ class SceneDecoderProtocol(Protocol):
     def decode_available_sensor_names(self, scene_name: SceneName, frame_id: FrameId) -> List[SensorName]:
         pass
 
+    def decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+        pass
+
     def decode_sensor(
         self,
         scene_name: SceneName,
@@ -58,14 +64,21 @@ class SceneDecoderProtocol(Protocol):
 
 
 class Scene:
-    def __init__(self, name: SceneName, description: str, metadata: Dict[str, Any], decoder: SceneDecoderProtocol):
+    def __init__(
+        self,
+        name: SceneName,
+        description: str,
+        metadata: Dict[str, Any],
+        available_annotation_types: List[AnnotationType],
+        decoder: SceneDecoderProtocol,
+    ):
         self._name = name
         self._unique_cache_key = decoder.get_unique_scene_id(scene_name=name)
         self._description = description
         self._metadata = metadata
+        self._available_annotation_types = available_annotation_types
         self._decoder = decoder
         self._cache_is_locked = False
-        self._removed_sensor_names = set()
 
     def lock_cache_for_scene_data(self):
         LAZY_LOAD_CACHE.lock_prefix(prefix=self._unique_cache_key)
@@ -85,7 +98,9 @@ class Scene:
         return LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-{frame_id}-{sensor_name}-SensorFrame",
             loader=lambda: self._decoder.decode_sensor_frame(
-                scene_name=self.name, frame_id=frame_id, sensor_name=sensor_name
+                scene_name=self.name,
+                frame_id=frame_id,
+                sensor_name=sensor_name,
             ),
         )
 
@@ -93,12 +108,10 @@ class Scene:
         return self._decoder.decode_ego_frame(scene_name=self.name, frame_id=frame_id)
 
     def _load_frame_sensors_name(self, frame_id: FrameId) -> List[SensorName]:
-        temp_sensor_names = LAZY_LOAD_CACHE.get_item(
+        return LAZY_LOAD_CACHE.get_item(
             key=f"{self._unique_cache_key}-{frame_id}-available_sensors",
             loader=lambda: self._decoder.decode_available_sensor_names(scene_name=self.name, frame_id=frame_id),
         )
-
-        return [sn for sn in temp_sensor_names if sn not in self._removed_sensor_names]
 
     def _load_frame_camera_sensors(self, frame_id: FrameId) -> List[SensorName]:
         all_frame_sensors = self._load_frame_sensors_name(frame_id=frame_id)
@@ -136,6 +149,10 @@ class Scene:
             key=f"{self._unique_cache_key}-frame_id_to_date_time_map",
             loader=lambda: self._decoder.decode_frame_id_to_date_time_map(scene_name=self.name),
         )
+
+    @property
+    def available_annotation_types(self):
+        return self._available_annotation_types
 
     def get_frame(self, frame_id: FrameId) -> Frame:
         return Frame(
@@ -186,18 +203,37 @@ class Scene:
             scene_name=self.name, sensor_name=sensor_name, sensor_frame_factory=self._load_sensor_frame
         )
 
-    def remove_sensor(self, sensor_name: SensorName):
-        if not self._cache_is_locked:
-            sx_msg = (
-                "In order to make sure changes are not removed in the cache you need to call "
-                "lock_cache_for_scene_data in order to keep those changes from being removed!"
-            )
-            raise Exception(sx_msg)
-        self.sensor_names.remove(sensor_name)
-        self._removed_sensor_names.add(sensor_name)
+    @property
+    def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:
+        available_annotation_types = {v: k for k, v in ANNOTATION_TYPE_MAP.items()}
+        return available_annotation_types
+
+    @property
+    def class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return {a_type: self.get_class_map(a_type) for a_type in self._available_annotation_types}
+
+    def get_class_map(self, annotation_type: Type[T]) -> ClassMap:
+        if annotation_type not in self._available_annotation_types:
+            raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
+
+        identifier = self._annotation_type_identifiers[annotation_type]
+        class_maps = LAZY_LOAD_CACHE.get_item(
+            key=f"{self._unique_cache_key}-classmaps",
+            loader=lambda: self._decoder.decode_class_maps(scene_name=self.name),
+        )
+
+        return class_maps[identifier]
 
     @staticmethod
-    def from_decoder(scene_name: SceneName, decoder: SceneDecoderProtocol) -> "Scene":
+    def from_decoder(
+        scene_name: SceneName, available_annotation_types: List[AnnotationType], decoder: SceneDecoderProtocol
+    ) -> "Scene":
         description = decoder.decode_scene_description(scene_name=scene_name)
         metadata = decoder.decode_scene_metadata(scene_name=scene_name)
-        return Scene(name=scene_name, description=description, metadata=metadata, decoder=decoder)
+        return Scene(
+            name=scene_name,
+            description=description,
+            metadata=metadata,
+            available_annotation_types=available_annotation_types,
+            decoder=decoder,
+        )
