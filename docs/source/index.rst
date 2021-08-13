@@ -3,9 +3,11 @@ Welcome to Parallel Domain SDK's documentation!
 
 .. automodule:: model.dataset
     :members:
+    :inherited-members:
 
 .. automodule:: model.scene
     :members:
+    :inherited-members:
 
 
 

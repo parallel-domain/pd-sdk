@@ -38,6 +38,7 @@ autoclass_content = "both"
 autodoc_inherit_docstrings = True
 set_type_checking_flag = True
 add_module_names = False
+autodoc_member_order = "bysource"
 
 napoleon_google_docstring = True
 
