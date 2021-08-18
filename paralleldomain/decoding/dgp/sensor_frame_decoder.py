@@ -1,5 +1,7 @@
+from datetime import datetime
+from functools import lru_cache
 from json import JSONDecodeError
-from typing import Dict, Optional, Type, TypeVar
+from typing import Dict, List, Optional, Tuple, Type, TypeVar
 
 import numpy as np
 import ujson
@@ -16,7 +18,11 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneDataDatum,
     SceneDataDatumImage,
     SceneDataDatumPointCloud,
+    SceneDataDTO,
+    SceneSampleDTO,
+    scene_sample_to_date_time,
 )
+from paralleldomain.decoding.decoder import TemporalSensorFrameDecoder
 from paralleldomain.model.annotation import (
     AnnotationPose,
     AnnotationType,
@@ -31,39 +37,74 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SemanticSegmentation3D,
 )
-from paralleldomain.model.sensor import ImageData, PointCloudData, SensorExtrinsic, SensorIntrinsic, SensorPose
+from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import AnnotationIdentifier, SceneName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorFrameSetName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json, read_npz, read_png
+from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 
 
-class DGPFrameLazyLoader:
+class DGPSensorFrameDecoder(TemporalSensorFrameDecoder):
     def __init__(
         self,
-        unique_cache_key_prefix: str,
+        dataset_name: str,
+        set_name: SensorFrameSetName,
+        lazy_load_cache: LazyLoadCache,
         dataset_path: AnyPath,
-        scene_name: SceneName,
-        sensor_name: SensorName,
-        calibration_key: str,
-        datum: SceneDataDatum,
+        scene_samples: Dict[FrameId, SceneSampleDTO],
+        scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
     ):
+        super().__init__(dataset_name=dataset_name, set_name=set_name, lazy_load_cache=lazy_load_cache)
         self._dataset_path = dataset_path
-        self.datum = datum
-        self._unique_cache_key_prefix = unique_cache_key_prefix
-        self.sensor_name = sensor_name
-        self.scene_name = scene_name
-        self.calibration_key = calibration_key
+        self.scene_samples = scene_samples
+        self.scene_data = scene_data
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
 
-    def load_intrinsic(self) -> SensorIntrinsic:
+    @lru_cache(maxsize=1)
+    def _data_by_sensor_name(self, sensor_name: SensorName) -> Dict[str, SceneDataDTO]:
+        return {d.key: d for d in self.scene_data if d.id.name == sensor_name}
+
+    def _get_current_frame_sample(self, frame_id: FrameId) -> SceneSampleDTO:
+        return self.scene_samples[frame_id]
+
+    @lru_cache(maxsize=1)
+    def _get_sensor_frame_data(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDatum:
+        sample = self._get_current_frame_sample(frame_id=frame_id)
+        # all sensor data of the sensor
+        sensor_data = self._data_by_sensor_name(sensor_name=sensor_name)
+        # read ontology -> Dict[str, ClassMap]
+        # datum ley of sample that references the given sensor name
+        datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
+        scene_data = sensor_data[datum_key]
+        return scene_data.datum
+
+    def _decode_datetime(self, frame_id: FrameId) -> datetime:
+        sample = self._get_current_frame_sample(frame_id=frame_id)
+        return scene_sample_to_date_time(sample=sample)
+
+    def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
+        sample = self._get_current_frame_sample(frame_id=frame_id)
+        dto = self._decode_extrinsic_calibration(
+            scene_name=self.set_name,
+            calibration_key=sample.calibration_key,
+            sensor_name=sensor_name,
+        )
+        sensor_to_box_bottom = _pose_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
+        sensor_to_custom_reference = (
+            self._custom_reference_to_box_bottom.inverse @ sensor_to_box_bottom
+        )  # from center-bottom to center rear-axle
+        return sensor_to_custom_reference
+
+    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
+        sample = self._get_current_frame_sample(frame_id=frame_id)
         dto = self._decode_intrinsic_calibration(
-            scene_name=self.scene_name,
-            calibration_key=self.calibration_key,
-            sensor_name=self.sensor_name,
+            scene_name=self.set_name,
+            calibration_key=sample.calibration_key,
+            sensor_name=sensor_name,
         )
 
         if dto.fisheye is True or dto.fisheye == 1:
@@ -91,53 +132,47 @@ class DGPFrameLazyLoader:
             camera_model=camera_model,
         )
 
-    def load_extrinsic(self) -> SensorExtrinsic:
-        dto = self._decode_extrinsic_calibration(
-            scene_name=self.scene_name,
-            calibration_key=self.calibration_key,
-            sensor_name=self.sensor_name,
-        )
-        sensor_to_box_bottom = _pose_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
-        sensor_to_custom_reference = (
-            self._custom_reference_to_box_bottom.inverse @ sensor_to_box_bottom
-        )  # from center-bottom to center rear-axle
-        return sensor_to_custom_reference
-
-    def load_point_cloud(self) -> Optional[PointCloudData]:
-        # if self.datum.point_cloud:
-        if isinstance(self.datum, SceneDataDatumPointCloud):
-            unique_cache_key = f"{self._unique_cache_key_prefix}-point_cloud"
-            return PointCloudData(
-                unique_cache_key=unique_cache_key,
-                point_format=self.datum.point_cloud.point_format,
-                load_data=lambda: self._decode_point_cloud(
-                    scene_name=self.scene_name, cloud_identifier=self.datum.point_cloud.filename
-                ),
-            )
-        return None
-
-    def load_image(self) -> Optional[ImageData]:
-        # if self.datum.image:
-        if isinstance(self.datum, SceneDataDatumImage):
-            unique_cache_key = f"{self._unique_cache_key_prefix}-image"
-            return ImageData(
-                load_data_rgba=lambda: self._decode_image_rgb(
-                    scene_name=self.scene_name,
-                    cloud_identifier=self.datum.image.filename,
-                ),
-                unique_cache_key=unique_cache_key,
-                load_image_dims=lambda: (self.datum.image.height, self.datum.image.width, self.datum.image.channels),
-            )
-
-    def load_sensor_pose(self) -> SensorPose:
-        if self.datum.image:
-            return _pose_dto_to_transformation(dto=self.datum.image.pose, transformation_type=SensorPose)
+    def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        if datum.image:
+            return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
         else:
-            return _pose_dto_to_transformation(dto=self.datum.point_cloud.pose, transformation_type=SensorPose)
+            return _pose_dto_to_transformation(dto=datum.point_cloud.pose, transformation_type=SensorPose)
 
-    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: Type[T]) -> T:
+    def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return datum.point_cloud.point_format
+
+    def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        cloud_path = self._dataset_path / self.set_name / datum.point_cloud.filename
+        pc_data = read_npz(path=cloud_path, files="data")
+        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+
+    def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return isinstance(datum, SceneDataDatumPointCloud)
+
+    def _decode_image_dims(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return (datum.image.height, datum.image.width, datum.image.channels)
+
+    def _decode_image_data(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        cloud_path = self._dataset_path / self.set_name / datum.image.filename
+        image_data = read_png(path=cloud_path)
+
+        return image_data
+
+    def _has_image_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return isinstance(datum, SceneDataDatumImage)
+
+    def _decode_annotations(
+        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
+    ) -> T:
         if issubclass(annotation_type, BoundingBoxes3D):
-            dto = self._decode_bounding_boxes_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_3d(scene_name=self.set_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -167,7 +202,7 @@ class DGPFrameLazyLoader:
 
             return BoundingBoxes3D(boxes=box_list)
         elif issubclass(annotation_type, BoundingBoxes2D):
-            dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_2d(scene_name=self.set_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -195,44 +230,42 @@ class DGPFrameLazyLoader:
             return BoundingBoxes2D(boxes=box_list)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self._decode_semantic_segmentation_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.set_name, annotation_identifier=identifier
             )
             return SemanticSegmentation3D(class_ids=segmentation_mask)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.set_name, annotation_identifier=identifier
             )
             return InstanceSegmentation3D(instance_ids=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
             class_ids = self._decode_semantic_segmentation_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.set_name, annotation_identifier=identifier
             )
             return SemanticSegmentation2D(class_ids=class_ids)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.set_name, annotation_identifier=identifier
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            flow_vectors = self._decode_optical_flow(scene_name=self.set_name, annotation_identifier=identifier)
             return OpticalFlow(vectors=flow_vectors)
         elif issubclass(annotation_type, Depth):
-            depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
+            depth_mask = self._decode_depth(scene_name=self.set_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
 
-    def load_available_annotation_types(
-        self,
+    def _decode_available_annotation_types(
+        self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        if self.datum.image:
-            type_to_path = self.datum.image.annotations
+        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        if datum.image:
+            type_to_path = datum.image.annotations
         else:
-            type_to_path = self.datum.point_cloud.annotations
+            type_to_path = datum.point_cloud.annotations
         return {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
 
-    def _decode_point_cloud(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
-        cloud_path = self._dataset_path / scene_name / cloud_identifier
-        pc_data = read_npz(path=cloud_path, files="data")
-        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+    # ---------------------------------
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> CalibrationDTO:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
@@ -252,12 +285,6 @@ class DGPFrameLazyLoader:
         calibration_dto = self._decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
-
-    def _decode_image_rgb(self, scene_name: str, cloud_identifier: str) -> np.ndarray:
-        cloud_path = self._dataset_path / scene_name / cloud_identifier
-        image_data = read_png(path=cloud_path)
-
-        return image_data
 
     def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

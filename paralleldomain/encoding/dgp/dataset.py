@@ -4,13 +4,15 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
-from paralleldomain import Dataset
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
+from paralleldomain.decoding.decoder import Decoder, TemporalDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.dataset import SceneDataset
+from paralleldomain.model.sensor import TemporalSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.logging import setup_loggers
@@ -21,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DGPDatasetEncoder(DatasetEncoder):
     def __init__(
         self,
-        dataset: Dataset,
+        dataset: SceneDataset,
         output_path: str,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
@@ -32,9 +34,9 @@ class DGPDatasetEncoder(DatasetEncoder):
         super().__init__(
             dataset=dataset,
             output_path=output_path,
-            scene_names=scene_names,
-            scene_start=scene_start,
-            scene_stop=scene_stop,
+            set_names=scene_names,
+            set_start=scene_start,
+            set_stop=scene_stop,
             n_parallel=n_parallel,
         )
         self._dataset_name: str = dataset_name
@@ -83,10 +85,10 @@ class DGPDatasetEncoder(DatasetEncoder):
         with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
             scene_files = dict(
                 zip(
-                    self._scene_names,
+                    self._set_names,
                     scene_executor.map(
                         self._call_scene_encoder,
-                        self._scene_names,
+                        self._set_names,
                     ),
                 )
             )
@@ -95,7 +97,7 @@ class DGPDatasetEncoder(DatasetEncoder):
 
     @staticmethod
     def from_dataset(
-        dataset: Dataset,
+        dataset: SceneDataset,
         output_path: str,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
@@ -123,9 +125,30 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ) -> "DGPDatasetEncoder":
+        # Todo detect decoder type from path content
         decoder = DGPDecoder(dataset_path=input_path)
+        return DGPDatasetEncoder.from_decoder(
+            decoder=decoder,
+            output_path=output_path,
+            dataset_name=dataset_name,
+            scene_names=scene_names,
+            scene_start=scene_start,
+            scene_stop=scene_stop,
+            n_parallel=n_parallel,
+        )
+
+    @staticmethod
+    def from_decoder(
+        decoder: TemporalDecoder[SceneDataset, TemporalSensorFrame],
+        output_path: str,
+        dataset_name: str = None,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ) -> "DGPDatasetEncoder":
         return DGPDatasetEncoder.from_dataset(
-            dataset=Dataset.from_decoder(decoder=decoder),
+            dataset=decoder.get_dataset(),
             output_path=output_path,
             dataset_name=dataset_name,
             scene_names=scene_names,
@@ -183,7 +206,7 @@ if __name__ == "__main__":
 
     setup_loggers([__name__, "fsio"], log_level=logging.DEBUG)
 
-    DGPDatasetEncoder.from_path(
+    DGPDatasetEncoder.from_dgp_path(
         input_path=args.input,
         output_path=args.output,
         dataset_name=args.dataset_name,
