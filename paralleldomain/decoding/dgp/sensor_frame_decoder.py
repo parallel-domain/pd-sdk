@@ -22,7 +22,7 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneSampleDTO,
     scene_sample_to_date_time,
 )
-from paralleldomain.decoding.decoder import TemporalSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import TemporalSensorFrameDecoder
 from paralleldomain.model.annotation import (
     AnnotationPose,
     AnnotationType,

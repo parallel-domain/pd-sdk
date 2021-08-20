@@ -3,8 +3,9 @@ from functools import lru_cache
 from typing import Dict, List, cast
 
 from paralleldomain.common.dgp.v0.dtos import SceneDataDTO, SceneSampleDTO, scene_sample_to_date_time
-from paralleldomain.decoding.decoder import SensorFrameDecoder, TemporalFrameDecoder
 from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPSensorFrameDecoder
+from paralleldomain.decoding.frame_decoder import TemporalFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import SensorFrameDecoder
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import SensorFrame, TemporalSensorFrame
 from paralleldomain.model.transformation import Transformation

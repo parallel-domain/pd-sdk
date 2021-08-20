@@ -2,21 +2,19 @@ import logging
 from datetime import datetime
 from functools import lru_cache
 from pathlib import PosixPath
-from typing import Any, Callable, Dict, List, Optional, Set, Union, cast
+from typing import Any, Dict, List, Optional, Set, Union, cast
 
 import iso8601
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
-from paralleldomain.decoding.decoder import Decoder, FrameDecoder, SensorDecoder, TDatasetType, TemporalDecoder
+from paralleldomain.decoding.decoder import FrameDecoder, SensorDecoder, TemporalDecoder
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
-from paralleldomain.decoding.dgp.frame_lazy_loader import DGPFrameLazyLoader
 from paralleldomain.decoding.dgp.sensor_decoder import DGPSensorDecoder
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta, SceneDataset
-from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.frame import Frame, TemporalFrame
-from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame, TemporalSensorFrame
+from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, TemporalSensorFrame
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorFrameSetName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
