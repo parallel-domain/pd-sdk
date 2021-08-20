@@ -206,7 +206,7 @@ if __name__ == "__main__":
 
     setup_loggers([__name__, "fsio"], log_level=logging.DEBUG)
 
-    DGPDatasetEncoder.from_dgp_path(
+    DGPDatasetEncoder.from_path(
         input_path=args.input,
         output_path=args.output,
         dataset_name=args.dataset_name,
