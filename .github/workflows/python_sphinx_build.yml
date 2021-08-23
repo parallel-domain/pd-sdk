@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Debugging
+        run: |
+          ls -l
       - name: Build Sphinx API Documentation
         run: |
           python -m pip install --upgrade pip
