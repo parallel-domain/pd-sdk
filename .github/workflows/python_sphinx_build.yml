@@ -8,16 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
-          pre-build-command: "pip install -r docs/requirements.txt"
-          build-command: "sphinx-build -b html source build"
+      - name: Build Sphinx API Documentation
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install -r docs/requirements.txt
+          sphinx-build -b html docs/source docs/build --keep-going -W
       - uses: actions/upload-artifact@v1
         with:
-          name: Docs
+          name: API Documentation
           path: docs/build/
-      - name: Deploy
+      - name: Deploy to GH Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
