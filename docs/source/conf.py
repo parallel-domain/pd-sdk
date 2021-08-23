@@ -15,6 +15,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../../paralleldomain"))
 
+print(os.getcwd())
+
 # -- Project information -----------------------------------------------------
 
 project = "Parallel Domain SDK"
