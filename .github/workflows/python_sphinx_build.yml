@@ -11,8 +11,8 @@ jobs:
       - uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
-          pre-build-command: "pip install -r docs/requirements.txt && pwd"
-          build-command: "sphinx-build -b html docs/source docs/build"
+          pre-build-command: "pip install -r docs/requirements.txt"
+          build-command: "sphinx-build -b html source build"
       - uses: actions/upload-artifact@v1
         with:
           name: Docs
