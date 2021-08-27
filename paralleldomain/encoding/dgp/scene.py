@@ -178,7 +178,7 @@ class DGPSceneEncoder(SceneEncoder):
             / sensor_frame.sensor_name
             / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
-        return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path)
+        return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path, append_sha1=True)
 
     def _encode_semantic_segmentation_2d(self, sensor_frame: SensorFrame) -> AsyncResult:
         semseg2d = sensor_frame.get_annotations(AnnotationTypes.SemanticSegmentation2D)
