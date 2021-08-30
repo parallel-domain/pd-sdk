@@ -8,7 +8,7 @@ from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, Boun
 
 class TestSensorFrame:
     def test_box_3d_loading(self, scene: Scene):
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         lidar_sensor = next(iter(frame.lidar_frames))
         boxes = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
@@ -25,7 +25,7 @@ class TestSensorFrame:
     def test_box_2d_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.BoundingBoxes2D in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter([f for f in frame.camera_frames if "virtual" not in f.sensor_name]))
         boxes = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
@@ -45,7 +45,7 @@ class TestSensorFrame:
     def test_instance_seg_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.InstanceSegmentation2D in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         id_mask = camera_sensor.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
@@ -61,7 +61,7 @@ class TestSensorFrame:
     def test_sem_seg_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.SemanticSegmentation2D in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
         semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
@@ -77,7 +77,7 @@ class TestSensorFrame:
     def test_optical_flow_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
 
         camera_sensor = next(
@@ -94,7 +94,7 @@ class TestSensorFrame:
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
 
@@ -109,7 +109,7 @@ class TestSensorFrame:
     def test_image_warp(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
-        frame_ids = scene.frame_ids
+        frame_ids = scene.ordered_frame_ids
         frame = scene.get_frame(frame_id=frame_ids[5])
         camera_sensor = next(iter(frame.camera_frames))
         flow = camera_sensor.get_annotations(
