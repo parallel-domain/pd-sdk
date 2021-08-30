@@ -12,13 +12,4 @@ def create_cache_key(
     sensor_name: Optional[SensorName] = None,
     extra: Optional[str] = None,
 ) -> str:
-    cache_key = f"{dataset_name}"
-    if set_name is not None:
-        cache_key += f"-{set_name}"
-    if frame_id is not None:
-        cache_key += f"-{frame_id}"
-    if sensor_name is not None:
-        cache_key += f"-{sensor_name}"
-    if extra is not None:
-        cache_key += f"-{extra}"
-    return cache_key
+    return "-".join([v for v in [dataset_name, set_name, frame_id, sensor_name, extra] if v is not None])
