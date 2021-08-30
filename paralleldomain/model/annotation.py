@@ -7,6 +7,19 @@ import numpy as np
 
 from paralleldomain.model.transformation import Transformation
 
+_UNIT_BOUNDING_BOX_3D = np.array(
+    [
+        [1, 1, -1],
+        [1, 1, 1],
+        [1, -1, 1],
+        [1, -1, -1],
+        [-1, 1, -1],
+        [-1, 1, 1],
+        [-1, -1, 1],
+        [-1, -1, -1],
+    ]
+)
+
 
 class AnnotationPose(Transformation):
     ...
@@ -87,6 +100,40 @@ class BoundingBox3D:
     @property
     def volume(self) -> float:
         return self.length * self.width * self.height
+
+    @property
+    def vertices(self) -> np.ndarray:
+        scaled_box = np.ones(shape=(_UNIT_BOUNDING_BOX_3D.shape[0], 4))
+        scaled_box[:, :3] = _UNIT_BOUNDING_BOX_3D * np.array(
+            [
+                self.length / 2,
+                self.width / 2,
+                self.height / 2,
+            ]
+        )
+
+        transformed_box = (self.pose @ scaled_box.T).T[:, :3]
+
+        return transformed_box
+
+    @property
+    def edges(self) -> np.ndarray:
+        # vertices = self.vertices
+        return np.zeros(shape=(12, 2, 3))
+
+    @property
+    def faces(self) -> np.ndarray:
+        vertices = self.vertices
+        faces = np.empty(shape=(6, 4, 3))
+
+        faces[0, :, :] = vertices[:4, :]
+        faces[1, :, :] = vertices[4:, :]
+        faces[2, :, :] = vertices[[0, 1, 5, 4], :]
+        faces[3, :, :] = vertices[[3, 2, 6, 7], :]
+        faces[4, :, :] = vertices[[0, 3, 7, 4], :]
+        faces[5, :, :] = vertices[[1, 2, 6, 5], :]
+
+        return faces
 
 
 @dataclass
