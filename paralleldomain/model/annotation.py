@@ -18,7 +18,7 @@ _UNIT_BOUNDING_BOX_3D = np.array(
         [-1, -1, 1],
         [-1, -1, -1],
     ]
-)
+)  # CCW order of points for each face ( [0:4]: Front, [4:8]: Back )
 
 
 class AnnotationPose(Transformation):
