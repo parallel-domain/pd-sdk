@@ -17,6 +17,10 @@ Welcome to Parallel Domain SDK's documentation!
     :members:
     :inherited-members:
 
+.. automodule:: utilities.projection
+    :members:
+    :inherited-members:
+
 
 
 

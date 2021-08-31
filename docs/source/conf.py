@@ -41,8 +41,10 @@ autodoc_inherit_docstrings = True
 set_type_checking_flag = True
 add_module_names = False
 autodoc_member_order = "bysource"
+autodoc_typehints = "description"
 
 napoleon_google_docstring = True
+napoleon_use_param = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
