@@ -21,7 +21,17 @@ T = TypeVar("T")
 
 class CameraModel:
     OPENCV_PINHOLE: str = "opencv_pinhole"
+    """Returns internally used string-representation for OpenCV Pinhole camera model
+
+    Accepts distortion parameters `(k1,k2,p1,p2[,k3[,k4,k5,k6]])` and uses projection (+ distortion) function
+    as described on this page: `https://docs.opencv.org/4.5.3/d9/d0c/group__calib3d.html`
+    """
     OPENCV_FISHEYE: str = "opencv_fisheye"
+    """Returns internally used string-representation for OpenCV Fisheye camera model
+
+    Accepts distortion parameters `(k1,k2,k3,k4)` and uses projection (+ distortion) function
+    as described on this page: `https://docs.opencv.org/4.5.3/db/d58/group__calib3d__fisheye.html`
+    """
 
 
 class SensorFrameDecoderProtocol(Protocol):
