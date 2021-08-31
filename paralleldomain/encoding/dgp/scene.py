@@ -46,7 +46,7 @@ from paralleldomain.encoding.dgp.transformer import (
 from paralleldomain.encoding.encoder import SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.dataset import SceneDataset
-from paralleldomain.model.sensor import TemporalSensorFrame
+from paralleldomain.model.sensor import CameraModel, TemporalSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_json
@@ -58,8 +58,8 @@ class DGPSceneEncoder(SceneEncoder):
     _fisheye_camera_model_map: Dict[str, int] = defaultdict(
         lambda: 2,
         {
-            "brown_conrady": 0,
-            "fisheye": 1,
+            CameraModel.OPENCV_PINHOLE: 0,
+            CameraModel.OPENCV_FISHEYE: 1,
         },
     )
 

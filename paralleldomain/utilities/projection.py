@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.model.sensor import CameraModel, SensorFrame
 
 
 def project_points_3d_to_2d(camera_frame: SensorFrame, points_3d: np.ndarray) -> np.ndarray:
@@ -16,7 +16,7 @@ def project_points_3d_to_2d(camera_frame: SensorFrame, points_3d: np.ndarray) ->
 
     r_vec = t_vec = np.array([0, 0, 0]).astype(float)
 
-    if intrinsic.camera_model == "brown_conrady":
+    if intrinsic.camera_model == CameraModel.OPENCV_PINHOLE:
         D = np.array(
             [
                 intrinsic.k1,
@@ -30,7 +30,7 @@ def project_points_3d_to_2d(camera_frame: SensorFrame, points_3d: np.ndarray) ->
             ]
         )
         uv, _ = cv2.projectPoints(points_3d, r_vec, t_vec, K, D)
-    elif intrinsic.camera_model == "fisheye":
+    elif intrinsic.camera_model == CameraModel.OPENCV_FISHEYE:
         D = np.array(
             [
                 intrinsic.k1,

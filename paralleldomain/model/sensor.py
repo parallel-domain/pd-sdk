@@ -19,6 +19,11 @@ from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, Sen
 T = TypeVar("T")
 
 
+class CameraModel:
+    OPENCV_PINHOLE: str = "opencv_pinhole"
+    OPENCV_FISHEYE: str = "opencv_fisheye"
+
+
 class SensorFrameDecoderProtocol(Protocol):
     def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
@@ -189,7 +194,7 @@ class SensorIntrinsic:
         k6=0.0,
         skew=0.0,
         fov=0.0,
-        camera_model="brown_conrady",
+        camera_model=CameraModel.OPENCV_PINHOLE,
     ):
         self.cx = cx
         self.cy = cy
