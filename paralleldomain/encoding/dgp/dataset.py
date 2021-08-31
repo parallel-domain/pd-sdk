@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
 from paralleldomain.decoding.decoder import Decoder, TemporalDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
@@ -43,16 +43,16 @@ class DGPDatasetEncoder(DatasetEncoder):
 
         self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
         # Adapt if should be limited to a set of cameras, or empty list for no cameras
-        self._camera_names: Union[List[str], None] = ["camera_front"]
+        self._camera_names: Union[List[str], None] = ["Front"]
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
-        self._lidar_names: Union[List[str], None] = []
+        self._lidar_names: Union[List[str], None] = ["lidar_fl"]
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations
         self._annotation_types: Union[List[AnnotationType], None] = None
 
     def _encode_dataset_json(self, scene_files: Dict[str, AnyPath]) -> AnyPath:
         metadata_dto = DatasetMetaDTO(**self._dataset.meta_data.custom_attributes)
         metadata_dto.name = self._dataset_name if self._dataset_name else self._dataset.name
-        metadata_dto.creation_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        metadata_dto.creation_date = datetime.utcnow().strftime(DATETIME_FORMAT)
         if self._annotation_types:
             metadata_dto.available_annotation_types = [
                 int(ANNOTATION_TYPE_MAP_INV[a_type])
