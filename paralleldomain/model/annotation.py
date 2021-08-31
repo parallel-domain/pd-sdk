@@ -104,19 +104,21 @@ class BoundingBox3D:
 
     @property
     def vertices(self) -> np.ndarray:
-        """np.ndarray: Returns the 3D vertices of a bounding box.
+        """Returns the 3D vertices of a bounding box.
 
         Vertices are returned in the following order:
 
-           5--------6
-          /|   top /|
-         / |      / |
-        1--------2  |
-        |  4-----|--7
-        | /      | /
-        |/       |/ left
-        0--------3
-          front
+        ::
+
+               5--------6
+              /|   top /|
+             / |      / |
+            1--------2  |
+            |  4-----|--7
+            | /      | /
+            |/       |/ left
+            0--------3
+              front
 
         """
         scaled_vertices = np.ones(shape=(_UNIT_BOUNDING_BOX_3D.shape[0], 4))
@@ -134,32 +136,36 @@ class BoundingBox3D:
 
     @property
     def edges(self) -> np.ndarray:
-        """np.ndarray: Returns the 3D edges of a bounding box.
+        """Returns the 3D edges of a bounding box.
 
-        Edges are returned in order of connecting the vertices in the following way:
+        Edges are returned in order of connecting the vertices in the following order:
 
-           5--------6
-          /|   top /|
-         / |      / |
-        1--------2  |
-        |  4-----|--7
-        | /      | /
-        |/       |/ left
-        0--------3
-          front
+        - `[0, 1]`
+        - `[1, 2]`
+        - `[2, 3]`
+        - `[3, 0]`
+        - `[4, 5]`
+        - `[5, 6]`
+        - `[6, 7]`
+        - `[7, 4]`
+        - `[2, 6]`
+        - `[7, 3]`
+        - `[1, 5]`
+        - `[4, 0]`
 
-        - 0 -> 1
-        - 1 -> 2
-        - 2 -> 3
-        - 3 -> 0
-        - 4 -> 5
-        - 5 -> 6
-        - 6 -> 7
-        - 7 -> 4
-        - 2 -> 6
-        - 7 -> 3
-        - 1 -> 5
-        - 5 -> 0
+        ::
+
+               5--------6
+              /|   top /|
+             / |      / |
+            1--------2  |
+            |  4-----|--7
+            | /      | /
+            |/       |/ left
+            0--------3
+              front
+
+
 
         """
         vertices = self.vertices
@@ -182,26 +188,30 @@ class BoundingBox3D:
 
     @property
     def faces(self) -> np.ndarray:
-        """np.ndarray: Returns the 3D faces of a bounding box.
+        """Returns the 3D faces of a bounding box.
 
-        Faces are returned in order of connecting the vertices in the following way:
+        Faces are returned in order of connecting the vertices in the following order:
 
-           5--------6
-          /|   top /|
-         / |      / |
-        1--------2  |
-        |  4-----|--7
-        | /      | /
-        |/       |/ left
-        0--------3
-          front
+        - `[0, 1, 2, 3]` (front)
+        - `[4, 5, 6, 7]` (back)
+        - `[3, 2, 6, 7]` (left)
+        - `[0, 1, 5, 4]` (right)
+        - `[6, 2, 1, 5]` (top)
+        - `[7, 3, 0, 4]` (bottom)
 
-        - 0 -> 1 -> 2 -> 3 (front)
-        - 4 -> 5 -> 6 -> 7 (back)
-        - 3 -> 2 -> 6 -> 7 (left)
-        - 0 -> 1 -> 5 -> 4 (right)
-        - 6 -> 2 -> 1 -> 5 (top)
-        - 7 -> 3 -> 0 -> 4 (bottom)
+        ::
+
+               5--------6
+              /|   top /|
+             / |      / |
+            1--------2  |
+            |  4-----|--7
+            | /      | /
+            |/       |/ left
+            0--------3
+              front
+
+
         """
         vertices = self.vertices
         faces = np.empty(shape=(6, 4, 3))
