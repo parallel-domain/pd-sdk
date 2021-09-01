@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 import uuid
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -162,16 +163,29 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj={"data": pc_data}, path=output_path)
 
-    def _encode_depth(self, sensor_frame: TemporalSensorFrame) -> Union[AsyncResult, None]:
-        try:
-            depth = sensor_frame.get_annotations(AnnotationTypes.Depth)
+    def _process_depth(self, sensor_frame: TemporalSensorFrame, fs_copy: bool = False) -> AsyncResult:
+        output_path = (
+            self._output_path
+            / DirectoryName.DEPTH
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
 
-            output_path = (
-                self._output_path
+        if fs_copy and isinstance(self._dataset._decoder, DGPDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
                 / DirectoryName.DEPTH
                 / sensor_frame.sensor_name
-                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
             )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_depth(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_depth(self, sensor_frame: TemporalSensorFrame, output_path: AnyPath) -> Union[AsyncResult, None]:
+        try:
+            depth = sensor_frame.get_annotations(AnnotationTypes.Depth)
             return self._run_async(func=fsio.write_npz, obj=dict(data=depth.depth[..., 0]), path=output_path)
         except ValueError:  # Some renderings can exclude LiDAR from having Depth annotations
             return None
@@ -264,16 +278,29 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
 
-    def _encode_motion_vectors_2d(self, sensor_frame: TemporalSensorFrame) -> AsyncResult:
-        optical_flow = sensor_frame.get_annotations(AnnotationTypes.OpticalFlow)
-        mask_out = OpticalFlowTransformer.transform(mask=optical_flow.vectors)
-
+    def _process_motion_vectors_2d(self, sensor_frame: TemporalSensorFrame, fs_copy: bool = False) -> AsyncResult:
         output_path = (
             self._output_path
             / DirectoryName.MOTION_VECTORS_2D
             / sensor_frame.sensor_name
-            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.png"  # noqa: E501
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
         )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.MOTION_VECTORS_2D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_motion_vectors_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_motion_vectors_2d(self, sensor_frame: TemporalSensorFrame, output_path: AnyPath) -> AsyncResult:
+        optical_flow = sensor_frame.get_annotations(AnnotationTypes.OpticalFlow)
+        mask_out = OpticalFlowTransformer.transform(mask=optical_flow.vectors)
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
 
@@ -305,16 +332,31 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
 
-    def _encode_instance_segmentation_3d(self, sensor_frame: TemporalSensorFrame) -> AsyncResult:
-        instance3d = sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation3D)
-        mask_out = InstanceSegmentation3DTransformer.transform(mask=instance3d.instance_ids)
-
+    def _process_instance_segmentation_3d(
+        self, sensor_frame: TemporalSensorFrame, fs_copy: bool = False
+    ) -> AsyncResult:
         output_path = (
             self._output_path
             / DirectoryName.INSTANCE_SEGMENTATION_3D
             / sensor_frame.sensor_name
-            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.npz"  # noqa: E501
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
         )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.INSTANCE_SEGMENTATION_3D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_instance_segmentation_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_instance_segmentation_3d(self, sensor_frame: TemporalSensorFrame, output_path: AnyPath) -> AsyncResult:
+        instance3d = sensor_frame.get_annotations(AnnotationTypes.InstanceSegmentation3D)
+        mask_out = InstanceSegmentation3DTransformer.transform(mask=instance3d.instance_ids)
 
         return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
 
@@ -335,7 +377,6 @@ class DGPSceneEncoder(SceneEncoder):
                 filename=self._relative_path(sensor_data[DirectoryName.RGB].get()).as_posix(),
                 height=camera_frame.image.height,
                 width=camera_frame.image.width,
-                # replace with Decoder attribute - if accessing .image.rgbs.shape[2] image needs to be loaded :(
                 channels=4,
                 annotations={
                     k: self._relative_path(v.get()).as_posix() for k, v in annotations.items() if v is not None
@@ -457,25 +498,25 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> Dict[str, Dict[str, AsyncResult]]:
         return dict(
             annotations={
-                # "0": self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
-                # if AnnotationTypes.BoundingBoxes2D in self._annotation_types
-                # else None,
-                # "1": self._encode_bounding_boxes_3d(sensor_frame=camera_frame)
-                # if AnnotationTypes.BoundingBoxes3D in self._annotation_types
-                # else None,
+                "0": self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
+                if AnnotationTypes.BoundingBoxes2D in self._annotation_types
+                else None,
+                "1": self._encode_bounding_boxes_3d(sensor_frame=camera_frame)
+                if AnnotationTypes.BoundingBoxes3D in self._annotation_types
+                else None,
                 "2": self._process_semantic_segmentation_2d(sensor_frame=camera_frame, fs_copy=True)
                 if AnnotationTypes.SemanticSegmentation2D in self._annotation_types
                 else None,
                 "4": self._process_instance_segmentation_2d(sensor_frame=camera_frame, fs_copy=True)
                 if AnnotationTypes.InstanceSegmentation2D in self._annotation_types
                 else None,
-                # "6": self._encode_depth(sensor_frame=camera_frame)
-                # if AnnotationTypes.Depth in self._annotation_types
-                # else None,
-                # "8": self._encode_motion_vectors_2d(sensor_frame=camera_frame)
-                # if AnnotationTypes.OpticalFlow in self._annotation_types and not last_frame
-                # else None,
-                # "10": None,  # surface_normals_2d
+                "6": self._process_depth(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.Depth in self._annotation_types
+                else None,
+                "8": self._process_motion_vectors_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.OpticalFlow in self._annotation_types and not last_frame
+                else None,
+                "10": None,  # surface_normals_2d
             },
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),
@@ -485,20 +526,20 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_lidar_frame(self, lidar_frame: TemporalSensorFrame) -> Dict[str, Dict[str, AsyncResult]]:
         return dict(
             annotations={
-                # "1": self._encode_bounding_boxes_3d(sensor_frame=lidar_frame)
-                # if AnnotationTypes.BoundingBoxes3D in self._annotation_types
-                # else None,
+                "1": self._encode_bounding_boxes_3d(sensor_frame=lidar_frame)
+                if AnnotationTypes.BoundingBoxes3D in self._annotation_types
+                else None,
                 "3": self._process_semantic_segmentation_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.SemanticSegmentation3D in self._annotation_types
                 else None,
-                # "5": self._encode_instance_segmentation_3d(sensor_frame=lidar_frame)
-                # if AnnotationTypes.InstanceSegmentation3D in self._annotation_types
-                # else None,
-                # "6": self._encode_depth(sensor_frame=lidar_frame)
-                # if AnnotationTypes.Depth in self._annotation_types
-                # else None,
-                # "7": None,  # surface_normals_3d
-                # "9": None,  # motion_vectors_3d
+                "5": self._process_instance_segmentation_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.InstanceSegmentation3D in self._annotation_types
+                else None,
+                "6": self._process_depth(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.Depth in self._annotation_types
+                else None,
+                "7": None,  # surface_normals_3d
+                "9": None,  # motion_vectors_3d
             },
             sensor_data={
                 "point_cloud": self._process_point_cloud(sensor_frame=lidar_frame, fs_copy=True),
@@ -506,7 +547,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_camera(self, camera_name: str) -> Dict[str, SceneDataDTO]:
-        with ThreadPoolExecutor(max_workers=10) as camera_frame_executor:
+        with ThreadPoolExecutor(max_workers=4) as camera_frame_executor:
             camera_encoding_results = zip(
                 self._scene.ordered_frame_ids,
                 camera_frame_executor.map(
@@ -524,7 +565,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar(self, lidar_name: str) -> Dict[str, SceneDataDTO]:
-        with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
+        with ThreadPoolExecutor(max_workers=4) as lidar_frame_executor:
             lidar_encoding_results = zip(
                 self._scene.ordered_frame_ids,
                 lidar_frame_executor.map(
@@ -535,11 +576,11 @@ class DGPSceneEncoder(SceneEncoder):
         return self._process_encode_lidar_results(lidar_name=lidar_name, lidar_encoding_results=lidar_encoding_results)
 
     def _encode_cameras(self) -> Iterator[Tuple[str, Dict[str, SceneDataDTO]]]:
-        with ThreadPoolExecutor(max_workers=4) as camera_executor:
+        with ThreadPoolExecutor(max_workers=1) as camera_executor:
             return zip(self._camera_names, camera_executor.map(self._encode_camera, self._camera_names))
 
     def _encode_lidars(self) -> Iterator[Tuple[str, Dict[str, SceneDataDTO]]]:
-        with ThreadPoolExecutor(max_workers=4) as lidar_executor:
+        with ThreadPoolExecutor(max_workers=1) as lidar_executor:
             return zip(self._lidar_names, lidar_executor.map(self._encode_lidar, self._lidar_names))
 
     def _encode_ontologies(self) -> Dict[str, AsyncResult]:
@@ -549,7 +590,7 @@ class DGPSceneEncoder(SceneEncoder):
             if a_type is not Annotation  # equiv: not implemented, yet!
         }
 
-        output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"  # noqa: E501
+        output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
 
         return {
             k: self._run_async(func=write_json, obj=v.to_dict(), path=output_path, append_sha1=True)
@@ -602,7 +643,7 @@ class DGPSceneEncoder(SceneEncoder):
             calib_dto.extrinsics.append(r_extrinsic)
             calib_dto.intrinsics.append(r_intrinsic)
 
-        output_path = self._output_path / DirectoryName.CALIBRATION / ".json"  # noqa: E501
+        output_path = self._output_path / DirectoryName.CALIBRATION / ".json"
         return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
 
     def _encode_scene_json(

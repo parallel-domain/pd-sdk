@@ -39,6 +39,6 @@ class DirectoryName:
     SEMANTIC_SEGMENTATION_2D: str = "semantic_segmentation_2d"
     INSTANCE_SEGMENTATION_2D: str = "instance_segmentation_2d"
     SEMANTIC_SEGMENTATION_3D: str = "semantic_segmentation_3d"
-    INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_2d"
+    INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     DEPTH: str = "depth"
