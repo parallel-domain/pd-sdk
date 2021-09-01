@@ -37,7 +37,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SemanticSegmentation3D,
 )
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
+from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorFrameSetName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -108,9 +108,9 @@ class DGPSensorFrameDecoder(TemporalSensorFrameDecoder):
         )
 
         if dto.fisheye is True or dto.fisheye == 1:
-            camera_model = "fisheye"
+            camera_model = CameraModel.OPENCV_FISHEYE
         elif dto.fisheye is False or dto.fisheye == 0:
-            camera_model = "brown_conrady"
+            camera_model = CameraModel.OPENCV_PINHOLE
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
 
