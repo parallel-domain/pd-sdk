@@ -10,7 +10,7 @@ from paralleldomain.decoding.decoder import Decoder, TemporalDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
-from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes
 from paralleldomain.model.dataset import SceneDataset
 from paralleldomain.model.sensor import TemporalSensorFrame
 from paralleldomain.utilities import fsio
