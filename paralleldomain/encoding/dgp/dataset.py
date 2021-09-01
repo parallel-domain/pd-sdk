@@ -43,7 +43,7 @@ class DGPDatasetEncoder(DatasetEncoder):
 
         self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
         # Adapt if should be limited to a set of cameras, or empty list for no cameras
-        self._camera_names: Union[List[str], None] = ["camera_front"]
+        self._camera_names: Union[List[str], None] = ["Front"]
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
         self._lidar_names: Union[List[str], None] = []
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations

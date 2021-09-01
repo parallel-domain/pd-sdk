@@ -32,6 +32,19 @@ class Annotation:
 
 @dataclass
 class BoundingBox2D(Annotation):
+    """Represents a 2D Bounding Box geometry
+
+    Args:
+        x: Top-Left corner in image pixels coordinates along x-axis
+        y: Top-Left corner in image pixels coordinates along y-axis
+        width: Width of box in pixels along x-axis
+        height: Height of box in pixels along y-axis
+        class_id: Class ID of annotated object. Can be used to lookup more details in :obj:`ClassMap`.
+        instance_id: Instance ID of annotated object. Can be used to cross-reference with
+            other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
+
+    """
+
     x: int  # top left corner (in absolute pixel coordinates)
     y: int  # top left corner (in absolute pixel coordinates)
     width: int  # in absolute pixel coordinates
