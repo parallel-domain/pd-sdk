@@ -16,6 +16,9 @@ Welcome to Parallel Domain SDK's documentation!
 .. automodule:: model.annotation
     :members:
     :inherited-members:
+    :exclude-members: AnnotationTypes
+
+.. autoclass:: model.annotation.AnnotationTypes
 
 .. automodule:: utilities.projection
     :members:

@@ -463,12 +463,40 @@ class OpticalFlow(Annotation):
 class Depth(Annotation):
     """Represents a Depth mask for a camera image.
 
+
+
     Args:
         depth: :attr:`~.Depth.depth`
 
     Attributes:
         depth: Matrix of shape `(H X W x 1)`, , where `H` is the height and `W` is the width of corresponding
             camera image. The third axis contains the depth distance for each pixel as `int` in meter.
+
+    Example:
+        Using the depth mask in combination with :attr:`.ImageData.coordinates` allows for a fast retrieval of absolute
+        pixel coordinates.
+        ::
+
+            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+
+            flow = camera_frame.get_annotations(AnnotationTypes.Depth)
+            rgb = camera_frame.image.rgb
+            next_image = np.zeros_like(rgb)
+            coordinates = camera_frame.image.coordinates
+            next_frame_coords = coordinates + flow.vectors
+
+            for y in range(rgb.shape[0]):
+                for x in range(rgb.shape[1]):
+                    next_coord = next_frame_coords[y, x]
+                    if 0 <= next_coord[0] < rgb.shape[0] and 0 <= next_coord[1] < rgb.shape[1]:
+                        next_image[next_coord[0], next_coord[1], :] = rgb[y, x, :]
+
+            import cv2
+            cv2.imshow("window_name", cv2.cvtColor(
+                    src=next_image,
+                    code=cv2.COLOR_RGBA2BGRA,
+            ))
+            cv2.waitKey()
     """
 
     depth: np.ndarray
@@ -517,6 +545,42 @@ AnnotationType = Type[Annotation]
 
 
 class AnnotationTypes:
+    """Allows to get type-safe access to annotation type related information, e.g., annotation data or class maps.
+
+    Attributes:
+        BoundingBoxes2D
+        BoundingBoxes3D
+        SemanticSegmentation2D
+        InstanceSegmentation2D
+        SemanticSegmentation3D
+        InstanceSegmentation3D
+        OpticalFlow
+        Depth
+
+    Examples:
+        Access 2D Bounding Box annotations for a camera frame:
+        ::
+
+            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+
+            from paralleldomain.model.annotation import AnnotationTypes
+
+            boxes_2d = camera_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
+            for b in boxes_2d.boxes:
+                print(b.class_id, b.instance_id)
+
+        Access class map for an annotation type in a scene:
+        ::
+
+            scene: Scene = ...  # get a Scene instance
+
+            from paralleldomain.model.annotation import AnnotationTypes
+
+            class_map = scene.get_class_map(AnnotationTypes.SemanticSegmentation2D)
+            for id, class_detail in class_map.items():
+                print(id, class_detail.name)
+    """
+
     BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D
     BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D
     SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D
