@@ -9,10 +9,12 @@ Welcome to Parallel Domain SDK's documentation!
 .. automodule:: model.scene
     :members:
     :inherited-members:
+    :exclude-members: SceneDecoderProtocol
 
 .. automodule:: model.sensor
     :members:
     :inherited-members:
+    :exclude-members: SensorFrameDecoderProtocol, TemporalSensorFrameDecoderProtocol, SensorDecoderProtocol
 
 .. automodule:: model.annotation
     :members:

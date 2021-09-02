@@ -27,6 +27,14 @@ class SceneDecoderProtocol(SensorFrameSetDecoderProtocol, Protocol):
 
 
 class Scene(SensorFrameSet[TemporalFrame, TemporalSensorFrame]):
+    """A collection of time-ordered sensor data.
+
+    Args:
+        name: Name of scene
+        available_annotation_types: List of available annotation types for this scene.
+        decoder: Decoder instance to be used for loading all relevant objects (frames, annotations etc.)
+    """
+
     def __init__(
         self,
         name: SensorFrameSetName,
@@ -38,12 +46,23 @@ class Scene(SensorFrameSet[TemporalFrame, TemporalSensorFrame]):
 
     @property
     def ordered_frame_ids(self) -> List[FrameId]:
+        """Returns a list of frame IDs sorted by datetime."""
         return sorted(self.frame_ids, key=self._decoder.get_frame_id_to_date_time_map(scene_name=self.name).get)
 
     @classmethod
     def from_decoder(
         cls, scene_name: SceneName, available_annotation_types: List[AnnotationType], decoder: SceneDecoderProtocol
     ) -> "Scene":
+        """Returns Scene instance using the provided information.
+
+        Args:
+            scene_name: Name of scene
+            available_annotation_types: List of available annotation types for this scene.
+            decoder: Decoder instance to be used for loading all relevant objects (frames, annotations etc.)
+
+        Returns:
+            Scene instance.
+        """
         return cls(
             name=scene_name,
             available_annotation_types=available_annotation_types,

@@ -29,7 +29,7 @@ class DatasetMeta:
 
     Attributes:
         name: Name of the dataset.
-        available_annotation_types: List of included annotation types for all scenes.
+        available_annotation_types: List of available annotation types for all scenes.
         custom_attributes: Dictionary of arbitrary dataset attributes.
 
     """
