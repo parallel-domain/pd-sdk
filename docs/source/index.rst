@@ -23,6 +23,10 @@ Welcome to Parallel Domain SDK's documentation!
 
 .. autoclass:: model.annotation.AnnotationTypes
 
+.. automodule:: model.transformation
+    :members:
+    :inherited-members:
+
 .. automodule:: utilities.projection
     :members:
     :inherited-members:
