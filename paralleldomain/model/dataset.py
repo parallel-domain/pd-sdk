@@ -20,16 +20,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DatasetMeta:
-    """*Dataclass*
+    """Stores name, annotation types and any custom meta attributes for a dataset
 
-    Stores name, annotation types and any custom meta attributes for a dataset"""
+    Args:
+        name: :attr:`~.DatasetMeta.name`
+        available_annotation_types: :attr:`~.DatasetMeta.available_annotation_types`
+        custom_attributes: :attr:`~.DatasetMeta.custom_attributes`
+
+    Attributes:
+        name: Name of the dataset.
+        available_annotation_types: List of included annotation types for all scenes.
+        custom_attributes: Dictionary of arbitrary dataset attributes.
+
+    """
 
     name: str
-    """Dataset name."""
     available_annotation_types: List[AnnotationType]
-    """List of all available annotation types in this dataset."""
     custom_attributes: Dict[str, Any] = field(default_factory=dict)
-    """Dictionary of custom attributes for the dataset."""
 
 
 class DatasetDecoderProtocol(SensorFrameSetDecoderProtocol, Protocol):
@@ -103,7 +110,7 @@ class Dataset:
         """Allows access to a sensor frame set by using its name.
 
         Args:
-            set_name (str): Name of sensor frame set to be returned
+            set_name: Name of sensor frame set to be returned
 
         Returns:
             Returns the `SensorFrameSet` object for a sensor frame set name.
@@ -136,9 +143,9 @@ class SceneDataset(Dataset):
         """Allows access to a scene by using its name.
 
         Args:
-            scene_name (str): Name of scene to be returned
+            scene_name: Name of scene to be returned
 
         Returns:
-            Returns the `Scene` object for a scene name.
+            Returns the :obj:`Scene` object for a scene name.
         """
         return self._decoder.get_scene(scene_name=scene_name)

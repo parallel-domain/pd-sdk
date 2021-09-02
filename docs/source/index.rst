@@ -4,6 +4,7 @@ Welcome to Parallel Domain SDK's documentation!
 .. automodule:: model.dataset
     :members:
     :inherited-members:
+    :exclude-members: DatasetDecoderProtocol, SceneDatasetDecoderProtocol
 
 .. automodule:: model.scene
     :members:
