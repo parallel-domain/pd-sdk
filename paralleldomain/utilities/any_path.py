@@ -67,9 +67,12 @@ class AnyPath:
         with ThreadPool(max_num_threads) as pool:
             pool.map(_copy, (i for i in self._backend.rglob("*")))
 
-    def relative_to(self, other: str) -> "AnyPath":
-        rel_to = self._backend.relative_to(other)
-        return self._create_valid_any_path(new_path=rel_to)
+    def relative_to(self, other: "AnyPath") -> "AnyPath":
+        if isinstance(self._backend, type(other._backend)):
+            rel_to = os.path.relpath(path=str(self), start=str(other))
+            return AnyPath(path=str(rel_to))
+        else:
+            raise TypeError("Not possible to compare different backend types.")
 
     def copy(self, target: "AnyPath"):
         if self.is_cloud_path and target.is_cloud_path:
@@ -107,8 +110,11 @@ class AnyPath:
         return self._backend.name
 
     @property
-    def parts(self) -> Tuple[str]:
-        return self._backend.parts
+    def parts(self) -> Tuple[str, ...]:
+        if self.is_cloud_path:
+            return tuple(["s3://"]) + self._backend.parts[1:]
+        else:
+            return self._backend.parts
 
     def as_posix(self) -> str:
         return self._backend.as_posix()

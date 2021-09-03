@@ -98,3 +98,9 @@ def relative_path(path: AnyPath, start: AnyPath) -> AnyPath:
     result = os.path.relpath(path=str(path), start=str(start))
 
     return AnyPath(result)
+
+
+def copy_file(source: AnyPath, target: AnyPath) -> AnyPath:
+    source.copy(target=target)
+    logger.debug(f"Finished copying from {str(source)} to {str(target)}")
+    return target
