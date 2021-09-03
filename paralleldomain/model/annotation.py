@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Type
 import numpy as np
 
 from paralleldomain.model.transformation import Transformation
+from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by_values
 
 # _UNIT_BOUNDING_BOX_3D = (CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM).rotation_matrix @ np.array(
 _UNIT_BOUNDING_BOX_3D = np.array(
@@ -32,16 +33,39 @@ class Annotation:
 
 @dataclass
 class BoundingBox2D(Annotation):
-    x: int  # top left corner (in absolute pixel coordinates)
-    y: int  # top left corner (in absolute pixel coordinates)
-    width: int  # in absolute pixel coordinates
-    height: int  # in absolute pixel coordinates
+    """Represents a 2D Bounding Box geometry.
+
+    Args:
+        x: :attr:`~.BoundingBox2D.x`
+        y: :attr:`~.BoundingBox2D.y`
+        width: :attr:`~.BoundingBox2D.width`
+        height: :attr:`~.BoundingBox2D.height`
+        class_id: :attr:`~.BoundingBox2D.class_id`
+        instance_id: :attr:`~.BoundingBox2D.instance_id`
+        attributes: :attr:`~.BoundingBox2D.attributes`
+
+    Attributes:
+        x: Top-Left corner in image pixels coordinates along x-axis
+        y: Top-Left corner in image pixels coordinates along y-axis
+        width: Width of box in pixel along x-axis
+        height: Height of box in pixel along y-axis
+        class_id: Class ID of annotated object. Can be used to lookup more details in :obj:`ClassMap`.
+        instance_id: Instance ID of annotated object. Can be used to cross-reference with
+            other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
+        attributes: Dictionary of arbitrary object attributes.
+    """
+
+    x: int
+    y: int
+    width: int
+    height: int
     class_id: int
     instance_id: int
     attributes: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def area(self):
+        """Returns area of 2D Bounding Box in square pixel."""
         return self.width * self.height
 
     def __repr__(self):
@@ -54,6 +78,15 @@ class BoundingBox2D(Annotation):
 
 @dataclass
 class BoundingBoxes2D(Annotation):
+    """Collection of 2D Bounding Boxes.
+
+    Args:
+        boxes: :attr:`~.BoundingBoxes2D.boxes`
+
+    Attributes:
+        boxes: Unordered list of :obj:`BoundingBox2D` instances
+    """
+
     boxes: List[BoundingBox2D]
 
     def get_instance(self, instance_id: int) -> BoundingBox2D:
@@ -82,6 +115,30 @@ class BoundingBoxes2D(Annotation):
 
 @dataclass
 class BoundingBox3D:
+    """Represents a 2D Bounding Box geometry.
+
+    Args:
+        pose: :attr:`~.BoundingBox3D.pose`
+        length: :attr:`~.BoundingBox3D.length`
+        width: :attr:`~.BoundingBox3D.width`
+        height: :attr:`~.BoundingBox3D.height`
+        class_id: :attr:`~.BoundingBox3D.class_id`
+        instance_id: :attr:`~.BoundingBox3D.instance_id`
+        num_points: :attr:`~.BoundingBox3D.num_points`
+        attributes: :attr:`~.BoundingBox3D.attributes`
+
+    Attributes:
+        pose: 6D Pose for box in 3D sensor space.
+        length: Length of box in meter along x-axis.
+        width: Width of box in meter along y-axis.
+        height: Height of box in meter along z-axis.
+        class_id: Class ID of annotated object. Can be used to lookup more details in :obj:`ClassMap`.
+        instance_id: Instance ID of annotated object. Can be used to cross-reference with
+            other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
+        num_points: Number of LiDAR points of related :obj:`Sensor`.
+        attributes: Dictionary of arbitrary object attributes.
+    """
+
     pose: AnnotationPose
     width: float
     height: float
@@ -100,6 +157,7 @@ class BoundingBox3D:
 
     @property
     def volume(self) -> float:
+        """Returns volume of 3D Bounding Box in cubic meter."""
         return self.length * self.width * self.height
 
     @property
@@ -228,6 +286,15 @@ class BoundingBox3D:
 
 @dataclass
 class BoundingBoxes3D(Annotation):
+    """Collection of 3D Bounding Boxes
+
+    Args:
+        boxes: :attr:`~.BoundingBoxes3D.boxes`
+
+    Attributes:
+        boxes: Unordered list of :obj:`BoundingBox3D` instances
+    """
+
     boxes: List[BoundingBox3D]
 
     def get_instance(self, instance_id: int) -> BoundingBox3D:
@@ -256,20 +323,46 @@ class BoundingBoxes3D(Annotation):
 
 @dataclass
 class SemanticSegmentation2D(Annotation):
+    """Represents a 2D Semantic Segmentation mask for a camera image.
+
+    Args:
+        class_ids: :attr:`~.SemanticSegmentation2D.class_ids`
+
+    Attributes:
+        class_ids: Matrix of shape `(H x W x 1)`, where `H` is height and `W` is width of corresponding camera image.
+            The third axis contains the class ID for each pixel as `int`.
+    """
+
     class_ids: np.ndarray
 
-    def get_class(self, class_id: int) -> np.ndarray:
-        return self.get_classes(class_ids=[class_id])
+    def get_class_mask(self, class_id: int) -> np.ndarray:
+        """Returns a `bool` mask where class is present.
 
-    def get_classes(self, class_ids: List[int]) -> np.ndarray:
-        return np.isin(self.class_ids, class_ids)
+        Args:
+            class_id: ID of class to be masked
+
+        Returns:
+            Mask of same shape as :py:attr:`~class_ids` and `bool` values.
+            `True` where pixel matches class, `False` where it doesn't.
+        """
+        return boolean_mask_by_value(mask=self.class_ids, value=class_id)
+
+    def get_classes_mask(self, class_ids: List[int]) -> np.ndarray:
+        """Returns a `bool` mask where classes are present.
+
+        Args:
+            class_ids: IDs of classes to be masked
+
+        Returns:
+            Mask of same shape as `class_ids` and `bool` values.
+            `True` where pixel matches one of the classes, `False` where it doesn't.
+        """
+        return boolean_mask_by_values(mask=self.class_ids, values=class_ids)
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Converts Class ID mask to RGB representation, with R being the first 8 bit and B being the last 8 bit.
-
-        :return: `np.ndarray`
-        """
+        """Outputs :attr:`~.SemanticSegmentation.class_ids` mask as RGB-encoded image matrix with shape `(H x W x 3)`,
+        with `R` (index: 0) being the lowest and `B` (index: 2) being the highest 8 bit."""
         return np.concatenate(
             [self.class_ids & 0xFF, self.class_ids >> 8 & 0xFF, self.class_ids >> 16 & 0xFF], axis=-1
         ).astype(np.uint8)
@@ -290,23 +383,49 @@ class SemanticSegmentation2D(Annotation):
 
 @dataclass
 class InstanceSegmentation2D(Annotation):
+    """Represents a 2D Instance Segmentation mask for a camera image.
+
+    Args:
+        instance_ids: :attr:`~.SemanticSegmentation2D.instance_ids`
+
+    Attributes:
+        instance_ids: Matrix of shape `(H x W x 1)`, where `H` is the height and `W` is the width of corresponding
+            camera image. The third axis contains the instance ID for each pixel as `int`.
+    """
+
     instance_ids: np.ndarray
 
     def get_instance(self, instance_id: int) -> np.ndarray:
-        return self.get_instances(instance_ids=[instance_id])
+        """Returns a `bool` mask where instance is present.
+
+        Args:
+            instance_id: ID of instance to be masked
+
+        Returns:
+            Mask of same shape as :py:attr:`~class_ids` and `bool` values.
+            `True` where pixel matches instance, `False` where it doesn't.
+        """
+        return boolean_mask_by_value(mask=self.instance_ids, value=instance_id)
 
     def get_instances(self, instance_ids: List[int]) -> np.ndarray:
-        return np.isin(self.instance_ids, instance_ids)
+        """Returns a `bool` mask where instances are present.
+
+        Args:
+            instance_ids: IDs of instances to be masked
+
+        Returns:
+            Mask of same shape as `class_ids` and `bool` values.
+            `True` where pixel matches one of the instances, `False` where it doesn't.
+        """
+        return boolean_mask_by_values(mask=self.instance_ids, values=instance_ids)
 
     def __sizeof__(self):
         return getsizeof(self.instance_ids)
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Converts Instace ID mask to RGB representation, with R being the first 8 bit and B being the last 8 bit.
-
-        :return: `np.ndarray`
-        """
+        """Outputs :attr:`~.InstanceSegmentation.instance_ids` mask as RGB matrix with shape `(H x W x 3)`,
+        with `R` being the lowest and `B` being the highest 8 bit."""
         return np.concatenate(
             [self.instance_ids & 0xFF, self.instance_ids >> 8 & 0xFF, self.instance_ids >> 16 & 0xFF], axis=-1
         ).astype(np.uint8)
@@ -324,6 +443,42 @@ class InstanceSegmentation2D(Annotation):
 
 @dataclass
 class OpticalFlow(Annotation):
+    """Represents an Optical Flow mask for a camera image.
+
+    Args:
+        vectors: :attr:`~.OpticalFlow.vectors`
+
+    Attributes:
+        vectors: Matrix of shape `(H X W x 2)`, , where `H` is the height and `W` is the width of corresponding
+            camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.
+
+    Example:
+        Using the Optical Flow vector mask in combination with :attr:`.ImageData.coordinates` allows for a
+        fast retrieval of absolute pixel coordinates.
+        ::
+
+            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+
+            flow = camera_frame.get_annotations(AnnotationTypes.OpticalFlow)
+            rgb = camera_frame.image.rgb
+            next_image = np.zeros_like(rgb)
+            coordinates = camera_frame.image.coordinates
+            next_frame_coords = coordinates + flow.vectors
+
+            for y in range(rgb.shape[0]):
+                for x in range(rgb.shape[1]):
+                    next_coord = next_frame_coords[y, x]
+                    if 0 <= next_coord[0] < rgb.shape[0] and 0 <= next_coord[1] < rgb.shape[1]:
+                        next_image[next_coord[0], next_coord[1], :] = rgb[y, x, :]
+
+            import cv2
+            cv2.imshow("window_name", cv2.cvtColor(
+                    src=next_image,
+                    code=cv2.COLOR_RGBA2BGRA,
+            ))
+            cv2.waitKey()
+    """
+
     vectors: np.ndarray
 
     def __sizeof__(self):
@@ -332,6 +487,19 @@ class OpticalFlow(Annotation):
 
 @dataclass
 class Depth(Annotation):
+    """Represents a Depth mask for a camera image.
+
+
+
+    Args:
+        depth: :attr:`~.Depth.depth`
+
+    Attributes:
+        depth: Matrix of shape `(H X W x 1)`, , where `H` is the height and `W` is the width of corresponding
+            camera image. The third axis contains the depth distance for each pixel as `int` in meter.
+
+    """
+
     depth: np.ndarray
 
     def __sizeof__(self):
@@ -340,6 +508,16 @@ class Depth(Annotation):
 
 @dataclass
 class SemanticSegmentation3D(Annotation):
+    """Represents a 3D Instance Segmentation mask for a point cloud.
+
+    Args:
+        class_ids: :attr:`~.SemanticSegmentation3D.class_ids`
+
+    Attributes:
+        class_ids: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the class ID for each point as `int`.
+    """
+
     class_ids: np.ndarray
 
     def __sizeof__(self):
@@ -348,6 +526,16 @@ class SemanticSegmentation3D(Annotation):
 
 @dataclass
 class InstanceSegmentation3D(Annotation):
+    """Represents a 3D Instance Segmentation mask for a point cloud.
+
+    Args:
+        instance_ids: :attr:`~.InstanceSegmentation3D.instance_ids`
+
+    Attributes:
+        instance_ids: 2D Matrix of size `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the instance ID for each point as `int`.
+    """
+
     instance_ids: np.ndarray
 
     def __sizeof__(self):
@@ -358,6 +546,42 @@ AnnotationType = Type[Annotation]
 
 
 class AnnotationTypes:
+    """Allows to get type-safe access to annotation type related information, e.g., annotation data or class maps.
+
+    Attributes:
+        BoundingBoxes2D
+        BoundingBoxes3D
+        SemanticSegmentation2D
+        InstanceSegmentation2D
+        SemanticSegmentation3D
+        InstanceSegmentation3D
+        OpticalFlow
+        Depth
+
+    Examples:
+        Access 2D Bounding Box annotations for a camera frame:
+        ::
+
+            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+
+            from paralleldomain.model.annotation import AnnotationTypes
+
+            boxes_2d = camera_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
+            for b in boxes_2d.boxes:
+                print(b.class_id, b.instance_id)
+
+        Access class map for an annotation type in a scene:
+        ::
+
+            scene: Scene = ...  # get a Scene instance
+
+            from paralleldomain.model.annotation import AnnotationTypes
+
+            class_map = scene.get_class_map(AnnotationTypes.SemanticSegmentation2D)
+            for id, class_detail in class_map.items():
+                print(id, class_detail.name)
+    """
+
     BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D
     BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D
     SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D

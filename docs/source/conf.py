@@ -35,6 +35,9 @@ extensions = [
     "sphinx.ext.napoleon",
 ]
 
+intersphinx_mapping = {
+    "pyquaternion": ("http://kieranwynn.github.io/pyquaternion/", None),
+}
 
 autoclass_content = "both"
 autodoc_inherit_docstrings = True
