@@ -135,16 +135,6 @@ class LazyLoadCache(Cache):
             pass
         return size
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Don't pickle baz
-        del state["_key_load_locks"]
-        del state["_create_key_lock"]
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-
 
 cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
 
