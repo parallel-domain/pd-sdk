@@ -42,7 +42,7 @@ class CoordinateSystem:
 
     @staticmethod
     def print_convention():
-        logger.info(f"Font axis: {CoordinateSystem._axis_char_map['F']}")
+        logger.info(f"Front axis: {CoordinateSystem._axis_char_map['F']}")
         logger.info(f"Left axis: {CoordinateSystem._axis_char_map['L']}")
         logger.info(f"Up axis: {CoordinateSystem._axis_char_map['U']}")
 
