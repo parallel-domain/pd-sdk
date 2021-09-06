@@ -102,27 +102,3 @@ class Frame(Generic[TDateTime]):
         if self.date_time is not None and other.date_time is not None:
             return self.date_time < other.date_time
         return id(self) < id(other)
-
-
-# class TemporalFrameDecoderProtocol(FrameDecoderProtocol[TemporalSensorFrame], Protocol):
-#     def get_datetime(self, frame_id: FrameId) -> datetime:
-#         pass
-#
-#
-# class TemporalFrame(Frame[TemporalSensorFrame]):
-#     def __init__(
-#         self,
-#         frame_id: FrameId,
-#         decoder: TemporalFrameDecoderProtocol,
-#     ):
-#         super().__init__(frame_id=frame_id, decoder=decoder)
-#         self._decoder = decoder
-#
-#     @property
-#     def date_time(self) -> datetime:
-#         return self._decoder.get_datetime(frame_id=self.frame_id)
-#
-#     def __lt__(self, other: Union["TemporalFrame, Frame"]):
-#         if isinstance(other, TemporalFrame):
-#             return self.date_time < other.date_time
-#         return super().__lt__(other=other)
