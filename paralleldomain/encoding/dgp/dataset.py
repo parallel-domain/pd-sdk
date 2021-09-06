@@ -33,7 +33,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         super().__init__(
             dataset=dataset,
             output_path=output_path,
-            set_names=scene_names,
+            scene_names=scene_names,
             set_start=scene_start,
             set_stop=scene_stop,
             n_parallel=n_parallel,
@@ -84,10 +84,10 @@ class DGPDatasetEncoder(DatasetEncoder):
         with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
             scene_files = dict(
                 zip(
-                    self._set_names,
+                    self._scene_names,
                     scene_executor.map(
                         self._call_scene_encoder,
-                        self._set_names,
+                        self._scene_names,
                     ),
                 )
             )

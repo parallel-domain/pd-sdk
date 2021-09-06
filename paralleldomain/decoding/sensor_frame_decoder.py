@@ -7,7 +7,7 @@ import numpy as np
 from paralleldomain.decoding.common import create_cache_key
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
@@ -15,8 +15,8 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class SensorFrameDecoder(Generic[TDateTime]):
-    def __init__(self, dataset_name: str, set_name: SensorFrameSetName, lazy_load_cache: LazyLoadCache):
-        self.set_name = set_name
+    def __init__(self, dataset_name: str, scene_name: SceneName, lazy_load_cache: LazyLoadCache):
+        self.scene_name = scene_name
         self._lazy_load_cache = lazy_load_cache
         self.dataset_name = dataset_name
 
@@ -25,7 +25,7 @@ class SensorFrameDecoder(Generic[TDateTime]):
     ) -> str:
         return create_cache_key(
             dataset_name=self.dataset_name,
-            set_name=self.set_name,
+            scene_name=self.scene_name,
             frame_id=frame_id,
             sensor_name=sensor_name,
             extra=extra,

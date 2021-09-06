@@ -17,7 +17,7 @@ from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
@@ -75,7 +75,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
 
-    def _decode_sensor_frame_set_names(self) -> List[SensorFrameSetName]:
+    def _decode_unordered_scene_names(self) -> List[SceneName]:
         return [p.parent.name for p in self._decode_scene_paths()]
 
     def _decode_dataset_meta_data(self) -> DatasetMeta:
@@ -102,28 +102,28 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
     def _create_camera_sensor_decoder(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> CameraSensorDecoder[TDateTime]:
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
-            set_name=set_name,
+            scene_name=scene_name,
             lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
-            scene_samples=self._sample_by_index(scene_name=set_name),
-            scene_data=self._decode_scene_dto(scene_name=set_name).data,
+            scene_samples=self._sample_by_index(scene_name=scene_name),
+            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
 
     def _create_lidar_sensor_decoder(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> LidarSensorDecoder[TDateTime]:
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,
-            set_name=set_name,
+            scene_name=scene_name,
             lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
-            scene_samples=self._sample_by_index(scene_name=set_name),
-            scene_data=self._decode_scene_dto(scene_name=set_name).data,
+            scene_samples=self._sample_by_index(scene_name=scene_name),
+            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
 
@@ -131,34 +131,34 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
 
-    def _decode_set_metadata(self, set_name: SensorFrameSetName) -> Dict[str, Any]:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return scene_dto.metadata.to_dict()
 
-    def _decode_set_description(self, set_name: SensorFrameSetName) -> str:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_set_description(self, scene_name: SceneName) -> str:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return scene_dto.description
 
-    def _decode_frame_id_set(self, set_name: SensorFrameSetName) -> Set[FrameId]:
-        return set(self._decode_frame_id_to_date_time_map(scene_name=set_name).keys())
+    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
+        return set(self._decode_frame_id_to_date_time_map(scene_name=scene_name).keys())
 
-    def _decode_sensor_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data}))
 
-    def _decode_camera_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.image}))
 
-    def _decode_lidar_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
-    def _decode_class_maps(self, set_name: SensorFrameSetName) -> Dict[str, ClassMap]:
-        scene_dto = self._decode_scene_dto(scene_name=set_name)
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
-            ontology_path = self._dataset_path / set_name / "ontology" / f"{ontology_file}.json"
+            ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
             ontology_data = read_json(path=ontology_path)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
@@ -177,15 +177,15 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         return ontologies
 
     def _create_frame_decoder(
-        self, set_name: SensorFrameSetName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> FrameDecoder:
         return DGPFrameDecoder(
             dataset_name=dataset_name,
-            set_name=set_name,
+            scene_name=scene_name,
             lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
-            scene_samples=self._sample_by_index(scene_name=set_name),
-            scene_data=self._decode_scene_dto(scene_name=set_name).data,
+            scene_samples=self._sample_by_index(scene_name=scene_name),
+            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
 

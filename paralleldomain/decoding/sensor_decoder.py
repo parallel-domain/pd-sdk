@@ -9,7 +9,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
 )
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
-from paralleldomain.model.type_aliases import FrameId, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
@@ -17,8 +17,8 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class SensorDecoder(Generic[TDateTime]):
-    def __init__(self, dataset_name: str, set_name: SensorFrameSetName, lazy_load_cache: LazyLoadCache):
-        self.set_name = set_name
+    def __init__(self, dataset_name: str, scene_name: SceneName, lazy_load_cache: LazyLoadCache):
+        self.scene_name = scene_name
         self.lazy_load_cache = lazy_load_cache
         self.dataset_name = dataset_name
 
@@ -27,7 +27,7 @@ class SensorDecoder(Generic[TDateTime]):
     ) -> str:
         return create_cache_key(
             dataset_name=self.dataset_name,
-            set_name=self.set_name,
+            scene_name=self.scene_name,
             sensor_name=sensor_name,
             frame_id=frame_id,
             extra=extra,
