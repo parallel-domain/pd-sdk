@@ -8,13 +8,14 @@ import iso8601
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
-from paralleldomain.decoding.decoder import FrameDecoder, SensorDecoder, TemporalDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, SensorDecoder, TDateTime
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
-from paralleldomain.decoding.dgp.sensor_decoder import DGPSensorDecoder
+from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder, DGPSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
-from paralleldomain.model.dataset import DatasetMeta, SceneDataset
-from paralleldomain.model.frame import Frame, TemporalFrame
-from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, TemporalSensorFrame
+from paralleldomain.model.dataset import DatasetMeta
+from paralleldomain.model.frame import Frame
+from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorFrameSetName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -24,29 +25,55 @@ from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 logger = logging.getLogger(__name__)
 
 
-class DGPDecoder(TemporalDecoder[SceneDataset, TemporalSensorFrame]):
+class _DatasetDecoderMixin:
+    def __init__(self, dataset_path: Union[str, AnyPath], **kwargs):
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
+
+    def _decode_scene_paths(self) -> List[PosixPath]:
+        dto = self._decode_dataset_dto()
+        return [
+            PosixPath(path)
+            for split_key in sorted(dto.scene_splits.keys())
+            for path in dto.scene_splits[split_key].filenames
+        ]
+
+    @lru_cache(maxsize=1)
+    def _decode_dataset_dto(self) -> DatasetDTO:
+        dataset_cloud_path: AnyPath = self._dataset_path
+        scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
+        if not scene_dataset_json_path.exists():
+            raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
+
+        scene_dataset_json = read_json(path=scene_dataset_json_path)
+        scene_dataset_dto = DatasetDTO.from_dict(scene_dataset_json)
+
+        return scene_dataset_dto
+
+    def _decode_scene_names(self) -> List[SceneName]:
+        return [p.parent.name for p in self._decode_scene_paths()]
+
+
+class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
         custom_reference_to_box_bottom: Optional[Transformation] = None,
         use_persistent_cache: bool = True,
     ):
-        super().__init__(dataset_name=dataset_path, use_persistent_cache=use_persistent_cache)
+        _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
+        DatasetDecoder.__init__(self, dataset_name=str(dataset_path), use_persistent_cache=use_persistent_cache)
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
-    def _decode_scene_names(self) -> List[SceneName]:
-        return [p.parent.name for p in self._decode_scene_paths()]
-
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
-
-    def get_dataset(self) -> SceneDataset:
-        return SceneDataset(decoder=self)
+    def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
+        return DGPSceneDecoder(
+            dataset_path=self._dataset_path,
+            lazy_load_cache=self._lazy_load_cache,
+            custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+        )
 
     def _decode_sensor_frame_set_names(self) -> List[SensorFrameSetName]:
         return [p.parent.name for p in self._decode_scene_paths()]
@@ -56,6 +83,53 @@ class DGPDecoder(TemporalDecoder[SceneDataset, TemporalSensorFrame]):
         meta_dict = dto.metadata.to_dict()
         anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
         return DatasetMeta(name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
+
+
+class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        lazy_load_cache: LazyLoadCache,
+        custom_reference_to_box_bottom: Optional[Transformation] = None,
+    ):
+        _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
+        SceneDecoder.__init__(self, dataset_name=str(dataset_path), lazy_load_cache=lazy_load_cache)
+
+        self.custom_reference_to_box_bottom = (
+            Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
+        )
+
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
+
+    def _create_camera_sensor_decoder(
+        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+    ) -> CameraSensorDecoder[TDateTime]:
+        return DGPCameraSensorDecoder(
+            dataset_name=dataset_name,
+            set_name=set_name,
+            lazy_load_cache=lazy_load_cache,
+            dataset_path=self._dataset_path,
+            scene_samples=self._sample_by_index(scene_name=set_name),
+            scene_data=self._decode_scene_dto(scene_name=set_name).data,
+            custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+        )
+
+    def _create_lidar_sensor_decoder(
+        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+    ) -> LidarSensorDecoder[TDateTime]:
+        return DGPLidarSensorDecoder(
+            dataset_name=dataset_name,
+            set_name=set_name,
+            lazy_load_cache=lazy_load_cache,
+            dataset_path=self._dataset_path,
+            scene_samples=self._sample_by_index(scene_name=set_name),
+            scene_data=self._decode_scene_dto(scene_name=set_name).data,
+            custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+        )
+
+    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
+        return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
 
     def _decode_set_metadata(self, set_name: SensorFrameSetName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=set_name)
@@ -102,32 +176,6 @@ class DGPDecoder(TemporalDecoder[SceneDataset, TemporalSensorFrame]):
 
         return ontologies
 
-    def _create_sensor_decoder(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
-    ) -> SensorDecoder:
-        return DGPSensorDecoder(
-            dataset_name=dataset_name,
-            set_name=set_name,
-            lazy_load_cache=lazy_load_cache,
-            dataset_path=self._dataset_path,
-            scene_samples=self._sample_by_index(scene_name=set_name),
-            scene_data=self._decode_scene_dto(scene_name=set_name).data,
-            custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
-        )
-
-    def _decode_sensor(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, sensor_decoder: SensorDecoder
-    ) -> Sensor:
-        sensor_data = self._data_by_key_with_name(scene_name=set_name, data_name=sensor_name)
-        data = next(iter(sensor_data.values()))
-
-        if data.datum.point_cloud:
-            return LidarSensor(sensor_name=sensor_name, decoder=sensor_decoder)
-        elif data.datum.image:
-            return CameraSensor(sensor_name=sensor_name, decoder=sensor_decoder)
-
-        raise ValueError(f"Unknown Sensor type {sensor_name}!")
-
     def _create_frame_decoder(
         self, set_name: SensorFrameSetName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> FrameDecoder:
@@ -140,30 +188,6 @@ class DGPDecoder(TemporalDecoder[SceneDataset, TemporalSensorFrame]):
             scene_data=self._decode_scene_dto(scene_name=set_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
-
-    def _decode_frame(self, set_name: SensorFrameSetName, frame_id: FrameId, frame_decoder: FrameDecoder) -> Frame:
-        frame_decoder = cast(DGPFrameDecoder, frame_decoder)
-        return TemporalFrame(frame_id=frame_id, decoder=frame_decoder)
-
-    @lru_cache(maxsize=1)
-    def _decode_dataset_dto(self) -> DatasetDTO:
-        dataset_cloud_path: AnyPath = self._dataset_path
-        scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
-        if not scene_dataset_json_path.exists():
-            raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
-
-        scene_dataset_json = read_json(path=scene_dataset_json_path)
-        scene_dataset_dto = DatasetDTO.from_dict(scene_dataset_json)
-
-        return scene_dataset_dto
-
-    def _decode_scene_paths(self) -> List[PosixPath]:
-        dto = self._decode_dataset_dto()
-        return [
-            PosixPath(path)
-            for split_key in sorted(dto.scene_splits.keys())
-            for path in dto.scene_splits[split_key].filenames
-        ]
 
     @staticmethod
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:

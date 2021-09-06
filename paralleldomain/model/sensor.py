@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Dict, Generic, List, Optional, Set, Tuple, Type, TypeVar
+from typing import Callable, Dict, Generic, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
@@ -17,6 +17,7 @@ from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
 
 T = TypeVar("T")
+TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class CameraModel:
@@ -39,20 +40,11 @@ class CameraModel:
     OPENCV_FISHEYE: str = "opencv_fisheye"
 
 
-class SensorFrameDecoderProtocol(Protocol):
+class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
 
-    def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
-        pass
-
     def get_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorPose":
-        pass
-
-    def get_point_cloud(self, sensor_name: SensorName, frame_id: FrameId) -> Optional["PointCloudData"]:
-        pass
-
-    def get_image(self, sensor_name: SensorName, frame_id: FrameId) -> Optional["ImageData"]:
         pass
 
     def get_annotations(
@@ -65,13 +57,16 @@ class SensorFrameDecoderProtocol(Protocol):
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
+    def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
+        pass
 
-class SensorFrame:
+
+class SensorFrame(Generic[TDateTime]):
     def __init__(
         self,
         sensor_name: SensorName,
         frame_id: FrameId,
-        decoder: SensorFrameDecoderProtocol,
+        decoder: SensorFrameDecoderProtocol[TDateTime],
     ):
         self._frame_id = frame_id
         self._decoder = decoder
@@ -80,10 +75,6 @@ class SensorFrame:
     @property
     def extrinsic(self) -> "SensorExtrinsic":
         return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def intrinsic(self) -> "SensorIntrinsic":
-        return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def pose(self) -> "SensorPose":
@@ -96,14 +87,6 @@ class SensorFrame:
     @property
     def frame_id(self) -> FrameId:
         return self._frame_id
-
-    @property
-    def point_cloud(self) -> Optional["PointCloudData"]:
-        return self._decoder.get_point_cloud(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def image(self) -> Optional["ImageData"]:
-        return self._decoder.get_image(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
@@ -123,25 +106,168 @@ class SensorFrame:
             annotation_type=annotation_type,
         )
 
+    @property
+    def point_cloud(self) -> Optional["SensorFrame"]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return None
 
-class TemporalSensorFrameDecoderProtocol(SensorFrameDecoderProtocol, Protocol):
-    def get_datetime(self, frame_id: FrameId) -> datetime:
+    @property
+    def image(self) -> Optional["SensorFrame"]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return None
+
+    @property
+    def date_time(self) -> TDateTime:
+        return self._decoder.get_date_time(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    def __lt__(self, other: "SensorFrame[TDateTime]"):
+        if self.date_time is not None and other.date_time is not None:
+            # if isinstance(other, type(self)):
+            return self.date_time < other.date_time
+        return id(self) < id(other)
+
+
+class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime]):
+    def get_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        pass
+
+    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
 
 
-class TemporalSensorFrame(SensorFrame):
+class LidarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
         sensor_name: SensorName,
         frame_id: FrameId,
-        decoder: TemporalSensorFrameDecoderProtocol,
+        decoder: LidarSensorFrameDecoderProtocol[TDateTime],
     ):
         super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
         self._decoder = decoder
 
     @property
-    def date_time(self) -> datetime:
-        return self._decoder.get_datetime(frame_id=self.frame_id)
+    def point_cloud(self) -> Optional["LidarSensorFrame"]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return self
+
+    @property
+    def length(self) -> int:
+        return self._decoder.get_point_cloud_size(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def xyz(self) -> np.ndarray:
+        return self._decoder.get_point_cloud_xyz(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def rgb(self) -> np.ndarray:
+        return self._decoder.get_point_cloud_rgb(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def intensity(self) -> np.ndarray:
+        return self._decoder.get_point_cloud_intensity(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def ts(self) -> np.ndarray:
+        return self._decoder.get_point_cloud_timestamp(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def ring(self) -> np.ndarray:
+        return self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def xyz_i(self) -> np.ndarray:
+        return np.concatenate((self.xyz, self.intensity), axis=1)
+
+    @property
+    def xyz_one(self) -> np.ndarray:
+        xyz_data = self.xyz
+        one_data = np.ones((len(xyz_data), 1))
+        return np.concatenate((xyz_data, one_data), axis=1)
+
+
+class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime]):
+    def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
+        pass
+
+    def get_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+        pass
+
+    def get_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+
+class CameraSensorFrame(SensorFrame[TDateTime]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: CameraSensorFrameDecoderProtocol[TDateTime],
+    ):
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self._decoder = decoder
+
+    @property
+    def image(self) -> Optional["CameraSensorFrame"]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return self
+
+    @property
+    def intrinsic(self) -> "SensorIntrinsic":
+        return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def _data_rgba(self) -> np.ndarray:
+        return self._decoder.get_image_rgba(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def _image_dims(self) -> Tuple[int, int, int]:
+        return self._decoder.get_image_dimensions(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def rgba(self) -> np.ndarray:
+        return self._data_rgba
+
+    @property
+    def rgb(self) -> np.ndarray:
+        return self._data_rgba[:, :, :3]
+
+    @property
+    def width(self) -> int:
+        return self._image_dims[1]
+
+    @property
+    def height(self) -> int:
+        return self._image_dims[0]
+
+    @property
+    def channels(self) -> int:
+        return self._image_dims[2]
+
+    @property
+    def coordinates(self) -> np.ndarray:
+        shape = self._data_rgba.shape
+        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
+        return np.stack([y_coords, x_coords], axis=-1)
 
 
 TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
@@ -159,7 +285,7 @@ class Sensor(Generic[TSensorFrameType]):
     def __init__(
         self,
         sensor_name: SensorName,
-        decoder: SensorDecoderProtocol,
+        decoder: SensorDecoderProtocol[TSensorFrameType],
     ):
         self._decoder = decoder
         self._sensor_name = sensor_name
@@ -176,11 +302,11 @@ class Sensor(Generic[TSensorFrameType]):
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
 
-class CameraSensor(Sensor):
+class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
     ...
 
 
-class LidarSensor(Sensor):
+class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
     ...
 
 
@@ -228,135 +354,135 @@ class SensorIntrinsic:
         self.camera_model = camera_model
 
 
-class SensorData(metaclass=ABCMeta):
-    ...
-
-
-class PointInfo(Enum):
-    X = "X"
-    Y = "Y"
-    Z = "Z"
-    I = "INTENSITY"  # noqa: E741
-    R = "R"
-    G = "G"
-    B = "B"
-    RING = "RING"
-    TS = "TIMESTAMP"
-
-
-class ImageData(SensorData):
-    def __init__(
-        self,
-        load_data_rgba: Callable[[], np.ndarray],
-        load_image_dims: Callable[[], Tuple[int, int, int]],
-    ):
-        self._load_image_dims = load_image_dims
-        self._load_data_rgb_call = load_data_rgba
-
-    @property
-    def _data_rgba(self) -> np.ndarray:
-        return self._load_data_rgb_call()
-
-    @property
-    def _image_dims(self) -> Tuple[int, int, int]:
-        return self._load_image_dims()
-
-    @property
-    def rgba(self) -> np.ndarray:
-        return self._data_rgba
-
-    @property
-    def rgb(self) -> np.ndarray:
-        return self._data_rgba[:, :, :3]
-
-    @property
-    def width(self) -> int:
-        return self._image_dims[1]
-
-    @property
-    def height(self) -> int:
-        return self._image_dims[0]
-
-    @property
-    def channels(self) -> int:
-        return self._image_dims[2]
-
-    @property
-    def coordinates(self) -> np.ndarray:
-        shape = self._data_rgba.shape
-        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
-        return np.stack([y_coords, x_coords], axis=-1)
-
-
-class PointCloudData(SensorData):
-    def __init__(self, point_format: List[str], load_data: Callable[[], np.ndarray]):
-        self._load_data_call = load_data
-        self._point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
-
-    def _has(self, p_info: PointInfo):
-        return p_info in self._point_cloud_info
-
-    def _get_index(self, p_info: PointInfo):
-        return self._point_cloud_info[p_info]
-
-    @property
-    def _data(self) -> np.ndarray:
-        return self._load_data_call()
-
-    @property
-    def length(self) -> int:
-        return len(self._data)
-
-    @property
-    def xyz(self) -> np.ndarray:
-        xyz_index = [
-            self._get_index(PointInfo.X),
-            self._get_index(PointInfo.Y),
-            self._get_index(PointInfo.Z),
-        ]
-
-        return self._data[:, xyz_index]
-
-    @property
-    def rgb(self) -> np.ndarray:
-        rgb_index = [
-            self._get_index(PointInfo.R),
-            self._get_index(PointInfo.G),
-            self._get_index(PointInfo.B),
-        ]
-
-        return self._data[:, rgb_index]
-
-    @property
-    def intensity(self) -> np.ndarray:
-        intensity_index = [
-            self._get_index(PointInfo.I),
-        ]
-
-        return self._data[:, intensity_index]
-
-    @property
-    def ts(self) -> np.ndarray:
-        ts_index = [
-            self._get_index(PointInfo.TS),
-        ]
-
-        return self._data[:, ts_index]
-
-    @property
-    def ring(self) -> np.ndarray:
-        ring_index = [
-            self._get_index(PointInfo.RING),
-        ]
-
-        return self._data[:, ring_index]
-
-    @property
-    def xyz_i(self) -> np.ndarray:
-        return np.concatenate((self.xyz, self.intensity), axis=1)
-
-    @property
-    def xyz_one(self) -> np.ndarray:
-        xyz_data = self.xyz
-        one_data = np.ones((len(xyz_data), 1))
-        return np.concatenate((xyz_data, one_data), axis=1)
+# class SensorData(metaclass=ABCMeta):
+#     ...
+#
+#
+# class PointInfo(Enum):
+#     X = "X"
+#     Y = "Y"
+#     Z = "Z"
+#     I = "INTENSITY"  # noqa: E741
+#     R = "R"
+#     G = "G"
+#     B = "B"
+#     RING = "RING"
+#     TS = "TIMESTAMP"
+#
+#
+# class ImageData(SensorData):
+#     def __init__(
+#         self,
+#         load_data_rgba: Callable[[], np.ndarray],
+#         load_image_dims: Callable[[], Tuple[int, int, int]],
+#     ):
+#         self._load_image_dims = load_image_dims
+#         self._load_data_rgb_call = load_data_rgba
+#
+#     @property
+#     def _data_rgba(self) -> np.ndarray:
+#         return self._load_data_rgb_call()
+#
+#     @property
+#     def _image_dims(self) -> Tuple[int, int, int]:
+#         return self._load_image_dims()
+#
+#     @property
+#     def rgba(self) -> np.ndarray:
+#         return self._data_rgba
+#
+#     @property
+#     def rgb(self) -> np.ndarray:
+#         return self._data_rgba[:, :, :3]
+#
+#     @property
+#     def width(self) -> int:
+#         return self._image_dims[1]
+#
+#     @property
+#     def height(self) -> int:
+#         return self._image_dims[0]
+#
+#     @property
+#     def channels(self) -> int:
+#         return self._image_dims[2]
+#
+#     @property
+#     def coordinates(self) -> np.ndarray:
+#         shape = self._data_rgba.shape
+#         y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
+#         return np.stack([y_coords, x_coords], axis=-1)
+#
+#
+# class PointCloudData(SensorData):
+#     def __init__(self, point_format: List[str], load_data: Callable[[], np.ndarray]):
+#         self._load_data_call = load_data
+#         self._point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
+#
+#     def _has(self, p_info: PointInfo):
+#         return p_info in self._point_cloud_info
+#
+#     def _get_index(self, p_info: PointInfo):
+#         return self._point_cloud_info[p_info]
+#
+#     @property
+#     def _data(self) -> np.ndarray:
+#         return self._load_data_call()
+#
+#     @property
+#     def length(self) -> int:
+#         return len(self._data)
+#
+#     @property
+#     def xyz(self) -> np.ndarray:
+#         xyz_index = [
+#             self._get_index(PointInfo.X),
+#             self._get_index(PointInfo.Y),
+#             self._get_index(PointInfo.Z),
+#         ]
+#
+#         return self._data[:, xyz_index]
+#
+#     @property
+#     def rgb(self) -> np.ndarray:
+#         rgb_index = [
+#             self._get_index(PointInfo.R),
+#             self._get_index(PointInfo.G),
+#             self._get_index(PointInfo.B),
+#         ]
+#
+#         return self._data[:, rgb_index]
+#
+#     @property
+#     def intensity(self) -> np.ndarray:
+#         intensity_index = [
+#             self._get_index(PointInfo.I),
+#         ]
+#
+#         return self._data[:, intensity_index]
+#
+#     @property
+#     def ts(self) -> np.ndarray:
+#         ts_index = [
+#             self._get_index(PointInfo.TS),
+#         ]
+#
+#         return self._data[:, ts_index]
+#
+#     @property
+#     def ring(self) -> np.ndarray:
+#         ring_index = [
+#             self._get_index(PointInfo.RING),
+#         ]
+#
+#         return self._data[:, ring_index]
+#
+#     @property
+#     def xyz_i(self) -> np.ndarray:
+#         return np.concatenate((self.xyz, self.intensity), axis=1)
+#
+#     @property
+#     def xyz_one(self) -> np.ndarray:
+#         xyz_data = self.xyz
+#         one_data = np.ones((len(xyz_data), 1))
+#         return np.concatenate((xyz_data, one_data), axis=1)
