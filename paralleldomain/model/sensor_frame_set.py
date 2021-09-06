@@ -1,6 +1,7 @@
 import contextlib
 from datetime import datetime
-from typing import Any, Callable, ContextManager, Dict, Generator, Generic, List, Set, Type, TypeVar, cast
+from itertools import chain
+from typing import Any, Callable, ContextManager, Dict, Generator, Generic, List, Set, Type, TypeVar, Union, cast
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -15,10 +16,10 @@ from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, Senso
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorFrameSetName, SensorName
 
 T = TypeVar("T")
-TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
+TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
-class SensorFrameSetDecoderProtocol(Protocol[TSensorFrameType]):
+class SensorFrameSetDecoderProtocol(Protocol[TDateTime]):
     def get_set_description(self, set_name: SensorFrameSetName) -> str:
         pass
 
@@ -29,7 +30,7 @@ class SensorFrameSetDecoderProtocol(Protocol[TSensorFrameType]):
         self,
         set_name: SensorFrameSetName,
         frame_id: FrameId,
-    ) -> Frame[TSensorFrameType]:
+    ) -> Frame[TDateTime]:
         pass
 
     def get_sensor_names(self, set_name: SensorFrameSetName) -> List[str]:
@@ -47,19 +48,22 @@ class SensorFrameSetDecoderProtocol(Protocol[TSensorFrameType]):
     def get_class_map(self, set_name: SensorFrameSetName, annotation_type: Type[T]) -> ClassMap:
         pass
 
-    def get_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> Sensor[TSensorFrameType]:
+    def get_camera_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+        pass
+
+    def get_lidar_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
+        pass
+
+    def get_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, TDateTime]:
         pass
 
 
-TFrameType = TypeVar("TFrameType", bound=Frame)
-
-
-class SensorFrameSet(Generic[TFrameType, TSensorFrameType]):
+class SensorFrameSet(Generic[TDateTime]):
     def __init__(
         self,
         name: SensorFrameSetName,
         available_annotation_types: List[AnnotationType],
-        decoder: SensorFrameSetDecoderProtocol[TSensorFrameType],
+        decoder: SensorFrameSetDecoderProtocol[TDateTime],
     ):
         self._name = name
         self._available_annotation_types = available_annotation_types
@@ -78,16 +82,12 @@ class SensorFrameSet(Generic[TFrameType, TSensorFrameType]):
         return self._decoder.get_set_metadata(set_name=self._name)
 
     @property
-    def frames(self) -> Generator[Frame, None, None]:
-        return (self.get_frame(frame_id=frame_id) for frame_id in self.ordered_frame_ids)
+    def frames(self) -> Set[Frame[TDateTime]]:
+        return {self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids}
 
     @property
     def frame_ids(self) -> Set[FrameId]:
         return self._decoder.get_frame_ids(set_name=self.name)
-
-    @property
-    def ordered_frame_ids(self) -> List[FrameId]:
-        return sorted(self.frame_ids)
 
     @property
     def available_annotation_types(self):
@@ -105,23 +105,32 @@ class SensorFrameSet(Generic[TFrameType, TSensorFrameType]):
     def lidar_names(self) -> List[str]:
         return self._decoder.get_lidar_names(set_name=self.name)
 
-    def get_frame(self, frame_id: FrameId) -> TFrameType:
+    def get_frame(self, frame_id: FrameId) -> Frame[TDateTime]:
         return self._decoder.get_frame(set_name=self.name, frame_id=frame_id)
 
     @property
-    def sensors(self) -> Generator[Sensor, None, None]:
-        return (self.get_sensor(sensor_name=sensor_name) for sensor_name in self.sensor_names)
+    def sensors(self) -> Generator[Union[CameraSensor[TDateTime], LidarSensor[TDateTime]], None, None]:
+        return (a for a in chain(self.cameras, self.lidars))
 
     @property
-    def cameras(self) -> Generator[CameraSensor, None, None]:
-        return (cast(CameraSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.camera_names)
+    def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
+        return (self.get_camera_sensor(sensor_name=sensor_name) for sensor_name in self.camera_names)
 
     @property
-    def lidars(self) -> Generator[LidarSensor, None, None]:
-        return (cast(LidarSensor, self.get_sensor(sensor_name=sensor_name)) for sensor_name in self.lidar_names)
+    def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
+        return (self.get_lidar_sensor(sensor_name=sensor_name) for sensor_name in self.lidar_names)
 
-    def get_sensor(self, sensor_name: SensorName) -> Sensor[TSensorFrameType]:
-        return self._decoder.get_sensor(set_name=self.name, sensor_name=sensor_name)
+    def get_sensor(self, sensor_name: SensorName) -> Union[CameraSensor[TDateTime], LidarSensor[TDateTime]]:
+        if sensor_name in self.camera_names:
+            return self.get_camera_sensor(sensor_name=sensor_name)
+        else:
+            return self.get_lidar_sensor(sensor_name=sensor_name)
+
+    def get_camera_sensor(self, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+        return self._decoder.get_camera_sensor(set_name=self.name, sensor_name=sensor_name)
+
+    def get_lidar_sensor(self, sensor_name: SensorName) -> LidarSensor[TDateTime]:
+        return self._decoder.get_lidar_sensor(set_name=self.name, sensor_name=sensor_name)
 
     @property
     def class_maps(self) -> Dict[AnnotationType, ClassMap]:
@@ -132,16 +141,3 @@ class SensorFrameSet(Generic[TFrameType, TSensorFrameType]):
             raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
 
         return self._decoder.get_class_map(set_name=self.name, annotation_type=annotation_type)
-
-    @classmethod
-    def from_decoder(
-        cls,
-        set_name: SensorFrameSetName,
-        available_annotation_types: List[AnnotationType],
-        decoder: SensorFrameSetDecoderProtocol,
-    ) -> "SensorFrameSet":
-        return cls(
-            name=set_name,
-            available_annotation_types=available_annotation_types,
-            decoder=decoder,
-        )

@@ -1,18 +1,20 @@
 import abc
 from datetime import datetime
-from typing import List, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar, Union
 
 from paralleldomain.decoding.common import create_cache_key
-from paralleldomain.decoding.sensor_frame_decoder import SensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoFrame, EgoPose
-from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SensorFrameSetName, SensorName
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 
+TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
-class FrameDecoder:
+
+class FrameDecoder(Generic[TDateTime]):
     def __init__(self, dataset_name: str, set_name: SensorFrameSetName, lazy_load_cache: LazyLoadCache):
         self.set_name = set_name
         self.lazy_load_cache = lazy_load_cache
@@ -76,33 +78,52 @@ class FrameDecoder:
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         pass
 
+    def get_date_time(self, frame_id: FrameId) -> TDateTime:
+        # if needed add caching here
+        return self._decode_datetime(frame_id=frame_id)
+
     @abc.abstractmethod
-    def _decode_sensor_frame(
-        self, decoder: SensorFrameDecoder, frame_id: FrameId, sensor_name: SensorName
-    ) -> SensorFrame:
+    def _decode_datetime(self, frame_id: FrameId) -> TDateTime:
         pass
 
     @abc.abstractmethod
-    def _create_sensor_frame_decoder(self) -> SensorFrameDecoder:
+    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
         pass
 
-    def get_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> SensorFrame:
+    @abc.abstractmethod
+    def _decode_camera_sensor_frame(
+        self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+    ) -> CameraSensorFrame[TDateTime]:
+        pass
+
+    @abc.abstractmethod
+    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_lidar_sensor_frame(
+        self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+    ) -> LidarSensorFrame[TDateTime]:
+        pass
+
+    def get_camera_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> CameraSensorFrame[TDateTime]:
         _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, sensor_name=sensor_name, extra="SensorFrame")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_sensor_frame(
-                decoder=self._create_sensor_frame_decoder(),
+            loader=lambda: self._decode_camera_sensor_frame(
+                decoder=self._create_camera_sensor_frame_decoder(),
                 frame_id=frame_id,
                 sensor_name=sensor_name,
             ),
         )
 
-
-class TemporalFrameDecoder(FrameDecoder):
-    def get_datetime(self, frame_id: FrameId) -> datetime:
-        # if needed add caching here
-        return self._decode_datetime(frame_id=frame_id)
-
-    @abc.abstractmethod
-    def _decode_datetime(self, frame_id: FrameId) -> datetime:
-        pass
+    def get_lidar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
+        _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, sensor_name=sensor_name, extra="SensorFrame")
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_lidar_sensor_frame(
+                decoder=self._create_lidar_sensor_frame_decoder(),
+                frame_id=frame_id,
+                sensor_name=sensor_name,
+            ),
+        )

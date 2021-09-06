@@ -7,7 +7,7 @@ from paralleldomain.model.frame import Frame
 
 @pytest.fixture()
 def frame(scene: Scene) -> Frame:
-    frame_id = scene.ordered_frame_ids[0]
+    frame_id = scene.frame_ids[0]
     return scene.get_frame(frame_id=frame_id)
 
 

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class AnyPath:
     def __init__(self, path: Union[str, "AnyPath"]):
+        path = str(path)
         self._full_path = path
         parsed = urlparse(path)
         if parsed.scheme == "s3":

@@ -1,8 +1,8 @@
-import contextlib
 from dataclasses import dataclass, field
-from typing import Any, ContextManager, Dict, Generic, List, Set, TypeVar
+from datetime import datetime
+from typing import Any, Dict, List, Set, TypeVar, Union
 
-from paralleldomain.model.sensor_frame_set import SensorFrameSet, SensorFrameSetDecoderProtocol
+from paralleldomain.model.sensor_frame_set import SensorFrameSet
 
 try:
     from typing import Protocol
@@ -12,10 +12,11 @@ except ImportError:
 import logging
 
 from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.scene import Scene, SceneDecoderProtocol
+from paralleldomain.model.scene import Scene
 from paralleldomain.model.type_aliases import SceneName, SensorFrameSetName
 
 logger = logging.getLogger(__name__)
+TOrderBy = TypeVar("TOrderBy")
 
 
 @dataclass
@@ -39,7 +40,7 @@ class DatasetMeta:
     custom_attributes: Dict[str, Any] = field(default_factory=dict)
 
 
-class DatasetDecoderProtocol(SensorFrameSetDecoderProtocol, Protocol):
+class DatasetDecoderProtocol(Protocol):
     """Interface Definition for decoder implementations.
 
     Not to be instantiated directly!
@@ -54,20 +55,10 @@ class DatasetDecoderProtocol(SensorFrameSetDecoderProtocol, Protocol):
     def get_dataset_meta_data(self) -> DatasetMeta:
         pass
 
-
-class SceneDatasetDecoderProtocol(DatasetDecoderProtocol, SceneDecoderProtocol, Protocol):
-    """Interface Definition for decoder implementations.
-
-    Not to be instantiated directly!
-    """
-
     def get_scene_names(self) -> Set[SceneName]:
         pass
 
     def get_scene(self, scene_name: SceneName) -> Scene:
-        pass
-
-    def get_dataset_meta_data(self) -> DatasetMeta:
         pass
 
 
@@ -92,7 +83,7 @@ class Dataset:
         return self._decoder.get_dataset_meta_data()
 
     @property
-    def sensor_frame_sets(self) -> Dict[SensorFrameSetName, SensorFrameSet]:
+    def sensor_frame_sets(self) -> Dict[SensorFrameSetName, SensorFrameSet[Union[datetime, None]]]:
         """Returns a dictionary of :obj:`SensorFrameSet` instances with the scene name as key."""
         return {name: self._decoder.get_sensor_frame_set(set_name=name) for name in self.sensor_frame_set_names}
 
@@ -116,18 +107,6 @@ class Dataset:
             Returns the `SensorFrameSet` object for a sensor frame set name.
         """
         return self._decoder.get_sensor_frame_set(set_name=set_name)
-
-
-class SceneDataset(Dataset):
-    """The :obj:`Dataset` object is the entry point for loading any data.
-
-    A dataset manages all attached scenes and its sensor data. It takes care of calling the decoder when specific
-    data is required and stores it in the PD SDK model classes and attributes.
-    """
-
-    def __init__(self, decoder: SceneDatasetDecoderProtocol):
-        super().__init__(decoder=decoder)
-        self._decoder = decoder
 
     @property
     def scene_names(self) -> Set[SceneName]:

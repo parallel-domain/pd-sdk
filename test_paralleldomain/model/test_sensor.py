@@ -1,13 +1,22 @@
 import time
+from datetime import datetime
 
 from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.decoder import TemporalDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 
 class TestSensorFrame:
+    def test_date_time_type(self, scene: Scene):
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+        sensors = frame.sensor_names
+        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
+        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        assert isinstance(sensor_frame.date_time, datetime)
+
     def test_lazy_cloud_loading(self, scene: Scene):
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensors = frame.sensor_names
         lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
@@ -18,11 +27,11 @@ class TestSensorFrame:
         assert xyz is not None
         assert xyz.shape[0] > 0
 
-    def test_lazy_cloud_caching(self, decoder: TemporalDecoder):
+    def test_lazy_cloud_caching(self, decoder: DatasetDecoder):
         LAZY_LOAD_CACHE.clear()
         dataset = decoder.get_dataset()
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
@@ -34,7 +43,7 @@ class TestSensorFrame:
         assert xyz.shape[0] > 0
 
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
@@ -47,7 +56,7 @@ class TestSensorFrame:
         assert time2 < 1
 
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
@@ -60,7 +69,7 @@ class TestSensorFrame:
         assert time3 < 1
 
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
         cloud = sensor_frame.point_cloud
@@ -73,7 +82,7 @@ class TestSensorFrame:
         assert time3 < 1
 
     def test_lazy_image_loading(self, scene: Scene):
-        frame_ids = scene.ordered_frame_ids
+        frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.camera_frames))
         image = sensor_frame.image

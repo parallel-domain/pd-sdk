@@ -6,13 +6,12 @@ from typing import Dict, List, Optional, Type, Union
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
-from paralleldomain.decoding.decoder import Decoder, TemporalDecoder
-from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder
+from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes
-from paralleldomain.model.dataset import SceneDataset
-from paralleldomain.model.sensor import TemporalSensorFrame
+from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.logging import setup_loggers
@@ -23,7 +22,7 @@ logger = logging.getLogger(__name__)
 class DGPDatasetEncoder(DatasetEncoder):
     def __init__(
         self,
-        dataset: SceneDataset,
+        dataset: Dataset,
         output_path: str,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
@@ -97,7 +96,7 @@ class DGPDatasetEncoder(DatasetEncoder):
 
     @staticmethod
     def from_dataset(
-        dataset: SceneDataset,
+        dataset: Dataset,
         output_path: str,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
@@ -126,7 +125,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         n_parallel: Optional[int] = 1,
     ) -> "DGPDatasetEncoder":
         # Todo detect decoder type from path content
-        decoder = DGPDecoder(dataset_path=input_path)
+        decoder = DGPDatasetDecoder(dataset_path=input_path)
         return DGPDatasetEncoder.from_decoder(
             decoder=decoder,
             output_path=output_path,
@@ -139,7 +138,7 @@ class DGPDatasetEncoder(DatasetEncoder):
 
     @staticmethod
     def from_decoder(
-        decoder: TemporalDecoder[SceneDataset, TemporalSensorFrame],
+        decoder: DatasetDecoder,
         output_path: str,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
