@@ -18,7 +18,6 @@ SHOW_CACHE_LOGS = os.environ.get("SHOW_CACHE_LOGS", False)
 
 
 class LazyLoadCache(Cache):
-    _create_key_lock = RLock()
     """Least Recently Used (LRU) cache implementation."""
 
     def __init__(self, max_ram_usage_factor: float = 0.8):
@@ -27,12 +26,13 @@ class LazyLoadCache(Cache):
         logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._key_load_locks: Dict[Hashable, RLock] = dict()
+        self._create_key_lock = RLock()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
         self.__order = collections.OrderedDict()
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
         if key not in self._key_load_locks:
-            with LazyLoadCache._create_key_lock:
+            with self._create_key_lock:
                 if key not in self._key_load_locks:
                     self._key_load_locks[key] = RLock()
 
@@ -134,6 +134,16 @@ class LazyLoadCache(Cache):
         else:
             pass
         return size
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # Don't pickle baz
+        del state["_key_load_locks"]
+        del state["_create_key_lock"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 
 cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
