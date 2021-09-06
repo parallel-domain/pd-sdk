@@ -45,7 +45,7 @@ from paralleldomain.model.annotation import (
 )
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json, read_npz, read_png
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
@@ -57,14 +57,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def __init__(
         self,
         dataset_name: str,
-        set_name: SensorFrameSetName,
+        scene_name: SceneName,
         lazy_load_cache: LazyLoadCache,
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
     ):
-        super().__init__(dataset_name=dataset_name, set_name=set_name, lazy_load_cache=lazy_load_cache)
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, lazy_load_cache=lazy_load_cache)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data
@@ -95,7 +95,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
         dto = self._decode_extrinsic_calibration(
-            scene_name=self.set_name,
+            scene_name=self.scene_name,
             calibration_key=sample.calibration_key,
             sensor_name=sensor_name,
         )
@@ -116,7 +116,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
         if issubclass(annotation_type, BoundingBoxes3D):
-            dto = self._decode_bounding_boxes_3d(scene_name=self.set_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_3d(scene_name=self.scene_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -146,7 +146,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             return BoundingBoxes3D(boxes=box_list)
         elif issubclass(annotation_type, BoundingBoxes2D):
-            dto = self._decode_bounding_boxes_2d(scene_name=self.set_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -174,29 +174,29 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             return BoundingBoxes2D(boxes=box_list)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self._decode_semantic_segmentation_3d(
-                scene_name=self.set_name, annotation_identifier=identifier
+                scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation3D(class_ids=segmentation_mask)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
-                scene_name=self.set_name, annotation_identifier=identifier
+                scene_name=self.scene_name, annotation_identifier=identifier
             )
             return InstanceSegmentation3D(instance_ids=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
             class_ids = self._decode_semantic_segmentation_2d(
-                scene_name=self.set_name, annotation_identifier=identifier
+                scene_name=self.scene_name, annotation_identifier=identifier
             )
             return SemanticSegmentation2D(class_ids=class_ids)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
-                scene_name=self.set_name, annotation_identifier=identifier
+                scene_name=self.scene_name, annotation_identifier=identifier
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(scene_name=self.set_name, annotation_identifier=identifier)
+            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
             return OpticalFlow(vectors=flow_vectors)
         elif issubclass(annotation_type, Depth):
-            depth_mask = self._decode_depth(scene_name=self.set_name, annotation_identifier=identifier)
+            depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
 
     def _decode_available_annotation_types(
@@ -290,7 +290,7 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
-        cloud_path = self._dataset_path / self.set_name / datum.image.filename
+        cloud_path = self._dataset_path / self.scene_name / datum.image.filename
         image_data = read_png(path=cloud_path)
 
         return image_data
@@ -298,7 +298,7 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
         dto = self._decode_intrinsic_calibration(
-            scene_name=self.set_name,
+            scene_name=self.scene_name,
             calibration_key=sample.calibration_key,
             sensor_name=sensor_name,
         )
@@ -355,7 +355,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
-        cloud_path = self._dataset_path / self.set_name / datum.point_cloud.filename
+        cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
         pc_data = read_npz(path=cloud_path, files="data")
         return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 

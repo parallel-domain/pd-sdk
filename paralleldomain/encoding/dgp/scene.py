@@ -69,7 +69,7 @@ class DGPSceneEncoder(SceneEncoder):
     def __init__(
         self,
         dataset: Dataset,
-        set_name: str,
+        scene_name: str,
         output_path: AnyPath,
         camera_names: Optional[Union[List[str], None]] = None,
         lidar_names: Optional[Union[List[str], None]] = None,
@@ -77,14 +77,14 @@ class DGPSceneEncoder(SceneEncoder):
     ):
         super().__init__(
             dataset=dataset,
-            set_name=set_name,
+            scene_name=scene_name,
             output_path=output_path,
             camera_names=camera_names,
             lidar_names=lidar_names,
             annotation_types=annotation_types,
         )
 
-        self._scene: Scene = self._sensor_frame_set
+        self._scene: Scene = self._unordered_scene
         self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
         self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
 

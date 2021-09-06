@@ -13,57 +13,54 @@ except ImportError:
 
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
-class SensorFrameSetDecoderProtocol(Protocol[TDateTime]):
-    def get_set_description(self, set_name: SensorFrameSetName) -> str:
+class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
+    def get_set_description(self, scene_name: SceneName) -> str:
         pass
 
-    def get_set_metadata(self, set_name: SensorFrameSetName) -> Dict[str, Any]:
+    def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         pass
 
     def get_frame(
         self,
-        set_name: SensorFrameSetName,
+        scene_name: SceneName,
         frame_id: FrameId,
     ) -> Frame[TDateTime]:
         pass
 
-    def get_sensor_names(self, set_name: SensorFrameSetName) -> List[str]:
+    def get_sensor_names(self, scene_name: SceneName) -> List[str]:
         pass
 
-    def get_camera_names(self, set_name: SensorFrameSetName) -> List[str]:
+    def get_camera_names(self, scene_name: SceneName) -> List[str]:
         pass
 
-    def get_lidar_names(self, set_name: SensorFrameSetName) -> List[str]:
+    def get_lidar_names(self, scene_name: SceneName) -> List[str]:
         pass
 
-    def get_frame_ids(self, set_name: SensorFrameSetName) -> Set[FrameId]:
+    def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         pass
 
-    def get_class_map(self, set_name: SensorFrameSetName, annotation_type: Type[T]) -> ClassMap:
+    def get_class_map(self, scene_name: SceneName, annotation_type: Type[T]) -> ClassMap:
         pass
 
-    def get_camera_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
         pass
 
-    def get_lidar_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
-        pass
-
-    def get_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, TDateTime]:
+    def get_lidar_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
         pass
 
 
-class SensorFrameSet(Generic[TDateTime]):
+class UnorderedScene(Generic[TDateTime]):
     def __init__(
         self,
-        name: SensorFrameSetName,
+        name: SceneName,
         available_annotation_types: List[AnnotationType],
-        decoder: SensorFrameSetDecoderProtocol[TDateTime],
+        decoder: UnorderedSceneDecoderProtocol[TDateTime],
     ):
         self._name = name
         self._available_annotation_types = available_annotation_types
@@ -75,11 +72,11 @@ class SensorFrameSet(Generic[TDateTime]):
 
     @property
     def description(self) -> str:
-        return self._decoder.get_set_description(set_name=self._name)
+        return self._decoder.get_set_description(scene_name=self._name)
 
     @property
     def metadata(self) -> Dict[str, Any]:
-        return self._decoder.get_set_metadata(set_name=self._name)
+        return self._decoder.get_set_metadata(scene_name=self._name)
 
     @property
     def frames(self) -> Set[Frame[TDateTime]]:
@@ -87,7 +84,7 @@ class SensorFrameSet(Generic[TDateTime]):
 
     @property
     def frame_ids(self) -> Set[FrameId]:
-        return self._decoder.get_frame_ids(set_name=self.name)
+        return self._decoder.get_frame_ids(scene_name=self.name)
 
     @property
     def available_annotation_types(self):
@@ -95,18 +92,18 @@ class SensorFrameSet(Generic[TDateTime]):
 
     @property
     def sensor_names(self) -> List[str]:
-        return self._decoder.get_sensor_names(set_name=self.name)
+        return self._decoder.get_sensor_names(scene_name=self.name)
 
     @property
     def camera_names(self) -> List[str]:
-        return self._decoder.get_camera_names(set_name=self.name)
+        return self._decoder.get_camera_names(scene_name=self.name)
 
     @property
     def lidar_names(self) -> List[str]:
-        return self._decoder.get_lidar_names(set_name=self.name)
+        return self._decoder.get_lidar_names(scene_name=self.name)
 
     def get_frame(self, frame_id: FrameId) -> Frame[TDateTime]:
-        return self._decoder.get_frame(set_name=self.name, frame_id=frame_id)
+        return self._decoder.get_frame(scene_name=self.name, frame_id=frame_id)
 
     @property
     def sensors(self) -> Generator[Union[CameraSensor[TDateTime], LidarSensor[TDateTime]], None, None]:
@@ -127,10 +124,10 @@ class SensorFrameSet(Generic[TDateTime]):
             return self.get_lidar_sensor(sensor_name=sensor_name)
 
     def get_camera_sensor(self, sensor_name: SensorName) -> CameraSensor[TDateTime]:
-        return self._decoder.get_camera_sensor(set_name=self.name, sensor_name=sensor_name)
+        return self._decoder.get_camera_sensor(scene_name=self.name, sensor_name=sensor_name)
 
     def get_lidar_sensor(self, sensor_name: SensorName) -> LidarSensor[TDateTime]:
-        return self._decoder.get_lidar_sensor(set_name=self.name, sensor_name=sensor_name)
+        return self._decoder.get_lidar_sensor(scene_name=self.name, sensor_name=sensor_name)
 
     @property
     def class_maps(self) -> Dict[AnnotationType, ClassMap]:
@@ -140,4 +137,4 @@ class SensorFrameSet(Generic[TDateTime]):
         if annotation_type not in self._available_annotation_types:
             raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
 
-        return self._decoder.get_class_map(set_name=self.name, annotation_type=annotation_type)
+        return self._decoder.get_class_map(scene_name=self.name, annotation_type=annotation_type)

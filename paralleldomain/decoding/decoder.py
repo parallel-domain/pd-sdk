@@ -12,8 +12,8 @@ from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
-from paralleldomain.model.sensor_frame_set import SensorFrameSet
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorFrameSetName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache, cache_max_ram_usage_factor
 
 T = TypeVar("T")
@@ -31,31 +31,35 @@ class DatasetDecoder(metaclass=abc.ABCMeta):
 
         self.dataset_name = dataset_name
         self._scenes: Dict[SceneName, Scene] = dict()
-        self._sensor_frame_sets: Dict[SensorFrameSetName, SensorFrameSet] = dict()
+        self._unordered_scenes: Dict[SceneName, UnorderedScene] = dict()
 
     def get_unique_id(
         self,
-        set_name: Optional[SensorFrameSetName] = None,
+        scene_name: Optional[SceneName] = None,
         sensor_name: Optional[SensorName] = None,
         frame_id: Optional[FrameId] = None,
         extra: Optional[str] = None,
     ) -> str:
         return create_cache_key(
-            dataset_name=self.dataset_name, set_name=set_name, sensor_name=sensor_name, frame_id=frame_id, extra=extra
+            dataset_name=self.dataset_name,
+            scene_name=scene_name,
+            sensor_name=sensor_name,
+            frame_id=frame_id,
+            extra=extra,
         )
 
-    def get_sensor_frame_set_names(self) -> List[SensorFrameSetName]:
-        _unique_cache_key = self.get_unique_id(extra="sensor_frame_set_names")
+    def get_unordered_scene_names(self) -> List[SceneName]:
+        _unique_cache_key = self.get_unique_id(extra="unordered_scene_names")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=self._decode_sensor_frame_set_names,
+            loader=self._decode_unordered_scene_names,
         )
 
-    def get_sensor_frame_set(self, set_name: SensorFrameSetName) -> SensorFrameSet:
-        if set_name in self.get_scene_names():
-            return self.get_scene(scene_name=set_name)
+    def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
+        if scene_name in self.get_scene_names():
+            return self.get_scene(scene_name=scene_name)
 
-        return self.get_sensor_frame_set(set_name=set_name)
+        return self.get_unordered_scene(scene_name=scene_name)
 
     def get_dataset_meta_data(self) -> DatasetMeta:
         return self._lazy_load_cache.get_item(
@@ -71,7 +75,7 @@ class DatasetDecoder(metaclass=abc.ABCMeta):
         )
 
     def get_scene(self, scene_name: SceneName) -> Scene:
-        _unique_cache_key = self.get_unique_id(set_name=scene_name, extra="scene")
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="scene")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_scene(scene_name=scene_name),
@@ -84,11 +88,11 @@ class DatasetDecoder(metaclass=abc.ABCMeta):
             name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
         )
 
-    def _decode_sensor_frame_set(self, set_name: SensorFrameSetName) -> SensorFrameSet:
+    def _decode_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
         meta_data = self.get_dataset_meta_data()
-        scene_decoder = self.create_scene_decoder(scene_name=set_name)
-        return SensorFrameSet(
-            name=set_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
+        scene_decoder = self.create_scene_decoder(scene_name=scene_name)
+        return UnorderedScene(
+            name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
         )
 
     @abc.abstractmethod
@@ -96,7 +100,7 @@ class DatasetDecoder(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _decode_sensor_frame_set_names(self) -> List[SensorFrameSetName]:
+    def _decode_unordered_scene_names(self) -> List[SceneName]:
         pass
 
     @abc.abstractmethod
@@ -118,93 +122,97 @@ class SceneDecoder(Generic[TDateTime], metaclass=abc.ABCMeta):
 
     def get_unique_id(
         self,
-        set_name: Optional[SensorFrameSetName] = None,
+        scene_name: Optional[SceneName] = None,
         sensor_name: Optional[SensorName] = None,
         frame_id: Optional[FrameId] = None,
         extra: Optional[str] = None,
     ) -> str:
         return create_cache_key(
-            dataset_name=self.dataset_name, set_name=set_name, sensor_name=sensor_name, frame_id=frame_id, extra=extra
+            dataset_name=self.dataset_name,
+            scene_name=scene_name,
+            sensor_name=sensor_name,
+            frame_id=frame_id,
+            extra=extra,
         )
 
     # ------------------- Set Decoding Methods -------------------------------
-    def get_set_metadata(self, set_name: SensorFrameSetName) -> Dict[str, Any]:
+    def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         # add caching here if needed
-        return self._decode_set_metadata(set_name=set_name)
+        return self._decode_set_metadata(scene_name=scene_name)
 
-    def get_set_description(self, set_name: SensorFrameSetName) -> str:
+    def get_set_description(self, scene_name: SceneName) -> str:
         # add caching here if needed
-        return self._decode_set_description(set_name=set_name)
+        return self._decode_set_description(scene_name=scene_name)
 
     @abc.abstractmethod
-    def _decode_set_metadata(self, set_name: SensorFrameSetName) -> Dict[str, Any]:
+    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         pass
 
     @abc.abstractmethod
-    def _decode_set_description(self, set_name: SensorFrameSetName) -> str:
+    def _decode_set_description(self, scene_name: SceneName) -> str:
         pass
 
     @abc.abstractmethod
-    def _decode_frame_id_set(self, set_name: SensorFrameSetName) -> Set[FrameId]:
+    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         pass
 
     @abc.abstractmethod
-    def _decode_sensor_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
+    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         pass
 
     @abc.abstractmethod
-    def _decode_camera_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
+    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         pass
 
     @abc.abstractmethod
-    def _decode_lidar_names(self, set_name: SensorFrameSetName) -> List[SensorName]:
+    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         pass
 
     @abc.abstractmethod
-    def _decode_class_maps(self, set_name: SensorFrameSetName) -> Dict[str, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
         pass
 
-    def get_sensor_names(self, set_name: SensorFrameSetName) -> List[str]:
-        _unique_cache_key = self.get_unique_id(set_name=set_name, extra="sensor_names")
+    def get_sensor_names(self, scene_name: SceneName) -> List[str]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="sensor_names")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_sensor_names(set_name=set_name),
+            loader=lambda: self._decode_sensor_names(scene_name=scene_name),
         )
 
-    def get_camera_names(self, set_name: SensorFrameSetName) -> List[str]:
-        _unique_cache_key = self.get_unique_id(set_name=set_name, extra="camera_names")
+    def get_camera_names(self, scene_name: SceneName) -> List[str]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="camera_names")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_camera_names(set_name=set_name),
+            loader=lambda: self._decode_camera_names(scene_name=scene_name),
         )
 
-    def get_lidar_names(self, set_name: SensorFrameSetName) -> List[str]:
-        _unique_cache_key = self.get_unique_id(set_name=set_name, extra="lidar_names")
+    def get_lidar_names(self, scene_name: SceneName) -> List[str]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="lidar_names")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_lidar_names(set_name=set_name),
+            loader=lambda: self._decode_lidar_names(scene_name=scene_name),
         )
 
-    def get_frame_ids(self, set_name: SensorFrameSetName) -> Set[FrameId]:
-        _unique_cache_key = self.get_unique_id(set_name=set_name, extra="frame_ids")
+    def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="frame_ids")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_frame_id_set(set_name=set_name),
+            loader=lambda: self._decode_frame_id_set(scene_name=scene_name),
         )
 
-    def get_class_map(self, set_name: SensorFrameSetName, annotation_type: Type[T]) -> ClassMap:
+    def get_class_map(self, scene_name: SceneName, annotation_type: Type[T]) -> ClassMap:
         identifier = self._annotation_type_identifiers[annotation_type]
-        _unique_cache_key = self.get_unique_id(set_name=set_name, extra="classmaps")
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="classmaps")
         class_maps = self._lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_class_maps(set_name=set_name),
+            loader=lambda: self._decode_class_maps(scene_name=scene_name),
         )
 
         return class_maps[identifier]
 
     def _decode_lidar_sensor(
         self,
-        set_name: SensorFrameSetName,
+        scene_name: SceneName,
         sensor_name: SensorName,
         sensor_decoder: LidarSensorDecoder[TDateTime],
     ) -> LidarSensor[TDateTime]:
@@ -212,39 +220,39 @@ class SceneDecoder(Generic[TDateTime], metaclass=abc.ABCMeta):
 
     def _decode_camera_sensor(
         self,
-        set_name: SensorFrameSetName,
+        scene_name: SceneName,
         sensor_name: SensorName,
         sensor_decoder: CameraSensorDecoder[TDateTime],
     ) -> CameraSensor[TDateTime]:
         return CameraSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
 
-    def get_camera_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
         sensor_decoder = self._create_camera_sensor_decoder(
-            set_name=set_name,
+            scene_name=scene_name,
             sensor_name=sensor_name,
             dataset_name=self.dataset_name,
             lazy_load_cache=self._lazy_load_cache,
         )
-        return self._decode_camera_sensor(set_name=set_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
+        return self._decode_camera_sensor(scene_name=scene_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
 
-    def get_lidar_sensor(self, set_name: SensorFrameSetName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
+    def get_lidar_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
         sensor_decoder = self._create_lidar_sensor_decoder(
-            set_name=set_name,
+            scene_name=scene_name,
             sensor_name=sensor_name,
             dataset_name=self.dataset_name,
             lazy_load_cache=self._lazy_load_cache,
         )
-        return self._decode_lidar_sensor(set_name=set_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
+        return self._decode_lidar_sensor(scene_name=scene_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
 
     @abc.abstractmethod
     def _create_camera_sensor_decoder(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> CameraSensorDecoder[TDateTime]:
         pass
 
     @abc.abstractmethod
     def _create_lidar_sensor_decoder(
-        self, set_name: SensorFrameSetName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> LidarSensorDecoder[TDateTime]:
         pass
 
@@ -255,17 +263,20 @@ class SceneDecoder(Generic[TDateTime], metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _create_frame_decoder(
-        self, set_name: SensorFrameSetName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
     ) -> FrameDecoder[TDateTime]:
         pass
 
     def get_frame(
         self,
-        set_name: SensorFrameSetName,
+        scene_name: SceneName,
         frame_id: FrameId,
     ) -> Frame[TDateTime]:
         frame_decoder = self._create_frame_decoder(
-            set_name=set_name, frame_id=frame_id, dataset_name=self.dataset_name, lazy_load_cache=self._lazy_load_cache
+            scene_name=scene_name,
+            frame_id=frame_id,
+            dataset_name=self.dataset_name,
+            lazy_load_cache=self._lazy_load_cache,
         )
         return Frame(frame_id=frame_id, decoder=frame_decoder)
 
@@ -276,7 +287,7 @@ class SceneDecoder(Generic[TDateTime], metaclass=abc.ABCMeta):
     #
 
     def get_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, TDateTime]:
-        _unique_cache_key = self.get_unique_id(set_name=scene_name, extra="frame_id_to_date_time_map")
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="frame_id_to_date_time_map")
         return self._lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_frame_id_to_date_time_map(scene_name=scene_name),

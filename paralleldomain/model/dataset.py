@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Set, TypeVar, Union
 
-from paralleldomain.model.sensor_frame_set import SensorFrameSet
+from paralleldomain.model.unordered_scene import UnorderedScene
 
 try:
     from typing import Protocol
@@ -13,7 +13,7 @@ import logging
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.type_aliases import SceneName, SensorFrameSetName
+from paralleldomain.model.type_aliases import SceneName
 
 logger = logging.getLogger(__name__)
 TOrderBy = TypeVar("TOrderBy")
@@ -46,10 +46,10 @@ class DatasetDecoderProtocol(Protocol):
     Not to be instantiated directly!
     """
 
-    def get_sensor_frame_set_names(self) -> Set[SensorFrameSetName]:
+    def get_unordered_scene_names(self) -> Set[SceneName]:
         pass
 
-    def get_sensor_frame_set(self, set_name: SensorFrameSetName) -> SensorFrameSet:
+    def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
         pass
 
     def get_dataset_meta_data(self) -> DatasetMeta:
@@ -73,9 +73,9 @@ class Dataset:
         self._decoder = decoder
 
     @property
-    def sensor_frame_set_names(self) -> Set[SensorFrameSetName]:
+    def unordered_scene_names(self) -> Set[SceneName]:
         """Returns a list of sensor frame set names within the dataset."""
-        return self._decoder.get_sensor_frame_set_names()
+        return self._decoder.get_unordered_scene_names()
 
     @property
     def meta_data(self) -> DatasetMeta:
@@ -83,9 +83,9 @@ class Dataset:
         return self._decoder.get_dataset_meta_data()
 
     @property
-    def sensor_frame_sets(self) -> Dict[SensorFrameSetName, SensorFrameSet[Union[datetime, None]]]:
+    def unordered_scenes(self) -> Dict[SceneName, UnorderedScene[Union[datetime, None]]]:
         """Returns a dictionary of :obj:`SensorFrameSet` instances with the scene name as key."""
-        return {name: self._decoder.get_sensor_frame_set(set_name=name) for name in self.sensor_frame_set_names}
+        return {name: self._decoder.get_unordered_scene(scene_name=name) for name in self.unordered_scene_names}
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
@@ -97,16 +97,16 @@ class Dataset:
         """Returns the name of the dataset."""
         return self.meta_data.name
 
-    def get_sensor_frame_set(self, set_name: SensorFrameSetName) -> SensorFrameSet:
+    def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
         """Allows access to a sensor frame set by using its name.
 
         Args:
-            set_name: Name of sensor frame set to be returned
+            scene_name: Name of sensor frame set to be returned
 
         Returns:
             Returns the `SensorFrameSet` object for a sensor frame set name.
         """
-        return self._decoder.get_sensor_frame_set(set_name=set_name)
+        return self._decoder.get_unordered_scene(scene_name=scene_name)
 
     @property
     def scene_names(self) -> Set[SceneName]:
