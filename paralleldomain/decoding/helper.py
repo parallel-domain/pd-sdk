@@ -12,13 +12,11 @@ def decode_dataset(
     dataset_path: Union[str, AnyPath],
     dataset_format: str = "dgp",
     custom_reference_to_box_bottom: Optional[Transformation] = None,
-    use_persistent_cache: bool = True,
 ) -> Dataset:
     if dataset_format == "dgp":
         return DGPDatasetDecoder(
             dataset_path=dataset_path,
             custom_reference_to_box_bottom=custom_reference_to_box_bottom,
-            use_persistent_cache=use_persistent_cache,
         ).get_dataset()
     else:
         raise ValueError(
