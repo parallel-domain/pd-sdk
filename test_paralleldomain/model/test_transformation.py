@@ -18,7 +18,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             90,
             90,
-            "ryp",
+            "xzy",
             np.array([0.0, 0.0, 0.0]),
             np.array([0.0, 0.0, -1.0, 1.0]),
             np.array([0.0, 1.0, 0.0, 1.0]),
@@ -28,7 +28,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             90,
             90,
-            "rpy",
+            "xyz",
             np.array([0.0, 0.0, 0.0]),
             np.array([0.0, 0.0, -1.0, 1.0]),
             np.array([-1.0, 0.0, 0.0, 1.0]),
@@ -38,7 +38,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             0,
             90,
-            "rpy",
+            "xyz",
             np.array([0.0, 0.0, 0.0]),
             np.array([0.0, 0.0, -1.0, 1.0]),
             np.array([0.0, 1.0, 0.0, 1.0]),
@@ -48,7 +48,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             0,
             90,
-            "rpy",
+            "xyz",
             np.array([0.0, 0.0, 0.0]),
             np.array([1.0, 0.0, 0.0, 1.0]),
             np.array([0.0, 1.0, 0.0, 1.0]),
@@ -58,7 +58,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             0,
             90,
-            "rpy",
+            "xyz",
             np.array([0.0, 0.0, 0.0]),
             np.array([1.0, 0.0, 0.0, 1.0]),
             np.array([0.0, 1.0, 0.0, 1.0]),
@@ -68,7 +68,7 @@ from paralleldomain.utilities.coordinate_system import CoordinateSystem
             0,
             0,
             90,
-            "rpy",
+            "xyz",
             np.array([42.0, 0.0, 0.0]),
             np.array([1.0, 0.0, 0.0, 1.0]),
             np.array([42.0, 1.0, 0.0, 1.0]),
@@ -86,7 +86,7 @@ def test_transformation_from_rpy(
     target: np.ndarray,
 ):
     transform = Transformation.from_euler_angles(
-        yaw=yaw, pitch=pitch, roll=roll, translation=translation, is_degrees=True, order=order, coordinate_system=system
+        roll=roll, pitch=pitch, yaw=yaw, translation=translation, degrees=True, order=order, coordinate_system=system
     )
     transformed = transform @ source
     assert all(np.isclose(target, transformed))
@@ -103,10 +103,10 @@ def test_transformation_inverse():
 
     # Random Rotation (no translation)
     trans_1 = Transformation.from_euler_angles(
-        yaw=random_state.uniform(-1, 1) * math.pi,
-        pitch=random_state.uniform(-1, 1) * math.pi,
         roll=random_state.uniform(-1, 1) * math.pi,
-        is_degrees=False,
+        pitch=random_state.uniform(-1, 1) * math.pi,
+        yaw=random_state.uniform(-1, 1) * math.pi,
+        degrees=False,
     )
     trans_1_inverse = trans_1.inverse
     trans_1_identity = trans_1_inverse @ trans_1
@@ -114,13 +114,13 @@ def test_transformation_inverse():
 
     # Random Transformation
     trans_2 = Transformation.from_euler_angles(
-        yaw=random_state.uniform(-1, 1) * math.pi,
-        pitch=random_state.uniform(-1, 1) * math.pi,
         roll=random_state.uniform(-1, 1) * math.pi,
+        pitch=random_state.uniform(-1, 1) * math.pi,
+        yaw=random_state.uniform(-1, 1) * math.pi,
         translation=np.asarray(
             [random_state.uniform(-200, 200), random_state.uniform(-200, 200), random_state.uniform(-200, 200)]
         ),
-        is_degrees=False,
+        degrees=False,
     )
     trans_2_inverse = trans_2.inverse
     trans_2_identity = trans_2_inverse @ trans_2

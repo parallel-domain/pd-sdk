@@ -9,9 +9,26 @@ from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTE
 class Transformation:
     """Multi-purpose 6DoF object.
 
+    When printed, the rotation is given as euler angles `[yaw, pitch, roll]` following the z-y'-x'' convention.
+
     Args:
-        quaternion: Quaternion instance for rotation
-        translation: List-like translation information in order `(x,y,z)`
+        quaternion: Quaternion instance for rotation. Default: Unit quaternion without rotation.
+        translation: List-like translation information in order `(x,y,z)`. Default: `[0,0,0]`
+
+    Example:
+        `Transformation` instances can be easily matrix-multiplied with other `Transformation` instances or any
+        `np.ndarray` of shape (4,n).
+
+        ::
+
+            lidar_frame = ...  # get any `SensorFrame` from a LiDAR sensor
+            points_vehicle_frame = (lidar_frame.extrinsic @ lidar_frame.xyz_one.T).T
+            points_world_frame = (lidar_frame.pose @ lidar_frame.xyz_one.T).T
+
+            boxes_3d = lidar_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
+
+            for b in boxes_3d.boxes:
+                box_pose_world_frame = lidar_frame.pose @ b.pose
     """
 
     def __init__(self, quaternion: Quaternion = None, translation: Union[np.ndarray, List] = None):
@@ -19,7 +36,7 @@ class Transformation:
         self._t = np.asarray(translation).reshape(3) if translation is not None else np.array([0, 0, 0])
 
     def __repr__(self):
-        rep = f"R: {self.rpy}, t: {self.translation}"
+        rep = f"R: {list(self.quaternion.yaw_pitch_roll)}, t: {self.translation}"
         return rep
 
     def __matmul__(self, other) -> Union["Transformation", np.ndarray]:
@@ -51,7 +68,7 @@ class Transformation:
 
     @property
     def transformation_matrix(self) -> np.ndarray:
-        """Returns the affine transformation matrix in shape (4,4).
+        """Returns the homogeneous transformation matrix in shape (4,4).
 
         ::
 
@@ -83,22 +100,47 @@ class Transformation:
 
     @property
     def quaternion(self) -> Quaternion:
-        """Returns the rotation as a :obj:`Quaternion` instance."""
+        """Returns the rotation as a :obj:`.pyquaternion.quaternion.Quaternion` instance.
+
+        Full documentation can be found in
+        `pyquaternion API Documentation <http://kieranwynn.github.io/pyquaternion/>`_.
+
+        To get the quaternion coefficients, either call `.elements`, iterate over the object itself or use
+        the dedicated named properties. The element order (until explicitly stated otherwise) should always be assumed
+        as `(w,x,y,z)` for function `w + xi+ yj + zk`
+
+        ::
+
+            from paralleldomain.model.transformation import Transformation
+
+            tf = Transformation.from_euler_angles(yaw=90, pitch=0, roll=0, is_degrees=True)
+
+            assert(tf.quaternion.elements[0] == tf.quaternion[0] == tf.quaternion.w)
+            assert(tf.quaternion.elements[1] == tf.quaternion[1] == tf.quaternion.x)
+            assert(tf.quaternion.elements[2] == tf.quaternion[2] == tf.quaternion.y)
+            assert(tf.quaternion.elements[3] == tf.quaternion[3] == tf.quaternion.z)
+
+        Please note that when using :obj:`.scipy.spatial.transform.Rotation`, `scipy` assumes the order as `(x,y,w,z)`.
+
+        ::
+
+            from paralleldomain.model.transformation import Transformation
+            from scipy.spatial.transform import Rotation
+            import numpy as np
+
+            tf = Transformation.from_euler_angles(yaw=90, pitch=0, roll=0, is_degrees=True)
+            tf_scipy = Rotation.from_quat([
+                tf.quaternion.x,
+                tf.quaternion.y,
+                tf.quaternion.z,
+                tf.quaternion.w
+            ])
+
+            # Check that rotation quaternion is equal within tolerance
+            np.allclose(tf.rotation == tf_scipy.as_matrix())  # returns True
+
+        """
         return self._Rq
-
-    @property
-    def rotation_quaternion(self) -> np.ndarray:
-        """Returns the rotation as quaternion elements in order (qw,qx,qy,qz)."""
-        return self._Rq.elements
-
-    @property
-    def rpy(self) -> List[float]:
-        """ZYX Euler angles in order roll-pitch-yaw in rad."""
-        return [
-            self._Rq.yaw_pitch_roll[2],
-            self._Rq.yaw_pitch_roll[1],
-            self._Rq.yaw_pitch_roll[0],
-        ]
 
     @property
     def translation(self) -> np.ndarray:
@@ -115,7 +157,14 @@ class Transformation:
 
     @classmethod
     def from_transformation_matrix(cls, mat: np.ndarray) -> "Transformation":
-        """Creates a Transformation object from an affine transformation matrix of shape (4,4)"""
+        """Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)
+
+        Args:
+            mat: Transformation matrix as described in :attr:`~.Transformation.transformation_matrix`
+
+        Returns:
+            Instance of :obj:`Transformation` with provided parameters.
+        """
         quat = Quaternion(matrix=mat)
         translation = mat[:3, 3]
         return cls(quaternion=quat, translation=translation)
@@ -123,15 +172,28 @@ class Transformation:
     @classmethod
     def from_euler_angles(
         cls,
-        yaw: float,
-        pitch: float,
-        roll: float,
+        roll: Optional[float] = 0.0,
+        pitch: Optional[float] = 0.0,
+        yaw: Optional[float] = 0.0,
         translation: Optional[np.ndarray] = None,
-        is_degrees: bool = False,
-        order: str = "rpy",
+        degrees: bool = False,
+        order: str = "xyz",
         coordinate_system: Optional[Union[str, CoordinateSystem]] = None,
     ) -> "Transformation":
-        """Create a transformation object from euler angles and optionally translation (otherwise (0,0,0))"""
+        """Creates a transformation object from euler angles and optionally translation (default: (0,0,0))
+
+        Args:
+            roll: Rotation angle around x-axis. Default: `0.0`
+            pitch: Rotation angle around y-axis. Default: `0.0`
+            yaw: Rotation angle around z-axis. Default: `0.0`
+            translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
+            degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
+            order: Set intrinsic rotation order. Default: `xyz`
+            coordinate_system: Set custom coordinate system. Default: `FLU`
+
+        Returns:
+            Instance of :obj:`Transformation` with provided parameters.
+        """
         if translation is None:
             translation = np.array([0.0, 0.0, 0.0])
 
@@ -140,7 +202,5 @@ class Transformation:
         elif isinstance(coordinate_system, str):
             coordinate_system = CoordinateSystem(axis_directions=coordinate_system)
 
-        quat = coordinate_system.quaternion_from_rpy(
-            yaw=yaw, pitch=pitch, roll=roll, is_degrees=is_degrees, order=order
-        )
+        quat = coordinate_system.quaternion_from_rpy(roll=roll, pitch=pitch, yaw=yaw, degrees=degrees, order=order)
         return cls(quaternion=quat, translation=translation)
