@@ -31,7 +31,6 @@ class LazyLoadCache(Cache):
         self.__order = collections.OrderedDict()
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
-
         if key not in self._key_load_locks:
             with LazyLoadCache._create_key_lock:
                 if key not in self._key_load_locks:
