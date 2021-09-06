@@ -18,7 +18,7 @@ SHOW_CACHE_LOGS = os.environ.get("SHOW_CACHE_LOGS", False)
 
 
 class LazyLoadCache(Cache):
-    _delete_lock = RLock()
+    _create_key_lock = RLock()
     """Least Recently Used (LRU) cache implementation."""
 
     def __init__(self, max_ram_usage_factor: float = 0.8):
@@ -26,16 +26,16 @@ class LazyLoadCache(Cache):
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
         logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
-        self._lock_prefixes: Set[str] = set()
         self._key_load_locks: Dict[Hashable, RLock] = dict()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
         self.__order = collections.OrderedDict()
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
-        with LazyLoadCache._delete_lock:
-            has_key = key in self
-            if not has_key and key not in self._key_load_locks:
-                self._key_load_locks[key] = RLock()
+
+        if key not in self._key_load_locks:
+            with LazyLoadCache._create_key_lock:
+                if key not in self._key_load_locks:
+                    self._key_load_locks[key] = RLock()
 
         with self._key_load_locks[key]:
             if key not in self:
@@ -45,16 +45,14 @@ class LazyLoadCache(Cache):
             return self[key]
 
     def __getitem__(self, key: Hashable, cache_getitem=Cache.__getitem__):
-        with LazyLoadCache._delete_lock:
-            value = cache_getitem(self, key)
-            if key in self:  # __missing__ may not store item
-                self.__update(key)
-            return value
+        value = cache_getitem(self, key)
+        if key in self:  # __missing__ may not store item
+            self.__update(key)
+        return value
 
     def __setitem__(self, key: Hashable, value, cache_setitem=Cache.__setitem__):
-        with LazyLoadCache._delete_lock:
-            self._custom_set_item(key, value)
-            self.__update(key)
+        self._custom_set_item(key, value)
+        self.__update(key)
 
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
@@ -79,11 +77,14 @@ class LazyLoadCache(Cache):
         self._Cache__currsize += diffsize
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
-        with LazyLoadCache._delete_lock:
+        with self._key_load_locks[key]:
             if SHOW_CACHE_LOGS:
                 logger.debug(f"delete {key} from cache")
             cache_delitem(self, key)
             del self.__order[key]
+
+            # with LazyLoadCache._create_key_lock:
+            #     del self._key_load_locks[key]
 
     @property
     def maxsize(self):
@@ -102,52 +103,18 @@ class LazyLoadCache(Cache):
 
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
-        # try:
-        #     key = next(iter(self.__order))
-        # except StopIteration:
-        #     raise KeyError("%s is empty" % type(self).__name__) from None
-        # else:
-        #     return (key, self.pop(key))
-
-        found_key_to_remove = False
-        num_locked_items = 0
-        with LazyLoadCache._delete_lock:
-            key_iter = iter(self.__order)
-            while not found_key_to_remove:
-                try:
-                    key = next(key_iter)
-                    is_locked = self._is_locked_key(key=key)
-                    found_key_to_remove = not is_locked
-                    if is_locked:
-                        num_locked_items += 1
-                        continue
-                except StopIteration:
-                    if num_locked_items == 0:
-                        raise KeyError("%s is empty" % type(self).__name__) from None
-                    return None
-                else:
-                    return (key, self.pop(key))
+        try:
+            key = next(iter(self.__order))
+        except StopIteration:
+            raise KeyError("%s is empty" % type(self).__name__) from None
+        else:
+            return (key, self.pop(key))
 
     def __update(self, key):
         try:
             self.__order.move_to_end(key)
         except KeyError:
             self.__order[key] = None
-
-    def _is_locked_key(self, key: str):
-        return any([key.startswith(locked) for locked in self._lock_prefixes])
-
-    def clear_prefix(self, prefix: str):
-        for key in self:
-            if key.startswith(prefix):
-                self.pop(key=key)
-
-    def lock_prefix(self, prefix: str):
-        self._lock_prefixes.add(prefix)
-
-    def unlock_prefix(self, prefix: str):
-        if prefix in self._lock_prefixes:
-            self._lock_prefixes.remove(prefix)
 
     @staticmethod
     def getsizeof(value):
