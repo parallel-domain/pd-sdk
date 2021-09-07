@@ -46,7 +46,7 @@ class DatasetDecoderProtocol(Protocol):
     Not to be instantiated directly!
     """
 
-    def get_unordered_scene_names(self) -> Set[SceneName]:
+    def get_unordered_scene_names(self) -> List[SceneName]:
         pass
 
     def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
@@ -55,7 +55,7 @@ class DatasetDecoderProtocol(Protocol):
     def get_dataset_meta_data(self) -> DatasetMeta:
         pass
 
-    def get_scene_names(self) -> Set[SceneName]:
+    def get_scene_names(self) -> List[SceneName]:
         pass
 
     def get_scene(self, scene_name: SceneName) -> Scene:
@@ -73,7 +73,7 @@ class Dataset:
         self._decoder = decoder
 
     @property
-    def unordered_scene_names(self) -> Set[SceneName]:
+    def unordered_scene_names(self) -> List[SceneName]:
         """Returns a list of sensor frame set names within the dataset."""
         return self._decoder.get_unordered_scene_names()
 
@@ -109,7 +109,7 @@ class Dataset:
         return self._decoder.get_unordered_scene(scene_name=scene_name)
 
     @property
-    def scene_names(self) -> Set[SceneName]:
+    def scene_names(self) -> List[SceneName]:
         """Returns a list of scene names within the dataset."""
         return self._decoder.get_scene_names()
 
