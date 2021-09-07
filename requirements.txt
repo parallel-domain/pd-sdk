@@ -1,9 +1,7 @@
-cloudpathlib[all]>=0.4.1,<1.0.0
 coloredlogs>=15.0.1,<16.0.0
 dataclasses>=0.8,<1.0.0; python_version == "3.6"
 dataclasses_json>=0.5.3,<1.0.0
 humanize>=3.10.0,<4.0.0
-importlib-metadata==4.0.1
 iso8601>=0.1.16,<1.0.0
 more-itertools>=8.8.0,<9.0.0
 numpy>=1.19,<2.0; python_version > "3.6"
