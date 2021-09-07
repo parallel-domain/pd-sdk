@@ -3,12 +3,8 @@ from datetime import datetime
 from typing import Generic, Optional, Set, TypeVar, Union
 
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
-from paralleldomain.decoding.sensor_frame_decoder import (
-    CameraSensorFrameDecoder,
-    LidarSensorFrameDecoder,
-    SensorFrameDecoder,
-)
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 T = TypeVar("T")

@@ -6,15 +6,14 @@ from paralleldomain import Scene
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
-from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
+from paralleldomain.model.sensor import CameraSensor, LidarSensor
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache, cache_max_ram_usage_factor
 
 T = TypeVar("T")
 

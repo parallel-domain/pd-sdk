@@ -18,7 +18,6 @@ from paralleldomain.common.dgp.v0.dtos import (
     CalibrationIntrinsicDTO,
     PoseDTO,
     SceneDataDatum,
-    SceneDataDatumImage,
     SceneDataDatumPointCloud,
     SceneDataDTO,
     SceneSampleDTO,
@@ -48,7 +47,6 @@ from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json, read_npz, read_png
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 

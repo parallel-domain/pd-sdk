@@ -1,7 +1,7 @@
 from typing import Optional, TypeVar
 
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache, cache_max_ram_usage_factor
+from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache
 
 T = TypeVar("T")
 
