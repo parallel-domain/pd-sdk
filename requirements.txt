@@ -1,4 +1,5 @@
 coloredlogs>=15.0.1,<16.0.0
+cachetools>=4.2.2,<5.0.0
 dataclasses>=0.8,<1.0.0; python_version == "3.6"
 dataclasses_json>=0.5.3,<1.0.0
 humanize>=3.10.0,<4.0.0
