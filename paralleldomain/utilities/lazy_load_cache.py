@@ -2,8 +2,8 @@ import collections
 import logging
 import os
 from sys import getsizeof
-from threading import RLock
-from typing import Callable, Dict, Hashable, Set, TypeVar
+from threading import Event, RLock
+from typing import Callable, Dict, Hashable, Set, Tuple, TypeVar
 
 import numpy as np
 import psutil
@@ -26,21 +26,19 @@ class LazyLoadCache(Cache):
         logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._key_load_locks: Dict[Hashable, RLock] = dict()
+        self._key_loaded_event: Dict[Hashable, Event] = dict()
         self._create_key_lock = RLock()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
         self.__order = collections.OrderedDict()
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
-        if key not in self._key_load_locks:
-            with self._create_key_lock:
-                if key not in self._key_load_locks:
-                    self._key_load_locks[key] = RLock()
-
-        with self._key_load_locks[key]:
+        key_lock, wait_event = self._get_locks(key=key)
+        with key_lock:
             if key not in self:
                 if SHOW_CACHE_LOGS:
                     logger.debug(f"load key {key} to cache")
                 self[key] = loader()
+                wait_event.set()
             return self[key]
 
     def __getitem__(self, key: Hashable, cache_getitem=Cache.__getitem__):
@@ -52,6 +50,14 @@ class LazyLoadCache(Cache):
     def __setitem__(self, key: Hashable, value, cache_setitem=Cache.__setitem__):
         self._custom_set_item(key, value)
         self.__update(key)
+
+    def _get_locks(self, key: Hashable) -> Tuple[RLock, Event]:
+        if key not in self._key_load_locks:
+            with self._create_key_lock:
+                if key not in self._key_load_locks:
+                    self._key_loaded_event[key] = Event()
+                    self._key_load_locks[key] = RLock()
+        return self._key_load_locks[key], self._key_loaded_event[key]
 
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
@@ -76,7 +82,9 @@ class LazyLoadCache(Cache):
         self._Cache__currsize += diffsize
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
-        with self._key_load_locks[key]:
+        key_lock, wait_event = self._get_locks(key=key)
+        wait_event.wait()
+        with key_lock:
             if SHOW_CACHE_LOGS:
                 logger.debug(f"delete {key} from cache")
             cache_delitem(self, key)
