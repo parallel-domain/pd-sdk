@@ -25,8 +25,7 @@ class LazyLoadCache(Cache):
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
         logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
-        self._key_load_locks: Dict[Hashable, RLock] = dict()
-        self._key_loaded_event: Dict[Hashable, Event] = dict()
+        self._key_load_locks: Dict[Hashable, Tuple[RLock, Event]] = dict()
         self._create_key_lock = RLock()
         Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
         self.__order = collections.OrderedDict()
@@ -55,9 +54,8 @@ class LazyLoadCache(Cache):
         if key not in self._key_load_locks:
             with self._create_key_lock:
                 if key not in self._key_load_locks:
-                    self._key_loaded_event[key] = Event()
-                    self._key_load_locks[key] = RLock()
-        return self._key_load_locks[key], self._key_loaded_event[key]
+                    self._key_load_locks[key] = (RLock(), Event())
+        return self._key_load_locks[key]
 
     def _custom_set_item(self, key, value):
         size = self.getsizeof(value)
