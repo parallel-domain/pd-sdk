@@ -85,13 +85,12 @@ class LazyLoadCache(Cache):
         key_lock, wait_event = self._get_locks(key=key)
         wait_event.wait()
         with key_lock:
-            if SHOW_CACHE_LOGS:
-                logger.debug(f"delete {key} from cache")
-            cache_delitem(self, key)
-            del self.__order[key]
-
-            # with LazyLoadCache._create_key_lock:
-            #     del self._key_load_locks[key]
+            if wait_event.is_set():
+                if SHOW_CACHE_LOGS:
+                    logger.debug(f"delete {key} from cache")
+                cache_delitem(self, key)
+                del self.__order[key]
+                wait_event.clear()
 
     @property
     def maxsize(self):
