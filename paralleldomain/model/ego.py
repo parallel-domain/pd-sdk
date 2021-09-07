@@ -1,5 +1,4 @@
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
     from typing import Callable, Protocol

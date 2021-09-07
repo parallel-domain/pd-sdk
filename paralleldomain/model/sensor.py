@@ -1,18 +1,13 @@
-from abc import ABCMeta
 from datetime import datetime
-from enum import Enum
-from typing import Callable, Dict, Generic, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Dict, Generic, List, Optional, Set, Type, TypeVar, Union
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
     from typing import Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
-
-import numpy as np
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.transformation import Transformation

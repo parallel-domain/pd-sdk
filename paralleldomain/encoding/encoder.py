@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import numpy as np
 
-from paralleldomain import Dataset, Scene
+from paralleldomain import Dataset
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorFrame
 from paralleldomain.model.type_aliases import SceneName, SensorName

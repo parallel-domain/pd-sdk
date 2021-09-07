@@ -1,5 +1,4 @@
 from paralleldomain.decoding.decoder import DatasetDecoder
-from paralleldomain.model.dataset import Dataset
 
 
 def test_can_load_dataset_from_path(decoder: DatasetDecoder):

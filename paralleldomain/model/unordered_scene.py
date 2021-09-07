@@ -1,7 +1,6 @@
-import contextlib
 from datetime import datetime
 from itertools import chain
-from typing import Any, Callable, ContextManager, Dict, Generator, Generic, List, Set, Type, TypeVar, Union, cast
+from typing import Any, Dict, Generator, Generic, List, Set, Type, TypeVar, Union
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -12,7 +11,7 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.model.frame import Frame
-from paralleldomain.model.sensor import CameraSensor, LidarSensor, Sensor, SensorFrame
+from paralleldomain.model.sensor import CameraSensor, LidarSensor
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 T = TypeVar("T")

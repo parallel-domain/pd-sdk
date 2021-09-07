@@ -5,9 +5,8 @@ from typing import Generic, List, Optional, TypeVar, Union
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoFrame, EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 

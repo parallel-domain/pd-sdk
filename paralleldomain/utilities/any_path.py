@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from multiprocessing.pool import ThreadPool
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 

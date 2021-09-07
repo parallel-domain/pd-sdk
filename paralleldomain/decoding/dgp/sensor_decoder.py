@@ -1,21 +1,16 @@
 import abc
 from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List, Set, cast
+from typing import Dict, List, Set
 
 from paralleldomain.common.dgp.v0.dtos import SceneDataDTO, SceneSampleDTO
 from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder, TDateTime
-from paralleldomain.decoding.sensor_frame_decoder import (
-    CameraSensorFrameDecoder,
-    LidarSensorFrameDecoder,
-    SensorFrameDecoder,
-)
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 
 class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):

@@ -8,7 +8,6 @@ from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_k
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])

@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 
-from paralleldomain import Dataset, Scene
+from paralleldomain import Scene
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 

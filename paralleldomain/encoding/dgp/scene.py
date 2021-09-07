@@ -1,6 +1,5 @@
 import hashlib
 import logging
-import os
 import uuid
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor

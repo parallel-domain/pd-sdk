@@ -10,7 +10,7 @@ from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
-from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import Annotation, AnnotationType
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
