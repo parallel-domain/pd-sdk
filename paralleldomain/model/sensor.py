@@ -3,6 +3,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Callable, Dict, Generic, List, Optional, Set, Tuple, Type, TypeVar, Union
 
+from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
+from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 try:
@@ -107,14 +109,14 @@ class SensorFrame(Generic[TDateTime]):
         )
 
     @property
-    def point_cloud(self) -> Optional["SensorFrame"]:
+    def point_cloud(self) -> Optional[PointCloud]:
         """
         Deprecated. Remains atm for 0.2.0 compatibility
         """
         return None
 
     @property
-    def image(self) -> Optional["SensorFrame"]:
+    def image(self) -> Optional[Image]:
         """
         Deprecated. Remains atm for 0.2.0 compatibility
         """
@@ -131,24 +133,8 @@ class SensorFrame(Generic[TDateTime]):
         return id(self) < id(other)
 
 
-class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime]):
-    def get_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
-        pass
-
-    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
-
-    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
-
-    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
-
-    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
-
-    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
+class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], PointCloudDecoderProtocol):
+    ...
 
 
 class LidarSensorFrame(SensorFrame[TDateTime]):
@@ -162,55 +148,12 @@ class LidarSensorFrame(SensorFrame[TDateTime]):
         self._decoder = decoder
 
     @property
-    def point_cloud(self) -> Optional["LidarSensorFrame"]:
-        """
-        Deprecated. Remains atm for 0.2.0 compatibility
-        """
-        return self
-
-    @property
-    def length(self) -> int:
-        return self._decoder.get_point_cloud_size(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def xyz(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_xyz(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def rgb(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_rgb(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def intensity(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_intensity(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def ts(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_timestamp(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def ring(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def xyz_i(self) -> np.ndarray:
-        return np.concatenate((self.xyz, self.intensity), axis=1)
-
-    @property
-    def xyz_one(self) -> np.ndarray:
-        xyz_data = self.xyz
-        one_data = np.ones((len(xyz_data), 1))
-        return np.concatenate((xyz_data, one_data), axis=1)
+    def point_cloud(self) -> PointCloud:
+        return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
 
 
-class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime]):
+class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):
     def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
-        pass
-
-    def get_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        pass
-
-    def get_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
 
 
@@ -225,49 +168,12 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
         self._decoder = decoder
 
     @property
-    def image(self) -> Optional["CameraSensorFrame"]:
-        """
-        Deprecated. Remains atm for 0.2.0 compatibility
-        """
-        return self
+    def image(self) -> Image:
+        return DecoderImage(decoder=self._decoder, frame_id=self.frame_id, sensor_name=self.sensor_name)
 
     @property
     def intrinsic(self) -> "SensorIntrinsic":
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def _data_rgba(self) -> np.ndarray:
-        return self._decoder.get_image_rgba(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def _image_dims(self) -> Tuple[int, int, int]:
-        return self._decoder.get_image_dimensions(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def rgba(self) -> np.ndarray:
-        return self._data_rgba
-
-    @property
-    def rgb(self) -> np.ndarray:
-        return self._data_rgba[:, :, :3]
-
-    @property
-    def width(self) -> int:
-        return self._image_dims[1]
-
-    @property
-    def height(self) -> int:
-        return self._image_dims[0]
-
-    @property
-    def channels(self) -> int:
-        return self._image_dims[2]
-
-    @property
-    def coordinates(self) -> np.ndarray:
-        shape = self._data_rgba.shape
-        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
-        return np.stack([y_coords, x_coords], axis=-1)
 
 
 TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
