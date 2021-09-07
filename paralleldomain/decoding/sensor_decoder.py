@@ -2,7 +2,7 @@ import abc
 from datetime import datetime
 from typing import Generic, Optional, Set, TypeVar, Union
 
-from paralleldomain.decoding.common import create_cache_key
+from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -10,16 +10,14 @@ from paralleldomain.decoding.sensor_frame_decoder import (
 )
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
-class SensorDecoder(Generic[TDateTime]):
-    def __init__(self, dataset_name: str, scene_name: SceneName, lazy_load_cache: LazyLoadCache):
+class SensorDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
+    def __init__(self, dataset_name: str, scene_name: SceneName):
         self.scene_name = scene_name
-        self.lazy_load_cache = lazy_load_cache
         self.dataset_name = dataset_name
 
     def get_unique_sensor_id(

@@ -4,7 +4,7 @@ from typing import Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
-from paralleldomain.decoding.common import create_cache_key
+from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
@@ -14,10 +14,9 @@ T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
-class SensorFrameDecoder(Generic[TDateTime]):
-    def __init__(self, dataset_name: str, scene_name: SceneName, lazy_load_cache: LazyLoadCache):
+class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
+    def __init__(self, dataset_name: str, scene_name: SceneName):
         self.scene_name = scene_name
-        self._lazy_load_cache = lazy_load_cache
         self.dataset_name = dataset_name
 
     def get_unique_sensor_frame_id(
@@ -35,7 +34,7 @@ class SensorFrameDecoder(Generic[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="extrinsic"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_extrinsic(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -44,7 +43,7 @@ class SensorFrameDecoder(Generic[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="sensor_pose"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -55,7 +54,7 @@ class SensorFrameDecoder(Generic[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_annotations(
                 sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
@@ -68,7 +67,7 @@ class SensorFrameDecoder(Generic[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="-available_annotation_types"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -107,7 +106,7 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="intrinsic"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_intrinsic(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -116,7 +115,7 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="image-dims"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_image_dimensions(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -125,7 +124,7 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="image_rgba"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -148,7 +147,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_size"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -157,7 +156,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_xyz"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -166,7 +165,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_rgb"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -175,7 +174,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_intensity"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_intensity(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -184,7 +183,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_timestamp"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id),
         )
@@ -193,7 +192,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ring_index"
         )
-        return self._lazy_load_cache.get_item(
+        return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id),
         )

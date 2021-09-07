@@ -23,13 +23,12 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         self,
         dataset_name: str,
         scene_name: SceneName,
-        lazy_load_cache: LazyLoadCache,
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
     ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name, lazy_load_cache=lazy_load_cache)
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
         self.scene_data = scene_data
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
@@ -43,14 +42,13 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
-            lazy_load_cache=self.lazy_load_cache,
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
@@ -64,7 +62,6 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
         return DGPLidarSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
-            lazy_load_cache=self.lazy_load_cache,
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
@@ -74,4 +71,4 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)

@@ -55,13 +55,10 @@ class _DatasetDecoderMixin:
 
 class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
-        self,
-        dataset_path: Union[str, AnyPath],
-        custom_reference_to_box_bottom: Optional[Transformation] = None,
-        use_persistent_cache: bool = True,
+        self, dataset_path: Union[str, AnyPath], custom_reference_to_box_bottom: Optional[Transformation] = None
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        DatasetDecoder.__init__(self, dataset_name=str(dataset_path), use_persistent_cache=use_persistent_cache)
+        DatasetDecoder.__init__(self, dataset_name=str(dataset_path))
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -71,7 +68,6 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
         return DGPSceneDecoder(
             dataset_path=self._dataset_path,
-            lazy_load_cache=self._lazy_load_cache,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
         )
 
@@ -89,11 +85,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
-        lazy_load_cache: LazyLoadCache,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        SceneDecoder.__init__(self, dataset_name=str(dataset_path), lazy_load_cache=lazy_load_cache)
+        SceneDecoder.__init__(self, dataset_name=str(dataset_path))
 
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
@@ -102,12 +97,11 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
     def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
-            lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
@@ -115,12 +109,11 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
     def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str, lazy_load_cache: LazyLoadCache
+        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
-            lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
@@ -176,13 +169,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
         return ontologies
 
-    def _create_frame_decoder(
-        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str, lazy_load_cache: LazyLoadCache
-    ) -> FrameDecoder:
+    def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder:
         return DGPFrameDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
-            lazy_load_cache=lazy_load_cache,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,

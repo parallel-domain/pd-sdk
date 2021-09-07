@@ -58,13 +58,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self,
         dataset_name: str,
         scene_name: SceneName,
-        lazy_load_cache: LazyLoadCache,
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
     ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name, lazy_load_cache=lazy_load_cache)
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data
