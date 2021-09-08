@@ -36,6 +36,7 @@ extensions: List[str] = [
     "sphinx.ext.napoleon",
     "m2r2",  # .. mdinclude:: package
     "sphinx_rtd_theme",
+    "nbsphinx",
 ]
 
 
@@ -49,13 +50,14 @@ autodoc_typehints = "description"
 napoleon_google_docstring = True
 napoleon_use_param = True
 
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path: List[str] = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: List[str] = []
+exclude_patterns: List[str] = ["**/.ipynb_checkpoints"]
 
 source_suffix = [".rst", ".md"]
 

@@ -19,10 +19,15 @@ $ git clone git@github.com:parallel-domain/pd-sdk.git
 # Change directory
 $ cd pd-sdk
 
+# Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`
+$ export MAKEFLAGS="-j$(nproc)"
+
 # Install PD SDK from local clone
 $ pip install .
 ```
+
 ---
+
 **Supported Python Versions:**
 
 * Python3.6
@@ -42,6 +47,9 @@ $ git clone git@github.com:parallel-domain/pd-sdk.git
 
 # Change directory
 $ cd pd-sdk
+
+# Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`
+$ export MAKEFLAGS="-j$(nproc)"
 
 # Install PD SDK from local clone with developer dependencies
 $ pip install -e .[dev]

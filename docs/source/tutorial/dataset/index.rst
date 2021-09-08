@@ -1,4 +1,4 @@
 Dataset
 ========
 
-.. include:: load_dataset.rst
+.. include:: load_dataset.ipynb
