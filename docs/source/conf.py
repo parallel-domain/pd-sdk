@@ -30,11 +30,14 @@ author = "Nisse Knudsen, Phillip Thomas"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions: List[str] = ["sphinx.ext.autodoc", "sphinx_autodoc_typehints", "sphinx.ext.napoleon", "m2r2"]
+extensions: List[str] = [
+    "sphinx.ext.autodoc",
+    "sphinx_autodoc_typehints",
+    "sphinx.ext.napoleon",
+    "m2r2",  # .. mdinclude:: package
+    "sphinx_rtd_theme",
+]
 
-intersphinx_mapping: Dict[str, Tuple] = {
-    "pyquaternion": ("http://kieranwynn.github.io/pyquaternion/", None),
-}
 
 autoclass_content = "both"
 autodoc_inherit_docstrings = True

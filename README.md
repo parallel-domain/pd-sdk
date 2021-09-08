@@ -55,7 +55,10 @@ It is optional to set those up, but it helps to keep all code in the same style.
 $ pre-commit install
 ```
 
-#### Execute Tests
+After setting up pre-commit hooks, every file in a commit will be checked by a number of hooks. If any of the hooks fail, the commit is rejected. Fortunately, most of the hooks are auto-correcting, so they edit
+the files per the style guidelines and you can just commit again. Only `flake8` lint errors can just be solved by human editing.
+
+#### Tests
 
 Tests can be executed using `pytest` and providing a location to a DGP dataset which should be used during the test run.
 ```bash
@@ -63,9 +66,19 @@ Tests can be executed using `pytest` and providing a location to a DGP dataset w
 $ DATASET_PATH=/data/test_dataset pytest .
 ```
 
-## Examples
+## Documentation
 
-### Load Dataset
+### Tutorials
+
+There are several tutorials available covering common use cases. Those can be found under [Documentation -> Tutorials](https://parallel-domain.github.io/pd-sdk/).
+In case you are missing an important tutorial, feel free to request it via a Github Issue or create a PR, in case you have written one already yourself.
+
+### API Reference
+
+Public classes / methods / properties are annotated with Docstrings. The compiled API Reference can be found under [Documentation -> API Reference](https://parallel-domain.github.io/pd-sdk/)
+
+
+## Outdated
 
 Simply load locally or remotely hosted Parallel Domain datasets (DGP format) into convenient Python objects.
 

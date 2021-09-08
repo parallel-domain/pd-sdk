@@ -28,7 +28,7 @@ Parallel Domain SDK
 
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
     :caption:  API Reference
 
     python_api/dataset
@@ -37,3 +37,11 @@ Parallel Domain SDK
     python_api/annotation
     python_api/transformation
     python_api/projection
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
