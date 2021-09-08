@@ -54,7 +54,7 @@ class AnyPath:
     def copytree(self, target: "AnyPath", max_num_threads: Optional[int] = None):
         target = AnyPath(str(target))
         if max_num_threads is None:
-            max_num_threads = max(1, min(int(0.5 * os.cpu_count()), 10))
+            max_num_threads = max(1, min(int(0.5 * (os.cpu_count() or 1)), 10))
 
         def _copy(source: Path):
             if source.is_file():

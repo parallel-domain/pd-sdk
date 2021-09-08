@@ -17,6 +17,8 @@ setup(
         "dev": [
             "pytest>=5.3.1,<6.0.0",
             "pytest-cov>=2.8.1,<3.0.0",
+            "types-ujson",
+            "types-cachetools",
         ],
     },
     zip_safe=False,

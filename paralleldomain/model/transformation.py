@@ -1,9 +1,11 @@
-from typing import List, Optional, Union
+from typing import List, Optional, TypeVar, Union
 
 import numpy as np
 from pyquaternion import Quaternion
 
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+
+T = TypeVar("T")
 
 
 class Transformation:
@@ -39,32 +41,25 @@ class Transformation:
         rep = f"R: {list(self.quaternion.yaw_pitch_roll)}, t: {self.translation}"
         return rep
 
-    def __matmul__(self, other) -> Union["Transformation", np.ndarray]:
-        convert_to_transform = True
+    def __matmul__(self, other: T) -> T:
         if isinstance(other, Transformation):
             transform = self.transformation_matrix @ other.transformation_matrix
+            return Transformation.from_transformation_matrix(mat=transform)
         elif isinstance(other, np.ndarray):
             transform = self.transformation_matrix @ other
-            convert_to_transform = other.shape == (4, 4)
+            return transform
         else:
-            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4x4 numpy array!")
-        if convert_to_transform:
-            return Transformation.from_transformation_matrix(mat=transform)
-        return transform
+            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4xn numpy array!")
 
-    def __rmatmul__(self, other) -> Union["Transformation", np.ndarray]:
-        convert_to_transform = True
+    def __rmatmul__(self, other: T) -> T:  # Union["Transformation", np.ndarray]:
         if isinstance(other, Transformation):
             transform = other.transformation_matrix @ self.transformation_matrix
+            return Transformation.from_transformation_matrix(mat=transform)
         elif isinstance(other, np.ndarray):
             transform = other @ self.transformation_matrix
-            convert_to_transform = other.shape == (4, 4)
+            return transform
         else:
-            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4x4 numpy array!")
-
-        if convert_to_transform:
-            return Transformation.from_transformation_matrix(mat=transform)
-        return transform
+            raise ValueError(f"Invalid value {other}! Has to be a Transformation or nx4 numpy array!")
 
     @property
     def transformation_matrix(self) -> np.ndarray:
@@ -172,9 +167,9 @@ class Transformation:
     @classmethod
     def from_euler_angles(
         cls,
-        roll: Optional[float] = 0.0,
-        pitch: Optional[float] = 0.0,
-        yaw: Optional[float] = 0.0,
+        roll: float = 0.0,
+        pitch: float = 0.0,
+        yaw: float = 0.0,
         translation: Optional[np.ndarray] = None,
         degrees: bool = False,
         order: str = "xyz",

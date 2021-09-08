@@ -1,7 +1,7 @@
 from contextlib import suppress
 from dataclasses import dataclass, field
 from sys import getsizeof
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Optional, Type
 
 import numpy as np
 
@@ -89,7 +89,7 @@ class BoundingBoxes2D(Annotation):
 
     boxes: List[BoundingBox2D]
 
-    def get_instance(self, instance_id: int) -> BoundingBox2D:
+    def get_instance(self, instance_id: int) -> Optional[BoundingBox2D]:
         return next((b for b in self.boxes if b.instance_id == instance_id), None)
 
     def get_attribute_key(self, attr_key: str) -> List[BoundingBox2D]:
@@ -297,7 +297,7 @@ class BoundingBoxes3D(Annotation):
 
     boxes: List[BoundingBox3D]
 
-    def get_instance(self, instance_id: int) -> BoundingBox3D:
+    def get_instance(self, instance_id: int) -> Optional[BoundingBox3D]:
         return next((b for b in self.boxes if b.instance_id == instance_id), None)
 
     def get_attribute_key(self, attr_key: str) -> List[BoundingBox3D]:

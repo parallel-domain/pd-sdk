@@ -13,12 +13,14 @@ def merge_boxes(
     The resulting box has the exact same properties as `target_box`,
     but with extended `source_box` dimensions merged into it.
     """
-    if type(target_box) == BoundingBox3D and type(source_box) == BoundingBox2D:
+    if isinstance(target_box, BoundingBox3D) and isinstance(source_box, BoundingBox3D):
         return merge_boxes_3d(target_box=target_box, source_box=source_box)
-    elif type(target_box) == BoundingBox2D and type(source_box) == BoundingBox2D:
+    elif isinstance(target_box, BoundingBox2D) and isinstance(source_box, BoundingBox2D):
         return merge_boxes_2d(target_box=target_box, source_box=source_box)
     else:
-        TypeError(f"Types {type(target_box)} for target_box and {type(source_box)} for source_box must be the same.")
+        raise TypeError(
+            f"Types {type(target_box)} for target_box and {type(source_box)} for source_box must be the same."
+        )
 
 
 def merge_boxes_2d(target_box: BoundingBox2D, source_box: BoundingBox2D) -> BoundingBox2D:
