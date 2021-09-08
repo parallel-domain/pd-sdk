@@ -4,7 +4,7 @@ from typing import Any, Dict, ItemsView, List, Optional, TypeVar, Union
 
 import numpy as np
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Union["ClassMap", "LabelMapping"])
 TClassId = TypeVar("TClassId", int, np.ndarray)
 
 
@@ -85,7 +85,7 @@ class LabelMapping:
                 return None
         return self._label_mapping[key]
 
-    def __matmul__(self, other: T) -> Union[ClassMap, "LabelMapping"]:
+    def __matmul__(self, other: T) -> T:
         if isinstance(other, ClassMap):
             return ClassMap(
                 classes=[
