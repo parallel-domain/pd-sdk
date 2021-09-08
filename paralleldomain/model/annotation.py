@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Type
 import numpy as np
 
 from paralleldomain.model.transformation import Transformation
-from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by_values
+from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by_values, encode_int32_as_rgb8
 
 # _UNIT_BOUNDING_BOX_3D = (CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM).rotation_matrix @ np.array(
 _UNIT_BOUNDING_BOX_3D = np.array(
@@ -68,6 +68,67 @@ class BoundingBox2D(Annotation):
         """Returns area of 2D Bounding Box in square pixel."""
         return self.width * self.height
 
+    @property
+    def vertices(self) -> np.ndarray:
+        """Returns the 2D vertices of a bounding box.
+
+        Vertices are returned in the following order:
+
+        ::
+
+            0--------1
+            |        |
+            |        | right
+            |        |
+            3--------2
+              bottom
+
+        """
+
+        vertices = np.array(
+            [
+                [self.x, self.y],
+                [self.x + self.width, self.y],
+                [self.x + self.width, self.y + self.height],
+                [self.x, self.y + self.height],
+            ]
+        )
+
+        return vertices
+
+    @property
+    def edges(self) -> np.ndarray:
+        """Returns the 2D edges of a bounding box.
+
+        Edges are returned in order of connecting the vertices in the following order:
+
+        - `[0, 1]`
+        - `[1, 2]`
+        - `[2, 3]`
+        - `[3, 0]`
+
+        ::
+
+            0--------1
+            |        |
+            |        | right
+            |        |
+            3--------2
+              bottom
+
+
+
+        """
+        vertices = self.vertices
+        edges = np.empty(shape=(4, 2, 2))
+
+        edges[0, :, :] = vertices[[0, 1], :]  # UL -> UR (0 -> 1)
+        edges[1, :, :] = vertices[[1, 2], :]  # UR -> LR (1 -> 2)
+        edges[2, :, :] = vertices[[2, 3], :]  # LR -> LL (2 -> 3)
+        edges[3, :, :] = vertices[[3, 0], :]  # LL -> UL (3 -> 0)
+
+        return edges
+
     def __repr__(self):
         rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
         return rep
@@ -89,24 +150,74 @@ class BoundingBoxes2D(Annotation):
 
     boxes: List[BoundingBox2D]
 
-    def get_instance(self, instance_id: int) -> Optional[BoundingBox2D]:
+    def get_box_by_instance_id(self, instance_id: int) -> Optional[BoundingBox2D]:
+        """Returns the box with matching instance ID.
+
+        Args:
+              instance_id: Instance ID of box that should be returned.
+
+        Returns:
+              Matching box instance. If none found, returns `None`.
+        """
         return next((b for b in self.boxes if b.instance_id == instance_id), None)
 
-    def get_attribute_key(self, attr_key: str) -> List[BoundingBox2D]:
+    def get_boxes_by_attribute_key(self, attr_key: str) -> List[BoundingBox2D]:
+        """Returns all boxes having a certain attribute, independent of value.
+
+        Args:
+            attr_key: Name of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute.
+        """
         return [b for b in self.boxes if attr_key in b.attributes]
 
-    def get_attribute_value(self, attr_key: str, attr_value: Any) -> List[BoundingBox2D]:
-        return self.get_attribute_values(attr_key=attr_key, attr_values=[attr_value])
+    def get_boxes_by_attribute_value(self, attr_key: str, attr_value: Any) -> List[BoundingBox2D]:
+        """Returns all boxes having the specified attribute and value.
 
-    def get_attribute_values(self, attr_key: str, attr_values: List[Any]) -> List[BoundingBox2D]:
+        Args:
+            attr_key: Name of attribute.
+            attr_value: Value of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute and value.
+        """
+        return self.get_boxes_by_attribute_values(attr_key=attr_key, attr_values=[attr_value])
+
+    def get_boxes_by_attribute_values(self, attr_key: str, attr_values: List[Any]) -> List[BoundingBox2D]:
+        """Returns all boxes having the specified attribute and any of the values.
+
+        Args:
+            attr_key: Name of attribute.
+            attr_values: Allowed values of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute and any of the values.
+        """
         with suppress(KeyError):
             result = [b for b in self.boxes if b.attributes[attr_key] in attr_values]
         return result if result is not None else []  # if only KeyError, then result is None
 
-    def get_class(self, class_id: int) -> List[BoundingBox2D]:
-        return self.get_classes([class_id])
+    def get_boxes_by_class_id(self, class_id: int) -> List[BoundingBox2D]:
+        """Returns all boxes having a the specified class ID.
 
-    def get_classes(self, class_ids: List[int]) -> List[BoundingBox2D]:
+        Args:
+            class_id: Class ID.
+
+        Returns:
+            List of box instances that are of the specified class.
+        """
+        return self.get_boxes_by_class_ids([class_id])
+
+    def get_boxes_by_class_ids(self, class_ids: List[int]) -> List[BoundingBox2D]:
+        """Returns all boxes having any of the specified class IDs.
+
+        Args:
+            class_ids: Class IDs.
+
+        Returns:
+            List of box instances that are of any of the specified classes.
+        """
         return [b for b in self.boxes if b.class_id in class_ids]
 
     def __sizeof__(self):
@@ -297,24 +408,74 @@ class BoundingBoxes3D(Annotation):
 
     boxes: List[BoundingBox3D]
 
-    def get_instance(self, instance_id: int) -> Optional[BoundingBox3D]:
+    def get_box_by_instance_id(self, instance_id: int) -> Optional[BoundingBox3D]:
+        """Returns the box with matching instance ID.
+
+        Args:
+              instance_id: Instance ID of box that should be returned.
+
+        Returns:
+              Matching box instance. If none found, returns `None`.
+        """
         return next((b for b in self.boxes if b.instance_id == instance_id), None)
 
-    def get_attribute_key(self, attr_key: str) -> List[BoundingBox3D]:
+    def get_boxes_by_attribute_key(self, attr_key: str) -> List[BoundingBox3D]:
+        """Returns all boxes having a certain attribute, independent of value.
+
+        Args:
+            attr_key: Name of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute.
+        """
         return [b for b in self.boxes if attr_key in b.attributes]
 
-    def get_attribute_value(self, attr_key: str, attr_value: Any) -> List[BoundingBox3D]:
-        return self.get_attribute_values(attr_key=attr_key, attr_values=[attr_value])
+    def get_boxes_by_attribute_value(self, attr_key: str, attr_value: Any) -> List[BoundingBox3D]:
+        """Returns all boxes having the specified attribute and value.
 
-    def get_attribute_values(self, attr_key: str, attr_values: List[Any]) -> List[BoundingBox3D]:
+        Args:
+            attr_key: Name of attribute.
+            attr_value: Value of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute and value.
+        """
+        return self.get_boxes_by_attribute_values(attr_key=attr_key, attr_values=[attr_value])
+
+    def get_boxes_by_attribute_values(self, attr_key: str, attr_values: List[Any]) -> List[BoundingBox3D]:
+        """Returns all boxes having the specified attribute and any of the values.
+
+        Args:
+            attr_key: Name of attribute.
+            attr_values: Allowed values of attribute.
+
+        Returns:
+            List of box instances that have the specified attribute and any of the values.
+        """
         with suppress(KeyError):
             result = [b for b in self.boxes if b.attributes[attr_key] in attr_values]
         return result if result is not None else []  # if only KeyError, then result is None
 
-    def get_class(self, class_id: int) -> List[BoundingBox3D]:
-        return self.get_classes([class_id])
+    def get_boxes_by_class_id(self, class_id: int) -> List[BoundingBox3D]:
+        """Returns all boxes having a the specified class ID.
 
-    def get_classes(self, class_ids: List[int]) -> List[BoundingBox3D]:
+        Args:
+            class_id: Class ID.
+
+        Returns:
+            List of box instances that are of the specified class.
+        """
+        return self.get_boxes_by_class_ids([class_id])
+
+    def get_boxes_by_class_ids(self, class_ids: List[int]) -> List[BoundingBox3D]:
+        """Returns all boxes having any of the specified class IDs.
+
+        Args:
+            class_ids: Class IDs.
+
+        Returns:
+            List of box instances that are of any of the specified classes.
+        """
         return [b for b in self.boxes if b.class_id in class_ids]
 
     def __sizeof__(self):
@@ -363,9 +524,7 @@ class SemanticSegmentation2D(Annotation):
     def rgb_encoded(self) -> np.ndarray:
         """Outputs :attr:`~.SemanticSegmentation.class_ids` mask as RGB-encoded image matrix with shape `(H x W x 3)`,
         with `R` (index: 0) being the lowest and `B` (index: 2) being the highest 8 bit."""
-        return np.concatenate(
-            [self.class_ids & 0xFF, self.class_ids >> 8 & 0xFF, self.class_ids >> 16 & 0xFF], axis=-1
-        ).astype(np.uint8)
+        return encode_int32_as_rgb8(mask=self.class_ids)
 
     def __post_init__(self):
         if len(self.class_ids.shape) != 3:
@@ -426,9 +585,7 @@ class InstanceSegmentation2D(Annotation):
     def rgb_encoded(self) -> np.ndarray:
         """Outputs :attr:`~.InstanceSegmentation.instance_ids` mask as RGB matrix with shape `(H x W x 3)`,
         with `R` being the lowest and `B` being the highest 8 bit."""
-        return np.concatenate(
-            [self.instance_ids & 0xFF, self.instance_ids >> 8 & 0xFF, self.instance_ids >> 16 & 0xFF], axis=-1
-        ).astype(np.uint8)
+        return encode_int32_as_rgb8(mask=self.instance_ids)
 
     def __post_init__(self):
         if len(self.instance_ids.shape) != 3:
