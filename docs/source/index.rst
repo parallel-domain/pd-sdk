@@ -1,43 +1,39 @@
-Welcome to Parallel Domain SDK's documentation!
+.. image:: _static/paralleldomain_logo_color_darkblue.png
+    :alt: Parallel Domain Logo
+    :width: 320px
+    :align: center
+
+-----------
+
+Parallel Domain SDK
 ===============================================
 
-.. automodule:: model.dataset
-    :members:
-    :inherited-members:
-    :exclude-members: DatasetDecoderProtocol, SceneDatasetDecoderProtocol
+.. only: not latex
 
-.. automodule:: model.scene
-    :members:
-    :inherited-members:
-    :exclude-members: SceneDecoderProtocol
+    Contents:
 
-.. automodule:: model.sensor
-    :members:
-    :inherited-members:
-    :exclude-members: SensorFrameDecoderProtocol, TemporalSensorFrameDecoderProtocol, SensorDecoderProtocol
+.. toctree::
+    :maxdepth: 1
+    :caption: Getting Started
 
-.. automodule:: model.annotation
-    :members:
-    :inherited-members:
-    :exclude-members: AnnotationTypes
-
-.. autoclass:: model.annotation.AnnotationTypes
-
-.. automodule:: model.transformation
-    :members:
-    :inherited-members:
-
-.. automodule:: utilities.projection
-    :members:
-    :inherited-members:
+    getting_started
+    license
 
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Tutorials
+
+    tutorial/dataset/index
 
 
+.. toctree::
+    :maxdepth: 1
+    :caption:  API Reference
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    python_api/dataset
+    python_api/scene
+    python_api/sensor
+    python_api/annotation
+    python_api/transformation
+    python_api/projection

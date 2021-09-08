@@ -30,11 +30,7 @@ author = "Nisse Knudsen, Phillip Thomas"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions: List[str] = [
-    "sphinx.ext.autodoc",
-    "sphinx_autodoc_typehints",
-    "sphinx.ext.napoleon",
-]
+extensions: List[str] = ["sphinx.ext.autodoc", "sphinx_autodoc_typehints", "sphinx.ext.napoleon", "m2r2"]
 
 intersphinx_mapping: Dict[str, Tuple] = {
     "pyquaternion": ("http://kieranwynn.github.io/pyquaternion/", None),
@@ -58,6 +54,7 @@ templates_path: List[str] = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns: List[str] = []
 
+source_suffix = [".rst", ".md"]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -66,7 +63,12 @@ exclude_patterns: List[str] = []
 #
 html_theme: str = "sphinx_rtd_theme"
 
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+html_theme_options = {"collapse_navigation": False}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path: List[str] = []
+html_static_path: List[str] = ["_static"]

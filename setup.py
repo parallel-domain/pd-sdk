@@ -19,6 +19,7 @@ setup(
             "pytest-cov>=2.8.1,<3.0.0",
             "types-ujson",
             "types-cachetools",
+            "pre-commit>=2.13.0,<3.0.0",
         ],
     },
     zip_safe=False,

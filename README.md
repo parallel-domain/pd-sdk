@@ -1,36 +1,67 @@
 # Parallel Domain SDK
 
-## Setup
+## Introduction
 
-### End-users
+The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain's synthetic data as Python objects.
 
-Use this procedure if you only want to use the SDK without extending it.
+The PD SDK can decode different data formats into its Python objects, including [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md) format.
+Currently, local file system and s3 buckets are supported as dataset locations for decoding.
 
-`git clone git@github.com:parallel-domain/pd-sdk.git`
+## Quick Start
 
-`cd pd-sdk`
+To use the PD SDK, you can simply install it using `pip` in your Python environment. Activate your Python environment before-hand, if wanted.
 
-`pip install .`
+
+```bash
+# Clone latest PD SDK release
+$ git clone git@github.com:parallel-domain/pd-sdk.git
+
+# Change directory
+$ cd pd-sdk
+
+# Install PD SDK from local clone
+$ pip install .
+```
+---
+**Supported Python Versions:**
+
+* Python3.6
+* Python3.7
+* Python3.8
+* Python3.9
+
+---
 
 ### Developers
 
-Use this procedure if you plan to extend the code base or do adjustments
+If you are looking to extend or debug the PD SDK, use the following install procedure.
 
-`git clone git@github.com:parallel-domain/pd-sdk.git`
+```bash
+# Clone latest PD SDK release
+$ git clone git@github.com:parallel-domain/pd-sdk.git
 
-`cd pd-sdk`
+# Change directory
+$ cd pd-sdk
 
-`pip install -e .`
+# Install PD SDK from local clone with developer dependencies
+$ pip install -e .[dev]
+```
 
-`pre-commit install`
+To make code contributions more stream-lined, we provide local [pre-commit hooks](https://pre-commit.com/) that check / adapt to the PD SDK style guidelines automatically on commit.
+It is optional to set those up, but it helps to keep all code in the same style.
 
-Everytime you commit locally, pre-commit hooks execute on the staged files. These reduces time on CI when creating a PR
-for `main` branch. The first run takes a bit longer, but afterwards it should be less than a second.
+```bash
+# within local PD SDK directory
+$ pre-commit install
+```
 
-#### Tests
+#### Execute Tests
 
-When changing code, it is recommend to run tests. To do so, set the env
-variable `DATASET_PATH=/location/to/sample_dataset` before running the tests.
+Tests can be executed using `pytest` and providing a location to a DGP dataset which should be used during the test run.
+```bash
+# within local PD SDK directory - set env variable DATASET_PATH to a local or s3 location.
+$ DATASET_PATH=/data/test_dataset pytest .
+```
 
 ## Examples
 
