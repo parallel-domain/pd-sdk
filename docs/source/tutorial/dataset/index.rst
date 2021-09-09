@@ -1,4 +1,5 @@
 Dataset
 ========
 
-.. include:: load_dataset.ipynb
+.. toctree::
+    load_dataset.ipynb

@@ -50,6 +50,11 @@ autodoc_typehints = "description"
 napoleon_google_docstring = True
 napoleon_use_param = True
 
+highlight_language = "python3"
+nbsphinx_execute = "always"
+nbsphinx_input_prompt = "In [%s]:"
+nbsphinx_output_prompt = "Out [%s]:"
+nbsphinx_timeout = 600
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path: List[str] = ["_templates"]

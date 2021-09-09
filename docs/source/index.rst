@@ -31,12 +31,12 @@ Parallel Domain SDK
     :maxdepth: 2
     :caption:  API Reference
 
-    python_api/dataset
-    python_api/scene
-    python_api/sensor
-    python_api/annotation
-    python_api/transformation
-    python_api/projection
+    api/dataset
+    api/scene
+    api/sensor
+    api/annotation
+    api/transformation
+    api/projection
 
 
 Indices and tables
