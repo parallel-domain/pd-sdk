@@ -94,7 +94,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
     def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
@@ -106,7 +106,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
     def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,
