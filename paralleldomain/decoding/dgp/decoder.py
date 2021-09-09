@@ -71,7 +71,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         return [p.parent.name for p in self._decode_scene_paths()]
 
-    def _decode_dataset_meta_data(self) -> DatasetMeta:
+    def _decode_dataset_metadata(self) -> DatasetMeta:
         dto = self._decode_dataset_dto()
         meta_dict = dto.metadata.to_dict()
         anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]

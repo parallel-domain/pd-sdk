@@ -52,7 +52,7 @@ class DatasetDecoderProtocol(Protocol):
     def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
         pass
 
-    def get_dataset_meta_data(self) -> DatasetMeta:
+    def get_dataset_metadata(self) -> DatasetMeta:
         pass
 
     def get_scene_names(self) -> List[SceneName]:
@@ -78,9 +78,9 @@ class Dataset:
         return self._decoder.get_unordered_scene_names()
 
     @property
-    def meta_data(self) -> DatasetMeta:
+    def metadata(self) -> DatasetMeta:
         """Returns a list of scene names within the dataset."""
-        return self._decoder.get_dataset_meta_data()
+        return self._decoder.get_dataset_metadata()
 
     @property
     def unordered_scenes(self) -> Dict[SceneName, UnorderedScene[Union[datetime, None]]]:
@@ -90,12 +90,12 @@ class Dataset:
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         """Returns a list of available annotation types for the dataset."""
-        return self.meta_data.available_annotation_types
+        return self.metadata.available_annotation_types
 
     @property
     def name(self) -> str:
         """Returns the name of the dataset."""
-        return self.meta_data.name
+        return self.metadata.name
 
     def get_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
         """Allows access to a sensor frame set by using its name.

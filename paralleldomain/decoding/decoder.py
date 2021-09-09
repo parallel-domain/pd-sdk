@@ -55,10 +55,10 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
 
         return self.get_unordered_scene(scene_name=scene_name)
 
-    def get_dataset_meta_data(self) -> DatasetMeta:
+    def get_dataset_metadata(self) -> DatasetMeta:
         return self.lazy_load_cache.get_item(
-            key=f"{self.dataset_name}-dataset_meta_data",
-            loader=self._decode_dataset_meta_data,
+            key=f"{self.dataset_name}-dataset_metadata",
+            loader=self._decode_dataset_metadata,
         )
 
     def get_scene_names(self) -> List[SceneName]:
@@ -76,17 +76,17 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         )
 
     def _decode_scene(self, scene_name: SceneName) -> Scene:
-        meta_data = self.get_dataset_meta_data()
+        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
         return Scene(
-            name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
+            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
         )
 
     def _decode_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
-        meta_data = self.get_dataset_meta_data()
+        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
         return UnorderedScene(
-            name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
+            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
         )
 
     @abc.abstractmethod
@@ -102,7 +102,7 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _decode_dataset_meta_data(self) -> DatasetMeta:
+    def _decode_dataset_metadata(self) -> DatasetMeta:
         pass
 
     def get_dataset(self) -> Dataset:
