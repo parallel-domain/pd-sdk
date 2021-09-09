@@ -4,5 +4,4 @@ Dataset
 .. toctree::
     :maxdepth: 1
 
-    any_path.ipynb
-    load_dataset.ipynb
+    working_with_scenes.ipynb
