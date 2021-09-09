@@ -264,3 +264,7 @@ class AnyPath:
         AWS S3 Service doesn't have fifo feature, There for this method will always return False
         """
         return self._backend.is_fifo()
+
+    def absolute(self) -> "AnyPath":
+        pth = self._backend.absolute()
+        return self._create_valid_any_path(new_path=pth)
