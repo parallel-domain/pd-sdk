@@ -1,95 +1,81 @@
 import math
 import random
-from typing import Optional, Union
+from typing import List, Union
 
 import numpy as np
 import pytest
 from pyquaternion import Quaternion
 
-from paralleldomain.model.transformation import Transformation
-from paralleldomain.utilities.coordinate_system import CoordinateSystem
+from paralleldomain.utilities.transformation import Transformation
 
 
+# Ground Truth Values pre-calculated using scipy.spatial.transform.rotation.Rotation class
 @pytest.mark.parametrize(
-    "system,roll,pitch,yaw,order,translation,source,target",
+    "angles,order,translation,degrees,target",
     [
         (
-            "UFL",
-            0,
-            90,
-            90,
+            [0, 90, -90],
+            "xyz",
+            np.array([0.0, 0.0, 0.0]),
+            True,
+            Quaternion([0.5000000000000001, 0.4999999999999999, 0.5, -0.5]),
+        ),
+        (
+            [180, 90, -90],
+            "zyx",
+            np.array([0.0, 0.0, 0.0]),
+            True,
+            Quaternion([0.49999999999999994, 0.49999999999999994, 0.5, 0.5000000000000001]),
+        ),
+        (
+            [0, -90, 90],
             "xzy",
             np.array([0.0, 0.0, 0.0]),
-            np.array([0.0, 0.0, -1.0, 1.0]),
-            np.array([0.0, 1.0, 0.0, 1.0]),
+            True,
+            Quaternion([0.5000000000000001, -0.4999999999999999, 0.5, -0.5]),
         ),
         (
-            "UFL",
-            0,
-            90,
-            90,
-            "xyz",
+            [90, 90, 0],
+            "XYZ",
             np.array([0.0, 0.0, 0.0]),
-            np.array([0.0, 0.0, -1.0, 1.0]),
-            np.array([-1.0, 0.0, 0.0, 1.0]),
+            True,
+            Quaternion([0.5000000000000001, 0.5, 0.5, 0.4999999999999999]),
         ),
         (
-            "UFL",
-            0,
-            0,
-            90,
-            "xyz",
+            [180, 90, -180],
+            "ZYX",
             np.array([0.0, 0.0, 0.0]),
-            np.array([0.0, 0.0, -1.0, 1.0]),
-            np.array([0.0, 1.0, 0.0, 1.0]),
+            True,
+            Quaternion([-0.7071067811865475, -8.659560562354933e-17, -0.7071067811865476, 8.659560562354933e-17]),
         ),
         (
-            "RFU",
-            0,
-            0,
-            90,
-            "xyz",
+            [0, -90, 180],
+            "XZY",
             np.array([0.0, 0.0, 0.0]),
-            np.array([1.0, 0.0, 0.0, 1.0]),
-            np.array([0.0, 1.0, 0.0, 1.0]),
+            True,
+            Quaternion([4.329780281177467e-17, 0.7071067811865475, 0.7071067811865476, -4.329780281177466e-17]),
         ),
         (
-            None,
-            0,
-            0,
-            90,
-            "xyz",
+            [90, 90, -180],
+            "zxz",
             np.array([0.0, 0.0, 0.0]),
-            np.array([1.0, 0.0, 0.0, 1.0]),
-            np.array([0.0, 1.0, 0.0, 1.0]),
+            True,
+            Quaternion([0.5, -0.49999999999999983, -0.5, -0.5000000000000001]),
         ),
         (
-            None,
-            0,
-            0,
-            90,
-            "xyz",
-            np.array([42.0, 0.0, 0.0]),
-            np.array([1.0, 0.0, 0.0, 1.0]),
-            np.array([42.0, 1.0, 0.0, 1.0]),
+            [180, 0, 0],
+            "XZX",
+            np.array([0.0, 0.0, 0.0]),
+            True,
+            Quaternion([6.123233995736766e-17, 1.0, 0.0, 0.0]),
         ),
     ],
 )
 def test_transformation_from_rpy(
-    system: Optional[Union[str, CoordinateSystem]],
-    roll: float,
-    pitch: float,
-    yaw: float,
-    order: str,
-    translation: np.ndarray,
-    source: np.ndarray,
-    target: np.ndarray,
+    angles: Union[np.ndarray, List[float]], order: str, translation: np.ndarray, degrees: bool, target: Quaternion
 ):
-    transform = Transformation.from_euler_angles(
-        roll=roll, pitch=pitch, yaw=yaw, translation=translation, degrees=True, order=order, coordinate_system=system
-    )
-    transformed = transform @ source
-    assert all(np.isclose(target, transformed))
+    transform = Transformation.from_euler_angles(angles=angles, translation=translation, order=order, degrees=True)
+    assert np.all(np.isclose(target.rotation_matrix, transform.rotation))
 
 
 def test_transformation_inverse():
@@ -103,9 +89,12 @@ def test_transformation_inverse():
 
     # Random Rotation (no translation)
     trans_1 = Transformation.from_euler_angles(
-        roll=random_state.uniform(-1, 1) * math.pi,
-        pitch=random_state.uniform(-1, 1) * math.pi,
-        yaw=random_state.uniform(-1, 1) * math.pi,
+        angles=[
+            random_state.uniform(-1, 1) * math.pi,
+            random_state.uniform(-1, 1) * math.pi,
+            random_state.uniform(-1, 1) * math.pi,
+        ],
+        order="xyz",
         degrees=False,
     )
     trans_1_inverse = trans_1.inverse
@@ -114,12 +103,15 @@ def test_transformation_inverse():
 
     # Random Transformation
     trans_2 = Transformation.from_euler_angles(
-        roll=random_state.uniform(-1, 1) * math.pi,
-        pitch=random_state.uniform(-1, 1) * math.pi,
-        yaw=random_state.uniform(-1, 1) * math.pi,
+        angles=[
+            random_state.uniform(-1, 1) * math.pi,
+            random_state.uniform(-1, 1) * math.pi,
+            random_state.uniform(-1, 1) * math.pi,
+        ],
         translation=np.asarray(
             [random_state.uniform(-200, 200), random_state.uniform(-200, 200), random_state.uniform(-200, 200)]
         ),
+        order="ZYX",
         degrees=False,
     )
     trans_2_inverse = trans_2.inverse

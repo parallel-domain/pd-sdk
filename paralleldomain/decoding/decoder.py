@@ -55,10 +55,10 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
 
         return self.get_unordered_scene(scene_name=scene_name)
 
-    def get_dataset_meta_data(self) -> DatasetMeta:
+    def get_dataset_metadata(self) -> DatasetMeta:
         return self.lazy_load_cache.get_item(
-            key=f"{self.dataset_name}-dataset_meta_data",
-            loader=self._decode_dataset_meta_data,
+            key=f"{self.dataset_name}-dataset_metadata",
+            loader=self._decode_dataset_metadata,
         )
 
     def get_scene_names(self) -> List[SceneName]:
@@ -76,17 +76,17 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         )
 
     def _decode_scene(self, scene_name: SceneName) -> Scene:
-        meta_data = self.get_dataset_meta_data()
+        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
         return Scene(
-            name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
+            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
         )
 
     def _decode_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
-        meta_data = self.get_dataset_meta_data()
+        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
         return UnorderedScene(
-            name=scene_name, available_annotation_types=meta_data.available_annotation_types, decoder=scene_decoder
+            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
         )
 
     @abc.abstractmethod
@@ -102,7 +102,7 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _decode_dataset_meta_data(self) -> DatasetMeta:
+    def _decode_dataset_metadata(self) -> DatasetMeta:
         pass
 
     def get_dataset(self) -> Dataset:
@@ -219,31 +219,31 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
     ) -> CameraSensor[TDateTime]:
         return CameraSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
 
-    def get_camera_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
         sensor_decoder = self._create_camera_sensor_decoder(
             scene_name=scene_name,
-            sensor_name=sensor_name,
+            camera_name=camera_name,
             dataset_name=self.dataset_name,
         )
-        return self._decode_camera_sensor(scene_name=scene_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
+        return self._decode_camera_sensor(scene_name=scene_name, sensor_name=camera_name, sensor_decoder=sensor_decoder)
 
-    def get_lidar_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
+    def get_lidar_sensor(self, scene_name: SceneName, lidar_name: SensorName) -> LidarSensor[TDateTime]:
         sensor_decoder = self._create_lidar_sensor_decoder(
             scene_name=scene_name,
-            sensor_name=sensor_name,
+            lidar_name=lidar_name,
             dataset_name=self.dataset_name,
         )
-        return self._decode_lidar_sensor(scene_name=scene_name, sensor_name=sensor_name, sensor_decoder=sensor_decoder)
+        return self._decode_lidar_sensor(scene_name=scene_name, sensor_name=lidar_name, sensor_decoder=sensor_decoder)
 
     @abc.abstractmethod
     def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
         pass
 
     @abc.abstractmethod
     def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
         pass
 

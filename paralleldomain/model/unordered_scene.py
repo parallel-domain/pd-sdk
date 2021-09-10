@@ -47,10 +47,10 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_class_map(self, scene_name: SceneName, annotation_type: Type[T]) -> ClassMap:
         pass
 
-    def get_camera_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
         pass
 
-    def get_lidar_sensor(self, scene_name: SceneName, sensor_name: SensorName) -> LidarSensor[TDateTime]:
+    def get_lidar_sensor(self, scene_name: SceneName, lidar_name: SensorName) -> LidarSensor[TDateTime]:
         pass
 
 
@@ -110,23 +110,23 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
-        return (self.get_camera_sensor(sensor_name=sensor_name) for sensor_name in self.camera_names)
+        return (self.get_camera_sensor(camera_name=camera_name) for camera_name in self.camera_names)
 
     @property
     def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
-        return (self.get_lidar_sensor(sensor_name=sensor_name) for sensor_name in self.lidar_names)
+        return (self.get_lidar_sensor(lidar_name=lidar_name) for lidar_name in self.lidar_names)
 
     def get_sensor(self, sensor_name: SensorName) -> Union[CameraSensor[TDateTime], LidarSensor[TDateTime]]:
         if sensor_name in self.camera_names:
-            return self.get_camera_sensor(sensor_name=sensor_name)
+            return self.get_camera_sensor(camera_name=sensor_name)
         else:
-            return self.get_lidar_sensor(sensor_name=sensor_name)
+            return self.get_lidar_sensor(lidar_name=sensor_name)
 
-    def get_camera_sensor(self, sensor_name: SensorName) -> CameraSensor[TDateTime]:
-        return self._decoder.get_camera_sensor(scene_name=self.name, sensor_name=sensor_name)
+    def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[TDateTime]:
+        return self._decoder.get_camera_sensor(scene_name=self.name, camera_name=camera_name)
 
-    def get_lidar_sensor(self, sensor_name: SensorName) -> LidarSensor[TDateTime]:
-        return self._decoder.get_lidar_sensor(scene_name=self.name, sensor_name=sensor_name)
+    def get_lidar_sensor(self, lidar_name: SensorName) -> LidarSensor[TDateTime]:
+        return self._decoder.get_lidar_sensor(scene_name=self.name, lidar_name=lidar_name)
 
     @property
     def class_maps(self) -> Dict[AnnotationType, ClassMap]:

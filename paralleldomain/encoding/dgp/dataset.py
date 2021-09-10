@@ -49,7 +49,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         self._annotation_types: Union[List[AnnotationType], None] = None
 
     def _encode_dataset_json(self, scene_files: Dict[str, AnyPath]) -> AnyPath:
-        metadata_dto = DatasetMetaDTO(**self._dataset.meta_data.custom_attributes)
+        metadata_dto = DatasetMetaDTO(**self._dataset.metadata.custom_attributes)
         metadata_dto.name = self._dataset_name if self._dataset_name else self._dataset.name
         metadata_dto.creation_date = datetime.utcnow().strftime(DATETIME_FORMAT)
         if self._annotation_types:

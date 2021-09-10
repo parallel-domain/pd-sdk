@@ -32,7 +32,18 @@ class AnyPath:
             return AnyPath(path=str(new_path))
 
     def __truediv__(self, other) -> "AnyPath":
-        concat = self._backend / other
+        if isinstance(other, str):
+            concat = self._backend / other
+        elif isinstance(other, Path):
+            if other.is_absolute():
+                raise TypeError("Can't concatenate an absolute path.")
+            concat = self._backend / other
+        elif isinstance(other, AnyPath):
+            if other.is_absolute():
+                raise TypeError("Can't concatenate an absolute path.")
+            concat = self._backend / other._backend
+        else:
+            raise TypeError("Right operand must be of type (str, Path, AnyPath).")
         return self._create_valid_any_path(new_path=concat)
 
     def __repr__(self):
@@ -141,6 +152,12 @@ class AnyPath:
         Other errors (such as permission errors) are propagated.
         """
         return self._backend.is_dir()
+
+    def is_absolute(self) -> bool:
+        """
+        Returns True if the path points to a Bucket or an absolute local path. If path is relative, it returns False
+        """
+        return self._backend.is_absolute()
 
     def is_file(self) -> bool:
         """

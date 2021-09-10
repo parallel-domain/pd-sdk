@@ -1,4 +1,4 @@
-from paralleldomain.model.transformation import Transformation
+from paralleldomain.utilities.transformation import Transformation
 
 try:
     from typing import Callable, Protocol

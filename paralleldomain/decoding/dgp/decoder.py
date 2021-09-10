@@ -14,10 +14,10 @@ from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, D
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
+from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         return [p.parent.name for p in self._decode_scene_paths()]
 
-    def _decode_dataset_meta_data(self) -> DatasetMeta:
+    def _decode_dataset_metadata(self) -> DatasetMeta:
         dto = self._decode_dataset_dto()
         meta_dict = dto.metadata.to_dict()
         anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
@@ -94,7 +94,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
     def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
@@ -106,7 +106,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
     def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, sensor_name: SensorName, dataset_name: str
+        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,

@@ -1,8 +1,8 @@
 from typing import Dict, Type, TypeVar
 
 from paralleldomain.model.annotation import Annotation, AnnotationTypes
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+from paralleldomain.utilities.transformation import Transformation
 
 TransformType = TypeVar("TransformType", bound=Transformation)
 DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM

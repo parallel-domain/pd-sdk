@@ -8,9 +8,9 @@ from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFram
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.transformation import Transformation
 
 
 class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
@@ -49,9 +49,9 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
 
 class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
     def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
+        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
     ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
     @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
@@ -78,6 +78,6 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
         )
 
     def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
+        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
     ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        return LidarSensorFrame[datetime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
