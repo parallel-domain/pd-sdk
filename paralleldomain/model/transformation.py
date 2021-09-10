@@ -2,9 +2,7 @@ from typing import List, Optional, TypeVar, Union
 
 import numpy as np
 from pyquaternion import Quaternion
-from transforms3d.euler import euler2mat, mat2euler, quat2euler
-
-from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+from transforms3d.euler import euler2mat, mat2euler
 
 T = TypeVar("T")
 
