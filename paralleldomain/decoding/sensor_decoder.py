@@ -42,7 +42,7 @@ class SensorDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
 class CameraSensorDecoder(SensorDecoder[TDateTime]):
     @abc.abstractmethod
     def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+        self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, camera_name: SensorName
     ) -> CameraSensorFrame[TDateTime]:
         pass
 
@@ -57,7 +57,7 @@ class CameraSensorDecoder(SensorDecoder[TDateTime]):
             loader=lambda: self._decode_camera_sensor_frame(
                 decoder=self._create_camera_sensor_frame_decoder(),
                 frame_id=frame_id,
-                sensor_name=sensor_name,
+                camera_name=sensor_name,
             ),
         )
 
@@ -65,7 +65,7 @@ class CameraSensorDecoder(SensorDecoder[TDateTime]):
 class LidarSensorDecoder(SensorDecoder[TDateTime]):
     @abc.abstractmethod
     def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+        self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, lidar_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
         pass
 
@@ -80,6 +80,6 @@ class LidarSensorDecoder(SensorDecoder[TDateTime]):
             loader=lambda: self._decode_lidar_sensor_frame(
                 decoder=self._create_lidar_sensor_frame_decoder(),
                 frame_id=frame_id,
-                sensor_name=sensor_name,
+                lidar_name=sensor_name,
             ),
         )

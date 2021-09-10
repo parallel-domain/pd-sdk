@@ -96,9 +96,11 @@ class TestSensorFrame:
         assert rgb.shape[0] == image.height
         assert rgb.shape[1] == image.width
 
+
+class TestSensor:
     def test_lidar_sensor_frame_ids_are_loaded(self, scene: Scene):
         lidar_name = scene.lidar_names[0]
-        lidar_sensor = scene.get_lidar_sensor(sensor_name=lidar_name)
+        lidar_sensor = scene.get_lidar_sensor(lidar_name=lidar_name)
         frame_ids = lidar_sensor.frame_ids
         assert len(frame_ids) > 0
         assert len(scene.frame_ids) >= len(frame_ids)
@@ -111,7 +113,7 @@ class TestSensorFrame:
 
     def test_camera_sensor_frame_ids_are_loaded(self, scene: Scene):
         cam_name = scene.camera_names[0]
-        cam_sensor = scene.get_camera_sensor(sensor_name=cam_name)
+        cam_sensor = scene.get_camera_sensor(camera_name=cam_name)
         frame_ids = cam_sensor.frame_ids
         assert len(frame_ids) > 0
         assert len(scene.frame_ids) >= len(frame_ids)
