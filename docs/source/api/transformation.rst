@@ -1,8 +1,8 @@
-paralleldomain.model.transformation
-====================================
+paralleldomain.utilities.transformation
+========================================
 
-.. currentmodule:: paralleldomain.model.transformation
+.. currentmodule:: paralleldomain.utilities.transformation
 
-.. automodule:: paralleldomain.model.transformation
+.. automodule:: paralleldomain.utilities.transformation
     :members:
     :inherited-members:
