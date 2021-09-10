@@ -38,7 +38,10 @@ class Transformation:
         self._t = np.asarray(translation).reshape(3) if translation is not None else np.array([0, 0, 0])
 
     def __repr__(self):
-        rep = f"R: {list(map(round,self.as_euler_angles(order='XYZ', degrees=True),3*[2]))}, t: {self.translation}"
+        rep = (
+            f"R: {list(map(round,self.as_euler_angles(order='XYZ', degrees=True),3*[2]))},"
+            f"t: {list(map(round,self.translation,3*[2]))}"
+        )
         return rep
 
     def __matmul__(self, other: T) -> T:
