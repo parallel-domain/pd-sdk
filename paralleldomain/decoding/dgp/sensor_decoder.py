@@ -8,9 +8,9 @@ from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFram
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.transformation import Transformation
 
 
 class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):

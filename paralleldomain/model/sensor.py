@@ -10,8 +10,8 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
+from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])

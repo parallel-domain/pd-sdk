@@ -14,10 +14,10 @@ from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, D
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
+from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
 

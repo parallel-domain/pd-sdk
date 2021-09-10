@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Type
 
 import numpy as np
 
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by_values, encode_int32_as_rgb8
+from paralleldomain.utilities.transformation import Transformation
 
 # _UNIT_BOUNDING_BOX_3D = (CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM).rotation_matrix @ np.array(
 _UNIT_BOUNDING_BOX_3D = np.array(

@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 from pyquaternion import Quaternion
 
-from paralleldomain.model.transformation import Transformation
+from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
 

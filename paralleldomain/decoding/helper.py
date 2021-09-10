@@ -2,8 +2,8 @@ from typing import Optional, Union
 
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.model.dataset import Dataset
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.transformation import Transformation
 
 known_formats = ["dgp"]
 

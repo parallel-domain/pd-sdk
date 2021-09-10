@@ -43,10 +43,10 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation3D,
 )
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json, read_npz, read_png
+from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 

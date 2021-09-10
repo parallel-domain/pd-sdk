@@ -1,13 +1,12 @@
 import math
 import random
-from typing import List, Optional, Union
+from typing import List, Union
 
 import numpy as np
 import pytest
 from pyquaternion import Quaternion
 
-from paralleldomain.model.transformation import Transformation
-from paralleldomain.utilities.coordinate_system import CoordinateSystem
+from paralleldomain.utilities.transformation import Transformation
 
 
 # Ground Truth Values pre-calculated using scipy.spatial.transform.rotation.Rotation class
