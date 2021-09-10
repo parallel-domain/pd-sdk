@@ -29,8 +29,22 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
 
+    @lru_cache(maxsize=1)
+    def _data_by_key(self) -> Dict[str, SceneDataDTO]:
+        return {d.key: d for d in self.scene_data}
+
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        return set()  # Todo
+        sensor_data = self._data_by_key()
+
+        frame_ids = list(self.scene_samples.keys())
+        sensor_frame_ids = set()
+        for frame_id in frame_ids:
+            sample = self.scene_samples[frame_id]
+            for key in sample.datum_keys:
+                if sensor_data[key].id.name == sensor_name:
+                    sensor_frame_ids.update(frame_id)
+
+        return sensor_frame_ids
 
 
 class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):

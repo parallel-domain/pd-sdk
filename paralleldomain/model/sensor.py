@@ -204,11 +204,13 @@ class Sensor(Generic[TSensorFrameType]):
 
 
 class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
-    ...
+    def get_frame(self, frame_id: FrameId) -> CameraSensorFrame[TDateTime]:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
 
 class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
-    ...
+    def get_frame(self, frame_id: FrameId) -> LidarSensorFrame[TDateTime]:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
 
 class SensorPose(Transformation):
