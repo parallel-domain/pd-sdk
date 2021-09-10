@@ -2,6 +2,7 @@ from typing import List, Optional, TypeVar, Union
 
 import numpy as np
 from pyquaternion import Quaternion
+from transforms3d.euler import euler2mat, mat2euler, quat2euler
 
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 
@@ -11,7 +12,8 @@ T = TypeVar("T")
 class Transformation:
     """Multi-purpose 6DoF object.
 
-    When printed, the rotation is given as euler angles `[yaw, pitch, roll]` following the z-y'-x'' convention.
+    When printed, the rotation is given as euler angles in degrees following intrinsic rotation order XYZ,
+    rounded to 2 decimal places.
 
     Args:
         quaternion: Quaternion instance for rotation. Default: Unit quaternion without rotation.
@@ -38,7 +40,7 @@ class Transformation:
         self._t = np.asarray(translation).reshape(3) if translation is not None else np.array([0, 0, 0])
 
     def __repr__(self):
-        rep = f"R: {list(self.quaternion.yaw_pitch_roll)}, t: {self.translation}"
+        rep = f"R: {list(map(round,self.as_euler_angles(order='XYZ', degrees=True),3*[2]))}, t: {self.translation}"
         return rep
 
     def __matmul__(self, other: T) -> T:
@@ -164,38 +166,76 @@ class Transformation:
         translation = mat[:3, 3]
         return cls(quaternion=quat, translation=translation)
 
+    def as_euler_angles(self, order: str, degrees: bool = False) -> np.ndarray:
+        assert len(order) == 3
+        if order.isupper():
+            tf3d_order = f"r{order.lower()}"
+        else:
+            tf3d_order = f"s{order.lower()}"
+
+        angles = np.asarray(mat2euler(mat=self.rotation, axes=tf3d_order))
+
+        if degrees:
+            return np.rad2deg(angles)
+        else:
+            return angles
+
     @classmethod
     def from_euler_angles(
         cls,
-        roll: float = 0.0,
-        pitch: float = 0.0,
-        yaw: float = 0.0,
+        angles: Union[np.ndarray, List[float]],
+        order: str,
         translation: Optional[np.ndarray] = None,
         degrees: bool = False,
-        order: str = "xyz",
-        coordinate_system: Optional[Union[str, CoordinateSystem]] = None,
     ) -> "Transformation":
-        """Creates a transformation object from euler angles and optionally translation (default: (0,0,0))
-
-        Args:
-            roll: Rotation angle around x-axis. Default: `0.0`
-            pitch: Rotation angle around y-axis. Default: `0.0`
-            yaw: Rotation angle around z-axis. Default: `0.0`
-            translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
-            degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
-            order: Set intrinsic rotation order. Default: `xyz`
-            coordinate_system: Set custom coordinate system. Default: `FLU`
-
-        Returns:
-            Instance of :obj:`Transformation` with provided parameters.
-        """
         if translation is None:
             translation = np.array([0.0, 0.0, 0.0])
+        if degrees:
+            angles = np.deg2rad(angles)
 
-        if coordinate_system is None:
-            coordinate_system = INTERNAL_COORDINATE_SYSTEM
-        elif isinstance(coordinate_system, str):
-            coordinate_system = CoordinateSystem(axis_directions=coordinate_system)
+        assert len(order) == 3
+        if order.isupper():
+            tf3d_order = f"r{order.lower()}"
+        else:
+            tf3d_order = f"s{order.lower()}"
 
-        quat = coordinate_system.quaternion_from_rpy(roll=roll, pitch=pitch, yaw=yaw, degrees=degrees, order=order)
-        return cls(quaternion=quat, translation=translation)
+        mat = euler2mat(ai=angles[0], aj=angles[1], ak=angles[2], axes=tf3d_order)
+        quat = Quaternion(matrix=mat)
+
+        return Transformation(quaternion=quat, translation=translation)
+
+    # @classmethod
+    # def from_euler_angles_old(
+    #     cls,
+    #     roll: float = 0.0,
+    #     pitch: float = 0.0,
+    #     yaw: float = 0.0,
+    #     translation: Optional[np.ndarray] = None,
+    #     degrees: bool = False,
+    #     order: str = "xyz",
+    #     coordinate_system: Optional[Union[str, CoordinateSystem]] = None,
+    # ) -> "Transformation":
+    #     """Creates a transformation object from euler angles and optionally translation (default: (0,0,0))
+    #
+    #     Args:
+    #         roll: Rotation angle around x-axis. Default: `0.0`
+    #         pitch: Rotation angle around y-axis. Default: `0.0`
+    #         yaw: Rotation angle around z-axis. Default: `0.0`
+    #         translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
+    #         degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
+    #         order: Set intrinsic rotation order. Default: `xyz`
+    #         coordinate_system: Set custom coordinate system. Default: `FLU`
+    #
+    #     Returns:
+    #         Instance of :obj:`Transformation` with provided parameters.
+    #     """
+    #     if translation is None:
+    #         translation = np.array([0.0, 0.0, 0.0])
+    #
+    #     if coordinate_system is None:
+    #         coordinate_system = INTERNAL_COORDINATE_SYSTEM
+    #     elif isinstance(coordinate_system, str):
+    #         coordinate_system = CoordinateSystem(axis_directions=coordinate_system)
+    #
+    #     quat = coordinate_system.quaternion_from_rpy(roll=roll, pitch=pitch, yaw=yaw, degrees=degrees, order=order)
+    #     return cls(quaternion=quat, translation=translation)
