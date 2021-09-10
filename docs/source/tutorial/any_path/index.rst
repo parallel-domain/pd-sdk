@@ -1,8 +1,7 @@
-Dataset
+AnyPath
 ========
 
 .. toctree::
     :maxdepth: 1
 
     any_path.ipynb
-    load_dataset.ipynb

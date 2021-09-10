@@ -24,7 +24,8 @@ Parallel Domain SDK
     :maxdepth: 1
     :caption: Tutorials
 
-    tutorial/dataset/index
+    tutorial/general/index
+    tutorial/any_path/index
 
 
 .. toctree::
