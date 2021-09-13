@@ -759,7 +759,7 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _prepare_output_directories(self) -> None:
         super()._prepare_output_directories()
-        if not urlparse(str(self._output_path)).scheme:  # Local FS - needs existing directories
+        if not self._output_path.is_cloud_path:  # Local FS - needs existing directories
             (self._output_path / DirectoryName.CALIBRATION).mkdir(exist_ok=True, parents=True)
             (self._output_path / DirectoryName.ONTOLOGY).mkdir(exist_ok=True, parents=True)
             for camera_name in self._camera_names:

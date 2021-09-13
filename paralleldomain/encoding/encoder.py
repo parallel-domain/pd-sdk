@@ -92,7 +92,7 @@ class SceneEncoder:
         return self._task_pool.apply_async(func, args=args, kwds=dict(**kwargs))
 
     def _prepare_output_directories(self) -> None:
-        if not urlparse(str(self._output_path)).scheme:
+        if not self._output_path.is_cloud_path:
             self._output_path.mkdir(exist_ok=True, parents=True)
 
     @abstractmethod
