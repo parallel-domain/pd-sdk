@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from functools import lru_cache
-from pathlib import PosixPath
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
 import iso8601
@@ -26,10 +26,10 @@ class _DatasetDecoderMixin:
     def __init__(self, dataset_path: Union[str, AnyPath], **kwargs):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
-    def _decode_scene_paths(self) -> List[PosixPath]:
+    def _decode_scene_paths(self) -> List[Path]:
         dto = self._decode_dataset_dto()
         return [
-            PosixPath(path)
+            Path(path)
             for split_key in sorted(dto.scene_splits.keys())
             for path in dto.scene_splits[split_key].filenames
         ]
