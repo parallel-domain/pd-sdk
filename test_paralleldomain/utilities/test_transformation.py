@@ -126,3 +126,26 @@ def test_transformation_inverse():
     trans_3_inverse = trans_3.inverse
     trans_3_identity = trans_3_inverse @ trans_3
     assert np.allclose(trans_3_identity.transformation_matrix, np.eye(4))
+
+
+def test_quaternion_constructor():
+    random_state = random.Random(1337)
+
+    quaternion_elements = [
+        random_state.uniform(-1, 1),
+        random_state.uniform(-1, 1),
+        random_state.uniform(-1, 1),
+        random_state.uniform(-1, 1),
+    ]
+
+    pyquat = Quaternion(
+        w=quaternion_elements[0], x=quaternion_elements[1], y=quaternion_elements[2], z=quaternion_elements[3]
+    )
+
+    # via List[float]
+    tf_0 = Transformation(quaternion=quaternion_elements)
+    assert np.allclose(pyquat.elements, tf_0.quaternion.elements)
+
+    # via np.ndarray
+    tf_1 = Transformation(quaternion=np.asarray(quaternion_elements))
+    assert np.allclose(pyquat.elements, tf_1.quaternion.elements)
