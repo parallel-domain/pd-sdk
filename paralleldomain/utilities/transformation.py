@@ -14,7 +14,8 @@ class Transformation:
     rounded to 2 decimal places.
 
     Args:
-        quaternion: Quaternion instance for rotation. Default: Unit quaternion without rotation.
+        quaternion: Quaternion instance or elements for rotation. Elements are expected in order `(w,x,y,z)`.
+            Default: Unit quaternion without rotation.
         translation: List-like translation information in order `(x,y,z)`. Default: `[0,0,0]`
 
     Example:
@@ -33,8 +34,19 @@ class Transformation:
                 box_pose_world_frame = lidar_frame.pose @ b.pose
     """
 
-    def __init__(self, quaternion: Quaternion = None, translation: Union[np.ndarray, List] = None):
-        self._Rq = quaternion if quaternion is not None else Quaternion(w=1, x=0, y=0, z=0)
+    def __init__(
+        self, quaternion: Union[Quaternion, List[float], np.ndarray] = None, translation: Union[np.ndarray, List] = None
+    ):
+        if quaternion is None:
+            self._Rq = Quaternion(w=1, x=0, y=0, z=0)
+        else:
+            if isinstance(quaternion, Quaternion):
+                self._Rq = quaternion
+            elif isinstance(quaternion, (List, np.ndarray)):
+                self._Rq = Quaternion(**dict(zip(["w", "x", "y", "z"], np.asarray(quaternion).reshape(4))))
+            else:
+                raise TypeError("quaternion only accepts (pyquaternion.Quaternion, List[float], np.ndarray.")
+
         self._t = np.asarray(translation).reshape(3) if translation is not None else np.array([0, 0, 0])
 
     def __repr__(self):
