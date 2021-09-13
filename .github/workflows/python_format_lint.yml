@@ -29,6 +29,7 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git commit -am "Black formatted"
           git push
+        shell: bash
   flake8-lint:
     needs: black-format
     runs-on: ubuntu-latest
@@ -60,6 +61,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        shell: bash
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -71,3 +73,4 @@ jobs:
           LOCAL_DATASET_PATH=$(mktemp -d)
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
           DATASET_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose
+        shell: bash
