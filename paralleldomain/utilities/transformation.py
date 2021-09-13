@@ -14,7 +14,8 @@ class Transformation:
     rounded to 2 decimal places.
 
     Args:
-        quaternion: Quaternion instance for rotation. Default: Unit quaternion without rotation.
+        quaternion: Quaternion instance or elements for rotation. Elements are expected in order `(w,x,y,z)`.
+            Default: Unit quaternion without rotation.
         translation: List-like translation information in order `(x,y,z)`. Default: `[0,0,0]`
 
     Example:
