@@ -204,7 +204,7 @@ class BoundingBox3DBoxDTO:
     width: float
     length: float
     height: float
-    occlusion: float
+    occlusion: int
     truncation: float
 
 
