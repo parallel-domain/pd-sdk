@@ -42,7 +42,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Parallel Domain SDK" href="getting_started.html" /> 
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Parallel Domain SDK" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -56,7 +57,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> Parallel Domain SDK
+            <a href="index.html" class="icon icon-home"> Parallel Domain SDK
           
 
           
@@ -88,20 +89,20 @@
             
             
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#quick-start">Quick Start</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="getting_started.html#developers">Developers</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="getting_started.html#tests">Tests</a></li>
-<li class="toctree-l4"><a class="reference internal" href="getting_started.html#documentation">Documentation</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parallel Domain SDK</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#developers">Developers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tests">Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="getting_started.html#id1">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="getting_started.html#tutorials">Tutorials</a></li>
-<li class="toctree-l3"><a class="reference internal" href="getting_started.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tutorials">Tutorials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
 </ul>
@@ -170,7 +171,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">Parallel Domain SDK</a>
+          <a href="index.html">Parallel Domain SDK</a>
         
       </nav>
 
@@ -201,7 +202,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Parallel Domain SDK</li>
     
@@ -209,7 +210,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/getting_started.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -246,43 +247,89 @@
     text-align: unset;
 }
 </style>
-<a class="reference internal image-reference" href="_images/paralleldomain_logo_color_darkblue.png"><img alt="Parallel Domain Logo" class="align-center" src="_images/paralleldomain_logo_color_darkblue.png" style="width: 320px;" /></a>
-<hr class="docutils" />
 <div class="section" id="parallel-domain-sdk">
-<h1>Parallel Domain SDK<a class="headerlink" href="#parallel-domain-sdk" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Parallel Domain SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-</ul>
+<span id="getting-started"></span><h1>Parallel Domain SDK<a class="headerlink" href="#parallel-domain-sdk" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain’s synthetic data as Python objects.</p>
+<p>The PD SDK can decode different data formats into its Python objects, including <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a> format.
+Currently, local file system and s3 buckets are supported as dataset locations for decoding.</p>
 </div>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/general/index.html">General Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/any_path/index.html">AnyPath</a></li>
-</ul>
+<div class="section" id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p>To use the PD SDK, you can simply install it using <code class="docutils literal notranslate"><span class="pre">pip</span></code> in your Python environment. Activate your Python environment before-hand, if wanted.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone latest PD SDK release</span>
+$ git clone git@github.com:parallel-domain/pd-sdk.git
+
+<span class="c1"># Change directory</span>
+$ <span class="nb">cd</span> pd-sdk
+
+<span class="c1"># Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`</span>
+$ <span class="nb">export</span> <span class="nv">MAKEFLAGS</span><span class="o">=</span><span class="s2">&quot;-j</span><span class="k">$(</span>nproc<span class="k">)</span><span class="s2">&quot;</span>
+
+<span class="c1"># Install PD SDK from local clone</span>
+$ pip install .
+</pre></div>
 </div>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api/dataset.html">paralleldomain.model.dataset</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/scene.html">paralleldomain.model.scene</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/sensor.html">paralleldomain.model.sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/annotation.html">paralleldomain.model.annotation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/transformation.html">paralleldomain.utilities.transformation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/projection.html">paralleldomain.utilities.projection</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p><strong>Supported Python Versions:</strong></p>
 <ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+<li><p>Python3.6</p></li>
+<li><p>Python3.7</p></li>
+<li><p>Python3.8</p></li>
+<li><p>Python3.9</p></li>
 </ul>
+<hr class="docutils" />
+<div class="section" id="developers">
+<h3>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h3>
+<p>If you are looking to extend or debug the PD SDK, use the following install procedure.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone latest PD SDK release</span>
+$ git clone git@github.com:parallel-domain/pd-sdk.git
+
+<span class="c1"># Change directory</span>
+$ <span class="nb">cd</span> pd-sdk
+
+<span class="c1"># Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`</span>
+$ <span class="nb">export</span> <span class="nv">MAKEFLAGS</span><span class="o">=</span><span class="s2">&quot;-j</span><span class="k">$(</span>nproc<span class="k">)</span><span class="s2">&quot;</span>
+
+<span class="c1"># Install PD SDK from local clone with developer dependencies</span>
+$ pip install -e .<span class="o">[</span>dev<span class="o">]</span>
+</pre></div>
+</div>
+<p>To make code contributions more stream-lined, we provide local <a class="reference external" href="https://pre-commit.com/">pre-commit hooks</a> that check / adapt to the PD SDK style guidelines automatically on commit.
+It is optional to set those up, but it helps to keep all code in the same style.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># within local PD SDK directory</span>
+$ pre-commit install
+</pre></div>
+</div>
+<p>After setting up pre-commit hooks, every file in a commit will be checked by a number of hooks. If any of the hooks fail, the commit is rejected. Fortunately, most of the hooks are auto-correcting, so they edit
+the files per the style guidelines and you can just commit again. Only <code class="docutils literal notranslate"><span class="pre">flake8</span></code> lint errors can just be solved by human editing.</p>
+<div class="section" id="tests">
+<h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h4>
+<p>Tests can be executed using <code class="docutils literal notranslate"><span class="pre">pytest</span></code> and providing a location to a DGP dataset which should be used during the test run.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># within local PD SDK directory - set env variable DATASET_PATH to a local or s3 location.</span>
+$ <span class="nv">DATASET_PATH</span><span class="o">=</span>/data/test_dataset pytest .
+</pre></div>
+</div>
+</div>
+<div class="section" id="documentation">
+<h4>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h4>
+<p>You can find more details about adding to and building PD SDK’s documentation in <code class="docutils literal notranslate"><span class="pre">docs/README.md</span></code></p>
+</div>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>Documentation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="tutorials">
+<h3>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h3>
+<p>There are several tutorials available covering common use cases. Those can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; Tutorials</a>.
+In case you are missing an important tutorial, feel free to request it via a Github Issue or create a PR, in case you have written one already yourself.</p>
+</div>
+<div class="section" id="api-reference">
+<h3>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h3>
+<p>Public classes / methods / properties are annotated with Docstrings. The compiled API Reference can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; API Reference</a></p>
+</div>
+</div>
 </div>
 
 
@@ -291,7 +338,8 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="getting_started.html" class="btn btn-neutral float-right" title="Parallel Domain SDK" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="license.html" class="btn btn-neutral float-right" title="License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Parallel Domain SDK" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

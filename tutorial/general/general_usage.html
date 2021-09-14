@@ -1,0 +1,1259 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Load Dataset &mdash; Parallel Domain SDK  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="AnyPath" href="../any_path/index.html" />
+    <link rel="prev" title="General Usage" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Parallel Domain SDK
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Parallel Domain SDK</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#quick-start">Quick Start</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#developers">Developers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../getting_started.html#tests">Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../getting_started.html#documentation">Documentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#id1">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#tutorials">Tutorials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../license.html#copyright-c-2021-parallel-domain-inc">Copyright (c) 2021 Parallel Domain Inc.</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">General Usage</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Load Dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Dataset-Information">Dataset Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Access-available-Scenes">Access available Scenes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Load-Scene">Load Scene</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Load-Frame-+-Sensor">Load Frame + Sensor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Frames">Frames</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Sensors">Sensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Load-Sensor-Frames">Load Sensor Frames</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Accessing-shared-properties">Accessing shared properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Acessing-Annotations">Acessing Annotations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Access-Camera-Data">Access Camera Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Access-LiDAR-Data">Access LiDAR Data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../any_path/index.html">AnyPath</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../any_path/any_path.html">The AnyPath Object</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../any_path/any_path.html#Instantiate-AnyPath-for-different-addresses">Instantiate AnyPath for different addresses</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../any_path/any_path.html#Absolute-+-S3-Paths">Absolute + S3 Paths</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../any_path/any_path.html#Relative-Paths">Relative Paths</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../any_path/any_path.html#File-Access">File Access</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/dataset.html">paralleldomain.model.dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/scene.html">paralleldomain.model.scene</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/sensor.html">paralleldomain.model.sensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/annotation.html">paralleldomain.model.annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/transformation.html">paralleldomain.utilities.transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/projection.html">paralleldomain.utilities.projection</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Parallel Domain SDK</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">General Usage</a> &raquo;</li>
+        
+      <li>Load Dataset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/tutorial/general/general_usage.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Load-Dataset">
+<h1>Load Dataset<a class="headerlink" href="#Load-Dataset" title="Permalink to this headline">¶</a></h1>
+<p>When working with Parallel Domain’s synthetic data, the standard output format is <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a>. In general, the PD SDK can load from any format, as long as custom decoder exists adhering to the <code class="docutils literal notranslate"><span class="pre">DatasetDecoderProtocol</span></code>. Out of the box, PD SDK comes with a pre-configured <code class="docutils literal notranslate"><span class="pre">DGPDatasetDecoder</span></code> which we can leverage to load data.</p>
+<p>In this tutorial, we are going to load and access a dataset and its scenes.</p>
+<p>Initially, we need to select the fitting decoder (in this case: <code class="docutils literal notranslate"><span class="pre">DGPDatasetDecoder</span></code>) and then tell it where our dataset is stored. The location can be either a local filesystem path or an s3 address.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.dgp.decoder</span> <span class="kn">import</span> <span class="n">DGPDatasetDecoder</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.model.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+<span class="n">dataset_path</span> <span class="o">=</span> <span class="s2">&quot;s3://pd-sdk-c6b4d2ea-0301-46c9-8b63-ef20c0d014e9/testset_dgp&quot;</span>
+<span class="n">dgp_decoder</span> <span class="o">=</span> <span class="n">DGPDatasetDecoder</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">)</span>
+
+<span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">dgp_decoder</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Dataset-Information">
+<h2>Dataset Information<a class="headerlink" href="#Dataset-Information" title="Permalink to this headline">¶</a></h2>
+<p>Now that the dataset information has been loaded, we query a couple of metadata from it:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dataset Metadata:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Name:&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Available Annotation Types:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Custom Attributes:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">custom_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Dataset Metadata:
+Name: DefaultDatasetName
+Available Annotation Types:
+        &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes2D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes3D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation2D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation3D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation2D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation3D&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.Depth&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.OpticalFlow&#39;&gt;
+        &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;
+Custom Attributes:
+        origin: INTERNAL
+        name: DefaultDatasetName
+        creator:
+        available_annotation_types: [0, 1, 2, 3, 4, 5, 6, 10, 7, 8, 9]
+        creation_date: 2021-06-22T15:16:21.317Z
+        version:
+        description:
+</pre></div></div>
+</div>
+<p>As you can see, the property <code class="docutils literal notranslate"><span class="pre">.available_annotation_types</span></code> includes classes from <code class="docutils literal notranslate"><span class="pre">paralleldomain.model.annotation</span></code>. In tutorials around reading annotations from a dataset, these exact classes will be re-used, and allows for a consistent type-check across objects.</p>
+</div>
+<div class="section" id="Access-available-Scenes">
+<h2>Access available Scenes<a class="headerlink" href="#Access-available-Scenes" title="Permalink to this headline">¶</a></h2>
+<p>Every dataset consists of scenes. These can contain ordered (usually: by time) or unordered data. In this example, we are looking to receive a list of scene names by type that have been found within the loaded dataset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scene_names</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found scene </span><span class="si">{</span><span class="n">sn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">usn</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">unordered_scene_names</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found unordered scene </span><span class="si">{</span><span class="n">usn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found scene pd-sdk_test_set
+Found unordered scene pd-sdk_test_set
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Load-Scene">
+<h1>Load Scene<a class="headerlink" href="#Load-Scene" title="Permalink to this headline">¶</a></h1>
+<p>After having retrieved all scene names from a dataset, we get the actual <code class="docutils literal notranslate"><span class="pre">Scene</span></code> object and access a couple of properties as well as child objects. Let’s start with scene properties:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.scene</span> <span class="kn">import</span> <span class="n">Scene</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">PrettyPrinter</span>
+
+
+<span class="n">selected_scene</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scene_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># for future</span>
+<span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_scene</span><span class="p">(</span><span class="n">scene_name</span><span class="o">=</span><span class="n">selected_scene</span><span class="p">)</span>
+
+<span class="c1"># Use prettyprint for nested dictionaries</span>
+<span class="n">pp</span> <span class="o">=</span> <span class="n">PrettyPrinter</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{ &#39;PD&#39;: { &#39;@type&#39;: &#39;type.googleapis.com/dgp.proto.ParallelDomainSceneMetadata&#39;,
+          &#39;batch_id&#39;: 0,
+          &#39;cloud_cover&#39;: 0.10000000149011612,
+          &#39;fog_intensity&#39;: 0.0,
+          &#39;location&#39;: &#39;SF_6thAndMission_medium&#39;,
+          &#39;rain_intensity&#39;: 0.0,
+          &#39;region_type&#39;: &#39;NORTHERN_CALIFORNIA&#39;,
+          &#39;scene_type&#39;: &#39;URBAN&#39;,
+          &#39;street_lights&#39;: 0.0,
+          &#39;sun_azimuth&#39;: 0,
+          &#39;sun_elevation&#39;: 0,
+          &#39;time_of_day&#39;: &#39;LS_sky_noon_partlyCloudy_1113_HDS024&#39;,
+          &#39;version&#39;: 0,
+          &#39;wetness&#39;: 0}}
+</pre></div></div>
+</div>
+<p>Scene metadata usually contains any variables that changes with each scene and are not necessarily consistent across a whole data. In many cases these are environment variables like weather, time of day and location.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Scene</span></code> object also includes the information of the available annotation types. These be consistent in most datasets with the ones on the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> level, but there is the possibility to vary them.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[ &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Depth&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.OpticalFlow&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;]
+</pre></div></div>
+</div>
+<p>Normally, in a scene, we expect to have more than one frame available, especially when we work with sequential data. These can be accessed through their frame IDs. In DGP datasets, these are usually string representations of increasing integers, but they could be also more explicit identifiers for other datasets, e.g., a string representation of a UNIX time or recording vehicle details included.</p>
+<p>In our example, the frame IDs follow the pattern of integers in string representation:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scene</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">frame_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> frames available.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">frame_ids</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+pd-sdk_test_set has 10 frames available.
+[&#39;0&#39;, &#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;, &#39;8&#39;, &#39;9&#39;]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Load-Frame-+-Sensor">
+<h1>Load Frame + Sensor<a class="headerlink" href="#Load-Frame-+-Sensor" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Frames">
+<h2>Frames<a class="headerlink" href="#Frames" title="Permalink to this headline">¶</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Frame</span></code> object is like a timestamp-bracket around different sensor data. If we have multiple sensors mounted on our recording vehicle, then the single data recordings are usually grouped into specific timestamps. We can retrieve a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> object and actually see what the “grouping datetime” is:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">frame_0_id</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+<span class="n">frame_0</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_0_id</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2021-06-22 15:16:21.367000+00:00
+</pre></div></div>
+</div>
+<p>Date/Times are presented as Python’s std library <code class="docutils literal notranslate"><span class="pre">datetime</span></code> objects. When decoding data, the PD SDK also adds timezone information to these objects.</p>
+</div>
+<div class="section" id="Sensors">
+<h2>Sensors<a class="headerlink" href="#Sensors" title="Permalink to this headline">¶</a></h2>
+<p>As a next step, we want to see what sensor are available within that scene. In general, sensors are divided into <code class="docutils literal notranslate"><span class="pre">CameraSensor</span></code> and <code class="docutils literal notranslate"><span class="pre">LidarSensor</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cameras:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LiDARs:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">scene</span><span class="o">.</span><span class="n">lidar_names</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Cameras:
+camera_front
+camera_rear
+virtual_lidar_front_camera_0
+virtual_lidar_front_camera_1
+virtual_lidar_front_camera_2
+virtual_lidar_rear_camera_0
+virtual_lidar_rear_camera_1
+virtual_lidar_rear_camera_2
+
+
+LiDARs:
+lidar_front
+lidar_rear
+</pre></div></div>
+</div>
+<p>Similar one how we used this information to get a scene from a dataset, we can use this to get a sensor from a scene.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">camera_0_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">camera_0</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_camera_sensor</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Knowing which frames and sensors are available allows us to now query for the actual sensor data. As described above, a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> is the time-grouping bracket around different sensor recordings. The actual data for a specific sensor assigned to this represented in a <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code>. This is where sensor data and annotations live.</p>
+<p>We can either first select a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> and then pick a <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> or the other way around. They will return the same <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> instance.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">camera_frame_via_frame</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
+<span class="n">camera_frame_via_camera</span> <span class="o">=</span> <span class="n">camera_0</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_0_id</span><span class="p">)</span>
+
+<span class="k">assert</span><span class="p">(</span><span class="n">camera_frame_via_camera</span> <span class="ow">is</span> <span class="n">camera_frame_via_camera</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Both objects are equal: </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="n">camera_frame_via_frame</span><span class="p">)</span><span class="si">}</span><span class="s2"> == </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="n">camera_frame_via_camera</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Both objects are equal: 140255650227008 == 140255650227008
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Load-Sensor-Frames">
+<h1>Load Sensor Frames<a class="headerlink" href="#Load-Sensor-Frames" title="Permalink to this headline">¶</a></h1>
+<p>Now that we know how to retrieve <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> object for specific sensors and timestamps, we can use those to extract the actual sensor data.</p>
+<div class="section" id="Accessing-shared-properties">
+<h2>Accessing shared properties<a class="headerlink" href="#Accessing-shared-properties" title="Permalink to this headline">¶</a></h2>
+<p>While there are <code class="docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code> and <code class="docutils literal notranslate"><span class="pre">LidarSensorFrame</span></code> objects with sensor specific data, there are certain properties which are common to any <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code>.</p>
+<p>We are going to print the most basic attributes on a <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code>, using the example of a <code class="docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code> object.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Get `CameraSensorFrame` for the first camera on the first frame within the scene.</span>
+<span class="n">lidar_0_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">lidar_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">camera_0_frame_0</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
+<span class="n">lidar_0_frame_0</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_lidar</span><span class="p">(</span><span class="n">lidar_name</span><span class="o">=</span><span class="n">lidar_0_name</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="si">}</span><span class="s2"> recorded at </span><span class="si">{</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="si">}</span><span class="s2"> recorded at </span><span class="si">{</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+camera_front recorded at 2021-06-22 15:16:21.367000+00:00
+lidar_front recorded at 2021-06-22 15:16:21.367000+00:00
+</pre></div></div>
+</div>
+<p>Every <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> always has information about the sensor pose (where is it in the world coordinate system?) and sensor extrinsic (how is the sensor positioned relative to the ego-vehicle reference coordinate system=). Poses and Extrinsics are represented as instances of the <code class="docutils literal notranslate"><span class="pre">Transformation</span></code> object. It allows storing 6-DoF information and allows for easy combination with each other. In the example below, we are going to calculate the difference between the camera and the lidar sensor. The
+difference should be the same when using pose or extrinsic.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">)</span>
+<span class="n">camera_to_lidar_pose</span> <span class="o">=</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">pose</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
+<span class="n">camera_to_lidar_extrinsic</span> <span class="o">=</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+R: [89.31, -45.03, -176.82],t: [-143.43, 151.38, 12.22]  -&gt;  R: [75.19, -44.71, 173.19],t: [-143.12, 151.8, 13.46]
+R: [0.0, 90.0, -90.0],t: [1.5, 0.0, 1.5]  -&gt;  R: [0.0, 80.0, -90.0],t: [1.0, 0.0, 2.75]
+</pre></div></div>
+</div>
+<p>We can use the associated homogenous transformation matrix to compare both results.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diff Pose:&quot;</span><span class="p">,</span> <span class="n">camera_to_lidar_pose</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diff Extrinsic:&quot;</span><span class="p">,</span> <span class="n">camera_to_lidar_extrinsic</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">camera_to_lidar_pose</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">,</span> <span class="n">camera_to_lidar_extrinsic</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you see this, the difference are close to equal.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Diff Pose: R: [10.0, 0.0, -0.0],t: [-0.0, -1.25, -0.5]
+Diff Extrinsic: R: [10.0, 0.0, -0.0],t: [0.0, -1.25, -0.5]
+If you see this, the difference are close to equal.
+</pre></div></div>
+</div>
+<p>In the same manner, it is easily possible to calculate the relative location between two sensors. Let’s calculate the difference between two camera sensors.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">camera_1_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">camera_1_frame_0</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_1_name</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">camera_1_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diff Extrinsic: &quot;</span><span class="p">,</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">camera_1_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+R: [0.0, 90.0, -90.0],t: [1.5, 0.0, 1.5]  -&gt;  R: [116.57, -90.0, -153.43],t: [-1.5, 0.0, 1.5]
+Diff Extrinsic:  R: [180.0, 0.0, -180.0],t: [0.0, -0.0, -3.0]
+</pre></div></div>
+</div>
+<p>It is important to remember that a sensor extrinsic is provided in the ego-vehicles reference coordinate system. For DGP dataset, that is FLU (Front (x), Left (y), Up (z)). So the translation difference between both sensors in ego-vehicle coordinate system is approx x=-3. When calculating the difference between both extrinsics, we will receive though a value of approx. z=-3. That is because we receive the difference in the camera coordinate system (RDF). In this example, we have two cameras (one
+front, one rear facing) that are perfectly aligned with the ego-vehicle’s longitudinal axis x.</p>
+<p>If we want to have the camera sensor in a FLU coordinate system, we can simply leverage the <code class="docutils literal notranslate"><span class="pre">CoordinateSystem</span></code> class to take of it for us. Objects of that class can also be combined with <code class="docutils literal notranslate"><span class="pre">Transformation</span></code> objects.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.utilities.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
+
+
+<span class="n">extrinsic_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">camera_1_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
+<span class="n">RDF_to_FLU</span> <span class="o">=</span> <span class="p">(</span><span class="n">CoordinateSystem</span><span class="p">(</span><span class="s2">&quot;RDF&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">CoordinateSystem</span><span class="p">(</span><span class="s2">&quot;FLU&quot;</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span> <span class="n">RDF_to_FLU</span> <span class="o">@</span> <span class="n">extrinsic_diff</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+R: [90.0, -90.0, -180.0],t: [-3.0, -0.0, 0.0]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Acessing-Annotations">
+<h2>Acessing Annotations<a class="headerlink" href="#Acessing-Annotations" title="Permalink to this headline">¶</a></h2>
+<p>While both <code class="docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code> and <code class="docutils literal notranslate"><span class="pre">LidarSensorFrame</span></code> have the property <code class="docutils literal notranslate"><span class="pre">.available_annotation_types</span></code>, the content will most likely be different. There are shared annotation types which are available for both sensor types, but for example 2D Bounding Boxes are something just available for camera data, or point cloud segmentation only for LiDAR data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[ &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation2D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Depth&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.OpticalFlow&#39;&gt;]
+[ &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.SemanticSegmentation3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.InstanceSegmentation3D&#39;&gt;,
+  &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;]
+</pre></div></div>
+</div>
+<p>To actually the annotations into memory and use them for further analysis, we can leverage the <code class="docutils literal notranslate"><span class="pre">AnnotationTypes</span></code> class. In the example below, we are going to load the 2D Bounding Boxes from a camera frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">AnnotationTypes</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">BoundingBoxes2D</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+
+<span class="c1"># Quick check if `BoundingBoxes2D` is an available annotation type. If not, and we do not check for it, we will receive a `ValueError` exception.</span>
+<span class="k">if</span> <span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">BoundingBoxes2D</span> <span class="ow">in</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">:</span>
+    <span class="n">boxes2d</span><span class="p">:</span> <span class="n">BoundingBoxes2D</span> <span class="o">=</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">annotation_type</span><span class="o">=</span><span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">BoundingBoxes2D</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes2d</span><span class="o">.</span><span class="n">boxes</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Class ID: 5, Instance ID: 6
+Class ID: 5, Instance ID: 15
+Class ID: 5, Instance ID: 62
+Class ID: 5, Instance ID: 79
+Class ID: 5, Instance ID: 109
+Class ID: 5, Instance ID: 118
+Class ID: 5, Instance ID: 154
+Class ID: 5, Instance ID: 177
+Class ID: 5, Instance ID: 178
+Class ID: 5, Instance ID: 187
+</pre></div></div>
+</div>
+<p>For the LiDAR sensor, we are going to retrieve the 3D Semantic Segmentation of the point cloud and count objects by class ID. Instead of checking explicitly if the annotation type is available, we are going to use try/catch on a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. To see if it works, we will try to receive 2D Bounding Boxes from the LiDAR sensor.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">SemanticSegmentation3D</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+
+<span class="n">annotation_type</span> <span class="o">=</span> <span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">BoundingBoxes2D</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">boxes2d</span><span class="p">:</span> <span class="n">BoundingBoxes2D</span> <span class="o">=</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">annotation_type</span><span class="o">=</span><span class="n">annotation_type</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LiDAR Frame doesn&#39;t have </span><span class="si">{</span><span class="n">annotation_type</span><span class="si">}</span><span class="s2"> as annotation type available. Original exception below:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+
+<span class="c1"># Move on to the actual task:</span>
+
+<span class="n">annotation_type</span> <span class="o">=</span> <span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">SemanticSegmentation3D</span>
+
+<span class="n">count_by_class_id</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">semseg3d</span><span class="p">:</span> <span class="n">SemanticSegmentation3D</span> <span class="o">=</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">annotation_type</span><span class="o">=</span><span class="n">annotation_type</span><span class="p">)</span>
+    <span class="n">u_class_ids</span><span class="p">,</span> <span class="n">u_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">semseg3d</span><span class="o">.</span><span class="n">class_ids</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">count_by_class_id</span> <span class="o">=</span> <span class="p">{</span><span class="n">u_class_ids</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span> <span class="n">u_counts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_class_ids</span><span class="p">))}</span>
+    <span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">count_by_class_id</span><span class="p">)</span>
+
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LiDAR Frame doesn&#39;t have </span><span class="si">{</span><span class="n">annotation_type</span><span class="si">}</span><span class="s2"> as annotation type available.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+LiDAR Frame doesn&#39;t have &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes2D&#39;&gt; as annotation type available. Original exception below:
+The annotation type &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes2D&#39;&gt; is not available in this sensor frame!
+{ 3: 1906,
+  5: 89,
+  8: 3,
+  11: 47,
+  12: 6,
+  21: 9,
+  22: 8,
+  24: 1404,
+  26: 81,
+  27: 12,
+  28: 332,
+  31: 89,
+  33: 4,
+  34: 1,
+  37: 83,
+  38: 21,
+  255: 61}
+</pre></div></div>
+</div>
+<p>Instead of showing just class IDs, we can show the actual class labels quite easily. On the <code class="docutils literal notranslate"><span class="pre">Scene</span></code> object we can retrieve the <code class="docutils literal notranslate"><span class="pre">ClassMap</span></code> for each annotation style. Let’s get the one for 3D Semantic Segmentation and print the labels for better readability.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.class_mapping</span> <span class="kn">import</span> <span class="n">ClassMap</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+<span class="n">semseg3d_classmap</span><span class="p">:</span> <span class="n">ClassMap</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_class_map</span><span class="p">(</span><span class="n">annotation_type</span><span class="o">=</span><span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">SemanticSegmentation3D</span><span class="p">)</span>
+
+<span class="n">count_by_class_label</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">semseg3d_classmap</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">]&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">count_by_class_id</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">count_by_class_label</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{ 3: &#39;Building [1906]&#39;,
+  5: &#39;Car [89]&#39;,
+  8: &#39;CrossWalk [3]&#39;,
+  11: &#39;LaneMarking [47]&#39;,
+  12: &#39;LimitLine [6]&#39;,
+  21: &#39;ParkingMeter [9]&#39;,
+  22: &#39;Pedestrian [8]&#39;,
+  24: &#39;Road [1404]&#39;,
+  26: &#39;RoadBoundary(Curb) [81]&#39;,
+  27: &#39;RoadMarking [12]&#39;,
+  28: &#39;SideWalk [332]&#39;,
+  31: &#39;Terrain [89]&#39;,
+  33: &#39;TrafficLight [4]&#39;,
+  34: &#39;TrafficSign [1]&#39;,
+  37: &#39;Vegetation [83]&#39;,
+  38: &#39;VerticalPole [21]&#39;,
+  255: &#39;Void [61]&#39;}
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Access-Camera-Data">
+<h2>Access Camera Data<a class="headerlink" href="#Access-Camera-Data" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned above, sensor-specific sensor frames, like <code class="docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code> have additional properties to the shared ones described above. For a camera that is especially the RGB mask, as well as, camera intrinsics and distortion parameters.</p>
+<p><strong>Note:</strong> Whenever we work with image data (including masks that represent an image-encoded representation), we work with <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> of shape (h, w, 3) or (h, w, 4). The last axis is defined in the following index order: 0: Red, 1: Green, 2: Blue, [3: Alpha]. When using OpenCV directly, we need to make explicitly convert the image into BGR[A] order. If you use methods from within the PD SDK, e.g., from <code class="docutils literal notranslate"><span class="pre">utilities</span></code>, any required conversion is handled for you.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">Image</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+
+<span class="n">image_data</span><span class="p">:</span> <span class="n">Image</span> <span class="o">=</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">image</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Below is an image with </span><span class="si">{</span><span class="n">image_data</span><span class="o">.</span><span class="n">channels</span><span class="si">}</span><span class="s2"> channels and resolution </span><span class="si">{</span><span class="n">image_data</span><span class="o">.</span><span class="n">width</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">image_data</span><span class="o">.</span><span class="n">height</span><span class="si">}</span><span class="s2"> sqpx&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_data</span><span class="o">.</span><span class="n">rgba</span><span class="p">)</span>  <span class="c1"># `.rgba` returns image including alpha-channel, otherwise `.rgb` can be used for convenience.</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">intrinsic</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Below is an image with 4 channels and resolution 1920x1080 sqpx
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_general_general_usage_40_1.png" src="../../_images/tutorial_general_general_usage_40_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{ &#39;camera_model&#39;: &#39;opencv_pinhole&#39;,
+  &#39;cx&#39;: 959.5,
+  &#39;cy&#39;: 539.5,
+  &#39;fov&#39;: 85,
+  &#39;fx&#39;: 1047.65625,
+  &#39;fy&#39;: 1047.65625,
+  &#39;k1&#39;: 0,
+  &#39;k2&#39;: 0,
+  &#39;k3&#39;: 0,
+  &#39;k4&#39;: 0,
+  &#39;k5&#39;: 0,
+  &#39;k6&#39;: 0,
+  &#39;p1&#39;: 0,
+  &#39;p2&#39;: 0,
+  &#39;skew&#39;: 0}
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Access-LiDAR-Data">
+<h2>Access LiDAR Data<a class="headerlink" href="#Access-LiDAR-Data" title="Permalink to this headline">¶</a></h2>
+<p>Similar to a camera, LiDAR sensors have their dedicated sensor frame object <code class="docutils literal notranslate"><span class="pre">LidarSensorFrame</span></code>. There we can access different point cloud properties like points in Cartesian coordinates, their intensity or timing offsets.</p>
+<p>The simple example below creates an orthographic topdown projection of the point cloud in ego-vehicle coordinate system by leveraging the extrinsic information. The colorization will be done by height, and the size of points will be defined by reflection intensity.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">PointCloud</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+
+
+<span class="n">pc_data</span><span class="p">:</span> <span class="n">PointCloud</span> <span class="o">=</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">point_cloud</span>
+
+<span class="n">pc_xyz_one</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">pc_data</span><span class="o">.</span><span class="n">xyz_one</span> <span class="c1"># Returns the xyz coordinates with an additional column full of &quot;1&quot; to allow for direct transformation</span>
+<span class="n">pc_intensity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">pc_data</span><span class="o">.</span><span class="n">intensity</span>
+
+<span class="n">pc_ego</span> <span class="o">=</span> <span class="p">(</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span> <span class="o">@</span> <span class="n">pc_xyz_one</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">pc_ego</span> <span class="o">=</span> <span class="n">pc_ego</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># throw away &quot;1&quot; - we are done transforming</span>
+
+<span class="n">subset_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># we want a slice of every 5th point to reduce rendering time</span>
+
+<span class="n">pc_ego_subset</span> <span class="o">=</span> <span class="n">pc_ego</span><span class="p">[</span><span class="n">subset_slice</span><span class="p">]</span>
+<span class="n">pc_intensity_subset</span> <span class="o">=</span> <span class="n">pc_intensity</span><span class="p">[</span><span class="n">subset_slice</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pc_ego_subset</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">pc_ego_subset</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="n">pc_intensity_subset</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">pc_ego_subset</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0.5, 1.0, &#39;lidar_front&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorial_general_general_usage_42_1.png" src="../../_images/tutorial_general_general_usage_42_1.png" />
+</div>
+</div>
+<p>In the scatter plot above we can see that the test point cloud is quite sparse (in fact it has only 3 lasers vertically). Nevertheless, outlines of buildings and objects are clearly visible. Also, there appears to be a couple of highly reflective object in the ego-vehicle’s proximity. By applying the LiDAR’s extrinsic, we have put (0,0,0) to the ego-vehicle’s reference point - here it is the center of the bottom-face.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../any_path/index.html" class="btn btn-neutral float-right" title="AnyPath" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="General Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Parallel Domain.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
