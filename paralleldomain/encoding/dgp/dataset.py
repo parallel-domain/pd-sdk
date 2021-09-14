@@ -4,13 +4,14 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
-from paralleldomain import Dataset
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
-from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder
+from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.logging import setup_loggers
@@ -33,24 +34,24 @@ class DGPDatasetEncoder(DatasetEncoder):
             dataset=dataset,
             output_path=output_path,
             scene_names=scene_names,
-            scene_start=scene_start,
-            scene_stop=scene_stop,
+            set_start=scene_start,
+            set_stop=scene_stop,
             n_parallel=n_parallel,
         )
         self._dataset_name: str = dataset_name
 
         self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
         # Adapt if should be limited to a set of cameras, or empty list for no cameras
-        self._camera_names: Union[List[str], None] = ["camera_front"]
+        self._camera_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
-        self._lidar_names: Union[List[str], None] = []
+        self._lidar_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations
         self._annotation_types: Union[List[AnnotationType], None] = None
 
     def _encode_dataset_json(self, scene_files: Dict[str, AnyPath]) -> AnyPath:
-        metadata_dto = DatasetMetaDTO(**self._dataset.meta_data.custom_attributes)
+        metadata_dto = DatasetMetaDTO(**self._dataset.metadata.custom_attributes)
         metadata_dto.name = self._dataset_name if self._dataset_name else self._dataset.name
-        metadata_dto.creation_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        metadata_dto.creation_date = datetime.utcnow().strftime(DATETIME_FORMAT)
         if self._annotation_types:
             metadata_dto.available_annotation_types = [
                 int(ANNOTATION_TYPE_MAP_INV[a_type])
@@ -123,9 +124,30 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ) -> "DGPDatasetEncoder":
-        decoder = DGPDecoder(dataset_path=input_path)
+        # Todo detect decoder type from path content
+        decoder = DGPDatasetDecoder(dataset_path=input_path)
+        return DGPDatasetEncoder.from_decoder(
+            decoder=decoder,
+            output_path=output_path,
+            dataset_name=dataset_name,
+            scene_names=scene_names,
+            scene_start=scene_start,
+            scene_stop=scene_stop,
+            n_parallel=n_parallel,
+        )
+
+    @staticmethod
+    def from_decoder(
+        decoder: DatasetDecoder,
+        output_path: str,
+        dataset_name: str = None,
+        scene_names: Optional[List[str]] = None,
+        scene_start: Optional[int] = None,
+        scene_stop: Optional[int] = None,
+        n_parallel: Optional[int] = 1,
+    ) -> "DGPDatasetEncoder":
         return DGPDatasetEncoder.from_dataset(
-            dataset=Dataset.from_decoder(decoder=decoder),
+            dataset=decoder.get_dataset(),
             output_path=output_path,
             dataset_name=dataset_name,
             scene_names=scene_names,

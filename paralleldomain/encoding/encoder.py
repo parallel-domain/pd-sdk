@@ -10,9 +10,11 @@ from urllib.parse import urlparse
 
 import numpy as np
 
-from paralleldomain import Dataset, Scene
+from paralleldomain import Dataset
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorFrame
+from paralleldomain.model.type_aliases import SceneName, SensorName
+from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import relative_path
 
@@ -55,22 +57,26 @@ class SceneEncoder:
     def __init__(
         self,
         dataset: Dataset,
-        scene_name: str,
+        scene_name: SceneName,
         output_path: AnyPath,
         camera_names: Optional[Union[List[str], None]] = None,
         lidar_names: Optional[Union[List[str], None]] = None,
         annotation_types: Optional[Union[List[AnnotationType], None]] = None,
     ):
         self._dataset: Dataset = dataset
-        self._scene_name: str = scene_name
+        self._scene_name: SceneName = scene_name
         self._output_path: AnyPath = output_path
-        self._scene: Scene = dataset.get_scene(scene_name)
+        self._unordered_scene: UnorderedScene = dataset.get_unordered_scene(scene_name=scene_name)
         self._task_pool: ThreadPool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
 
-        self._camera_names: Union[List[str], None] = self._scene.camera_names if camera_names is None else camera_names
-        self._lidar_names: Union[List[str], None] = self._scene.lidar_names if lidar_names is None else lidar_names
+        self._camera_names: Union[List[str], None] = (
+            self._unordered_scene.camera_names if camera_names is None else camera_names
+        )
+        self._lidar_names: Union[List[str], None] = (
+            self._unordered_scene.lidar_names if lidar_names is None else lidar_names
+        )
         self._annotation_types: Union[List[AnnotationType], None] = (
-            self._scene.available_annotation_types if annotation_types is None else annotation_types
+            self._unordered_scene.available_annotation_types if annotation_types is None else annotation_types
         )
 
         self._prepare_output_directories()
@@ -86,7 +92,7 @@ class SceneEncoder:
         return self._task_pool.apply_async(func, args=args, kwds=dict(**kwargs))
 
     def _prepare_output_directories(self) -> None:
-        if not urlparse(str(self._output_path)).scheme:
+        if not self._output_path.is_cloud_path:
             self._output_path.mkdir(exist_ok=True, parents=True)
 
     @abstractmethod
@@ -97,11 +103,13 @@ class SceneEncoder:
     def _encode_lidar_frame(self, lidar_frame: SensorFrame):
         ...
 
-    def _encode_camera(self, camera_name: str):
+    def _encode_camera(self, camera_name: SensorName):
         with ThreadPoolExecutor(max_workers=10) as camera_frame_executor:
             camera_frame_executor.map(
-                lambda fid: self._encode_camera_frame(self._scene.get_frame(fid).get_sensor(camera_name)),
-                self._scene.frame_ids,
+                lambda fid: self._encode_camera_frame(
+                    self._unordered_scene.get_frame(frame_id=fid).get_sensor(sensor_name=camera_name)
+                ),
+                self._unordered_scene.frame_ids,
             ),
 
     def _encode_cameras(self):
@@ -111,13 +119,15 @@ class SceneEncoder:
             ):
                 logger.info(f"{camera_name}: {camera_encoder_result}")
 
-    def _encode_lidar(self, lidar_name: str):
+    def _encode_lidar(self, lidar_name: SensorName):
         with ThreadPoolExecutor(max_workers=10) as lidar_frame_executor:
             for frame_id, lidar_frame_encoder_result in zip(
-                self._scene.frame_ids,
+                self._unordered_scene.frame_ids,
                 lidar_frame_executor.map(
-                    lambda fid: self._encode_lidar_frame(self._scene.get_frame(fid).get_sensor(lidar_name)),
-                    self._scene.frame_ids,
+                    lambda fid: self._encode_lidar_frame(
+                        self._unordered_scene.get_frame(frame_id=fid).get_sensor(sensor_name=lidar_name)
+                    ),
+                    self._unordered_scene.frame_ids,
                 ),
             ):
                 logger.info(f"{lidar_name} - {frame_id}: {lidar_frame_encoder_result}")
@@ -152,8 +162,8 @@ class DatasetEncoder:
         dataset: Dataset,
         output_path: str,
         scene_names: Optional[List[str]] = None,
-        scene_start: Optional[int] = None,
-        scene_stop: Optional[int] = None,
+        set_start: Optional[int] = None,
+        set_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ):
         self._dataset = dataset
@@ -171,12 +181,12 @@ class DatasetEncoder:
 
         if scene_names is not None:
             for sn in scene_names:
-                if sn not in self._dataset.scene_names:
+                if sn not in self._dataset.unordered_scene_names:
                     raise KeyError(f"{sn} could not be found in dataset {self._dataset.name}")
             self._scene_names = scene_names
         else:
-            scene_slice = slice(scene_start, scene_stop)
-            self._scene_names = self._dataset.scene_names[scene_slice]
+            set_slice = slice(set_start, set_stop)
+            self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
         encoder = self._scene_encoder(
@@ -209,16 +219,16 @@ class DatasetEncoder:
         dataset: Dataset,
         output_path: str,
         scene_names: Optional[List[str]] = None,
-        scene_start: Optional[int] = None,
-        scene_stop: Optional[int] = None,
+        set_start: Optional[int] = None,
+        set_stop: Optional[int] = None,
         n_parallel: Optional[int] = 1,
     ):
         return cls(
             dataset=dataset,
             output_path=output_path,
             scene_names=scene_names,
-            scene_start=scene_start,
-            scene_stop=scene_stop,
+            set_start=set_start,
+            set_stop=set_stop,
             n_parallel=n_parallel,
         )
 

@@ -1,105 +1,81 @@
-from abc import ABCMeta
 from datetime import datetime
-from enum import Enum
-from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Dict, Generic, List, Optional, Set, Type, TypeVar, Union
 
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
+from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
+from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 
 try:
     from typing import Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-import numpy as np
-
 from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.transformation import Transformation
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
+from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
-class Sensor:
-    def __init__(
-        self,
-        sensor_name: SensorName,
-        sensor_frame_factory: Callable[[FrameId, SensorName], "SensorFrame"],
-    ):
-        self._sensor_frame_factory = sensor_frame_factory
-        self._sensor_name = sensor_name
-        self._sensor_frames = []
+class CameraModel:
+    """Camera Model short hands for value-safe access.
 
-    @property
-    def name(self) -> str:
-        return self._sensor_name
+    Attributes:
+        OPENCV_PINHOLE: Returns internally used string-representation for OpenCV Pinhole camera model.
 
-    def get_frame(self, frame_id: FrameId) -> "SensorFrame":
-        return self._sensor_frame_factory(frame_id, self._sensor_name)
+            Accepts distortion parameters `(k1,k2,p1,p2[,k3[,k4,k5,k6]])` and uses projection (+ distortion) function
+            as described in the
+            `OpenCV Pinhole documentation <https://docs.opencv.org/4.5.3/d9/d0c/group__calib3d.html>`_
+        OPENCV_FISHEYE: Returns internally used string-representation for OpenCV Fisheye camera model
 
+            Accepts distortion parameters `(k1,k2,k3,k4)` and uses projection (+ distortion) function
+            as described in the
+            `OpenCV Fisheye documentation <https://docs.opencv.org/4.5.3/db/d58/group__calib3d__fisheye.html>`_
+    """
 
-class CameraSensor(Sensor):
-    ...
+    OPENCV_PINHOLE: str = "opencv_pinhole"
+    OPENCV_FISHEYE: str = "opencv_fisheye"
 
 
-class LidarSensor(Sensor):
-    ...
-
-
-class SensorFrameLazyLoaderProtocol(Protocol):
-    def load_extrinsic(self) -> "SensorExtrinsic":
+class SensorFrameDecoderProtocol(Protocol[TDateTime]):
+    def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
 
-    def load_intrinsic(self) -> "SensorIntrinsic":
+    def get_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorPose":
         pass
 
-    def load_sensor_pose(self) -> "SensorPose":
+    def get_annotations(
+        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
+    ) -> List[T]:
         pass
 
-    def load_point_cloud(self) -> Optional["PointCloudData"]:
-        pass
-
-    def load_image(self) -> Optional["ImageData"]:
-        pass
-
-    def load_annotations(self, identifier: AnnotationIdentifier, annotation_type: T) -> List[T]:
-        pass
-
-    def load_available_annotation_types(
-        self,
+    def get_available_annotation_types(
+        self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
+    def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
+        pass
 
-class SensorFrame:
+
+class SensorFrame(Generic[TDateTime]):
     def __init__(
         self,
-        unique_cache_key: str,
         sensor_name: SensorName,
         frame_id: FrameId,
-        date_time: datetime,
-        lazy_loader: SensorFrameLazyLoaderProtocol,
+        decoder: SensorFrameDecoderProtocol[TDateTime],
     ):
         self._frame_id = frame_id
-        self._date_time = date_time
-        self._unique_cache_key = unique_cache_key
-        self._lazy_loader = lazy_loader
+        self._decoder = decoder
         self._sensor_name = sensor_name
 
     @property
     def extrinsic(self) -> "SensorExtrinsic":
-        return LAZY_LOAD_CACHE.get_item(
-            key=self._unique_cache_key + "extrinsic", loader=self._lazy_loader.load_extrinsic
-        )
-
-    @property
-    def intrinsic(self) -> "SensorIntrinsic":
-        return LAZY_LOAD_CACHE.get_item(
-            key=self._unique_cache_key + "intrinsic", loader=self._lazy_loader.load_intrinsic
-        )
+        return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def pose(self) -> "SensorPose":
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "pose", loader=self._lazy_loader.load_sensor_pose)
+        return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def sensor_name(self) -> str:
@@ -110,39 +86,131 @@ class SensorFrame:
         return self._frame_id
 
     @property
-    def date_time(self) -> datetime:
-        return self._date_time
-
-    @property
-    def point_cloud(self) -> Optional["PointCloudData"]:
-        return LAZY_LOAD_CACHE.get_item(
-            key=self._unique_cache_key + "point_cloud", loader=self._lazy_loader.load_point_cloud
-        )
-
-    @property
-    def image(self) -> Optional["ImageData"]:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image", loader=self._lazy_loader.load_image)
-
-    @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list(self._annotation_type_identifiers.keys())
 
     @property
     def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:
-        return LAZY_LOAD_CACHE.get_item(
-            key=self._unique_cache_key + "annotation_type_identifiers",
-            loader=self._lazy_loader.load_available_annotation_types,
-        )
+        return self._decoder.get_available_annotation_types(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     def get_annotations(self, annotation_type: Type[T]) -> T:
         if annotation_type not in self._annotation_type_identifiers:
             raise ValueError(f"The annotation type {annotation_type} is not available in this sensor frame!")
-        return LAZY_LOAD_CACHE.get_item(
-            key=self._unique_cache_key + annotation_type.__name__,
-            loader=lambda: self._lazy_loader.load_annotations(
-                identifier=self._annotation_type_identifiers[annotation_type], annotation_type=annotation_type
-            ),
+        return self._decoder.get_annotations(
+            sensor_name=self.sensor_name,
+            frame_id=self.frame_id,
+            identifier=self._annotation_type_identifiers[annotation_type],
+            annotation_type=annotation_type,
         )
+
+    @property
+    def point_cloud(self) -> Optional[PointCloud]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return None
+
+    @property
+    def image(self) -> Optional[Image]:
+        """
+        Deprecated. Remains atm for 0.2.0 compatibility
+        """
+        return None
+
+    @property
+    def date_time(self) -> TDateTime:
+        return self._decoder.get_date_time(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    def __lt__(self, other: "SensorFrame[TDateTime]"):
+        if self.date_time is not None and other.date_time is not None:
+            # if isinstance(other, type(self)):
+            return self.date_time < other.date_time
+        return id(self) < id(other)
+
+
+class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], PointCloudDecoderProtocol):
+    ...
+
+
+class LidarSensorFrame(SensorFrame[TDateTime]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: LidarSensorFrameDecoderProtocol[TDateTime],
+    ):
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self._decoder = decoder
+
+    @property
+    def point_cloud(self) -> PointCloud:
+        return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+
+class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):
+    def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
+        pass
+
+
+class CameraSensorFrame(SensorFrame[TDateTime]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: CameraSensorFrameDecoderProtocol[TDateTime],
+    ):
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self._decoder = decoder
+
+    @property
+    def image(self) -> Image:
+        return DecoderImage(decoder=self._decoder, frame_id=self.frame_id, sensor_name=self.sensor_name)
+
+    @property
+    def intrinsic(self) -> "SensorIntrinsic":
+        return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+
+TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
+
+
+class SensorDecoderProtocol(Protocol[TSensorFrameType]):
+    def get_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> TSensorFrameType:
+        pass
+
+    def get_frame_ids(self, sensor_name: SensorName) -> Set[FrameId]:
+        pass
+
+
+class Sensor(Generic[TSensorFrameType]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        decoder: SensorDecoderProtocol[TSensorFrameType],
+    ):
+        self._decoder = decoder
+        self._sensor_name = sensor_name
+
+    @property
+    def name(self) -> str:
+        return self._sensor_name
+
+    @property
+    def frame_ids(self) -> Set[FrameId]:
+        return self._decoder.get_frame_ids(sensor_name=self.name)
+
+    def get_frame(self, frame_id: FrameId) -> TSensorFrameType:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+
+
+class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
+    def get_frame(self, frame_id: FrameId) -> CameraSensorFrame[TDateTime]:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+
+
+class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
+    def get_frame(self, frame_id: FrameId) -> LidarSensorFrame[TDateTime]:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
 
 class SensorPose(Transformation):
@@ -170,7 +238,7 @@ class SensorIntrinsic:
         k6=0.0,
         skew=0.0,
         fov=0.0,
-        camera_model="brown_conrady",
+        camera_model=CameraModel.OPENCV_PINHOLE,
     ):
         self.cx = cx
         self.cy = cy
@@ -187,140 +255,3 @@ class SensorIntrinsic:
         self.skew = skew
         self.fov = fov
         self.camera_model = camera_model
-
-
-class SensorData(metaclass=ABCMeta):
-    ...
-
-
-class PointInfo(Enum):
-    X = "X"
-    Y = "Y"
-    Z = "Z"
-    I = "INTENSITY"  # noqa: E741
-    R = "R"
-    G = "G"
-    B = "B"
-    RING = "RING"
-    TS = "TIMESTAMP"
-
-
-class ImageData(SensorData):
-    def __init__(
-        self,
-        unique_cache_key: str,
-        load_data_rgba: Callable[[], np.ndarray],
-        load_image_dims: Callable[[], Tuple[int, int, int]],
-    ):
-        self._load_image_dims = load_image_dims
-        self._unique_cache_key = unique_cache_key
-        self._load_data_rgb_call = load_data_rgba
-
-    @property
-    def _data_rgba(self) -> np.ndarray:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_rgb_call)
-
-    @property
-    def _image_dims(self) -> Tuple[int, int, int]:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "image_dims", loader=self._load_image_dims)
-
-    @property
-    def rgba(self) -> np.ndarray:
-        return self._data_rgba
-
-    @property
-    def rgb(self) -> np.ndarray:
-        return self._data_rgba[:, :, :3]
-
-    @property
-    def width(self) -> int:
-        return self._image_dims[1]
-
-    @property
-    def height(self) -> int:
-        return self._image_dims[0]
-
-    @property
-    def channels(self) -> int:
-        return self._image_dims[2]
-
-    @property
-    def coordinates(self) -> np.ndarray:
-        shape = self._data_rgba.shape
-        y_coords, x_coords = np.meshgrid(range(shape[0]), range(shape[1]), indexing="ij")
-        return np.stack([y_coords, x_coords], axis=-1)
-
-
-class PointCloudData(SensorData):
-    def __init__(self, unique_cache_key: str, point_format: List[str], load_data: Callable[[], np.ndarray]):
-        self._unique_cache_key = unique_cache_key
-        self._load_data_call = load_data
-        self._point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
-
-    def _has(self, p_info: PointInfo):
-        return p_info in self._point_cloud_info
-
-    def _get_index(self, p_info: PointInfo):
-        return self._point_cloud_info[p_info]
-
-    @property
-    def _data(self) -> np.ndarray:
-        return LAZY_LOAD_CACHE.get_item(key=self._unique_cache_key + "data", loader=self._load_data_call)
-
-    @property
-    def length(self) -> int:
-        return len(self._data)
-
-    @property
-    def xyz(self) -> np.ndarray:
-        xyz_index = [
-            self._get_index(PointInfo.X),
-            self._get_index(PointInfo.Y),
-            self._get_index(PointInfo.Z),
-        ]
-
-        return self._data[:, xyz_index]
-
-    @property
-    def rgb(self) -> np.ndarray:
-        rgb_index = [
-            self._get_index(PointInfo.R),
-            self._get_index(PointInfo.G),
-            self._get_index(PointInfo.B),
-        ]
-
-        return self._data[:, rgb_index]
-
-    @property
-    def intensity(self) -> np.ndarray:
-        intensity_index = [
-            self._get_index(PointInfo.I),
-        ]
-
-        return self._data[:, intensity_index]
-
-    @property
-    def ts(self) -> np.ndarray:
-        ts_index = [
-            self._get_index(PointInfo.TS),
-        ]
-
-        return self._data[:, ts_index]
-
-    @property
-    def ring(self) -> np.ndarray:
-        ring_index = [
-            self._get_index(PointInfo.RING),
-        ]
-
-        return self._data[:, ring_index]
-
-    @property
-    def xyz_i(self) -> np.ndarray:
-        return np.concatenate((self.xyz, self.intensity), axis=1)
-
-    @property
-    def xyz_one(self) -> np.ndarray:
-        xyz_data = self.xyz
-        one_data = np.ones((len(xyz_data), 1))
-        return np.concatenate((xyz_data, one_data), axis=1)

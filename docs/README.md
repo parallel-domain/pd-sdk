@@ -10,7 +10,7 @@ In your virtual environment, `cd` into this directory (`docs/`) and run
 
 In your virtual environment, `cd` into this directory (`docs/`) and run
 
-`sphinx-build -b html source build`
+`sphinx-build -b html -a -E -j"$(nproc)" source build`
 
 The output will be written into `docs/build`.
 

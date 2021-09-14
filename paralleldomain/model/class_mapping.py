@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, ItemsView, List, Optional, TypeVar
+from typing import Any, Dict, ItemsView, List, Optional, TypeVar, Union
 
 import numpy as np
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Union["ClassMap", "LabelMapping"])
 TClassId = TypeVar("TClassId", int, np.ndarray)
 
 

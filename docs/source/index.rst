@@ -1,16 +1,43 @@
-Welcome to Parallel Domain SDK's documentation!
+.. image:: _static/paralleldomain_logo_color_darkblue.png
+    :alt: Parallel Domain Logo
+    :width: 320px
+    :align: center
+
+-----------
+
+Parallel Domain SDK
 ===============================================
 
-.. automodule:: model.dataset
-    :members:
-    :inherited-members:
+.. only: not latex
 
-.. automodule:: model.scene
-    :members:
-    :inherited-members:
+    Contents:
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Getting Started
+
+    getting_started
+    license
 
 
+.. toctree::
+    :maxdepth: 1
+    :caption: Tutorials
 
+    tutorial/general/index
+    tutorial/any_path/index
+
+
+.. toctree::
+    :maxdepth: 2
+    :caption:  API Reference
+
+    api/dataset
+    api/scene
+    api/sensor
+    api/annotation
+    api/transformation
+    api/projection
 
 
 Indices and tables

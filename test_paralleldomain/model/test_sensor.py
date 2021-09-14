@@ -1,11 +1,20 @@
 import time
+from datetime import datetime
 
-from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.decoder import Decoder
+from paralleldomain import Scene
+from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 
 
 class TestSensorFrame:
+    def test_date_time_type(self, scene: Scene):
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+        sensors = frame.sensor_names
+        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
+        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        assert isinstance(sensor_frame.date_time, datetime)
+
     def test_lazy_cloud_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
@@ -18,10 +27,10 @@ class TestSensorFrame:
         assert xyz is not None
         assert xyz.shape[0] > 0
 
-    def test_lazy_cloud_caching(self, decoder: Decoder):
+    def test_lazy_cloud_caching(self, decoder: DatasetDecoder):
         LAZY_LOAD_CACHE.clear()
-        dataset = Dataset.from_decoder(decoder=decoder)
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
+        dataset = decoder.get_dataset()
+        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
@@ -33,7 +42,7 @@ class TestSensorFrame:
         assert xyz is not None
         assert xyz.shape[0] > 0
 
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
+        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
@@ -46,7 +55,7 @@ class TestSensorFrame:
         assert time2 < time1
         assert time2 < 1
 
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
+        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
@@ -59,7 +68,7 @@ class TestSensorFrame:
         assert time3 < time1
         assert time3 < 1
 
-        scene = dataset.get_scene(scene_name=dataset.scene_names[0])
+        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         sensor_frame = next(iter(frame.lidar_frames))
@@ -86,3 +95,31 @@ class TestSensorFrame:
         assert len(rgb.shape) == 3
         assert rgb.shape[0] == image.height
         assert rgb.shape[1] == image.width
+
+
+class TestSensor:
+    def test_lidar_sensor_frame_ids_are_loaded(self, scene: Scene):
+        lidar_name = scene.lidar_names[0]
+        lidar_sensor = scene.get_lidar_sensor(lidar_name=lidar_name)
+        frame_ids = lidar_sensor.frame_ids
+        assert len(frame_ids) > 0
+        assert len(scene.frame_ids) >= len(frame_ids)
+
+        for frame_ids in list(frame_ids)[::3]:
+            sensor_frame = lidar_sensor.get_frame(frame_id=frame_ids)
+            assert sensor_frame.point_cloud is not None
+            assert sensor_frame.point_cloud.xyz is not None
+            assert sensor_frame.point_cloud.xyz.size > 0
+
+    def test_camera_sensor_frame_ids_are_loaded(self, scene: Scene):
+        cam_name = scene.camera_names[0]
+        cam_sensor = scene.get_camera_sensor(camera_name=cam_name)
+        frame_ids = cam_sensor.frame_ids
+        assert len(frame_ids) > 0
+        assert len(scene.frame_ids) >= len(frame_ids)
+
+        for frame_ids in list(frame_ids)[::3]:
+            sensor_frame = cam_sensor.get_frame(frame_id=frame_ids)
+            assert sensor_frame.image is not None
+            assert sensor_frame.image.rgb is not None
+            assert sensor_frame.image.rgb.size > 0

@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
+import iso8601
 import ujson
 from dataclasses_json import CatchAll, Undefined, config, dataclass_json
 
@@ -381,3 +383,7 @@ class OntologyFileDTO:
                 for cid, cval in class_map.items()
             ]
         )
+
+
+def scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
+    return iso8601.parse_date(sample.id.timestamp)

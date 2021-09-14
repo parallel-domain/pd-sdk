@@ -1,9 +1,9 @@
 import os
 from tempfile import TemporaryDirectory
 
-from paralleldomain import Dataset
-from paralleldomain.decoding.dgp.decoder import DGPDecoder
+from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.dataset import DGPDatasetEncoder
+from paralleldomain.model.dataset import Dataset
 
 
 def test_encoding_of_modified_scene(dataset: Dataset):
@@ -14,5 +14,5 @@ def test_encoding_of_modified_scene(dataset: Dataset):
             encoder.encode_dataset()
 
             # decoding the encoded
-            decoder = DGPDecoder(dataset_path=output_path)
-            Dataset.from_decoder(decoder=decoder)
+            decoder = DGPDatasetDecoder(dataset_path=output_path)
+            dataset = decoder.get_dataset()

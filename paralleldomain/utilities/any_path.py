@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 from multiprocessing.pool import ThreadPool
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class AnyPath:
     def __init__(self, path: Union[str, "AnyPath"]):
+        path = str(path)
         self._full_path = path
         parsed = urlparse(path)
         if parsed.scheme == "s3":
@@ -31,7 +32,18 @@ class AnyPath:
             return AnyPath(path=str(new_path))
 
     def __truediv__(self, other) -> "AnyPath":
-        concat = self._backend / other
+        if isinstance(other, str):
+            concat = self._backend / other
+        elif isinstance(other, Path):
+            if other.is_absolute():
+                raise TypeError("Can't concatenate an absolute path.")
+            concat = self._backend / other
+        elif isinstance(other, AnyPath):
+            if other.is_absolute():
+                raise TypeError("Can't concatenate an absolute path.")
+            concat = self._backend / other._backend
+        else:
+            raise TypeError("Right operand must be of type (str, Path, AnyPath).")
         return self._create_valid_any_path(new_path=concat)
 
     def __repr__(self):
@@ -53,7 +65,7 @@ class AnyPath:
     def copytree(self, target: "AnyPath", max_num_threads: Optional[int] = None):
         target = AnyPath(str(target))
         if max_num_threads is None:
-            max_num_threads = max(1, min(int(0.5 * os.cpu_count()), 10))
+            max_num_threads = max(1, min(int(0.5 * (os.cpu_count() or 1)), 10))
 
         def _copy(source: Path):
             if source.is_file():
@@ -140,6 +152,12 @@ class AnyPath:
         Other errors (such as permission errors) are propagated.
         """
         return self._backend.is_dir()
+
+    def is_absolute(self) -> bool:
+        """
+        Returns True if the path points to a Bucket or an absolute local path. If path is relative, it returns False
+        """
+        return self._backend.is_absolute()
 
     def is_file(self) -> bool:
         """
@@ -263,3 +281,7 @@ class AnyPath:
         AWS S3 Service doesn't have fifo feature, There for this method will always return False
         """
         return self._backend.is_fifo()
+
+    def absolute(self) -> "AnyPath":
+        pth = self._backend.absolute()
+        return self._create_valid_any_path(new_path=pth)
