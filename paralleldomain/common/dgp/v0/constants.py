@@ -19,6 +19,8 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "8": AnnotationTypes.OpticalFlow,
     "9": Annotation,  # Motion Vectors 3D aka Scene Flow
     "10": Annotation,  # Surface normals 2D
+    "12": Annotation,  # Albedo Buffer
+    "13": Annotation,  # Material Properties
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
