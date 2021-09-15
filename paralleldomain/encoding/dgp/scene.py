@@ -510,22 +510,27 @@ class DGPSceneEncoder(SceneEncoder):
         return dict(
             annotations={
                 "0": self._encode_bounding_boxes_2d(sensor_frame=camera_frame)
-                if AnnotationTypes.BoundingBoxes2D in self._annotation_types
+                if AnnotationTypes.BoundingBoxes2D
+                in (camera_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "1": self._encode_bounding_boxes_3d(sensor_frame=camera_frame)
-                if AnnotationTypes.BoundingBoxes3D in self._annotation_types
+                if AnnotationTypes.BoundingBoxes3D
+                in (camera_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "2": self._process_semantic_segmentation_2d(sensor_frame=camera_frame, fs_copy=True)
-                if AnnotationTypes.SemanticSegmentation2D in self._annotation_types
+                if AnnotationTypes.SemanticSegmentation2D
+                in (camera_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "4": self._process_instance_segmentation_2d(sensor_frame=camera_frame, fs_copy=True)
-                if AnnotationTypes.InstanceSegmentation2D in self._annotation_types
+                if AnnotationTypes.InstanceSegmentation2D
+                in (camera_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "6": self._process_depth(sensor_frame=camera_frame, fs_copy=True)
-                if AnnotationTypes.Depth in self._annotation_types
+                if AnnotationTypes.Depth in (camera_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "8": self._process_motion_vectors_2d(sensor_frame=camera_frame, fs_copy=True)
-                if AnnotationTypes.OpticalFlow in self._annotation_types and not last_frame
+                if AnnotationTypes.OpticalFlow in (camera_frame.available_annotation_types and self._annotation_types)
+                and not last_frame
                 else None,
                 "10": None,  # surface_normals_2d
             },
@@ -538,16 +543,19 @@ class DGPSceneEncoder(SceneEncoder):
         return dict(
             annotations={
                 "1": self._encode_bounding_boxes_3d(sensor_frame=lidar_frame)
-                if AnnotationTypes.BoundingBoxes3D in self._annotation_types
+                if AnnotationTypes.BoundingBoxes3D
+                in (lidar_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "3": self._process_semantic_segmentation_3d(sensor_frame=lidar_frame, fs_copy=True)
-                if AnnotationTypes.SemanticSegmentation3D in self._annotation_types
+                if AnnotationTypes.SemanticSegmentation3D
+                in (lidar_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "5": self._process_instance_segmentation_3d(sensor_frame=lidar_frame, fs_copy=True)
-                if AnnotationTypes.InstanceSegmentation3D in self._annotation_types
+                if AnnotationTypes.InstanceSegmentation3D
+                in (lidar_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "6": self._process_depth(sensor_frame=lidar_frame, fs_copy=True)
-                if AnnotationTypes.Depth in self._annotation_types
+                if AnnotationTypes.Depth in (lidar_frame.available_annotation_types and self._annotation_types)
                 else None,
                 "7": None,  # surface_normals_3d
                 "9": None,  # motion_vectors_3d
@@ -610,6 +618,7 @@ class DGPSceneEncoder(SceneEncoder):
         camera_frames = []
         lidar_frames = []
         frame_ids = self._scene.frame_ids
+
         for sn in self._camera_names:
             camera_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
         for sn in self._lidar_names:
@@ -684,7 +693,7 @@ class DGPSceneEncoder(SceneEncoder):
 
         res = list(map(get_camera_calibration, camera_frames)) + list(map(get_lidar_calibration, lidar_frames))
 
-        for r_name, r_extrinsic, r_intrinsic in res:
+        for r_name, r_extrinsic, r_intrinsic in sorted(res):
             calib_dto.names.append(r_name)
             calib_dto.extrinsics.append(r_extrinsic)
             calib_dto.intrinsics.append(r_intrinsic)
