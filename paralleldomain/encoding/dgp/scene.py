@@ -180,13 +180,7 @@ class DGPSceneEncoder(SceneEncoder):
                 / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
             )
 
-            def unsure_copy(*args, **kwargs):
-                try:
-                    return fsio.copy_file(*args, **kwargs)
-                except OSError:  # Some renderings can exclude LiDAR from having Depth annotations
-                    return None
-
-            return self._run_async(func=unsure_copy, source=input_path, target=output_path)
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_depth(sensor_frame=sensor_frame, output_path=output_path)
 
