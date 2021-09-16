@@ -14,13 +14,13 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "3": AnnotationTypes.SemanticSegmentation3D,
     "4": AnnotationTypes.InstanceSegmentation2D,
     "5": AnnotationTypes.InstanceSegmentation3D,
-    "6": AnnotationTypes.Depth,  # Depth
-    "7": Annotation,  # Surface Normals 3D
+    "6": AnnotationTypes.Depth,
+    "7": AnnotationTypes.SurfaceNormals3D,
     "8": AnnotationTypes.OpticalFlow,
-    "9": Annotation,  # Motion Vectors 3D aka Scene Flow
-    "10": Annotation,  # Surface normals 2D
-    "12": Annotation,  # Albedo Buffer
-    "13": Annotation,  # Material Properties
+    "9": AnnotationTypes.SceneFlow,
+    "10": AnnotationTypes.SurfaceNormals2D,
+    "12": AnnotationTypes.Albedo2D,
+    "13": AnnotationTypes.MaterialProperties2D,
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {

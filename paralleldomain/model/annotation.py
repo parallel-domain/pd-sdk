@@ -699,6 +699,51 @@ class InstanceSegmentation3D(Annotation):
         return getsizeof(self.instance_ids)
 
 
+@dataclass
+class SurfaceNormals3D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class SurfaceNormals2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class SceneFlow(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class MaterialProperties2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class Albedo2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
 AnnotationType = Type[Annotation]
 
 
@@ -747,3 +792,8 @@ class AnnotationTypes:
     InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D
     OpticalFlow: Type[OpticalFlow] = OpticalFlow
     Depth: Type[Depth] = Depth
+    SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D
+    SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D
+    SceneFlow: Type[SceneFlow] = SceneFlow
+    MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D
+    Albedo2D: Type[Albedo2D] = Albedo2D

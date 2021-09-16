@@ -40,3 +40,9 @@ class TestSceneSensors:
         assert scene.get_class_map(annotation_type=AnnotationTypes.BoundingBoxes2D)
         assert scene.get_class_map(annotation_type=AnnotationTypes.BoundingBoxes3D)
         assert scene.get_class_map(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+
+    def test_load_all_class_maps(self, scene: Scene):
+        class_maps = scene.class_maps
+        for annotype in scene.available_annotation_types:
+            assert annotype in class_maps
+        assert class_maps is not None
