@@ -195,6 +195,8 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
+        else:
+            raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
