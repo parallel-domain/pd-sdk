@@ -105,7 +105,6 @@ class AnyPath:
         else:
             raise TypeError("Sync is only supported for cloud operations.")
 
-
     @property
     def is_cloud_path(self) -> bool:
         return isinstance(self._backend, S3Path)
