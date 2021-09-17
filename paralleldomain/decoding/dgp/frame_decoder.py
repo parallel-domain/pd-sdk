@@ -14,7 +14,7 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
 
-class DGPFrameDecoder(FrameDecoder[datetime], metaclass=abc.ABCMeta):
+class DGPFrameDecoder(FrameDecoder[datetime]):
     def __init__(
         self,
         dataset_name: str,

@@ -12,9 +12,10 @@ from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneD
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.transformation import Transformation
@@ -144,15 +145,16 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
+
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
             ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
             ontology_data = read_json(path=ontology_path)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
-            ontologies[annotation_key] = ClassMap(
+            ontologies[ANNOTATION_TYPE_MAP[annotation_key]] = ClassMap(
                 classes=[
                     ClassDetail(
                         name=o.name,

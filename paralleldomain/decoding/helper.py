@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
@@ -18,6 +19,9 @@ def decode_dataset(
             dataset_path=dataset_path,
             custom_reference_to_box_bottom=custom_reference_to_box_bottom,
         ).get_dataset()
+
+    elif dataset_format == "cityscapes":
+        return CityscapesDatasetDecoder(dataset_path=dataset_path).get_dataset()
     else:
         raise ValueError(
             f"Unknown Dataset format {dataset_format}. Currently supported dataset formats are {known_formats}"
