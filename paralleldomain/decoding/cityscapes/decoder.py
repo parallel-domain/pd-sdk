@@ -25,7 +25,7 @@ class CityscapesDatasetDecoder(DatasetDecoder):
         super().__init__(dataset_name=dataset_name)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
-        return CityscapesSceneDecoder(dataset_path=self._dataset_path)
+        return CityscapesSceneDecoder(dataset_path=self._dataset_path, dataset_name=self.dataset_name)
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         scene_names = list()
@@ -48,9 +48,9 @@ class CityscapesDatasetDecoder(DatasetDecoder):
 
 
 class CityscapesSceneDecoder(SceneDecoder[None]):
-    def __init__(self, dataset_path: Union[str, AnyPath]):
+    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        super().__init__(dataset_name=str(dataset_path))
+        super().__init__(dataset_name=dataset_name)
         self._camera_names = [IMAGE_FOLDER_NAME]
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
