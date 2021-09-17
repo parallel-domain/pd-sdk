@@ -96,6 +96,16 @@ class AnyPath:
             with self.open("rb") as source_file, target.open("wb") as to_file:
                 shutil.copyfileobj(source_file, to_file)
 
+    def sync(self, target: "AnyPath", delete=False):
+        if self.is_cloud_path or target.is_cloud_path:
+            command = ["aws", "s3", "sync", str(self), str(target), "--no-progress"]
+            if delete:
+                command += ["--delete"]
+            subprocess.call(command)
+        else:
+            raise TypeError("Sync is only supported for cloud operations.")
+
+
     @property
     def is_cloud_path(self) -> bool:
         return isinstance(self._backend, S3Path)
