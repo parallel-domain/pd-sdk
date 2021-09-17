@@ -16,7 +16,7 @@ IMAGE_FOLDER_NAME = "leftImg8bit"
 
 
 class CityscapesDatasetDecoder(DatasetDecoder):
-    def __init__(self, dataset_path: Union[str, AnyPath], splits: Optional[List[str]] = None):
+    def __init__(self, dataset_path: Union[str, AnyPath], splits: Optional[List[str]] = None, **kwargs):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if splits is None:
             splits = ["test", "train", "val"]

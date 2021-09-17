@@ -53,7 +53,10 @@ class _DatasetDecoderMixin:
 
 class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
-        self, dataset_path: Union[str, AnyPath], custom_reference_to_box_bottom: Optional[Transformation] = None
+        self,
+        dataset_path: Union[str, AnyPath],
+        custom_reference_to_box_bottom: Optional[Transformation] = None,
+        **kwargs,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
         DatasetDecoder.__init__(self, dataset_name=str(dataset_path))
