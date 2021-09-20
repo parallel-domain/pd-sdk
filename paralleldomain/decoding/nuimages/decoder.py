@@ -5,7 +5,7 @@ from iso8601 import iso8601
 
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.nuimages.common import NuImagesDataAccessMixin, load_table
+from paralleldomain.decoding.nuimages.common import NUIMAGES_CLASSES, NuImagesDataAccessMixin, load_table
 from paralleldomain.decoding.nuimages.frame_decoder import NuImagesFrameDecoder
 from paralleldomain.decoding.nuimages.sensor_decoder import NuImagesCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
@@ -50,9 +50,17 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
         return scene_names
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
+        available_annotation_types = list()
+        if self.split_name != "v1.0-test" or (len(self.nu_surface_ann) > 0 and len(self.nu_object_ann) > 0):
+            available_annotation_types = [
+                AnnotationTypes.SemanticSegmentation2D,
+                AnnotationTypes.InstanceSegmentation2D,
+                AnnotationTypes.BoundingBoxes2D,
+            ]
+
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
+            available_annotation_types=available_annotation_types,
             custom_attributes=dict(split_name=self.split_name),
         )
 
@@ -73,21 +81,35 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        timestamps = [str(sample["timestamp"]) for sample in self.get_nu_samples(log_token=scene_name)]
-
-        return set(timestamps)
+        sample_data_ids = set()
+        for sample in self.nu_samples[scene_name]:
+            sample_data_ids.add(sample["key_camera_token"])
+        return {str(self.nu_samples_data[sample_id]["timestamp"]) for sample_id in sample_data_ids}
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         return self.get_camera_names(scene_name=scene_name)
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return [str(sensor["channel"]) for sensor in self.nu_sensors if sensor["modality"] == "camera"]
+        samples = self.nu_samples[scene_name]
+        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+        camera_names = set()
+        for key_camera_token in key_camera_tokens:
+            data = self.nu_samples_data[key_camera_token]
+            calib_sensor_token = data["calibrated_sensor_token"]
+            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+            if sensor["modality"] == "camera":
+                camera_names.add(sensor["channel"])
+        return list(camera_names)
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        pass
+        return {
+            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
+            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
+        }
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

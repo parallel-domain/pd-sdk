@@ -168,21 +168,21 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="sensor_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_sensor_names(scene_name=scene_name),
+            loader=lambda: sorted(self._decode_sensor_names(scene_name=scene_name)),
         )
 
     def get_camera_names(self, scene_name: SceneName) -> List[str]:
         _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="camera_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_camera_names(scene_name=scene_name),
+            loader=lambda: sorted(self._decode_camera_names(scene_name=scene_name)),
         )
 
     def get_lidar_names(self, scene_name: SceneName) -> List[str]:
         _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="lidar_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_lidar_names(scene_name=scene_name),
+            loader=lambda: sorted(self._decode_lidar_names(scene_name=scene_name)),
         )
 
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:

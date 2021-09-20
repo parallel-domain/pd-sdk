@@ -1,9 +1,17 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generator, List, Optional
+
+import numpy as np
+from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
+from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+
+NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
+# NUIMAGES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
 
 
 def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[Dict[str, Any]]:
@@ -49,7 +57,7 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
 
     @property
     def nu_logs(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="logs")
+        _unique_cache_key = self.get_unique_id(extra="nu_logs")
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
@@ -61,20 +69,24 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
         return {log["token"]: log for log in self.nu_logs}
 
     @property
-    def nu_samples(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="samples")
+    def nu_samples(self) -> Dict[str, List[Dict[str, Any]]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_samples")
+
+        def _get_samples() -> Dict[str, List[Dict[str, Any]]]:
+            samples = load_table(dataset_root=self._dataset_path, table_name="sample", split_name=self.split_name)
+            log_wise_samples = dict()
+            for s in samples:
+                log_wise_samples.setdefault(s["log_token"], list()).append(s)
+            return log_wise_samples
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: load_table(dataset_root=self._dataset_path, table_name="sample", split_name=self.split_name),
+            loader=_get_samples,
         )
-
-    def get_nu_samples(self, log_token: str) -> List[Dict[str, Any]]:
-        return [sample for sample in self.nu_samples if sample["log_token"] == log_token]
 
     @property
     def nu_sensors(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="sensors")
+        _unique_cache_key = self.get_unique_id(extra="nu_sensors")
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
@@ -85,30 +97,68 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
         return next(iter([sensor for sensor in self.nu_sensors if sensor["token"] == sensor_token]), dict())
 
     @property
-    def nu_samples_data(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="samples_data")
+    def nu_samples_data(self) -> Dict[str, Dict[str, Any]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_samples_data")
+
+        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
+            return {d["token"]: d for d in data}
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: load_table(
-                dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name
-            ),
+            loader=get_nu_samples_data,
         )
 
     @property
-    def nu_calibrated_sensors(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="calibrated_sensors")
+    def nu_surface_ann(self) -> Dict[str, List[Dict[str, Any]]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_surface_ann")
+
+        def get_nu_surface_ann() -> Dict[str, List[Dict[str, Any]]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="surface_ann", split_name=self.split_name)
+            surface_ann = dict()
+            for d in data:
+                surface_ann.setdefault(d["sample_data_token"], list()).append(d)
+            return surface_ann
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: load_table(
+            loader=get_nu_surface_ann,
+        )
+
+    @property
+    def nu_object_ann(self) -> Dict[str, List[Dict[str, Any]]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_object_ann")
+
+        def get_nu_object_ann() -> Dict[str, List[Dict[str, Any]]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="object_ann", split_name=self.split_name)
+            object_ann = dict()
+            for d in data:
+                object_ann.setdefault(d["sample_data_token"], list()).append(d)
+            return object_ann
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_object_ann,
+        )
+
+    @property
+    def nu_calibrated_sensors(self) -> Dict[str, Dict[str, Any]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_calibrated_sensors")
+
+        def get_nu_calibrated_sensors() -> Dict[str, Dict[str, Any]]:
+            data = load_table(
                 dataset_root=self._dataset_path, table_name="calibrated_sensor", split_name=self.split_name
-            ),
+            )
+            return {d["token"]: d for d in data}
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_calibrated_sensors,
         )
 
     @property
     def nu_ego_pose(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="ego_poses")
+        _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
@@ -119,3 +169,151 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
 
     def get_nu_ego_pose(self, ego_pose_token: str) -> Dict[str, Any]:
         return next(iter([pose for pose in self.nu_ego_pose if pose["token"] == ego_pose_token]), dict())
+
+    @property
+    def nu_category(self) -> Dict[str, Dict[str, Any]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_category")
+
+        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
+            return {d["token"]: d for d in data}
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_samples_data,
+        )
+
+    @property
+    def nu_attribute(self) -> Dict[str, Dict[str, Any]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_attribute")
+
+        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
+            return {d["token"]: d for d in data}
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_samples_data,
+        )
+
+    @property
+    def nu_name_to_index(self) -> Dict[str, int]:
+        _unique_cache_key = self.get_unique_id(extra="nu_name_to_index")
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: name_to_index_mapping(category=list(self.nu_category.values())),
+        )
+
+    def _get_prev_data_ids(self, key_camera_token: str) -> List[str]:
+        sample_data = self.nu_samples_data[key_camera_token]
+        tokens = [key_camera_token]
+        if sample_data["prev"]:
+            tokens += self._get_prev_data_ids(key_camera_token=sample_data["prev"])
+        return tokens
+
+    def _get_next_data_ids(self, key_camera_token: str) -> List[str]:
+        sample_data = self.nu_samples_data[key_camera_token]
+        tokens = [key_camera_token]
+        if sample_data["next"]:
+            tokens += self._get_prev_data_ids(key_camera_token=sample_data["next"])
+        return tokens
+
+    def get_connected_sample_data_ids(self, key_camera_token: str):
+        prev_ids = self._get_prev_data_ids(key_camera_token=key_camera_token)
+        next_ids = self._get_next_data_ids(key_camera_token=key_camera_token)
+        return list(set(next_ids + prev_ids))
+
+    def get_sample_data_with_frame_id(self, log_token: str, frame_id: FrameId) -> Generator[Dict[str, Any], None, None]:
+        samples = self.nu_samples[log_token]
+        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+
+        for key_camera_token in key_camera_tokens:
+            data = self.nu_samples_data[key_camera_token]
+            if str(data["timestamp"]) == frame_id:
+                yield data
+
+    def get_sample_data_id_frame_id_and_sensor_name(
+        self, log_token: str, frame_id: FrameId, sensor_name: SensorName
+    ) -> Optional[str]:
+        samples = self.nu_samples[log_token]
+        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+
+        for key_camera_token in key_camera_tokens:
+            data = self.nu_samples_data[key_camera_token]
+            if str(data["timestamp"]) == frame_id:
+                calib_sensor_token = data["calibrated_sensor_token"]
+                calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+                sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+                if sensor["channel"] == sensor_name:
+                    return key_camera_token
+        return None
+
+    @property
+    def nu_class_infos(self) -> List[ClassDetail]:
+        _unique_cache_key = self.get_unique_id(extra="nu_class_infos")
+
+        def get_nu_class_infos() -> List[ClassDetail]:
+            name_to_index = name_to_index_mapping(category=list(self.nu_category.values()))
+            details = list()
+            for _, cat in self.nu_category.items():
+                name = cat["name"]
+                index = name_to_index[name]
+                details.append(ClassDetail(name=name, id=index, meta=dict(description=cat["description"])))
+            return details
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_class_infos,
+        )
+
+    def get_ego_pose(self, log_token: str, frame_id: FrameId) -> np.ndarray:
+        for data in self.get_sample_data_with_frame_id(log_token=log_token, frame_id=frame_id):
+            ego_pose_token = data["ego_pose_token"]
+            ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
+            trans = np.eye(4)
+
+            trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
+            trans[:3, 3] = np.array(ego_pose["translation"])
+            trans = NUIMAGES_IMU_TO_INTERNAL_CS @ trans
+            return trans
+        raise ValueError(f"No ego pose for frame id {frame_id}")
+
+
+NUIMAGES_CLASSES = list()
+
+
+def name_to_index_mapping(category: List[Dict[str, Any]]) -> Dict[str, int]:
+    """
+    Build a mapping from name to index to look up index in O(1) time.
+    :param category: The nuImages category table.
+    :return: The mapping from category name to category index.
+    """
+    # The 0 index is reserved for non-labelled background; thus, the categories should start from index 1.
+    # Also, sort the categories before looping so that the order is always the same (alphabetical).
+    name_to_index = dict()
+    i = 1
+    sorted_category: List = sorted(category.copy(), key=lambda k: k["name"])
+    for c in sorted_category:
+        # Ignore the vehicle.ego and flat.driveable_surface classes first; they will be mapped later.
+        if c["name"] != "vehicle.ego" and c["name"] != "flat.driveable_surface":
+            name_to_index[c["name"]] = i
+            i += 1
+
+    assert max(name_to_index.values()) < 24, (
+        "Error: There are {} classes (excluding vehicle.ego and flat.driveable_surface), "
+        "but there should be 23. Please check your category.json".format(max(name_to_index.values()))
+    )
+
+    # Now map the vehicle.ego and flat.driveable_surface classes.
+    name_to_index["flat.driveable_surface"] = 24
+    name_to_index["vehicle.ego"] = 31
+
+    # Ensure that each class name is uniquely paired with a class index, and vice versa.
+    assert len(name_to_index) == len(
+        set(name_to_index.values())
+    ), "Error: There are {} class names but {} class indices".format(
+        len(name_to_index), len(set(name_to_index.values()))
+    )
+
+    return name_to_index

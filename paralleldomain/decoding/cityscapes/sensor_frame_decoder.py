@@ -29,10 +29,10 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         self._dataset_path = dataset_path
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        pass
+        return SensorIntrinsic()
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        return (1024, 2048, 3)
+        return 1024, 2048, 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         scene_images_folder = get_scene_path(

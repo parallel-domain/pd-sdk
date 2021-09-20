@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Set, Union
+from typing import Any, Dict, List, Set, Union
 
 from paralleldomain.decoding.nuimages.common import NuImagesDataAccessMixin
 from paralleldomain.decoding.nuimages.sensor_frame_decoder import NuImagesCameraSensorFrameDecoder
@@ -32,16 +32,15 @@ class NuImagesCameraSensorDecoder(CameraSensorDecoder[datetime], NuImagesDataAcc
         )
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        samples = self.get_nu_samples(log_token=self.scene_name)
-
-        sample_tokens = [sample["token"] for sample in samples]
+        samples = self.nu_samples[self.scene_name]
+        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
         frame_ids = set()
-        calib_sensors = {calib_sensor["token"]: calib_sensor for calib_sensor in self.nu_calibrated_sensors}
-        for data in self.nu_samples_data:
-            if data["sample_token"] in sample_tokens:
-                calib_sensor_token = data["calibrated_sensor_token"]
-                calib_sensor = calib_sensors[calib_sensor_token]
-                sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-                if sensor["channel"] == sensor_name:
-                    frame_ids.add(str(data["timestamp"]))
+
+        for key_camera_token in key_camera_tokens:
+            data = self.nu_samples_data[key_camera_token]
+            calib_sensor_token = data["calibrated_sensor_token"]
+            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+            if sensor["channel"] == sensor_name:
+                frame_ids.add(str(data["timestamp"]))
         return frame_ids
