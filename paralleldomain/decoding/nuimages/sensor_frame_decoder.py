@@ -1,10 +1,9 @@
 import base64
 from datetime import datetime
-from typing import Any, Dict, List, Tuple, TypeVar, Union
+from typing import Any, ByteString, Dict, List, Tuple, TypeVar, Union
 
 import cv2
 import numpy as np
-from pycocotools import mask as cocomask
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
@@ -199,12 +198,49 @@ def read_jpg(path: AnyPath) -> np.ndarray:
 
 def mask_decode(mask: dict) -> np.ndarray:
     """
-    Decode the mask from base64 string to binary string, then feed it to the external pycocotools library to get a mask.
+    Decode the mask from base64 string to binary string, then decoded to get a mask.
     :param mask: The mask dictionary with fields `size` and `counts`.
     :return: A numpy array representing the binary mask for this class.
     """
-    # Note that it is essential to copy the mask here. If we use the same variable we will overwrite the NuImage class
-    # and cause the Jupyter Notebook to crash on some systems.
     new_mask = mask.copy()
     new_mask["counts"] = base64.b64decode(mask["counts"])
-    return cocomask.decode(new_mask)
+    mask_rle = _rle_from_leb_string(leb_bytes=new_mask["counts"])
+    return _rle_to_mask(mask_rle=mask_rle, shape=new_mask["size"])
+
+
+def _rle_to_mask(mask_rle: List[int], shape: Tuple[int, int]) -> np.ndarray:
+    flat_size = shape[0] * shape[1]
+    mask = np.zeros(flat_size, dtype=int)
+    rle_np = np.array([a for a in mask_rle], dtype=int)
+    rle_np_cum = np.cumsum(rle_np)
+    one_slice = np.array(list(zip(rle_np_cum[::2], rle_np_cum[1::2])))
+    for start, stop in one_slice:
+        mask[start:stop] = 1
+    return mask.reshape(shape, order="F")
+
+
+def _rle_from_leb_string(leb_bytes: ByteString) -> List[int]:
+    """
+    Coco custom LEB128 decoding. See https://github.com/cocodataset/cocoapi/blob/master/common/maskApi.c#L205
+    """
+    m = 0
+    p = 0
+    cnts = list()
+    max_st_len = len(leb_bytes)
+    while p < max_st_len:
+        x = 0
+        k = 0
+        more = True
+        while more:
+            c = leb_bytes[p] - 48
+            x |= (c & 0x1F) << 5 * k
+            more = c & 0x20 == 32
+            p += 1
+            k += 1
+            if not more and (c & 0x10):
+                x |= -1 << 5 * k
+        if m > 2:
+            x += cnts[m - 2]
+        cnts.append(x)
+        m += 1
+    return cnts
