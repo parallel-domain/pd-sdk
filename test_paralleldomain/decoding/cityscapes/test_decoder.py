@@ -79,7 +79,7 @@ def test_decode_class_maps():
         class_maps = scene.class_maps
         assert len(class_maps) == 1
         assert AnnotationTypes.SemanticSegmentation2D in class_maps
-        assert len(class_maps.keys()) == 35
+        assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 35
 
 
 def test_decode_frame_ids():
