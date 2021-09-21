@@ -124,11 +124,12 @@ class TestFrame:
 
 @pytest.fixture()
 def some_camera_frame(two_cam_scene: Scene) -> CameraSensorFrame:
-    camera = two_cam_scene.get_camera_sensor(camera_name=two_cam_scene.camera_names[0])
-    assert camera is not None
-    assert isinstance(camera, CameraSensor)
-    camera_frame = camera.get_frame(frame_id=list(camera.frame_ids)[0])
-    return camera_frame
+    if NUIMAGES_PATH_ENV in os.environ:
+        camera = two_cam_scene.get_camera_sensor(camera_name=two_cam_scene.camera_names[0])
+        assert camera is not None
+        assert isinstance(camera, CameraSensor)
+        camera_frame = camera.get_frame(frame_id=list(camera.frame_ids)[0])
+        return camera_frame
 
 
 class TestCameraSensorFrame:
