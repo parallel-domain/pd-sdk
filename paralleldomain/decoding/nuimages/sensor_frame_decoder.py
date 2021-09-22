@@ -67,7 +67,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         data = self.nu_samples_data[sample_data_id]
 
         img_path = AnyPath(self._dataset_path) / data["filename"]
-        image_data = read_jpg(path=img_path)
+        image_data = read_jpg(path=img_path)[..., ::-1]
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)

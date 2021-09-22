@@ -39,7 +39,7 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
             dataset_path=self._dataset_path, scene_name=self.scene_name, camera_name=sensor_name
         )
         img_path = scene_images_folder / frame_id
-        image_data = read_png(path=img_path)
+        image_data = read_png(path=img_path)[..., ::-1]
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)
