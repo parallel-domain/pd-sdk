@@ -96,7 +96,7 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     @abc.abstractmethod
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> List[T]:
+    ) -> T:
         pass
 
 
