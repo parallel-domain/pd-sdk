@@ -103,7 +103,7 @@ class AnyPath:
                 command += ["--delete"]
             subprocess.call(command)
         else:
-            raise TypeError("Sync is only supported for cloud operations.")
+            raise TypeError("Sync is only supported for cloud paths.")
 
     @property
     def is_cloud_path(self) -> bool:
