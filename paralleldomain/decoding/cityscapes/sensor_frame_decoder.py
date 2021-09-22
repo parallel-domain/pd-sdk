@@ -102,7 +102,8 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
 
 
 def read_png(path: AnyPath) -> np.ndarray:
-    with path.open(mode="rb") as fp:
+    _path = AnyPath(str(path))
+    with _path.open(mode="rb") as fp:
         image_data = cv2.imdecode(
             buf=np.frombuffer(fp.read(), np.uint8),
             flags=cv2.IMREAD_UNCHANGED,
