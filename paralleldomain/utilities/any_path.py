@@ -79,6 +79,15 @@ class AnyPath:
         with ThreadPool(max_num_threads) as pool:
             pool.map(_copy, (i for i in self._backend.rglob("*")))
 
+    def sync(self, target: "AnyPath", delete=False):
+        if self.is_cloud_path or target.is_cloud_path:
+            command = ["aws", "s3", "sync", str(self), str(target), "--no-progress"]
+            if delete:
+                command += ["--delete"]
+            subprocess.call(command)
+        else:
+            raise TypeError("Sync is only supported for cloud paths.")
+
     def relative_to(self, other: "AnyPath") -> "AnyPath":
         if isinstance(self._backend, type(other._backend)):
             rel_to = os.path.relpath(path=str(self), start=str(other))

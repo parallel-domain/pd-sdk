@@ -29,7 +29,7 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         self._dataset_path = dataset_path
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return SensorIntrinsic()
+        return SensorIntrinsic(fx=2262.52, fy=2265.3017905988554, cx=1096.98, cy=513.137)
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         return 1024, 2048, 3
