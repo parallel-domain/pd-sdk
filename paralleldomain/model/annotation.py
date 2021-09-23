@@ -813,5 +813,6 @@ class AnnotationTypes:
     SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D
     SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D
     SceneFlow: Type[SceneFlow] = SceneFlow
+    BaseColor2D: Type[BaseColor2D] = BaseColor2D
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D
     Albedo2D: Type[Albedo2D] = Albedo2D
