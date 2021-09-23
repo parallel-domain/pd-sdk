@@ -719,7 +719,7 @@ class SurfaceNormals2D(Annotation):
 
 @dataclass
 class BaseColor2D(Annotation):
-    
+
     base_color: np.ndarray
 
     def __sizeof__(self):
