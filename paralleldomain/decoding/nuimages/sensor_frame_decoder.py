@@ -80,7 +80,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
             sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
                 log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
             )
-            if sample_data_id in self.nu_object_ann:
+            if sample_data_id in self.nu_object_ann and sample_data_id in self.nu_surface_ann:
                 return {
                     AnnotationTypes.SemanticSegmentation2D: "SemanticSegmentation2D",
                     AnnotationTypes.InstanceSegmentation2D: "InstanceSegmentation2D",
@@ -141,7 +141,12 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
             # Draw mask for semantic segmentation.
             semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
 
-        for ann in self.nu_object_ann[sample_data_id]:
+        object_anns = self.nu_object_ann[sample_data_id]
+        object_anns = sorted(object_anns, key=lambda k: k["token"])
+
+        for ann in object_anns:
+            if ann["mask"] is None:
+                continue
             # Get color, box, mask and name.
             category_token = ann["category_token"]
             category_name = self.nu_category[category_token]["name"]
@@ -159,7 +164,10 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
             log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
 
-        for i, ann in enumerate(self.nu_object_ann[sample_data_id], start=1):
+        object_anns = self.nu_object_ann[sample_data_id]
+        object_anns = sorted(object_anns, key=lambda k: k["token"])
+
+        for i, ann in enumerate(object_anns, start=1):
             mask = mask_decode(ann["mask"])
             instanceseg_mask[mask == 1] = i
 
