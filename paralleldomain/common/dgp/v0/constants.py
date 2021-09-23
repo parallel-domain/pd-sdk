@@ -19,7 +19,7 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "8": AnnotationTypes.OpticalFlow,
     "9": AnnotationTypes.SceneFlow,
     "10": AnnotationTypes.SurfaceNormals2D,
-    "12": AnnotationTypes.Albedo2D,
+    "12": AnnotationTypes.BaseColor2D,
     "13": AnnotationTypes.MaterialProperties2D,
 }
 
@@ -44,3 +44,5 @@ class DirectoryName:
     INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     DEPTH: str = "depth"
+    BASE_COLOR_2D: str = "base_color"
+    MATERIAL_PROPERTIES_2D: str = "roughness_metallic_specular"

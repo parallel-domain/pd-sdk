@@ -718,6 +718,24 @@ class SurfaceNormals2D(Annotation):
 
 
 @dataclass
+class BaseColor2D(Annotation):
+    
+    base_color: np.ndarray
+
+    def __sizeof__(self):
+        return getsizeof(self.base_color)
+
+
+@dataclass
+class MaterialProperties2D(Annotation):
+
+    material_properties: np.ndarray
+
+    def __sizeof__(self):
+        return getsizeof(self.material_properties)
+
+
+@dataclass
 class SceneFlow(Annotation):
     """
     Not Implemented yet!
