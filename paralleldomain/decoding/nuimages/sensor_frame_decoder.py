@@ -76,12 +76,16 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        if self.split_name != "v1.0-test" or (len(self.nu_surface_ann) > 0 and len(self.nu_object_ann) > 0):
-            return {
-                AnnotationTypes.SemanticSegmentation2D: "SemanticSegmentation2D",
-                AnnotationTypes.InstanceSegmentation2D: "InstanceSegmentation2D",
-                AnnotationTypes.BoundingBoxes2D: "BoundingBoxes2D",
-            }
+        if self.split_name != "v1.0-test":
+            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            )
+            if sample_data_id in self.nu_object_ann:
+                return {
+                    AnnotationTypes.SemanticSegmentation2D: "SemanticSegmentation2D",
+                    AnnotationTypes.InstanceSegmentation2D: "InstanceSegmentation2D",
+                    AnnotationTypes.BoundingBoxes2D: "BoundingBoxes2D",
+                }
         return dict()
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
