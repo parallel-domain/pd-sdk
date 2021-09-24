@@ -3,7 +3,7 @@ import logging
 import os
 from sys import getsizeof
 from threading import Event, RLock
-from typing import Callable, Dict, Hashable, Tuple, TypeVar
+from typing import Any, Callable, Dict, Hashable, Tuple, TypeVar
 
 import numpy as np
 import psutil
@@ -17,8 +17,18 @@ logger = logging.getLogger(__name__)
 SHOW_CACHE_LOGS = os.environ.get("SHOW_CACHE_LOGS", False)
 
 
+class CacheFullException(Exception):
+    ...
+
+
+class CacheEmptyException(Exception):
+    ...
+
+
 class LazyLoadCache(Cache):
     """Least Recently Used (LRU) cache implementation."""
+
+    _marker = object()
 
     def __init__(self, max_ram_usage_factor: float = 0.8):
         self.max_ram_usage_factor = max_ram_usage_factor
@@ -36,11 +46,19 @@ class LazyLoadCache(Cache):
             if key not in self:
                 if SHOW_CACHE_LOGS:
                     logger.debug(f"load key {key} to cache")
-                self[key] = loader()
+                value = loader()
+                try:
+                    self[key] = value
+                except CacheFullException as e:
+                    logger.warning(f"Cant store {key} in Cache since no more space is left! {str(e)}")
+                    return value
                 wait_event.set()
             return self[key]
 
-    def __getitem__(self, key: Hashable, cache_getitem=Cache.__getitem__):
+    def __missing__(self, key):
+        raise KeyError(key)
+
+    def __getitem__(self, key: Hashable, cache_getitem: Callable[[Cache, Hashable], Any] = Cache.__getitem__):
         value = cache_getitem(self, key)
         if key in self:  # __missing__ may not store item
             self.__update(key)
@@ -64,11 +82,12 @@ class LazyLoadCache(Cache):
         if size > self.maxsize:
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
-            while size > self.free_space:
-                popped_item = self.popitem()
-                if popped_item is None:
-                    logger.debug(f"we can't find anything to delete in cache, so we just add {key} anyways")
-                    break  # we can't find anything to delete in cache, so we just add it anyways
+            try:
+                while size > self.free_space:
+                    self.popitem()
+            except CacheEmptyException:
+                if size > self.free_space:
+                    raise CacheFullException(f"Cache is already empty but there is no more space left tho store {key}!")
 
         if key in self._Cache__data:
             diffsize = size - self._Cache__size[key]
@@ -81,7 +100,7 @@ class LazyLoadCache(Cache):
 
     def __delitem__(self, key: Hashable, cache_delitem=Cache.__delitem__):
         key_lock, wait_event = self._get_locks(key=key)
-        wait_event.wait()
+
         with key_lock:
             if wait_event.is_set():
                 if SHOW_CACHE_LOGS:
@@ -110,9 +129,21 @@ class LazyLoadCache(Cache):
         try:
             key = next(iter(self.__order))
         except StopIteration:
-            raise KeyError("%s is empty" % type(self).__name__) from None
+            raise CacheEmptyException("%s is empty" % type(self).__name__)
         else:
-            return (key, self.pop(key))
+            del self[key]
+
+    def pop(self, key, default=_marker):
+        key_lock, wait_event = self._get_locks(key=key)
+        with key_lock:
+            if key in self:
+                value = self[key]
+                del self[key]
+            elif default is LazyLoadCache._marker:
+                raise KeyError(key)
+            else:
+                value = default
+            return value
 
     def __update(self, key):
         try:

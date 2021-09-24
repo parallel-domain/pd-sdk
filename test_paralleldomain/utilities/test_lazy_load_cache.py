@@ -1,9 +1,15 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ThreadPool
+from random import random
 from sys import getsizeof
+from time import sleep
 from unittest import mock
 from unittest.mock import patch
 
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
+import pytest
+
+from paralleldomain.utilities.lazy_load_cache import CacheEmptyException, LazyLoadCache
 
 
 def test_max_size():
@@ -56,3 +62,17 @@ def test_max_size():
             assert "key3" not in cache
             assert "key4" in cache
             assert "key2" in cache
+
+
+def test_thread_safe_delete():
+    cache = LazyLoadCache(max_ram_usage_factor=0.2)
+    cache.get_item(key="test", loader=mock.MagicMock)
+
+    cache.pop(key="test", default=None)
+
+    def delete(_):
+        with pytest.raises(CacheEmptyException):
+            cache.popitem()
+
+    p1 = ThreadPool(140)
+    p1.map_async(delete, range(140)).get()
