@@ -75,6 +75,10 @@ def read_image(path: AnyPath, convert_to_rgb: bool = True) -> np.ndarray:
     return image_data
 
 
+def read_png(path: AnyPath) -> np.ndarray:
+    return read_image(path=path, convert_to_rgb=True)
+
+
 def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):
     with path.open("wb") as fp:
         np.savez_compressed(fp, **obj)
