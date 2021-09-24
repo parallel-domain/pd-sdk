@@ -145,6 +145,14 @@ class LazyLoadCache(Cache):
                 value = default
             return value
 
+    def clear(self):
+        "D.clear() -> None.  Remove all items from D."
+        try:
+            while True:
+                self.popitem()
+        except CacheEmptyException:
+            pass
+
     def __update(self, key):
         try:
             self.__order.move_to_end(key)
