@@ -222,7 +222,7 @@ CITYSCAPE_CLASSES = [
     ),
     ClassDetail(
         name="license plate",
-        id=-1,
+        id=255,
         instanced=False,
         meta=dict(ignoreInEval=True, catId=7, trainId=-1, category="vehicle", color=(0, 0, 142)),
     ),
