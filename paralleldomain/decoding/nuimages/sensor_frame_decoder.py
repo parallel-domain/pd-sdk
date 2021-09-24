@@ -19,6 +19,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_image
 
 T = TypeVar("T")
 
@@ -67,7 +68,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         data = self.nu_samples_data[sample_data_id]
 
         img_path = AnyPath(self._dataset_path) / data["filename"]
-        image_data = read_jpg(path=img_path)[..., ::-1]
+        image_data = read_image(path=img_path, convert_to_rgb=True)
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)
@@ -197,15 +198,6 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
                 )
             )
         return boxes
-
-
-def read_jpg(path: AnyPath) -> np.ndarray:
-    with path.open(mode="rb") as fp:
-        image_data = cv2.imdecode(
-            buf=np.frombuffer(fp.read(), np.uint8),
-            flags=cv2.IMREAD_UNCHANGED,
-        )
-    return image_data
 
 
 def mask_decode(mask: dict) -> np.ndarray:

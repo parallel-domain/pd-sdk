@@ -33,12 +33,12 @@ class TestDataset:
 def two_cam_scene() -> Scene:
     if NUIMAGES_PATH_ENV in os.environ:
         nuimages_path = os.environ[NUIMAGES_PATH_ENV]
-        decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-train")
-        dataset = decoder.get_dataset()
-        return dataset.get_scene(scene_name=dataset.scene_names[5])
-        # decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-val")
+        # decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-train")
         # dataset = decoder.get_dataset()
-        # return dataset.get_scene(scene_name="c6b4b836e4c543378e340a8a28760ebd")
+        # return dataset.get_scene(scene_name=dataset.scene_names[5])
+        decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-val")
+        dataset = decoder.get_dataset()
+        return dataset.get_scene(scene_name="c6b4b836e4c543378e340a8a28760ebd")
 
 
 class TestScene:

@@ -14,6 +14,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_image
 
 T = TypeVar("T")
 
@@ -39,7 +40,7 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
             dataset_path=self._dataset_path, scene_name=self.scene_name, camera_name=sensor_name
         )
         img_path = scene_images_folder / frame_id
-        image_data = read_png(path=img_path)[..., ::-1]
+        image_data = read_image(path=img_path, convert_to_rgb=True)
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)
@@ -89,23 +90,13 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         scene_labels_folder = get_scene_labels_path(dataset_path=self._dataset_path, scene_name=scene_name)
         annotation_path = scene_labels_folder / annotation_identifier
-        class_ids = read_png(path=annotation_path)
+        class_ids = read_image(path=annotation_path, convert_to_rgb=False)
         class_ids = class_ids.astype(int)
         return np.expand_dims(class_ids, axis=-1)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         scene_labels_folder = get_scene_labels_path(dataset_path=self._dataset_path, scene_name=scene_name)
         annotation_path = scene_labels_folder / annotation_identifier
-        instance_ids = read_png(path=annotation_path)
+        instance_ids = read_image(path=annotation_path, convert_to_rgb=False)
         instance_ids = instance_ids.astype(int)
         return np.expand_dims(instance_ids, axis=-1)
-
-
-def read_png(path: AnyPath) -> np.ndarray:
-    _path = AnyPath(str(path))
-    with _path.open(mode="rb") as fp:
-        image_data = cv2.imdecode(
-            buf=np.frombuffer(fp.read(), np.uint8),
-            flags=cv2.IMREAD_UNCHANGED,
-        )
-    return image_data

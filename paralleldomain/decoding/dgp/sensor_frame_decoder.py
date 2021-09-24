@@ -45,7 +45,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_json, read_npz, read_png
+from paralleldomain.utilities.fsio import read_image, read_json, read_npz
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -253,7 +253,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        image_data = read_png(path=annotation_path)
+        image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
@@ -261,7 +261,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        image_data = read_png(path=annotation_path)
+        image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
@@ -275,7 +275,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        image_data = read_png(path=annotation_path)
+        image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
@@ -290,7 +290,7 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.image.filename
-        image_data = read_png(path=cloud_path)
+        image_data = read_image(path=cloud_path)
 
         return image_data
 
