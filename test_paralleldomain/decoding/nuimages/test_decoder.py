@@ -175,6 +175,31 @@ class TestCameraSensorFrame:
                 assert isinstance(box, BoundingBox2D)
                 assert box.area > 0
 
+    # def test_data_loader(self):
+    #     if NUIMAGES_PATH_ENV in os.environ:
+    #         nuimages_path = os.environ[NUIMAGES_PATH_ENV]
+    #         decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-val")
+    #         dataset = decoder.get_dataset()
+    #         for scene_name in dataset.scene_names[:5]:
+    #             scene = dataset.get_scene(scene_name=scene_name)
+    #             for frame in scene.frames:
+    #                 for camera in frame.camera_frames:
+    #                     if AnnotationTypes.SemanticSegmentation2D in camera.available_annotation_types:
+    #                         pass
+    #
+    # def test_data_loader2(self):
+    #     if NUIMAGES_PATH_ENV in os.environ:
+    #         nuimages_path = os.environ[NUIMAGES_PATH_ENV]
+    #         decoder = NuImagesDatasetDecoder(dataset_path=nuimages_path, split_name="v1.0-val")
+    #         dataset = decoder.get_dataset()
+    #         for scene_name in dataset.scene_names[:2]:
+    #             scene = dataset.get_scene(scene_name=scene_name)
+    #             for frame in scene.frames[:5]:
+    #                 for camera in frame.camera_frames:
+    #                     if AnnotationTypes.SemanticSegmentation2D in camera.available_annotation_types:
+    #                         assert camera.image.rgb is not None
+    #                         assert camera.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D).class_ids is not None # noqa: E501
+
 
 # keep this for debugging
 # def test_decode_visual():

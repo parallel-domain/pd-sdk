@@ -77,17 +77,20 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
+        anno_types = dict()
         if self.split_name != "v1.0-test":
             sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
                 log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
             )
-            if sample_data_id in self.nu_object_ann and sample_data_id in self.nu_surface_ann:
-                return {
-                    AnnotationTypes.SemanticSegmentation2D: "SemanticSegmentation2D",
-                    AnnotationTypes.InstanceSegmentation2D: "InstanceSegmentation2D",
-                    AnnotationTypes.BoundingBoxes2D: "BoundingBoxes2D",
-                }
-        return dict()
+            if sample_data_id in self.nu_sample_data_tokens_to_available_anno_types:
+                has_surface, has_obj = self.nu_sample_data_tokens_to_available_anno_types[sample_data_id]
+                if has_surface:
+                    anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
+                if has_obj:
+
+                    anno_types[AnnotationTypes.InstanceSegmentation2D] = "InstanceSegmentation2D"
+                    anno_types[AnnotationTypes.BoundingBoxes2D] = "BoundingBoxes2D"
+        return anno_types
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         return datetime.fromtimestamp(int(frame_id) / 1000000)
@@ -142,19 +145,20 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
             # Draw mask for semantic segmentation.
             semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
 
-        object_anns = self.nu_object_ann[sample_data_id]
-        object_anns = sorted(object_anns, key=lambda k: k["token"])
+        if sample_data_id in self.nu_object_ann:
+            object_anns = self.nu_object_ann[sample_data_id]
+            object_anns = sorted(object_anns, key=lambda k: k["token"])
 
-        for ann in object_anns:
-            if ann["mask"] is None:
-                continue
-            # Get color, box, mask and name.
-            category_token = ann["category_token"]
-            category_name = self.nu_category[category_token]["name"]
+            for ann in object_anns:
+                if ann["mask"] is None:
+                    continue
+                # Get color, box, mask and name.
+                category_token = ann["category_token"]
+                category_name = self.nu_category[category_token]["name"]
 
-            mask = mask_decode(ann["mask"])
-            # Draw masks for semantic segmentation and instance segmentation.
-            semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
+                mask = mask_decode(ann["mask"])
+                # Draw masks for semantic segmentation and instance segmentation.
+                semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
 
         return np.expand_dims(semseg_mask, axis=-1)
 
@@ -178,6 +182,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
             log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
+
         boxes = list()
         for i, ann in enumerate(self.nu_object_ann[sample_data_id], start=1):
             box = ann["bbox"]

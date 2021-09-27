@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
 from pyquaternion import Quaternion
@@ -142,6 +142,25 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
         )
 
     @property
+    def nu_sample_data_tokens_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
+        _unique_cache_key = self.get_unique_id(extra="nu_sample_data_tokens_to_available_anno_types")
+
+        def get_nu_sample_data_tokens_to_available_anno_types() -> Dict[str, Tuple[bool, bool]]:
+            surface_anns = self.nu_surface_ann
+            obj_anns = self.nu_surface_ann
+            mapping = dict()
+            for k in surface_anns.keys():
+                mapping.setdefault(k, [False, False])[0] = True
+            for k in obj_anns.keys():
+                mapping.setdefault(k, [False, False])[1] = True
+            return mapping
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_sample_data_tokens_to_available_anno_types,
+        )
+
+    @property
     def nu_calibrated_sensors(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_calibrated_sensors")
 
@@ -228,26 +247,40 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
         samples = self.nu_samples[log_token]
         key_camera_tokens = [sample["key_camera_token"] for sample in samples]
 
+        data_dict = self.nu_samples_data
         for key_camera_token in key_camera_tokens:
-            data = self.nu_samples_data[key_camera_token]
+            data = data_dict[key_camera_token]
             if str(data["timestamp"]) == frame_id:
                 yield data
 
     def get_sample_data_id_frame_id_and_sensor_name(
         self, log_token: str, frame_id: FrameId, sensor_name: SensorName
     ) -> Optional[str]:
-        samples = self.nu_samples[log_token]
-        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+        return self.nu_sample_data_ids_by_frame_and_sensor(log_token=log_token)[(frame_id, sensor_name)]
 
-        for key_camera_token in key_camera_tokens:
-            data = self.nu_samples_data[key_camera_token]
-            if str(data["timestamp"]) == frame_id:
+    def nu_sample_data_ids_by_frame_and_sensor(self, log_token: str) -> Dict[Tuple[FrameId, SensorName], str]:
+        _unique_cache_key = self.get_unique_id(extra="nu_sample_data_ids_by_frame_and_sensor", scene_name=log_token)
+
+        def get_nu_sample_data_ids_by_frame_and_sensor() -> Dict[Tuple[FrameId, SensorName], str]:
+            samples = self.nu_samples[log_token]
+            key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+
+            mapping = dict()
+            nu_samples_data = self.nu_samples_data
+            for key_camera_token in key_camera_tokens:
+                data = nu_samples_data[key_camera_token]
+                frame_id = str(data["timestamp"])
                 calib_sensor_token = data["calibrated_sensor_token"]
                 calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
                 sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-                if sensor["channel"] == sensor_name:
-                    return key_camera_token
-        return None
+                sensor_name = sensor["channel"]
+                mapping[(frame_id, sensor_name)] = key_camera_token
+            return mapping
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_sample_data_ids_by_frame_and_sensor,
+        )
 
     @property
     def nu_class_infos(self) -> List[ClassDetail]:

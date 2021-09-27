@@ -84,7 +84,8 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         sample_data_ids = set()
         for sample in self.nu_samples[scene_name]:
             sample_data_ids.add(sample["key_camera_token"])
-        return {str(self.nu_samples_data[sample_id]["timestamp"]) for sample_id in sample_data_ids}
+        nu_samples_data = self.nu_samples_data
+        return {str(nu_samples_data[sample_id]["timestamp"]) for sample_id in sample_data_ids}
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         return self.get_camera_names(scene_name=scene_name)
@@ -93,8 +94,9 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         samples = self.nu_samples[scene_name]
         key_camera_tokens = [sample["key_camera_token"] for sample in samples]
         camera_names = set()
+        data_dict = self.nu_samples_data
         for key_camera_token in key_camera_tokens:
-            data = self.nu_samples_data[key_camera_token]
+            data = data_dict[key_camera_token]
             calib_sensor_token = data["calibrated_sensor_token"]
             calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
