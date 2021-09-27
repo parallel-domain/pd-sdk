@@ -9,7 +9,7 @@ from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, Datase
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.scene import DGPSceneEncoder
-from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
+from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities import fsio
@@ -28,7 +28,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
-        n_parallel: Optional[int] = 1,
+        # n_parallel: Optional[int] = 1,
     ) -> None:
         super().__init__(
             dataset=dataset,
@@ -36,7 +36,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             scene_names=scene_names,
             set_start=scene_start,
             set_stop=scene_stop,
-            n_parallel=n_parallel,
+            # n_parallel=n_parallel,
         )
         self._dataset_name: str = dataset_name
 
@@ -81,16 +81,19 @@ class DGPDatasetEncoder(DatasetEncoder):
         return fsio.write_json(obj=ds_dto.to_dict(), path=output_path)
 
     def encode_dataset(self) -> AnyPath:
-        with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
-            scene_files = dict(
-                zip(
-                    self._scene_names,
-                    scene_executor.map(
-                        self._call_scene_encoder,
-                        self._scene_names,
-                    ),
-                )
-            )
+        # with ThreadPoolExecutor(max_workers=self._n_parallel) as scene_executor:
+        scene_files = dict()
+        for scene_name in self._scene_names:
+            scene_files[scene_name] = self._call_scene_encoder(scene_name=scene_name)
+        # scene_files = dict(
+        #     zip(
+        #         self._scene_names,
+        #         ENCODING_THREAD_POOL.map(
+        #             self._call_scene_encoder,
+        #             self._scene_names,
+        #         ),
+        #     )
+        # )
 
         return self._encode_dataset_json(scene_files=scene_files)
 
@@ -102,7 +105,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
-        n_parallel: Optional[int] = 1,
+        # n_parallel: Optional[int] = 1,
     ):
         return DGPDatasetEncoder(
             dataset=dataset,
@@ -111,7 +114,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             scene_names=scene_names,
             scene_start=scene_start,
             scene_stop=scene_stop,
-            n_parallel=n_parallel,
+            # n_parallel=n_parallel,
         )
 
     @staticmethod
@@ -144,7 +147,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
-        n_parallel: Optional[int] = 1,
+        # n_parallel: Optional[int] = 1,
     ) -> "DGPDatasetEncoder":
         return DGPDatasetEncoder.from_dataset(
             dataset=decoder.get_dataset(),
@@ -153,7 +156,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             scene_names=scene_names,
             scene_start=scene_start,
             scene_stop=scene_stop,
-            n_parallel=n_parallel,
+            # n_parallel=n_parallel,
         )
 
 
