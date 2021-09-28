@@ -426,7 +426,7 @@ class DGPSceneEncoder(SceneEncoder):
 
         scene_data_count = len(scene_data_dtos)
         # noinspection InsecureHash
-        keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
+        keys = [hashlib.sha1(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
         for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
             prev_key = keys[idx - 1] if idx > 0 else ""
@@ -494,7 +494,7 @@ class DGPSceneEncoder(SceneEncoder):
 
         scene_data_count = len(scene_data_dtos)
         # noinspection InsecureHash
-        keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
+        keys = [hashlib.sha1(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
         for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
             prev_key = keys[idx - 1] if idx > 0 else ""
