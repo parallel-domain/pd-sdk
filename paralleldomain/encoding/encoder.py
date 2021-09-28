@@ -115,7 +115,7 @@ class SceneEncoder:
     def _relative_path(self, path: AnyPath) -> AnyPath:
         return relative_path(path, self._output_path)
 
-    def _run_async(self, func, *args, **kwargs) -> Future:
+    def _run_async(self, func: Callable[[Any], Any], *args, **kwargs) -> Future:
         return ENCODING_THREAD_POOL.submit(func, *args, **kwargs)
 
     def _prepare_output_directories(self) -> None:
