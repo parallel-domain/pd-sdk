@@ -1,13 +1,11 @@
 import concurrent
 import hashlib
-import itertools
 import logging
 import uuid
 from collections import defaultdict
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future
 from datetime import datetime
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
-from urllib.parse import urlparse
 
 import numpy as np
 

@@ -6,9 +6,7 @@ import os
 import uuid
 from abc import abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
-from multiprocessing.pool import ThreadPool
 from typing import Any, Callable, Generator, Iterable, List, Optional, Type, Union
-from urllib.parse import urlparse
 
 import numpy as np
 
@@ -195,11 +193,9 @@ class DatasetEncoder:
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
-        # n_parallel: Optional[int] = 1,
     ):
         self._dataset = dataset
         self._output_path = AnyPath(output_path)
-        # self._n_parallel = min(max(n_parallel, 1), os.cpu_count())
 
         # Adapt to use specific SceneEncoder type
         self._scene_encoder: Type[SceneEncoder] = SceneEncoder
@@ -251,8 +247,7 @@ class DatasetEncoder:
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
-        # n_parallel: Optional[int] = 1,
-    ):
+    ) -> "DatasetEncoder":
         return cls(
             dataset=dataset,
             output_path=output_path,
@@ -269,8 +264,7 @@ class DatasetEncoder:
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
-        n_parallel: Optional[int] = 1,
-    ):
+    ) -> "DatasetEncoder":
         raise NotImplementedError("An Encoder needs to override this method with a fitting Decoder")
 
 
@@ -302,14 +296,6 @@ if __name__ == "__main__":
         default=None,
     )
 
-    parser.add_argument(
-        "--n_parallel",
-        type=int,
-        help="Define how many scenes should be processed in parallel",
-        required=False,
-        default=1,
-    )
-
     args = parser.parse_args()
 
     DatasetEncoder.from_path(
@@ -318,5 +304,4 @@ if __name__ == "__main__":
         scene_names=args.scene_names,
         scene_start=args.scene_start,
         scene_stop=args.scene_stop,
-        n_parallel=args.n_parallel,
-    )._transform()
+    ).encode_dataset()
