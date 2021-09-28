@@ -4,6 +4,7 @@ from threading import RLock
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
+import psutil
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
@@ -30,7 +31,10 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-cache_max_ram_usage_factor = float(os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
+_NU_IMAGES_DATA_MAX_SIZE = 1.6e9  # GB
+cache_max_ram_usage_factor = float(
+    os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_IMAGES_DATA_MAX_SIZE / psutil.virtual_memory().total)
+)  # use 1.6 GB by default
 ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
 
 NU_IM_DATA_CACHE = None
