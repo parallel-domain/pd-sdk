@@ -1,5 +1,6 @@
 import json
 import os
+from threading import RLock
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
@@ -32,14 +33,12 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
 cache_max_ram_usage_factor = float(os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
 ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
 
-NU_IM_DATA_CACHE = LazyLoadCache(
-    max_ram_usage_factor=cache_max_ram_usage_factor,
-    ram_keep_free_factor=ram_keep_free_factor,
-    cache_name="NuImages Cache",
-)
+NU_IM_DATA_CACHE = None
 
 
 class NuImagesDataAccessMixin:
+    _init_lock = RLock()
+
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuImages dataset
 
@@ -54,6 +53,15 @@ class NuImagesDataAccessMixin:
 
     @property
     def nu_lazy_load_cache(self) -> LazyLoadCache:
+        global NU_IM_DATA_CACHE
+        if NU_IM_DATA_CACHE is None:
+            with self._init_lock:
+                if NU_IM_DATA_CACHE is None:
+                    NU_IM_DATA_CACHE = LazyLoadCache(
+                        max_ram_usage_factor=cache_max_ram_usage_factor,
+                        ram_keep_free_factor=ram_keep_free_factor,
+                        cache_name="NuImages Cache",
+                    )
         return NU_IM_DATA_CACHE
 
     def get_unique_id(
