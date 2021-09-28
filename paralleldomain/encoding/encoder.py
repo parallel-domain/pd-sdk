@@ -94,7 +94,6 @@ class SceneEncoder:
         self._scene_name: SceneName = scene_name
         self._output_path: AnyPath = output_path
         self._unordered_scene: UnorderedScene = dataset.get_unordered_scene(scene_name=scene_name)
-        # self._task_pool: ThreadPool = ThreadPool(processes=max(int(os.cpu_count() * 0.75), 1))
 
         self._camera_names: Union[List[str], None] = (
             self._unordered_scene.camera_names if camera_names is None else camera_names
@@ -219,8 +218,6 @@ class DatasetEncoder:
         else:
             set_slice = slice(set_start, set_stop)
             self._scene_names = self._dataset.unordered_scene_names[set_slice]
-
-        # self.thread_pool = ThreadPoolExecutor(max_workers=self._n_parallel)
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
         encoder = self._scene_encoder(
