@@ -30,11 +30,17 @@ class LazyLoadCache(Cache):
 
     _marker = object()
 
-    def __init__(self, max_ram_usage_factor: float = 0.8, ram_keep_free_factor: float = 0.05):
+    def __init__(
+        self,
+        cache_name: str = "Default pd-sdk Cache",
+        max_ram_usage_factor: float = 0.8,
+        ram_keep_free_factor: float = 0.05,
+    ):
         self.ram_keep_free_bytes = int(ram_keep_free_factor * psutil.virtual_memory().total)
         self.max_ram_usage_factor = max_ram_usage_factor
+        self.cache_name = cache_name
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
-        logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
+        logger.info(f"Initializing LazyLoadCache '{cache_name}' with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._key_load_locks: Dict[Hashable, Tuple[RLock, Event]] = dict()
         self._create_key_lock = RLock()

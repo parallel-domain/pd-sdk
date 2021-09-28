@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
@@ -9,6 +10,7 @@ from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 # NUIMAGES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
@@ -27,7 +29,17 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
+cache_max_ram_usage_factor = float(os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
+ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
+
+NU_IM_DATA_CACHE = LazyLoadCache(
+    max_ram_usage_factor=cache_max_ram_usage_factor,
+    ram_keep_free_factor=ram_keep_free_factor,
+    cache_name="NuImages Cache",
+)
+
+
+class NuImagesDataAccessMixin:
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuImages dataset
 
@@ -39,6 +51,7 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
         self.dataset_name = dataset_name
         self._dataset_path = dataset_path
         self.split_name = split_name
+        self.lazy_load_cache = NU_IM_DATA_CACHE
 
     def get_unique_id(
         self,
@@ -72,7 +85,7 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
     def nu_samples(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_samples")
 
-        def _get_samples() -> Dict[str, List[Dict[str, Any]]]:
+        def get_nu_samples() -> Dict[str, List[Dict[str, Any]]]:
             samples = load_table(dataset_root=self._dataset_path, table_name="sample", split_name=self.split_name)
             log_wise_samples = dict()
             for s in samples:
@@ -81,7 +94,7 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
 
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=_get_samples,
+            loader=get_nu_samples,
         )
 
     @property
@@ -147,7 +160,7 @@ class NuImagesDataAccessMixin(LazyLoadPropertyMixin):
 
         def get_nu_sample_data_tokens_to_available_anno_types() -> Dict[str, Tuple[bool, bool]]:
             surface_anns = self.nu_surface_ann
-            obj_anns = self.nu_surface_ann
+            obj_anns = self.nu_object_ann
             mapping = dict()
             for k in surface_anns.keys():
                 mapping.setdefault(k, [False, False])[0] = True
