@@ -50,15 +50,18 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def get_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
+        return self._decode_annotations(
+            sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
         )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_annotations(
-                sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
-            ),
-        )
+        # _unique_cache_key = self.get_unique_sensor_frame_id(
+        #     sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
+        # )
+        # return self.lazy_load_cache.get_item(
+        #     key=_unique_cache_key,
+        #     loader=lambda: self._decode_annotations(
+        #         sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
+        #     ),
+        # )
 
     def get_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -120,13 +123,14 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         )
 
     def get_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="image_rgba"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        return self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
+        # _unique_cache_key = self.get_unique_sensor_frame_id(
+        #     sensor_name=sensor_name, frame_id=frame_id, extra="image_rgba"
+        # )
+        # return self.lazy_load_cache.get_item(
+        #     key=_unique_cache_key,
+        #     loader=lambda: self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id),
+        # )
 
     @abc.abstractmethod
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
