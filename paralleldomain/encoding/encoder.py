@@ -35,15 +35,6 @@ class EncoderThreadPool(ThreadPoolExecutor):
 ENCODING_THREAD_POOL = EncoderThreadPool(_thread_pool_size)
 
 
-def chunked_iterable(iterable: Iterable, size: int) -> Generator[Tuple, None, None]:
-    it = iter(iterable)
-    while True:
-        chunk = tuple(itertools.islice(it, size))
-        if not chunk:
-            break
-        yield chunk
-
-
 class ObjectTransformer:
     @staticmethod
     def _filter_pre_transform(objects: Union[Generator, List]) -> Union[Generator, List]:

@@ -44,7 +44,7 @@ from paralleldomain.encoding.dgp.transformer import (
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
-from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, SceneEncoder, chunked_iterable
+from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, SensorFrame
