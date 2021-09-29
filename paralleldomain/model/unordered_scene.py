@@ -44,7 +44,7 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         pass
 
-    def get_class_map(self, scene_name: SceneName, annotation_type: Type[T]) -> ClassMap:
+    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         pass
 
     def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
@@ -130,10 +130,9 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return {a_type: self.get_class_map(a_type) for a_type in self._available_annotation_types}
+        return self._decoder.get_class_maps(scene_name=self.name)
 
     def get_class_map(self, annotation_type: Type[T]) -> ClassMap:
         if annotation_type not in self._available_annotation_types:
             raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
-
-        return self._decoder.get_class_map(scene_name=self.name, annotation_type=annotation_type)
+        return self.class_maps[annotation_type]

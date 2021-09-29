@@ -34,21 +34,21 @@ class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
         _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, extra="available_sensors_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_available_sensor_names(frame_id=frame_id),
+            loader=lambda: sorted(self._decode_available_sensor_names(frame_id=frame_id)),
         )
 
     def get_camera_names(self, frame_id: FrameId) -> List[SensorName]:
         _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, extra="available_camera_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_available_camera_names(frame_id=frame_id),
+            loader=lambda: sorted(self._decode_available_camera_names(frame_id=frame_id)),
         )
 
     def get_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, extra="available_lidar_names")
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_available_lidar_names(frame_id=frame_id),
+            loader=lambda: sorted(self._decode_available_lidar_names(frame_id=frame_id)),
         )
 
     def get_ego_frame(self, frame_id: FrameId) -> EgoFrame:
