@@ -609,20 +609,10 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_cameras(self) -> Iterator[Tuple[str, Dict[str, SceneDataDTO]]]:
-        max_parallel_cams = max(1, int(ENCODING_THREAD_POOL.max_workers / 5))
-        encoded_cams = list()
-        for cam_names in chunked_iterable(iterable=self._camera_names, size=max_parallel_cams):
-            futures = [self._encode_camera(camera_name=c) for c in cam_names]
-            encoded_cams.extend([r.result() for r in concurrent.futures.as_completed(futures)])
-        return encoded_cams
+        return [self._encode_camera(camera_name=c).result() for c in self._camera_names]
 
     def _encode_lidars(self) -> Iterator[Tuple[str, Dict[str, SceneDataDTO]]]:
-        max_parallel_lidars = max(1, int(ENCODING_THREAD_POOL.max_workers / 5))
-        encoded_lidars = list()
-        for lidar_names in chunked_iterable(iterable=self._lidar_names, size=max_parallel_lidars):
-            futures = [self._encode_lidar(lidar_name=ln) for ln in lidar_names]
-            encoded_lidars.extend([r.result() for r in concurrent.futures.as_completed(futures)])
-        return encoded_lidars
+        return [self._encode_lidar(lidar_name=ln).result() for ln in self._lidar_names]
 
     def _encode_ontologies(self) -> Dict[str, Future]:
         ontology_dtos = {

@@ -6,7 +6,7 @@ import os
 import uuid
 from abc import abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Any, Callable, Generator, Iterable, List, Optional, Type, Union
+from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy as np
 
@@ -21,8 +21,6 @@ from paralleldomain.utilities.fsio import relative_path
 logger = logging.getLogger(__name__)
 
 _thread_pool_size = max(os.environ.get("ENCODER_THREAD_POOL_MAX_SIZE", int(os.cpu_count() * 4)), 4)
-# _thread_pool_size = 15
-_thread_pool_size = 4 * os.cpu_count()
 
 
 class EncoderThreadPool(ThreadPoolExecutor):
@@ -37,7 +35,7 @@ class EncoderThreadPool(ThreadPoolExecutor):
 ENCODING_THREAD_POOL = EncoderThreadPool(_thread_pool_size)
 
 
-def chunked_iterable(iterable, size):
+def chunked_iterable(iterable: Iterable, size: int) -> Generator[Tuple, None, None]:
     it = iter(iterable)
     while True:
         chunk = tuple(itertools.islice(it, size))
@@ -128,12 +126,7 @@ class SceneEncoder:
         ...
 
     def _encode_cameras(self) -> Any:
-        max_parallel_cams = max(1, int(ENCODING_THREAD_POOL.max_workers / 5))
-        encoded_cams = list()
-        for cam_names in chunked_iterable(iterable=self._camera_names, size=max_parallel_cams):
-            futures = [self._encode_camera(camera_name=c) for c in cam_names]
-            encoded_cams.extend([r.result() for r in concurrent.futures.as_completed(futures)])
-        return encoded_cams
+        return [self._encode_camera(camera_name=c).result() for c in self._camera_names]
 
     def _encode_camera(self, camera_name: SensorName) -> Future:
         frame_ids = self._unordered_scene.frame_ids
@@ -164,12 +157,7 @@ class SceneEncoder:
         return ENCODING_THREAD_POOL.submit(lambda: concurrent.futures.wait(lidar_encoding_futures))
 
     def _encode_lidars(self) -> Any:
-        max_parallel_lidars = max(1, int(ENCODING_THREAD_POOL.max_workers / 5))
-        encoded_lidars = list()
-        for lidar_names in chunked_iterable(iterable=self._lidar_names, size=max_parallel_lidars):
-            futures = [self._encode_lidar(lidar_name=ln) for ln in lidar_names]
-            encoded_lidars.extend([r.result() for r in concurrent.futures.as_completed(futures)])
-        return encoded_lidars
+        return [self._encode_lidar(lidar_name=ln).result() for ln in self._lidar_names]
 
     def _encode_sensors(self):
         self._encode_cameras()
