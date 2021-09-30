@@ -20,7 +20,7 @@ from paralleldomain.utilities.fsio import relative_path
 
 logger = logging.getLogger(__name__)
 
-_thread_pool_size = max(os.environ.get("ENCODER_THREAD_POOL_MAX_SIZE", int(os.cpu_count() * 4)), 4)
+_thread_pool_size = max(int(os.environ.get("ENCODER_THREAD_POOL_MAX_SIZE", os.cpu_count() * 4)), 4)
 
 
 class EncoderThreadPool(ThreadPoolExecutor):
