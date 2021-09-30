@@ -56,31 +56,33 @@ class DecoderImage(Image):
         self.frame_id = frame_id
         self.sensor_name = sensor_name
         self._decoder = decoder
+        self._data_rgba = None
+        self._image_dims = None
 
     @property
-    def _data_rgba(self) -> np.ndarray:
-        return self._decoder.get_image_rgba(sensor_name=self.sensor_name, frame_id=self.frame_id)
-
-    @property
-    def _image_dims(self) -> Tuple[int, int, int]:
-        return self._decoder.get_image_dimensions(sensor_name=self.sensor_name, frame_id=self.frame_id)
+    def _image_dimensions(self) -> Tuple[int, int, int]:
+        if self._image_dims is None:
+            self._image_dims = self._decoder.get_image_dimensions(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._image_dims
 
     @property
     def rgba(self) -> np.ndarray:
+        if self._data_rgba is None:
+            self._data_rgba = self._decoder.get_image_rgba(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._data_rgba
 
     @property
     def rgb(self) -> np.ndarray:
-        return self._data_rgba[:, :, :3]
+        return self.rgba[:, :, :3]
 
     @property
     def width(self) -> int:
-        return self._image_dims[1]
+        return self._image_dimensions[1]
 
     @property
     def height(self) -> int:
-        return self._image_dims[0]
+        return self._image_dimensions[0]
 
     @property
     def channels(self) -> int:
-        return self._image_dims[2]
+        return self._image_dimensions[2]

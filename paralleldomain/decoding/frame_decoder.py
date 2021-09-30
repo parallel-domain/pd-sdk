@@ -2,7 +2,7 @@ import abc
 from datetime import datetime
 from typing import Generic, List, Optional, TypeVar, Union
 
-from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
+from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoFrame, EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
@@ -14,9 +14,9 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
-    def __init__(self, dataset_name: str, scene_name: SceneName):
+    def __init__(self, dataset_name: str, scene_name: SceneName, settings: DecoderSettings):
+        self.settings = settings
         self.scene_name = scene_name
-
         self.dataset_name = dataset_name
 
     def get_unique_frame_id(

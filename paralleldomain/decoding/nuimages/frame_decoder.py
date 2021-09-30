@@ -5,6 +5,7 @@ import numpy as np
 from iso8601 import iso8601
 from pyquaternion import Quaternion
 
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
 from paralleldomain.decoding.nuimages.sensor_frame_decoder import NuImagesCameraSensorFrameDecoder
@@ -17,9 +18,16 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
-    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, scene_name: SceneName):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        FrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name)
+        FrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
@@ -59,6 +67,7 @@ class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
             split_name=self.split_name,
+            settings=self.settings,
         )
 
     def _decode_camera_sensor_frame(

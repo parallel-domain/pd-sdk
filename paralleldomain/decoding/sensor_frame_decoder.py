@@ -4,7 +4,7 @@ from typing import Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
-from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
+from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
@@ -14,7 +14,8 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
-    def __init__(self, dataset_name: str, scene_name: SceneName):
+    def __init__(self, dataset_name: str, scene_name: SceneName, settings: DecoderSettings):
+        self.settings = settings
         self.scene_name = scene_name
         self.dataset_name = dataset_name
 
@@ -50,18 +51,20 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def get_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
-        return self._decode_annotations(
-            sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
-        )
-        # _unique_cache_key = self.get_unique_sensor_frame_id(
-        #     sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
-        # )
-        # return self.lazy_load_cache.get_item(
-        #     key=_unique_cache_key,
-        #     loader=lambda: self._decode_annotations(
-        #         sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
-        #     ),
-        # )
+        if self.settings.cache_annotations:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_annotations(
+                    sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
+                ),
+            )
+        else:
+            return self._decode_annotations(
+                sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
+            )
 
     def get_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -114,23 +117,28 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         )
 
     def get_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="image-dims"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_image_dimensions(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_images:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="image-dims"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_image_dimensions(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_image_dimensions(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        return self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
-        # _unique_cache_key = self.get_unique_sensor_frame_id(
-        #     sensor_name=sensor_name, frame_id=frame_id, extra="image_rgba"
-        # )
-        # return self.lazy_load_cache.get_item(
-        #     key=_unique_cache_key,
-        #     loader=lambda: self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id),
-        # )
+        if self.settings.cache_images:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="image_rgba"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
 
     @abc.abstractmethod
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
@@ -147,58 +155,76 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
 
 class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
     def get_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_size"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_size"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_xyz"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_xyz"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_rgb"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_rgb"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_intensity"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_intensity(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_intensity"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_intensity(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_intensity(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_timestamp"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_timestamp"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id)
 
     def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        _unique_cache_key = self.get_unique_sensor_frame_id(
-            sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ring_index"
-        )
-        return self.lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id),
-        )
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ring_index"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id)
 
     @abc.abstractmethod
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:

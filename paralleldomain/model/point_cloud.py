@@ -77,27 +77,47 @@ class DecoderPointCloud(PointCloud):
         self.frame_id = frame_id
         self.sensor_name = sensor_name
         self._decoder = decoder
+        self._length = None
+        self._xyz = None
+        self._rgb = None
+        self._intensity = None
+        self._ts = None
+        self._ring = None
 
     @property
     def length(self) -> int:
-        return self._decoder.get_point_cloud_size(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._length is None:
+            self._length = self._decoder.get_point_cloud_size(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._length
 
     @property
     def xyz(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_xyz(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._xyz is None:
+            self._xyz = self._decoder.get_point_cloud_xyz(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._xyz
 
     @property
     def rgb(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_rgb(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._rgb is None:
+            self._rgb = self._decoder.get_point_cloud_rgb(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._rgb
 
     @property
     def intensity(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_intensity(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._intensity is None:
+            self._intensity = self._decoder.get_point_cloud_intensity(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._intensity
 
     @property
     def ts(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_timestamp(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._ts is None:
+            self._ts = self._decoder.get_point_cloud_timestamp(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._ts
 
     @property
     def ring(self) -> np.ndarray:
-        return self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        if self._ring is None:
+            self._ring = self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._ring

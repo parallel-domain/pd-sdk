@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, get_scene_path
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
@@ -16,16 +17,24 @@ IMAGE_FOLDER_NAME = "leftImg8bit"
 
 
 class CityscapesDatasetDecoder(DatasetDecoder):
-    def __init__(self, dataset_path: Union[str, AnyPath], splits: Optional[List[str]] = None, **kwargs):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        splits: Optional[List[str]] = None,
+        settings: Optional[DecoderSettings] = None,
+        **kwargs,
+    ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if splits is None:
             splits = ["test", "train", "val"]
         self.splits = splits
         dataset_name = "-".join(list(["cityscapes"] + splits))
-        super().__init__(dataset_name=dataset_name)
+        super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
-        return CityscapesSceneDecoder(dataset_path=self._dataset_path, dataset_name=self.dataset_name)
+        return CityscapesSceneDecoder(
+            dataset_path=self._dataset_path, dataset_name=self.dataset_name, settings=self.settings
+        )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         scene_names = list()
@@ -48,9 +57,9 @@ class CityscapesDatasetDecoder(DatasetDecoder):
 
 
 class CityscapesSceneDecoder(SceneDecoder[None]):
-    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str):
+    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, settings: DecoderSettings):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        super().__init__(dataset_name=dataset_name)
+        super().__init__(dataset_name=dataset_name, settings=settings)
         self._camera_names = [IMAGE_FOLDER_NAME]
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
@@ -85,7 +94,10 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[None]:
         return CityscapesCameraSensorDecoder(
-            dataset_name=self.dataset_name, dataset_path=self._dataset_path, scene_name=scene_name
+            dataset_name=self.dataset_name,
+            dataset_path=self._dataset_path,
+            scene_name=scene_name,
+            settings=self.settings,
         )
 
     def _create_lidar_sensor_decoder(
@@ -99,6 +111,7 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             camera_names=self._camera_names,
+            settings=self.settings,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:

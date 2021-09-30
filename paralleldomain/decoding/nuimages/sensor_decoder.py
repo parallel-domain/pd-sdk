@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Set, Union
 
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NuImagesDataAccessMixin
 from paralleldomain.decoding.nuimages.sensor_frame_decoder import NuImagesCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
@@ -11,9 +12,16 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class NuImagesCameraSensorDecoder(CameraSensorDecoder[datetime], NuImagesDataAccessMixin):
-    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, scene_name: SceneName):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        CameraSensorDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name)
+        CameraSensorDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
@@ -29,6 +37,7 @@ class NuImagesCameraSensorDecoder(CameraSensorDecoder[datetime], NuImagesDataAcc
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
             split_name=self.split_name,
+            settings=self.settings,
         )
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:

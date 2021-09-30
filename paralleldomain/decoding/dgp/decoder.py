@@ -8,6 +8,7 @@ import iso8601
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
@@ -56,10 +57,11 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         self,
         dataset_path: Union[str, AnyPath],
         custom_reference_to_box_bottom: Optional[Transformation] = None,
+        settings: Optional[DecoderSettings] = None,
         **kwargs,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        DatasetDecoder.__init__(self, dataset_name=str(dataset_path))
+        DatasetDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -70,6 +72,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         return DGPSceneDecoder(
             dataset_path=self._dataset_path,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -86,10 +89,11 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
+        settings: DecoderSettings,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        SceneDecoder.__init__(self, dataset_name=str(dataset_path))
+        SceneDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
 
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
@@ -107,6 +111,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _create_lidar_sensor_decoder(
@@ -119,6 +124,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
@@ -179,6 +185,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     @staticmethod

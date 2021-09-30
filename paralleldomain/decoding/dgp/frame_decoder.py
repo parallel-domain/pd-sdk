@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import Dict, List
 
 from paralleldomain.common.dgp.v0.dtos import SceneDataDTO, SceneSampleDTO, scene_sample_to_date_time
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
@@ -23,8 +24,9 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
+        settings: DecoderSettings,
     ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.scene_data = scene_data
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
@@ -76,6 +78,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_camera_sensor_frame(
