@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from pyquaternion import Quaternion
 
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, TDateTime
 from paralleldomain.model.annotation import (
@@ -25,9 +26,18 @@ T = TypeVar("T")
 
 
 class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuImagesDataAccessMixin):
-    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, scene_name: SceneName):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        CameraSensorFrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name)
+        CameraSensorFrameDecoder.__init__(
+            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+        )
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
@@ -87,7 +97,6 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
                 if has_surface:
                     anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
                 if has_obj:
-
                     anno_types[AnnotationTypes.InstanceSegmentation2D] = "InstanceSegmentation2D"
                     anno_types[AnnotationTypes.BoundingBoxes2D] = "BoundingBoxes2D"
         return anno_types

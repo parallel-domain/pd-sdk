@@ -4,6 +4,7 @@ from typing import Set
 
 from paralleldomain.decoding.cityscapes.common import get_scene_path
 from paralleldomain.decoding.cityscapes.sensor_frame_decoder import CityscapesCameraSensorFrameDecoder
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame
@@ -12,13 +13,8 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class CityscapesCameraSensorDecoder(CameraSensorDecoder[None]):
-    def __init__(
-        self,
-        dataset_name: str,
-        scene_name: SceneName,
-        dataset_path: AnyPath,
-    ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
+    def __init__(self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings):
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
@@ -38,5 +34,8 @@ class CityscapesCameraSensorDecoder(CameraSensorDecoder[None]):
     @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
         return CityscapesCameraSensorFrameDecoder(
-            dataset_name=self.dataset_name, scene_name=self.scene_name, dataset_path=self.dataset_path
+            dataset_name=self.dataset_name,
+            scene_name=self.scene_name,
+            dataset_path=self.dataset_path,
+            settings=self.settings,
         )

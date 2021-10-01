@@ -23,6 +23,7 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneSampleDTO,
     scene_sample_to_date_time,
 )
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -60,8 +61,9 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         custom_reference_to_box_bottom: Transformation,
+        settings: DecoderSettings,
     ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data

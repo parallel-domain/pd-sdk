@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
 
 from paralleldomain import Scene
-from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
+from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
@@ -21,7 +21,10 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
-    def __init__(self, dataset_name: str, **kwargs):
+    def __init__(self, dataset_name: str, settings: Optional[DecoderSettings], **kwargs):
+        if settings is None:
+            settings = DecoderSettings()
+        self.settings = settings
         self.dataset_name = dataset_name
         self._scenes: Dict[SceneName, Scene] = dict()
         self._unordered_scenes: Dict[SceneName, UnorderedScene] = dict()
@@ -109,7 +112,8 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
 
 
 class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
-    def __init__(self, dataset_name: str):
+    def __init__(self, dataset_name: str, settings: DecoderSettings):
+        self.settings = settings
         self.dataset_name = dataset_name
 
     def get_unique_id(

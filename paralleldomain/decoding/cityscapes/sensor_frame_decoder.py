@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 
 from paralleldomain.decoding.cityscapes.common import get_scene_labels_path, get_scene_path
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.annotation import (
     AnnotationType,
@@ -20,13 +21,8 @@ T = TypeVar("T")
 
 
 class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
-    def __init__(
-        self,
-        dataset_name: str,
-        scene_name: SceneName,
-        dataset_path: AnyPath,
-    ):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name)
+    def __init__(self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings):
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:

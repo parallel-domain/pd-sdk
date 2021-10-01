@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from iso8601 import iso8601
 
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.nuimages.common import NUIMAGES_CLASSES, NuImagesDataAccessMixin, load_table
@@ -17,7 +18,13 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
-    def __init__(self, dataset_path: Union[str, AnyPath], split_name: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        settings: Optional[DecoderSettings] = None,
+        split_name: Optional[str] = None,
+        **kwargs,
+    ):
         """Decodes a NuImages dataset
 
         Args:
@@ -25,19 +32,23 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             split: Split to use within this dataset. Defaults to v1.0-train.
             Options are [v1.0-mini, v1.0-test, v1.0-train, v1.0-val].
         """
+        self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if split_name is None:
             split_name = "v1.0-train"
         self.split_name = split_name
         dataset_name = f"NuImages-{split_name}"
-        DatasetDecoder.__init__(self=self, dataset_name=dataset_name)
+        DatasetDecoder.__init__(self=self, dataset_name=dataset_name, settings=settings)
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
         return NuImagesSceneDecoder(
-            dataset_path=self._dataset_path, dataset_name=self.dataset_name, split_name=self.split_name
+            dataset_path=self._dataset_path,
+            dataset_name=self.dataset_name,
+            split_name=self.split_name,
+            settings=self.settings,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -66,9 +77,11 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
 
 
 class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
-    def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str):
+    def __init__(
+        self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, settings: DecoderSettings
+    ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path))
+        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path), settings=settings)
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
@@ -121,6 +134,7 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
             dataset_name=dataset_name,
             split_name=self.split_name,
             scene_name=scene_name,
+            settings=self.settings,
         )
 
     def _create_lidar_sensor_decoder(
@@ -136,6 +150,7 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
             dataset_name=dataset_name,
             split_name=self.split_name,
             scene_name=scene_name,
+            settings=self.settings,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
