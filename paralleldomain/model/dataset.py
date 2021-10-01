@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Set, TypeVar, Union
+from typing import Any, Dict, List, TypeVar, Union
 
 from paralleldomain.model.unordered_scene import UnorderedScene
 
@@ -11,9 +11,9 @@ except ImportError:
 
 import logging
 
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.type_aliases import SceneName
+from paralleldomain.model.type_aliases import SceneName, SensorName
 
 logger = logging.getLogger(__name__)
 TOrderBy = TypeVar("TOrderBy")
