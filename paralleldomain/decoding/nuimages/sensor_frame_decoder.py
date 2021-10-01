@@ -97,7 +97,6 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
                 if has_surface:
                     anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
                 if has_obj:
-
                     anno_types[AnnotationTypes.InstanceSegmentation2D] = "InstanceSegmentation2D"
                     anno_types[AnnotationTypes.BoundingBoxes2D] = "BoundingBoxes2D"
         return anno_types

@@ -10,14 +10,14 @@ from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 from test_paralleldomain.decoding.constants import (
     CITYSCAPES_DATASET_PATH_ENV,
-    DGB_DATASET_PATH_ENV,
+    DGP_DATASET_PATH_ENV,
     NUIMAGES_DATASET_PATH_ENV,
 )
 
 
 @pytest.fixture(
     params=[
-        ("dgp", DGB_DATASET_PATH_ENV, dict()),
+        ("dgp", DGP_DATASET_PATH_ENV, dict()),
         ("cityscapes", CITYSCAPES_DATASET_PATH_ENV, dict(splits=["test"])),
         ("nuimages", NUIMAGES_DATASET_PATH_ENV, dict(split="v1.0-mini")),
     ]
