@@ -23,8 +23,6 @@ class ClassDistributionInfo:
     class_instance_percentage: float
     class_pixel_count: int
     class_pixel_percentage: float
-    # class_point_cloud_point_count: int
-    # class_point_cloud_percentage: float
 
 
 class ClassDistribution:
