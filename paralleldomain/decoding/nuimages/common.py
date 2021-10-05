@@ -31,7 +31,7 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-_NU_IMAGES_DATA_MAX_SIZE = 2.0e9  # GB
+_NU_IMAGES_DATA_MAX_SIZE = 5.0e9  # GB
 cache_max_ram_usage_factor = float(
     os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_IMAGES_DATA_MAX_SIZE / psutil.virtual_memory().total)
 )  # use 2.0 GB by default
