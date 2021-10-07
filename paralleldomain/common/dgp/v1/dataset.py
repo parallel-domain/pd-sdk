@@ -1,15 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Dict, List
 
-import numpy as np
 from dataclasses_json import dataclass_json
 
 from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.scene import SceneFilesDTO
 from paralleldomain.common.dgp.v1.statistics import DatasetStatisticsDTO
 from paralleldomain.common.dgp.v1.timestamp import TimestampDTO
-from paralleldomain.common.dgp.v1.utils import LIST_NP_UINT32
 
 
 class DatasetSplitDTO(IntEnum):
@@ -35,7 +33,7 @@ class DatasetMetadataDTO:
     raw_path: str
     description: str
     origin: DatasetOriginDTO
-    available_annotation_types: List[np.uint32] = field(metadata=LIST_NP_UINT32)
+    available_annotation_types: List[int]
     statistics: DatasetStatisticsDTO
     frame_per_second: float
     metadata: AnyDTO

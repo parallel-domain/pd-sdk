@@ -1,12 +1,10 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Dict, List
 
-import numpy as np
 from mashumaro import DataClassDictMixin
 
 from paralleldomain.common.dgp.v1.geometry import PoseDTO
-from paralleldomain.common.dgp.v1.utils import DICT_STR_STR, NP_UINT32
 
 
 class AnnotationTypeDTO(IntEnum):
@@ -29,20 +27,20 @@ class AnnotationTypeDTO(IntEnum):
 
 @dataclass
 class BoundingBox2DDTO(DataClassDictMixin):
-    x: np.uint32 = field(metadata=NP_UINT32)
-    y: np.uint32 = field(metadata=NP_UINT32)
-    w: np.uint32 = field(metadata=NP_UINT32)
-    h: np.uint32 = field(metadata=NP_UINT32)
+    x: int
+    y: int
+    w: int
+    h: int
 
 
 @dataclass
 class BoundingBox2DAnnotationDTO(DataClassDictMixin):
-    class_id: np.uint32 = field(metadata=NP_UINT32)
+    class_id: int
     box: BoundingBox2DDTO
-    area: np.uint32 = field(metadata=NP_UINT32)
+    area: int
     iscrowd: bool
-    instance_id: np.uint32 = field(metadata=NP_UINT32)
-    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
+    instance_id: int
+    attributes: Dict[str, str]
 
 
 @dataclass
@@ -50,52 +48,52 @@ class BoundingBox3DDTO(DataClassDictMixin):
     pose: PoseDTO
     length: float
     height: float
-    occlusion: np.uint32 = field(metadata=NP_UINT32)
+    occlusion: int
     truncation: float
 
 
 @dataclass
 class BoundingBox3DAnnotationDTO(DataClassDictMixin):
-    class_id: np.uint32 = field(metadata=NP_UINT32)
+    class_id: int
     box: BoundingBox3DDTO
-    instance_id: np.uint32 = field(metadata=NP_UINT32)
-    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
-    num_points: np.uint32 = field(metadata=NP_UINT32)
+    instance_id: int
+    attributes: Dict[str, str]
+    num_points: int
 
 
 @dataclass
 class KeyPoint2DDTO(DataClassDictMixin):
-    x: np.uint32 = field(metadata=NP_UINT32)
-    y: np.uint32 = field(metadata=NP_UINT32)
+    x: int
+    y: int
 
 
 @dataclass
 class KeyPoint2DAnnotationDTO(DataClassDictMixin):
-    class_id: np.uint32 = field(metadata=NP_UINT32)
+    class_id: int
     point: KeyPoint2DDTO
-    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
+    attributes: Dict[str, str]
     key: str
 
 
 @dataclass
 class KeyLine2DAnnotationDTO(DataClassDictMixin):
-    class_id: np.uint32 = field(metadata=NP_UINT32)
+    class_id: int
     vertices: List[KeyPoint2DDTO]
-    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
+    attributes: Dict[str, str]
     key: str
 
 
 @dataclass
 class PolygonPoint2DDTO(DataClassDictMixin):
-    x: np.uint32 = field(metadata=NP_UINT32)
-    y: np.uint32 = field(metadata=NP_UINT32)
+    x: int
+    y: int
 
 
 @dataclass
 class Polygon2DAnnotationDTO(DataClassDictMixin):
-    class_id: np.uint32 = field(metadata=NP_UINT32)
+    class_id: int
     vertices: List[PolygonPoint2DDTO]
-    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
+    attributes: Dict[str, str]
 
 
 @dataclass
