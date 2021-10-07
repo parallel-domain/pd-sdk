@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Dict, List
 
-from dataclasses_json import dataclass_json
+import numpy as np
+from mashumaro import DataClassDictMixin
 
 from paralleldomain.common.dgp.v1.geometry import PoseDTO
+from paralleldomain.common.dgp.v1.utils import DICT_STR_STR, NP_UINT32
 
 
 class AnnotationTypeDTO(IntEnum):
@@ -25,112 +27,97 @@ class AnnotationTypeDTO(IntEnum):
     AGENT_BEHAVIOR = 14
 
 
-@dataclass_json
 @dataclass
-class BoundingBox2DDTO:
-    x: int
-    y: int
-    w: int
-    h: int
+class BoundingBox2DDTO(DataClassDictMixin):
+    x: np.uint32 = field(metadata=NP_UINT32)
+    y: np.uint32 = field(metadata=NP_UINT32)
+    w: np.uint32 = field(metadata=NP_UINT32)
+    h: np.uint32 = field(metadata=NP_UINT32)
 
 
-@dataclass_json
 @dataclass
-class BoundingBox2DAnnotationDTO:
-    class_id: int
+class BoundingBox2DAnnotationDTO(DataClassDictMixin):
+    class_id: np.uint32 = field(metadata=NP_UINT32)
     box: BoundingBox2DDTO
-    area: int
+    area: np.uint32 = field(metadata=NP_UINT32)
     iscrowd: bool
-    instance_id: int
-    attributes: Dict[str, str]
+    instance_id: np.uint32 = field(metadata=NP_UINT32)
+    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
 
 
-@dataclass_json
 @dataclass
-class BoundingBox3DDTO:
+class BoundingBox3DDTO(DataClassDictMixin):
     pose: PoseDTO
-    width: float
     length: float
     height: float
-    occlusion: int
+    occlusion: np.uint32 = field(metadata=NP_UINT32)
     truncation: float
 
 
-@dataclass_json
 @dataclass
-class BoundingBox3DAnnotationDTO:
-    class_id: int
+class BoundingBox3DAnnotationDTO(DataClassDictMixin):
+    class_id: np.uint32 = field(metadata=NP_UINT32)
     box: BoundingBox3DDTO
-    instance_id: int
-    attributes: Dict[str, str]
-    num_points: int
+    instance_id: np.uint32 = field(metadata=NP_UINT32)
+    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
+    num_points: np.uint32 = field(metadata=NP_UINT32)
 
 
-@dataclass_json
 @dataclass
-class KeyPoint2DDTO:
-    x: int
-    y: int
+class KeyPoint2DDTO(DataClassDictMixin):
+    x: np.uint32 = field(metadata=NP_UINT32)
+    y: np.uint32 = field(metadata=NP_UINT32)
 
 
-@dataclass_json
 @dataclass
-class KeyPoint2DAnnotationDTO:
-    class_id: int
+class KeyPoint2DAnnotationDTO(DataClassDictMixin):
+    class_id: np.uint32 = field(metadata=NP_UINT32)
     point: KeyPoint2DDTO
-    attributes: Dict[str, str]
+    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
     key: str
 
 
-@dataclass_json
 @dataclass
-class KeyLine2DAnnotationDTO:
-    class_id: int
+class KeyLine2DAnnotationDTO(DataClassDictMixin):
+    class_id: np.uint32 = field(metadata=NP_UINT32)
     vertices: List[KeyPoint2DDTO]
-    attributes: Dict[str, str]
+    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
     key: str
 
 
-@dataclass_json
 @dataclass
-class PolygonPoint2DDTO:
-    x: int
-    y: int
+class PolygonPoint2DDTO(DataClassDictMixin):
+    x: np.uint32 = field(metadata=NP_UINT32)
+    y: np.uint32 = field(metadata=NP_UINT32)
 
 
-@dataclass_json
 @dataclass
-class Polygon2DAnnotationDTO:
-    class_id: int
+class Polygon2DAnnotationDTO(DataClassDictMixin):
+    class_id: np.uint32 = field(metadata=NP_UINT32)
     vertices: List[PolygonPoint2DDTO]
-    attributes: Dict[str, str]
+    attributes: Dict[str, str] = field(metadata=DICT_STR_STR)
 
 
-@dataclass_json
 @dataclass
-class BoundingBox2DAnnotationsDTO:
+class BoundingBox2DAnnotationsDTO(DataClassDictMixin):
     annotations: List[BoundingBox2DAnnotationDTO]
 
 
-@dataclass_json
 @dataclass
-class BoundingBox3dAnnotationsDTO:
+class BoundingBox3dAnnotationsDTO(DataClassDictMixin):
     annotations: List[BoundingBox3DAnnotationDTO]
 
 
-@dataclass_json
 @dataclass
-class KeyPoint2DAnnotationsDTO:
+class KeyPoint2DAnnotationsDTO(DataClassDictMixin):
     annotations: List[KeyPoint2DAnnotationDTO]
 
 
-@dataclass_json
 @dataclass
-class KeyLine2DAnnotationsDTO:
+class KeyLine2DAnnotationsDTO(DataClassDictMixin):
     annotations: List[KeyLine2DAnnotationDTO]
 
 
-@dataclass_json
 @dataclass
-class Polygon2DAnnotationsDTO:
+class Polygon2DAnnotationsDTO(DataClassDictMixin):
     annotations: List[Polygon2DAnnotationDTO]
