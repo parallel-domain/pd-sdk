@@ -7,20 +7,23 @@ from paralleldomain.utilities.transformation import Transformation
 TransformType = TypeVar("TransformType", bound=Transformation)
 DGP_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 
-ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
-    "0": AnnotationTypes.BoundingBoxes2D,
-    "1": AnnotationTypes.BoundingBoxes3D,
-    "2": AnnotationTypes.SemanticSegmentation2D,
-    "3": AnnotationTypes.SemanticSegmentation3D,
-    "4": AnnotationTypes.InstanceSegmentation2D,
-    "5": AnnotationTypes.InstanceSegmentation3D,
-    "6": AnnotationTypes.Depth,
-    "7": AnnotationTypes.SurfaceNormals3D,
-    "8": AnnotationTypes.OpticalFlow,
-    "9": AnnotationTypes.SceneFlow,
-    "10": AnnotationTypes.SurfaceNormals2D,
-    "12": AnnotationTypes.Albedo2D,
-    "13": AnnotationTypes.MaterialProperties2D,
+ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
+    0: AnnotationTypes.BoundingBoxes2D,
+    1: AnnotationTypes.BoundingBoxes3D,
+    2: AnnotationTypes.SemanticSegmentation2D,
+    3: AnnotationTypes.SemanticSegmentation3D,
+    4: AnnotationTypes.InstanceSegmentation2D,
+    5: AnnotationTypes.InstanceSegmentation3D,
+    6: AnnotationTypes.Depth,
+    7: AnnotationTypes.SurfaceNormals3D,
+    8: AnnotationTypes.OpticalFlow,
+    9: AnnotationTypes.SceneFlow,
+    10: AnnotationTypes.KeyPoint2D,
+    11: AnnotationTypes.KeyLine2D,
+    12: AnnotationTypes.Polygon2D,
+    13: AnnotationTypes.SurfaceNormals2D,
+    15: AnnotationTypes.Albedo2D,
+    16: AnnotationTypes.MaterialProperties2D,
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
@@ -28,6 +31,7 @@ ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
 }
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP")
 
 
 class DirectoryName:
@@ -41,5 +45,9 @@ class DirectoryName:
     INSTANCE_SEGMENTATION_2D: str = "instance_segmentation_2d"
     SEMANTIC_SEGMENTATION_3D: str = "semantic_segmentation_3d"
     INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
+    KEY_POINT_2D: str = "key_point_2d"
+    KEY_LINE_2D: str = "key_line_2d"
+    POLYGON_2D: str = "polygon_2d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
+    MOTION_VECTORS_3D: str = "motion_vectors_3d"
     DEPTH: str = "depth"

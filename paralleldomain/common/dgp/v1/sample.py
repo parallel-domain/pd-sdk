@@ -3,8 +3,11 @@ from enum import Enum
 from typing import Dict, List
 
 from dataclasses_json import dataclass_json
+from mashumaro import DataClassDictMixin
+from mashumaro.config import TO_DICT_ADD_OMIT_NONE_FLAG, BaseConfig
 
 from paralleldomain.common.dgp.v1.any import AnyDTO
+from paralleldomain.common.dgp.v1.file_datum import FileDatumDTO
 from paralleldomain.common.dgp.v1.geometry import CameraIntrinsicsDTO, PoseDTO
 from paralleldomain.common.dgp.v1.identifiers import DatumIdDTO
 from paralleldomain.common.dgp.v1.image import ImageDTO
@@ -12,23 +15,26 @@ from paralleldomain.common.dgp.v1.point_cloud import PointCloudDTO
 from paralleldomain.common.dgp.v1.radar_point_cloud import RadarPointCloudDTO
 
 
-@dataclass_json
 @dataclass
-class SampleCalibrationDTO:
+class SampleCalibrationDTO(DataClassDictMixin):
     names: List[str]
     intrinsics: List[CameraIntrinsicsDTO]
     extrinsics: List[PoseDTO]
 
 
-class DatumValueDTO(Enum):
-    image = ImageDTO
-    point_cloud = PointCloudDTO
-    radar_point_cloud = RadarPointCloudDTO
-
-
-@dataclass_json
 @dataclass
-class DatumDTO:
+class DatumValueDTO(DataClassDictMixin):
+    image: ImageDTO = None
+    point_cloud: PointCloudDTO = None
+    file_datum: FileDatumDTO = None
+    radar_point_cloud: RadarPointCloudDTO = None
+
+    class Config(BaseConfig):
+        code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
+
+
+@dataclass
+class DatumDTO(DataClassDictMixin):
     id: DatumIdDTO
     key: str
     datum: DatumValueDTO
@@ -36,9 +42,8 @@ class DatumDTO:
     prev_key: str
 
 
-@dataclass_json
 @dataclass
-class SampleDTO:
+class SampleDTO(DataClassDictMixin):
     id: DatumIdDTO
     datum_keys: List[str]
     calibration_key: str

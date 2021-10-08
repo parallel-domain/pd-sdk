@@ -3,6 +3,7 @@ from enum import IntEnum
 from typing import Dict, List
 
 from dataclasses_json import dataclass_json
+from mashumaro import DataClassDictMixin
 
 from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.scene import SceneFilesDTO
@@ -22,9 +23,8 @@ class DatasetOriginDTO(IntEnum):
     INTERNAL = 1
 
 
-@dataclass_json
 @dataclass
-class DatasetMetadataDTO:
+class DatasetMetadataDTO(DataClassDictMixin):
     name: str
     version: str
     creation_date: TimestampDTO
@@ -39,8 +39,7 @@ class DatasetMetadataDTO:
     metadata: AnyDTO
 
 
-@dataclass_json
 @dataclass
-class SceneDatasetDTO:
+class SceneDatasetDTO(DataClassDictMixin):
     metadata: DatasetMetadataDTO
     scene_splits: Dict[DatasetSplitDTO, SceneFilesDTO]

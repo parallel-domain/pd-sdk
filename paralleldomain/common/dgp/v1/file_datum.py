@@ -2,19 +2,18 @@ from dataclasses import dataclass
 from typing import Dict
 
 from dataclasses_json import dataclass_json
+from mashumaro import DataClassDictMixin
 
 from paralleldomain.common.dgp.v1.any import AnyDTO
 
 
-@dataclass_json
 @dataclass
-class SelfDescribingFileDTO:
+class SelfDescribingFileDTO(DataClassDictMixin):
     filename: str
     schema: AnyDTO
 
 
-@dataclass_json
 @dataclass
-class FileDatumDTO:
+class FileDatumDTO(DataClassDictMixin):
     datum: SelfDescribingFileDTO
     annotations: Dict[str, AnyDTO]

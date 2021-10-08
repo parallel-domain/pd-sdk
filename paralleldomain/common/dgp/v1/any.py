@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 from dataclasses_json import dataclass_json
+from mashumaro import DataClassDictMixin
 
 
-@dataclass_json
 @dataclass
-class AnyDTO:
+class AnyDTO(DataClassDictMixin):
     type_url: str
     value: bytes

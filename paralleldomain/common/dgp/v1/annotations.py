@@ -4,7 +4,9 @@ from typing import Dict, List
 
 from mashumaro import DataClassDictMixin
 
-from paralleldomain.common.dgp.v1.geometry import PoseDTO
+from paralleldomain.common.dgp.v1.geometry import PoseDTO, QuaternionDTO, Vector3DTO
+from paralleldomain.common.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
+from paralleldomain.model.annotation import BoundingBox2D, BoundingBox3D
 
 
 class AnnotationTypeDTO(IntEnum):
@@ -42,10 +44,29 @@ class BoundingBox2DAnnotationDTO(DataClassDictMixin):
     instance_id: int
     attributes: Dict[str, str]
 
+    @classmethod
+    def from_bounding_box(cls, box: BoundingBox2D) -> "BoundingBox2DAnnotationDTO":
+        try:
+            is_crowd = box.attributes["iscrowd"]
+            del box.attributes["iscrowd"]
+        except KeyError:
+            is_crowd = False
+        box_dto = cls(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            area=box.area,
+            iscrowd=is_crowd,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox2DDTO(x=box.x, y=box.y, w=box.width, h=box.height),
+        )
+
+        return box_dto
+
 
 @dataclass
 class BoundingBox3DDTO(DataClassDictMixin):
     pose: PoseDTO
+    width: float
     length: float
     height: float
     occlusion: int
@@ -59,6 +80,47 @@ class BoundingBox3DAnnotationDTO(DataClassDictMixin):
     instance_id: int
     attributes: Dict[str, str]
     num_points: int
+
+    @classmethod
+    def from_bounding_box(cls, box: BoundingBox3D) -> "BoundingBox3DAnnotationDTO":
+        try:
+            occlusion = box.attributes["occlusion"]
+            del box.attributes["occlusion"]
+        except KeyError:
+            occlusion = 0
+
+        try:
+            truncation = box.attributes["truncation"]
+            del box.attributes["truncation"]
+        except KeyError:
+            truncation = 0
+
+        box_dto = cls(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            num_points=box.num_points,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items()},
+            box=BoundingBox3DDTO(
+                width=box.width,
+                length=box.length,
+                height=box.height,
+                occlusion=occlusion,
+                truncation=truncation,
+                pose=PoseDTO(
+                    translation=Vector3DTO(
+                        x=box.pose.translation[0], y=box.pose.translation[1], z=box.pose.translation[2]
+                    ),
+                    rotation=QuaternionDTO(
+                        qw=box.pose.quaternion.w,
+                        qx=box.pose.quaternion.x,
+                        qy=box.pose.quaternion.y,
+                        qz=box.pose.quaternion.z,
+                    ),
+                ),
+            ),
+        )
+
+        return box_dto
 
 
 @dataclass

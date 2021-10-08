@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
-from dataclasses_json import dataclass_json
+from mashumaro import DataClassDictMixin
 
 from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.sample import DatumDTO, SampleDTO
 from paralleldomain.common.dgp.v1.statistics import DatasetStatisticsDTO
 from paralleldomain.common.dgp.v1.timestamp import TimestampDTO
+from paralleldomain.common.dgp.v1.utils import GenericDict
 
 
-@dataclass_json
 @dataclass
-class SceneDTO:
+class SceneDTO(DataClassDictMixin):
     name: str
     description: str
     log: str
@@ -23,13 +23,11 @@ class SceneDTO:
     statistics: DatasetStatisticsDTO
 
 
-@dataclass_json
 @dataclass
-class ScenesDTO:
+class ScenesDTO(DataClassDictMixin):
     scene: List[SceneDTO]
 
 
-@dataclass_json
 @dataclass
-class SceneFilesDTO:
+class SceneFilesDTO(DataClassDictMixin):
     filenames: List[str]
