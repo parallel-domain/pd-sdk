@@ -321,6 +321,7 @@ class NuImagesDataAccessMixin:
                 name = cat["name"]
                 index = name_to_index[name]
                 details.append(ClassDetail(name=name, id=index, meta=dict(description=cat["description"])))
+            details.append(ClassDetail(name="background", id=name_to_index["background"], meta=dict()))
             return details
 
         return self.nu_lazy_load_cache.get_item(
