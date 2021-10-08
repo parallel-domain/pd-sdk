@@ -60,6 +60,7 @@ class LazyLoadCache(Cache):
                     logger.warning(f"Cant store {key} in Cache since no more space is left! {str(e)}")
                     return value
                 wait_event.set()
+                return value
             return self[key]
 
     def __missing__(self, key):

@@ -35,6 +35,10 @@ def encode_int32_as_rgb8(mask: np.ndarray) -> np.ndarray:
     return np.concatenate([mask & 0xFF, mask >> 8 & 0xFF, mask >> 16 & 0xFF], axis=-1).astype(np.uint8)
 
 
+def encode_rgb8_as_int32(mask: np.ndarray) -> np.ndarray:
+    return (mask[..., 2:3] << 16) + (mask[..., 1:2] << 8) + mask[..., 0:1]
+
+
 def encode_2int16_as_rgba8(mask: np.ndarray) -> np.ndarray:
     return np.concatenate(
         [mask[..., [0]] >> 8, mask[..., [0]] & 0xFF, mask[..., [1]] >> 8, mask[..., [1]] & 0xFF], axis=-1
