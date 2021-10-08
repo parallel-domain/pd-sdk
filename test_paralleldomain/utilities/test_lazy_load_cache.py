@@ -1,6 +1,4 @@
-import collections
 import os
-from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from random import random
 from sys import getsizeof
@@ -19,7 +17,7 @@ def test_max_size():
             mocked_virtual_memory.return_value.free = 2 * getsizeof(mock.MagicMock()) + 1
             mocked_virtual_memory.return_value.total = 5 * getsizeof(mock.MagicMock())
 
-            cache = LazyLoadCache(max_ram_usage_factor=1.0)
+            cache = LazyLoadCache(max_ram_usage_factor=1.0, ram_keep_free_factor=0.0)
 
             def _pop_fake():
                 LazyLoadCache.popitem(cache)
