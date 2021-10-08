@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional, TypeVar
 
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -20,3 +21,10 @@ class LazyLoadPropertyMixin:
     @property
     def lazy_load_cache(self) -> LazyLoadCache:
         return LAZY_LOAD_CACHE
+
+
+@dataclass
+class DecoderSettings:
+    cache_images: bool = True
+    cache_point_clouds: bool = True
+    cache_annotations: bool = True

@@ -8,13 +8,15 @@ import iso8601
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
-from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.transformation import Transformation
@@ -52,10 +54,14 @@ class _DatasetDecoderMixin:
 
 class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
-        self, dataset_path: Union[str, AnyPath], custom_reference_to_box_bottom: Optional[Transformation] = None
+        self,
+        dataset_path: Union[str, AnyPath],
+        custom_reference_to_box_bottom: Optional[Transformation] = None,
+        settings: Optional[DecoderSettings] = None,
+        **kwargs,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        DatasetDecoder.__init__(self, dataset_name=str(dataset_path))
+        DatasetDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -66,6 +72,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         return DGPSceneDecoder(
             dataset_path=self._dataset_path,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -82,10 +89,11 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
+        settings: DecoderSettings,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
-        SceneDecoder.__init__(self, dataset_name=str(dataset_path))
+        SceneDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
 
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
@@ -103,6 +111,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _create_lidar_sensor_decoder(
@@ -115,6 +124,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
@@ -144,15 +154,16 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[str, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
+
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
             ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
             ontology_data = read_json(path=ontology_path)
 
             ontology_dto = OntologyFileDTO.from_dict(ontology_data)
-            ontologies[annotation_key] = ClassMap(
+            ontologies[ANNOTATION_TYPE_MAP[annotation_key]] = ClassMap(
                 classes=[
                     ClassDetail(
                         name=o.name,
@@ -174,6 +185,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             scene_samples=self._sample_by_index(scene_name=scene_name),
             scene_data=self._decode_scene_dto(scene_name=scene_name).data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     @staticmethod

@@ -57,16 +57,26 @@ def write_png(obj: np.ndarray, path: AnyPath):
     return path
 
 
-def read_png(path: AnyPath) -> np.ndarray:
+def read_image(path: AnyPath, convert_to_rgb: bool = True) -> np.ndarray:
     with path.open(mode="rb") as fp:
-        image_data = cv2.cvtColor(
-            src=cv2.imdecode(
-                buf=np.frombuffer(fp.read(), np.uint8),
-                flags=cv2.IMREAD_UNCHANGED,
-            ),
-            code=cv2.COLOR_BGRA2RGBA,
+        image_data = cv2.imdecode(
+            buf=np.frombuffer(fp.read(), np.uint8),
+            flags=cv2.IMREAD_UNCHANGED,
         )
+        if convert_to_rgb:
+            color_convert_code = cv2.COLOR_BGR2RGB
+            if image_data.shape[-1] == 4:
+                color_convert_code = cv2.COLOR_BGRA2RGBA
+
+            image_data = cv2.cvtColor(
+                src=image_data,
+                code=color_convert_code,
+            )
     return image_data
+
+
+def read_png(path: AnyPath) -> np.ndarray:
+    return read_image(path=path, convert_to_rgb=True)
 
 
 def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):

@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.3.4",
+    version="0.4.0",
     author=["Nisse Knudsen", "Phillip Thomas"],
     author_email=["nisse@paralleldomain.com", "phillip@paralleldomain.com"],
     packages=find_packages(exclude=["test_paralleldomain"]),
