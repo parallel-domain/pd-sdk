@@ -137,7 +137,8 @@ class LazyLoadCache(Cache):
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
         try:
-            key = next(iter(self.__order))
+            it = iter(list(self.__order.keys()))
+            key = next(it)
         except StopIteration:
             raise CacheEmptyException("%s is empty" % type(self).__name__)
         else:
