@@ -92,8 +92,8 @@ class TestScene:
         assert len(class_maps) == 2
         assert AnnotationTypes.SemanticSegmentation2D in class_maps
         assert AnnotationTypes.BoundingBoxes2D in class_maps
-        assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 25
-        assert len(class_maps[AnnotationTypes.BoundingBoxes2D].class_names) == 25
+        assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 26
+        assert len(class_maps[AnnotationTypes.BoundingBoxes2D].class_names) == 26
 
 
 class TestCamera:
