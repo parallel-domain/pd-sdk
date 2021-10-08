@@ -727,6 +727,33 @@ class SceneFlow(Annotation):
 
 
 @dataclass
+class KeyPoint2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class KeyLine2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
+class Polygon2D(Annotation):
+    """
+    Not Implemented yet!
+    """
+
+    ...
+
+
+@dataclass
 class MaterialProperties2D(Annotation):
     """
     Not Implemented yet!
@@ -795,5 +822,8 @@ class AnnotationTypes:
     SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D
     SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D
     SceneFlow: Type[SceneFlow] = SceneFlow
+    KeyPoint2D: Type[KeyPoint2D] = KeyPoint2D
+    KeyLine2D: Type[KeyLine2D] = KeyLine2D
+    Polygon2D: Type[Polygon2D] = Polygon2D
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D
     Albedo2D: Type[Albedo2D] = Albedo2D
