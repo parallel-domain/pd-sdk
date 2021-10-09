@@ -94,6 +94,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
         )
 
     def _decode_lidar_sensor_frame(
