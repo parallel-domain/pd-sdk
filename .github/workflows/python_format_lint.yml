@@ -1,4 +1,4 @@
-name: "black-flake8-pytest"
+name: "black-flake8-pytest-sphinx"
 on:
   pull_request:
     branches:
@@ -75,3 +75,20 @@ jobs:
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
           DATASET_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose
         shell: bash
+  sphinx-build:
+    needs: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Sphinx API Documentation
+        run: |
+          sudo apt-get update
+          sudo apt-get install pandoc
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install -r docs/requirements.txt
+          sphinx-build -b html docs/source docs/build --keep-going -W
+      - uses: actions/upload-artifact@v1
+        with:
+          name: API Documentation
+          path: docs/build/
