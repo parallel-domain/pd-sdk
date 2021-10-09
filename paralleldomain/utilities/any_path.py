@@ -1,13 +1,13 @@
 import logging
 import os
 import shutil
-import subprocess
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from s3path import S3Path
+from awscli.clidriver import create_clidriver
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,16 @@ class AnyPath:
         with ThreadPool(max_num_threads) as pool:
             pool.map(_copy, (i for i in self._backend.rglob("*")))
 
+    def sync(self, target: "AnyPath", delete=False):
+        if self.is_cloud_path or target.is_cloud_path:
+            aws_driver = create_clidriver()
+            command = ["s3", "sync", str(self), str(target), "--no-progress"]
+            if delete:
+                command += ["--delete"]
+            aws_driver.main(command)
+        else:
+            raise TypeError("Sync is only supported for cloud paths.")
+
     def relative_to(self, other: "AnyPath") -> "AnyPath":
         if isinstance(self._backend, type(other._backend)):
             rel_to = os.path.relpath(path=str(self), start=str(other))
@@ -88,10 +98,11 @@ class AnyPath:
 
     def copy(self, target: "AnyPath"):
         if self.is_cloud_path and target.is_cloud_path:
-            command = ["aws", "s3", "cp", str(self), str(target), "--no-progress"]
+            aws_driver = create_clidriver()
+            command = ["s3", "cp", str(self), str(target), "--no-progress"]
             if self.is_dir():
                 command += ["--recursive"]
-            subprocess.call(command)
+            aws_driver.main(command)
         else:
             with self.open("rb") as source_file, target.open("wb") as to_file:
                 shutil.copyfileobj(source_file, to_file)

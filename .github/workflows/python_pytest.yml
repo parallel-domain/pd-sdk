@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - 'staging/*'
 jobs:
   pytest:
     runs-on: ${{ matrix.os }}

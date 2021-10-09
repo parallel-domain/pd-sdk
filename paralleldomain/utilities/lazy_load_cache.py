@@ -30,10 +30,17 @@ class LazyLoadCache(Cache):
 
     _marker = object()
 
-    def __init__(self, max_ram_usage_factor: float = 0.8):
+    def __init__(
+        self,
+        cache_name: str = "Default pd-sdk Cache",
+        max_ram_usage_factor: float = 0.8,
+        ram_keep_free_factor: float = 0.05,
+    ):
+        self.ram_keep_free_bytes = int(ram_keep_free_factor * psutil.virtual_memory().total)
         self.max_ram_usage_factor = max_ram_usage_factor
+        self.cache_name = cache_name
         self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
-        logger.info(f"Initializing LazyLoadCache with a max_ram_usage_factor of {max_ram_usage_factor}.")
+        logger.info(f"Initializing LazyLoadCache '{cache_name}' with a max_ram_usage_factor of {max_ram_usage_factor}.")
         logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
         self._key_load_locks: Dict[Hashable, Tuple[RLock, Event]] = dict()
         self._create_key_lock = RLock()
@@ -53,6 +60,7 @@ class LazyLoadCache(Cache):
                     logger.warning(f"Cant store {key} in Cache since no more space is left! {str(e)}")
                     return value
                 wait_event.set()
+                return value
             return self[key]
 
     def __missing__(self, key):
@@ -118,7 +126,9 @@ class LazyLoadCache(Cache):
     def free_space(self) -> int:
         """The maximum size of the caches free space."""
         remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
-        free_space = int(max(0, min(psutil.virtual_memory().free, remaining_allowed_space)))
+        # always reserve 10% memory for other things
+        memory_free_space = max(0, psutil.virtual_memory().free - self.ram_keep_free_bytes)
+        free_space = int(max(0, min(memory_free_space, remaining_allowed_space)))
 
         if SHOW_CACHE_LOGS:
             logger.debug(f"current cache free space {naturalsize(free_space)}")
@@ -127,7 +137,8 @@ class LazyLoadCache(Cache):
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
         try:
-            key = next(iter(self.__order))
+            it = iter(list(self.__order.keys()))
+            key = next(it)
         except StopIteration:
             raise CacheEmptyException("%s is empty" % type(self).__name__)
         else:
@@ -169,17 +180,18 @@ class LazyLoadCache(Cache):
             #     size += getsizeof(v)
         elif isinstance(value, list):
             for i in value:
-                size += getsizeof(i)
+                size += LazyLoadCache.getsizeof(i)
         elif isinstance(value, dict):
             for k, v in value.items():
-                size += getsizeof(v)
+                size += LazyLoadCache.getsizeof(v)
         elif isinstance(value, np.ndarray):
             size = value.nbytes
-        else:
-            pass
         return size
 
 
 cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
+ram_keep_free_factor = float(os.environ.get("CACHE_KEEP_FREE_FACTOR", 0.05))  # 10% free space max
 
-LAZY_LOAD_CACHE = LazyLoadCache(max_ram_usage_factor=cache_max_ram_usage_factor)
+LAZY_LOAD_CACHE = LazyLoadCache(
+    max_ram_usage_factor=cache_max_ram_usage_factor, ram_keep_free_factor=ram_keep_free_factor
+)
