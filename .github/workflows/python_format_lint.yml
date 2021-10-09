@@ -1,8 +1,9 @@
-name: "black-flake8"
+name: "black-flake8-pytest"
 on:
   pull_request:
     branches:
       - main
+      - 'staging/*'
 jobs:
   black-format:
     # Check if the PR is not from a fork.
