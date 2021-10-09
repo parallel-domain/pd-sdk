@@ -76,6 +76,7 @@ jobs:
           DATASET_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose
         shell: bash
   sphinx-build:
+    needs: pytest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
