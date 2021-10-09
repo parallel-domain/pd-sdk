@@ -517,6 +517,36 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<p>Alternatively you can also use the decode_dataset helper method.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.helper</span> <span class="kn">import</span> <span class="n">decode_dataset</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.decoding.common</span> <span class="kn">import</span> <span class="n">DecoderSettings</span>
+
+<span class="c1"># To deactivate caching of certain data types use the DecoderSettings</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">DecoderSettings</span><span class="p">(</span><span class="n">cache_images</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># decode dgp dataset</span>
+<span class="n">dgp_dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">decode_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">dataset_format</span><span class="o">=</span><span class="s2">&quot;dgp&quot;</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>If you want to load a dataset which is stored in Cityscapes or NuImages format simply change the dataset_format to “cityscapes” or “nuimages”:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nu_images_dataset_path</span> <span class="o">=</span> <span class="s2">&quot;some/path/to/a/nuimages/root/folder&quot;</span>
+<span class="n">nu_images_dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">decode_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="n">nu_images_dataset_path</span><span class="p">,</span> <span class="n">dataset_format</span><span class="o">=</span><span class="s2">&quot;nuimages&quot;</span><span class="p">)</span>
+
+<span class="n">cityscapes_dataset_path</span> <span class="o">=</span> <span class="s2">&quot;some/path/to/a/cityscapes/root/folder&quot;</span>
+<span class="n">cityscapes_dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">decode_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="n">nu_images_dataset_path</span><span class="p">,</span> <span class="n">dataset_format</span><span class="o">=</span><span class="s2">&quot;cityscapes&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="Dataset-Information">
 <h2>Dataset Information<a class="headerlink" href="#Dataset-Information" title="Permalink to this headline">¶</a></h2>
 <p>Now that the dataset information has been loaded, we query a couple of metadata from it:</p>
@@ -1122,7 +1152,7 @@ Below is an image with 4 channels and resolution 1920x1080 sqpx
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../../_images/tutorial_general_general_usage_40_1.png" src="../../_images/tutorial_general_general_usage_40_1.png" />
+<img alt="../../_images/tutorial_general_general_usage_44_1.png" src="../../_images/tutorial_general_general_usage_44_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1192,7 +1222,7 @@ Text(0.5, 1.0, &#39;lidar_front&#39;)
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../../_images/tutorial_general_general_usage_42_1.png" src="../../_images/tutorial_general_general_usage_42_1.png" />
+<img alt="../../_images/tutorial_general_general_usage_46_1.png" src="../../_images/tutorial_general_general_usage_46_1.png" />
 </div>
 </div>
 <p>In the scatter plot above we can see that the test point cloud is quite sparse (in fact it has only 3 lasers vertically). Nevertheless, outlines of buildings and objects are clearly visible. Also, there appears to be a couple of highly reflective object in the ego-vehicle’s proximity. By applying the LiDAR’s extrinsic, we have put (0,0,0) to the ego-vehicle’s reference point - here it is the center of the bottom-face.</p>

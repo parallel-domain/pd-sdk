@@ -250,14 +250,18 @@
 <span id="paralleldomain-utilities-projection"></span><h1>paralleldomain.utilities.projection<a class="headerlink" href="#module-paralleldomain.utilities.projection" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="paralleldomain.utilities.projection.project_points_3d_to_2d">
-<span class="sig-name descname"><span class="pre">project_points_3d_to_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera_frame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_3d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.project_points_3d_to_2d" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">project_points_3d_to_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_3d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.project_points_3d_to_2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Projects an array of 3D points in Cartesian coordinates onto an image plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>camera_frame</strong> (<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><em>paralleldomain.model.sensor.SensorFrame</em></a>) – The camera frame the points will be projected onto.</p></li>
+<li><p><strong>k_matrix</strong> (<em>numpy.ndarray</em>) – Camera intrinsic matrix. Definition can be found in
+<a class="reference external" href="https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html">OpenCV documentation</a>.</p></li>
+<li><p><strong>distortion_parameters</strong> (<em>numpy.ndarray</em>) – Array of applicable distortion parameters for distortion model.</p></li>
+<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite> or <cite>opencv_fisheye</cite>.
+More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
 <li><p><strong>points_3d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx3) containing the points.
-Points must be already in the selected camera frame’s coordinate system.</p></li>
+Points must be already in the camera’s coordinate system.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
