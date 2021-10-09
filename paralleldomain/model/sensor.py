@@ -9,6 +9,7 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
+from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
 from paralleldomain.utilities.transformation import Transformation
@@ -33,8 +34,8 @@ class CameraModel:
             `OpenCV Fisheye documentation <https://docs.opencv.org/4.5.3/db/d58/group__calib3d__fisheye.html>`_
     """
 
-    OPENCV_PINHOLE: str = "opencv_pinhole"
-    OPENCV_FISHEYE: str = "opencv_fisheye"
+    OPENCV_PINHOLE: str = CAMERA_MODEL_OPENCV_PINHOLE
+    OPENCV_FISHEYE: str = CAMERA_MODEL_OPENCV_FISHEYE
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):

@@ -1,16 +1,22 @@
 import cv2
 import numpy as np
 
-from paralleldomain.model.sensor import CameraModel, SensorFrame
+from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE
 
 
-def project_points_3d_to_2d(camera_frame: SensorFrame, points_3d: np.ndarray) -> np.ndarray:
+def project_points_3d_to_2d(
+    k_matrix: np.ndarray, distortion_parameters: np.ndarray, camera_model: str, points_3d: np.ndarray
+) -> np.ndarray:
     """Projects an array of 3D points in Cartesian coordinates onto an image plane.
 
     Args:
-        camera_frame: The camera frame the points will be projected onto.
+        k_matrix: Camera intrinsic matrix. Definition can be found in
+            `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
+        distortion_parameters: Array of applicable distortion parameters for distortion model.
+        camera_model: One of `opencv_pinhole` or `opencv_fisheye`.
+            More details in :obj:`~.model.sensor.CameraModel`.
         points_3d: A matrix with dimensions (nx3) containing the points.
-            Points must be already in the selected camera frame's coordinate system.
+            Points must be already in the camera's coordinate system.
 
     Returns:
         A matrix with dimensions (nx2) containing the point projections. :obj:`dtype` is :obj:`float` and values need
@@ -18,42 +24,15 @@ def project_points_3d_to_2d(camera_frame: SensorFrame, points_3d: np.ndarray) ->
         if they are on the image plane or outside.
     """
 
-    intrinsic = camera_frame.intrinsic
-    K = np.array(
-        [
-            [intrinsic.fx, intrinsic.skew, intrinsic.cx],
-            [0, intrinsic.fy, intrinsic.cy],
-            [0, 0, 1],
-        ]
-    )
-
     r_vec = t_vec = np.array([0, 0, 0]).astype(float)
+    k_matrix = k_matrix.reshape(3, 3)
+    distortion_parameters = distortion_parameters.reshape(-1)
 
-    if intrinsic.camera_model == CameraModel.OPENCV_PINHOLE:
-        D = np.array(
-            [
-                intrinsic.k1,
-                intrinsic.k2,
-                intrinsic.p1,
-                intrinsic.p2,
-                intrinsic.k3,
-                intrinsic.k4,
-                intrinsic.k5,
-                intrinsic.k6,
-            ]
-        )
-        uv, _ = cv2.projectPoints(points_3d, r_vec, t_vec, K, D)
-    elif intrinsic.camera_model == CameraModel.OPENCV_FISHEYE:
-        D = np.array(
-            [
-                intrinsic.k1,
-                intrinsic.k2,
-                intrinsic.k3,
-                intrinsic.k4,
-            ]
-        )
-        uv, _ = cv2.fisheye.projectPoints(points_3d, r_vec, t_vec, K, D)
+    if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
+        uv, _ = cv2.projectPoints(points_3d, r_vec, t_vec, k_matrix, distortion_parameters)
+    elif camera_model == CAMERA_MODEL_OPENCV_FISHEYE:
+        uv, _ = cv2.fisheye.projectPoints(points_3d, r_vec, t_vec, k_matrix, distortion_parameters)
     else:
-        raise ValueError(f"Unsupported camera model {intrinsic.camera_model}")
+        raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
 
     return uv.reshape(-1, 2)
