@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum, IntEnum
-from typing import Dict, List
+from enum import Enum
+from typing import Any, Dict, List
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
-from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.geometry import PoseDTO
 
 
@@ -32,11 +30,12 @@ class ChannelTypeDTO(Enum):
                 return member
 
 
+@dataclass_json
 @dataclass
-class PointCloudDTO(DataClassDictMixin):
+class PointCloudDTO:
     filename: str
     annotations: Dict[int, str]
-    metadata: Dict[str, AnyDTO]
+    metadata: Dict[str, Any]
     point_format: List[ChannelTypeDTO]
     point_fields: List[str]
     pose: PoseDTO

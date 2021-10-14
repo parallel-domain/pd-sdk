@@ -1,14 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
-from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
+from dataclasses_json import Undefined, config, dataclass_json
 
-from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.scene import SceneFilesDTO
 from paralleldomain.common.dgp.v1.statistics import DatasetStatisticsDTO
-from paralleldomain.common.dgp.v1.timestamp import TimestampDTO
+from paralleldomain.common.dgp.v1.utils import SkipNoneMixin
 
 
 class DatasetSplitDTO(IntEnum):
@@ -23,23 +21,25 @@ class DatasetOriginDTO(IntEnum):
     INTERNAL = 1
 
 
+@dataclass_json
 @dataclass
-class DatasetMetadataDTO(DataClassDictMixin):
+class DatasetMetadataDTO(SkipNoneMixin):
     name: str
     version: str
-    creation_date: TimestampDTO
+    creation_date: str
     creator: str
-    bucket_path: str
-    raw_path: str
     description: str
     origin: DatasetOriginDTO
     available_annotation_types: List[int]
-    statistics: DatasetStatisticsDTO
     frame_per_second: float
-    metadata: AnyDTO
+    metadata: Any
+    statistics: Optional[DatasetStatisticsDTO]
+    bucket_path: Optional[str]
+    raw_path: Optional[str]
 
 
+@dataclass_json
 @dataclass
-class SceneDatasetDTO(DataClassDictMixin):
+class SceneDatasetDTO:
     metadata: DatasetMetadataDTO
     scene_splits: Dict[DatasetSplitDTO, SceneFilesDTO]

@@ -321,6 +321,7 @@ class NuImagesDataAccessMixin:
                 name = cat["name"]
                 index = name_to_index[name]
                 details.append(ClassDetail(name=name, id=index, meta=dict(description=cat["description"])))
+            details.append(ClassDetail(name="background", id=name_to_index["background"], meta=dict()))
             return details
 
         return self.nu_lazy_load_cache.get_item(
@@ -369,6 +370,7 @@ def name_to_index_mapping(category: List[Dict[str, Any]]) -> Dict[str, int]:
     # Now map the vehicle.ego and flat.driveable_surface classes.
     name_to_index["flat.driveable_surface"] = 24
     name_to_index["vehicle.ego"] = 31
+    name_to_index["background"] = 0
 
     # Ensure that each class name is uniquely paired with a class index, and vice versa.
     assert len(name_to_index) == len(

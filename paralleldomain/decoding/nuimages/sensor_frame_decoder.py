@@ -182,6 +182,8 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         object_anns = sorted(object_anns, key=lambda k: k["token"])
 
         for i, ann in enumerate(object_anns, start=1):
+            if ann["mask"] is None:
+                continue
             mask = mask_decode(ann["mask"])
             instanceseg_mask[mask == 1] = i
 

@@ -1,40 +1,38 @@
+from abc import ABC
 from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
-from mashumaro.config import TO_DICT_ADD_OMIT_NONE_FLAG, BaseConfig
 
-from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.file_datum import FileDatumDTO
 from paralleldomain.common.dgp.v1.geometry import CameraIntrinsicsDTO, PoseDTO
 from paralleldomain.common.dgp.v1.identifiers import DatumIdDTO
 from paralleldomain.common.dgp.v1.image import ImageDTO
 from paralleldomain.common.dgp.v1.point_cloud import PointCloudDTO
 from paralleldomain.common.dgp.v1.radar_point_cloud import RadarPointCloudDTO
+from paralleldomain.common.dgp.v1.utils import SkipNoneMixin
 
 
+@dataclass_json
 @dataclass
-class SampleCalibrationDTO(DataClassDictMixin):
+class SampleCalibrationDTO:
     names: List[str]
     intrinsics: List[CameraIntrinsicsDTO]
     extrinsics: List[PoseDTO]
 
 
+@dataclass_json
 @dataclass
-class DatumValueDTO(DataClassDictMixin):
-    image: ImageDTO = None
-    point_cloud: PointCloudDTO = None
-    file_datum: FileDatumDTO = None
-    radar_point_cloud: RadarPointCloudDTO = None
-
-    class Config(BaseConfig):
-        code_generation_options = [TO_DICT_ADD_OMIT_NONE_FLAG]
+class DatumValueDTO(SkipNoneMixin):
+    image: Optional[ImageDTO] = None
+    point_cloud: Optional[PointCloudDTO] = None
+    file_datum: Optional[FileDatumDTO] = None
+    radar_point_cloud: Optional[RadarPointCloudDTO] = None
 
 
+@dataclass_json
 @dataclass
-class DatumDTO(DataClassDictMixin):
+class DatumDTO:
     id: DatumIdDTO
     key: str
     datum: DatumValueDTO
@@ -42,9 +40,10 @@ class DatumDTO(DataClassDictMixin):
     prev_key: str
 
 
+@dataclass_json
 @dataclass
-class SampleDTO(DataClassDictMixin):
+class SampleDTO:
     id: DatumIdDTO
     datum_keys: List[str]
     calibration_key: str
-    metadata: Dict[str, AnyDTO]
+    metadata: Dict[str, Any]

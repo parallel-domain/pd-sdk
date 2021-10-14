@@ -2,20 +2,21 @@ from dataclasses import dataclass
 from typing import List
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
 from paralleldomain.model.class_mapping import ClassMap
 
 
+@dataclass_json
 @dataclass
-class ColorDTO(DataClassDictMixin):
+class ColorDTO:
     r: int
     g: int
     b: int
 
 
+@dataclass_json
 @dataclass
-class OntologyItemDTO(DataClassDictMixin):
+class OntologyItemDTO:
     name: str
     id: int
     color: ColorDTO
@@ -23,8 +24,9 @@ class OntologyItemDTO(DataClassDictMixin):
     supercategory: str
 
 
+@dataclass_json
 @dataclass
-class OntologyDTO(DataClassDictMixin):
+class OntologyDTO:
     items: List[OntologyItemDTO]
 
     @classmethod

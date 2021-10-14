@@ -2,32 +2,35 @@ from dataclasses import dataclass
 from typing import Union
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
 
+@dataclass_json
 @dataclass
-class Vector3DTO(DataClassDictMixin):
+class Vector3DTO:
     x: float
     y: float
     z: float
 
 
+@dataclass_json
 @dataclass
-class QuaternionDTO(DataClassDictMixin):
+class QuaternionDTO:
     qx: float
     qy: float
     qz: float
     qw: float
 
 
+@dataclass_json
 @dataclass
-class PoseDTO(DataClassDictMixin):
+class PoseDTO:
     translation: Vector3DTO
     rotation: QuaternionDTO
 
 
+@dataclass_json
 @dataclass
-class CameraIntrinsicsDTO(DataClassDictMixin):
+class CameraIntrinsicsDTO:
     fx: float
     fy: float
     cx: float

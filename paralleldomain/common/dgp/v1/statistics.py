@@ -2,24 +2,26 @@ from dataclasses import dataclass
 from typing import List
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
 
+@dataclass_json
 @dataclass
-class ImageStatisticsDTO(DataClassDictMixin):
+class ImageStatisticsDTO:
     count: int
     mean: List[float]
     stddev: List[float]
 
 
+@dataclass_json
 @dataclass
-class PointCloudStatisticsDTO(DataClassDictMixin):
+class PointCloudStatisticsDTO:
     count: int
     mean: List[float]
     stddev: List[float]
 
 
+@dataclass_json
 @dataclass
-class DatasetStatisticsDTO(DataClassDictMixin):
+class DatasetStatisticsDTO:
     image_statistics: ImageStatisticsDTO
     pointcloud_statistics: PointCloudStatisticsDTO

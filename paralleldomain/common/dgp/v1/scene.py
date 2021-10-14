@@ -1,33 +1,34 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Any, Dict, List
 
-from mashumaro import DataClassDictMixin
+from dataclasses_json import dataclass_json
 
-from paralleldomain.common.dgp.v1.any import AnyDTO
 from paralleldomain.common.dgp.v1.sample import DatumDTO, SampleDTO
 from paralleldomain.common.dgp.v1.statistics import DatasetStatisticsDTO
 from paralleldomain.common.dgp.v1.timestamp import TimestampDTO
-from paralleldomain.common.dgp.v1.utils import GenericDict
 
 
+@dataclass_json
 @dataclass
-class SceneDTO(DataClassDictMixin):
+class SceneDTO:
     name: str
     description: str
     log: str
     samples: List[SampleDTO]
-    metadata: Dict[str, AnyDTO]
+    metadata: Dict[str, Any]
     data: List[DatumDTO]
     creation_date: TimestampDTO
     ontologies: Dict[int, str]
     statistics: DatasetStatisticsDTO
 
 
+@dataclass_json
 @dataclass
-class ScenesDTO(DataClassDictMixin):
+class ScenesDTO:
     scene: List[SceneDTO]
 
 
+@dataclass_json
 @dataclass
-class SceneFilesDTO(DataClassDictMixin):
+class SceneFilesDTO:
     filenames: List[str]

@@ -1,28 +1,14 @@
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, Iterator, List, TypeVar
+from typing import Dict, List
 
+import dataclasses_json
 import ujson
-from mashumaro import DataClassDictMixin
-from mashumaro.types import GenericSerializableType
-
-KT = TypeVar("KT", int, str)
-VT = TypeVar("VT", int, str)
+from dataclasses_json import DataClassJsonMixin
 
 
-class GenericDict(Dict[KT, VT], GenericSerializableType, DataClassDictMixin):
-    def _serialize(self, types) -> Dict[KT, VT]:
-        k_type, v_type = types
-        if k_type not in (int, str) or v_type not in (int, str):
-            raise TypeError
-        return {k_type(k): v_type(v) for k, v in self.items()}
-
-    @classmethod
-    def _deserialize(cls, value, types) -> "GenericDict[KT, VT]":
-        k_type, v_type = types
-        if k_type not in (int, str) or v_type not in (int, str):
-            raise TypeError
-        return cls({k_type(k): v_type(v) for k, v in value.items()})
+class SkipNoneMixin(DataClassJsonMixin):
+    dataclass_json_config = dataclasses_json.config(
+        exclude=lambda f: f is None,
+    )["dataclasses_json"]
 
 
 def _attribute_key_dump(obj: object) -> str:

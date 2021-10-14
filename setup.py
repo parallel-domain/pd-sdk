@@ -6,8 +6,8 @@ with open("requirements.txt") as f:
 setup(
     name="paralleldomain",
     version="0.4.0",
-    author=["Nisse Knudsen", "Phillip Thomas"],
-    author_email=["nisse@paralleldomain.com", "phillip@paralleldomain.com"],
+    author=["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow"],
+    author_email=["nisse@paralleldomain.com", "phillip@paralleldomain.com", "lars@paralleldomain.com"],
     packages=find_packages(exclude=["test_paralleldomain"]),
     package_data={"paralleldomain": ["py.typed"]},
     python_requires=">=3.6",

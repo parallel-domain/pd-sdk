@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Dict, List
 
-from mashumaro import DataClassDictMixin
+from dataclasses_json import dataclass_json
 
 from paralleldomain.common.dgp.v1.geometry import PoseDTO, QuaternionDTO, Vector3DTO
 from paralleldomain.common.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
@@ -27,16 +27,18 @@ class AnnotationTypeDTO(IntEnum):
     AGENT_BEHAVIOR = 14
 
 
+@dataclass_json
 @dataclass
-class BoundingBox2DDTO(DataClassDictMixin):
+class BoundingBox2DDTO:
     x: int
     y: int
     w: int
     h: int
 
 
+@dataclass_json
 @dataclass
-class BoundingBox2DAnnotationDTO(DataClassDictMixin):
+class BoundingBox2DAnnotationDTO:
     class_id: int
     box: BoundingBox2DDTO
     area: int
@@ -63,8 +65,9 @@ class BoundingBox2DAnnotationDTO(DataClassDictMixin):
         return box_dto
 
 
+@dataclass_json
 @dataclass
-class BoundingBox3DDTO(DataClassDictMixin):
+class BoundingBox3DDTO:
     pose: PoseDTO
     width: float
     length: float
@@ -73,8 +76,9 @@ class BoundingBox3DDTO(DataClassDictMixin):
     truncation: float
 
 
+@dataclass_json
 @dataclass
-class BoundingBox3DAnnotationDTO(DataClassDictMixin):
+class BoundingBox3DAnnotationDTO:
     class_id: int
     box: BoundingBox3DDTO
     instance_id: int
@@ -123,61 +127,71 @@ class BoundingBox3DAnnotationDTO(DataClassDictMixin):
         return box_dto
 
 
+@dataclass_json
 @dataclass
-class KeyPoint2DDTO(DataClassDictMixin):
+class KeyPoint2DDTO:
     x: int
     y: int
 
 
+@dataclass_json
 @dataclass
-class KeyPoint2DAnnotationDTO(DataClassDictMixin):
+class KeyPoint2DAnnotationDTO:
     class_id: int
     point: KeyPoint2DDTO
     attributes: Dict[str, str]
     key: str
 
 
+@dataclass_json
 @dataclass
-class KeyLine2DAnnotationDTO(DataClassDictMixin):
+class KeyLine2DAnnotationDTO:
     class_id: int
     vertices: List[KeyPoint2DDTO]
     attributes: Dict[str, str]
     key: str
 
 
+@dataclass_json
 @dataclass
-class PolygonPoint2DDTO(DataClassDictMixin):
+class PolygonPoint2DDTO:
     x: int
     y: int
 
 
+@dataclass_json
 @dataclass
-class Polygon2DAnnotationDTO(DataClassDictMixin):
+class Polygon2DAnnotationDTO:
     class_id: int
     vertices: List[PolygonPoint2DDTO]
     attributes: Dict[str, str]
 
 
+@dataclass_json
 @dataclass
-class BoundingBox2DAnnotationsDTO(DataClassDictMixin):
+class BoundingBox2DAnnotationsDTO:
     annotations: List[BoundingBox2DAnnotationDTO]
 
 
+@dataclass_json
 @dataclass
-class BoundingBox3dAnnotationsDTO(DataClassDictMixin):
+class BoundingBox3dAnnotationsDTO:
     annotations: List[BoundingBox3DAnnotationDTO]
 
 
+@dataclass_json
 @dataclass
-class KeyPoint2DAnnotationsDTO(DataClassDictMixin):
+class KeyPoint2DAnnotationsDTO:
     annotations: List[KeyPoint2DAnnotationDTO]
 
 
+@dataclass_json
 @dataclass
-class KeyLine2DAnnotationsDTO(DataClassDictMixin):
+class KeyLine2DAnnotationsDTO:
     annotations: List[KeyLine2DAnnotationDTO]
 
 
+@dataclass_json
 @dataclass
-class Polygon2DAnnotationsDTO(DataClassDictMixin):
+class Polygon2DAnnotationsDTO:
     annotations: List[Polygon2DAnnotationDTO]

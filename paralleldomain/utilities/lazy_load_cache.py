@@ -60,6 +60,7 @@ class LazyLoadCache(Cache):
                     logger.warning(f"Cant store {key} in Cache since no more space is left! {str(e)}")
                     return value
                 wait_event.set()
+                return value
             return self[key]
 
     def __missing__(self, key):
@@ -136,7 +137,8 @@ class LazyLoadCache(Cache):
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
         try:
-            key = next(iter(self.__order))
+            it = iter(list(self.__order.keys()))
+            key = next(it)
         except StopIteration:
             raise CacheEmptyException("%s is empty" % type(self).__name__)
         else:

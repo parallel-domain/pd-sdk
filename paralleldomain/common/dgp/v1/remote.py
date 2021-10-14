@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
 
+@dataclass_json
 @dataclass
-class RemotePathDTO(DataClassDictMixin):
+class RemotePathDTO:
     value: str
 
 
+@dataclass_json
 @dataclass
-class RemoteArtifactDTO(DataClassDictMixin):
+class RemoteArtifactDTO:
     url: RemotePathDTO
     sha1: str
     isdir: bool

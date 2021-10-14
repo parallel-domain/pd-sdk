@@ -3,11 +3,11 @@ from datetime import datetime
 from math import modf
 
 from dataclasses_json import dataclass_json
-from mashumaro import DataClassDictMixin
 
 
+@dataclass_json
 @dataclass
-class TimestampDTO(DataClassDictMixin):
+class TimestampDTO:
     seconds: int
     nanos: int
 
