@@ -13,12 +13,6 @@ from paralleldomain.common.dgp.v1 import ontology_pb2
 from paralleldomain.model.class_mapping import ClassMap
 
 
-class SkipNoneMixin(DataClassJsonMixin):
-    dataclass_json_config = dataclasses_json.config(
-        exclude=lambda f: f is None,
-    )["dataclasses_json"]
-
-
 def class_map_to_ontology_proto(class_map: ClassMap):
     return ontology_pb2.Ontology(
         items=[
@@ -36,24 +30,6 @@ def class_map_to_ontology_proto(class_map: ClassMap):
             for cid, cval in class_map.items()
         ]
     )
-
-
-def proto_to_dict(proto: Message):
-    return MessageToDict(
-        message=proto,
-        including_default_value_fields=True,
-        preserving_proto_field_name=True,
-        use_integers_for_enums=False,
-    )
-
-
-def timestamp_proto_to_timestamp(ts: timestamp_pb2.Timestamp):
-    return ts.seconds + (ts.nanos * 10 ** -9)
-
-
-def datetime_to_timestamp_proto(dt: datetime):
-    microseconds, seconds = map(int, modf(dt.timestamp()))
-    return timestamp_pb2.Timestamp(seconds=seconds, nanos=(microseconds * 1000))
 
 
 def _attribute_key_dump(obj: object) -> str:

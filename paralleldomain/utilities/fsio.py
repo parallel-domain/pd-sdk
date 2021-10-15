@@ -6,6 +6,9 @@ from typing import Dict, Iterable, List, Optional, Union
 import cv2
 import numpy as np
 import ujson
+from google.protobuf.descriptor_pool import DescriptorPool
+from google.protobuf.json_format import MessageToDict, MessageToJson, Parse, ParseDict
+from google.protobuf.message import Message
 
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -102,6 +105,66 @@ def read_npz(
             result[f] = npz_data[f]
 
     return result if len(result) != 1 else list(result.values())[0]
+
+
+def read_json_message(
+    obj: Message, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
+) -> Message:
+    with path.open("r") as fp:
+        json_data = ujson.load(fp)
+
+    result = ParseDict(
+        js_dict=json_data,
+        message=obj,
+        ignore_unknown_fields=ignore_unknown_fields,
+        descriptor_pool=descriptor_pool,
+    )
+
+    return result
+
+
+def write_json_message(
+    obj: Message,
+    path: AnyPath,
+    append_sha1: bool = False,
+    including_default_value_fields: bool = True,
+    preserving_proto_field_name: bool = True,
+    use_integer_for_enums: bool = False,
+    float_precision: int = None,
+    descriptor_pool: DescriptorPool = None,
+) -> AnyPath:
+    json_obj = ujson.dumps(
+        MessageToDict(
+            message=obj,
+            including_default_value_fields=including_default_value_fields,
+            preserving_proto_field_name=preserving_proto_field_name,
+            use_integers_for_enums=use_integer_for_enums,
+            descriptor_pool=descriptor_pool,
+            float_precision=float_precision,
+        ),
+        indent=2,
+        escape_forward_slashes=False,
+    )
+
+    if append_sha1:
+        # noinspection InsecureHash
+        json_obj_sha1 = hashlib.sha1(json_obj.encode()).hexdigest()
+        filename_sha1 = (
+            f"{json_obj_sha1}{path.stem}"
+            if path.stem == path.name  # only extension given, no filestem
+            else f"{path.stem}_{json_obj_sha1}{''.join(path.suffixes)}"
+        )
+        new_path = AnyPath(path.parts[0])
+        for p in path.parts[1:-1]:
+            new_path = new_path / p
+        path = new_path / filename_sha1
+
+    with path.open("w") as fp:
+        fp.write(json_obj)
+
+    logger.debug(f"Finished writing {str(path)}")
+
+    return path
 
 
 def relative_path(path: AnyPath, start: AnyPath) -> AnyPath:

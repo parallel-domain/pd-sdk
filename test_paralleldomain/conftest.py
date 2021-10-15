@@ -5,12 +5,22 @@ import pytest
 from paralleldomain import Scene
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
+from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
 from paralleldomain.model.dataset import Dataset
+from test_paralleldomain.decoding.constants import DGP_DATASET_PATH_ENV, DGP_V1_DATASET_PATH_ENV
 
 
-@pytest.fixture()
-def decoder() -> DatasetDecoder:
-    return DGPDatasetDecoder(dataset_path=os.environ["DATASET_PATH"])
+@pytest.fixture(
+    params=[
+        ("dgp", DGPDatasetDecoder, DGP_DATASET_PATH_ENV),
+        ("dgpv1", DGPV1DatasetDecoder, DGP_V1_DATASET_PATH_ENV),
+    ]
+)
+def decoder(request) -> DatasetDecoder:
+    dataset_format, decoder_class, path_env = request.param
+    if path_env not in os.environ:
+        pytest.skip()
+    return decoder_class(dataset_path=os.environ[path_env])
 
 
 @pytest.fixture()
