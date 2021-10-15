@@ -6,13 +6,13 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1 import dataset_pb2, metadata_pd_pb2, ontology_pb2, sample_pb2, scene_pb2
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.metadata_pd_pb2 import ParallelDomainSceneMetadata
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
-from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
-from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
+from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
+from paralleldomain.decoding.dgp.v1.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap

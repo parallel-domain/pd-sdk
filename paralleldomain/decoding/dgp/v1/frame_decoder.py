@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
+from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoPose

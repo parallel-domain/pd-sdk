@@ -10,8 +10,8 @@ import ujson
 from google.protobuf.json_format import ParseDict
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, sample_pb2
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,

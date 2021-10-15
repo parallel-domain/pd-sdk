@@ -5,7 +5,7 @@ from typing import Dict, List, Set
 
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
+from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
