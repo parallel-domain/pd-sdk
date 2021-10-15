@@ -1,5 +1,5 @@
 import abc
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from json import JSONDecodeError
@@ -78,7 +78,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         sample = self._get_current_frame_sample(frame_id=frame_id)
-        return sample.id.timestamp.ToDatetime()
+        return sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
@@ -210,14 +210,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
     ) -> geometry_pb2.Pose:
         calibration_dto = self._decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
-        index = calibration_dto.names.index(sensor_name)
+        index = next(i for i, v in enumerate(calibration_dto.names) if v == sensor_name)
         return calibration_dto.extrinsics[index]
 
     def _decode_intrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
     ) -> geometry_pb2.CameraIntrinsics:
         calibration_dto = self._decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
-        index = calibration_dto.names.index(sensor_name)
+        index = next(i for i, v in enumerate(calibration_dto.names) if v == sensor_name)
         return calibration_dto.intrinsics[index]
 
     def _decode_bounding_boxes_3d(

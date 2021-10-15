@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
@@ -81,7 +81,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
         dto = self._decode_dataset_dto()
-        anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
+        anno_types = [ANNOTATION_TYPE_MAP[a] for a in dto.metadata.available_annotation_types]
         return DatasetMeta(
             name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=dto.metadata
         )
@@ -131,7 +131,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return {str(sample.id.index): sample.id.timestamp.ToDatetime() for sample in scene_dto.samples}
+        return {
+            str(sample.id.index): sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
+            for sample in scene_dto.samples
+        }
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
@@ -153,11 +156,11 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.image}))
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.HasField("image")}))
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
+        return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.HasField("point_cloud")}))
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Dict, List
 
@@ -48,7 +48,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         sample = self.scene_samples[frame_id]
-        return sample.id.timestamp.ToDatetime()
+        return sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
 
     @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
