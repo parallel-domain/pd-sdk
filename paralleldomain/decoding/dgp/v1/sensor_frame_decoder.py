@@ -78,7 +78,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         sample = self._get_current_frame_sample(frame_id=frame_id)
-        return sample.id.timestamp
+        return sample.id.timestamp.ToDatetime()
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
@@ -204,7 +204,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> sample_pb2.SampleCalibration:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
         cal_dict = read_json(path=calibration_path)
-        return ParseDict(cal_dict, sample_pb2.SampleCalibration)
+        return ParseDict(cal_dict, sample_pb2.SampleCalibration())
 
     def _decode_extrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
@@ -225,14 +225,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     ) -> annotations_pb2.BoundingBox3DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         bb_dict = read_json(path=annotation_path)
-        return ParseDict(bb_dict, annotations_pb2.BoundingBox3DAnnotations)
+        return ParseDict(bb_dict, annotations_pb2.BoundingBox3DAnnotations())
 
     def _decode_bounding_boxes_2d(
         self, scene_name: str, annotation_identifier: str
     ) -> annotations_pb2.BoundingBox2DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         bb_dict = read_json(path=annotation_path)
-        return ParseDict(bb_dict, annotations_pb2.BoundingBox2DAnnotations)
+        return ParseDict(bb_dict, annotations_pb2.BoundingBox2DAnnotations())
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

@@ -1,9 +1,8 @@
-import abc
 from datetime import datetime
 from functools import lru_cache
 from typing import Dict, List
 
-from paralleldomain.common.dgp.v1 import sample_pb2, scene_pb2
+from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
@@ -49,7 +48,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         sample = self.scene_samples[frame_id]
-        return sample.id.timestamp
+        return sample.id.timestamp.ToDatetime()
 
     @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
