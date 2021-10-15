@@ -784,7 +784,6 @@ class DGPSceneEncoder(SceneEncoder):
         scene_samples = []
         for fid in self._scene.frame_ids:
             frame = self._scene.get_frame(fid)
-            fid_int = int(fid)
             frame_data = [
                 scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]
             ]
