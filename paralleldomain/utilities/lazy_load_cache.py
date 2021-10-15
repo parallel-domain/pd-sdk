@@ -127,7 +127,8 @@ class LazyLoadCache(Cache):
         """The maximum size of the caches free space."""
         remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
         # always reserve 10% memory for other things
-        memory_free_space = max(0, psutil.virtual_memory().free - self.ram_keep_free_bytes)
+        free_space = psutil.virtual_memory().total - psutil.virtual_memory().used
+        memory_free_space = max(0, free_space - self.ram_keep_free_bytes)
         free_space = int(max(0, min(memory_free_space, remaining_allowed_space)))
 
         if SHOW_CACHE_LOGS:
