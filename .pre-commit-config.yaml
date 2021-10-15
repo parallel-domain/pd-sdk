@@ -43,3 +43,4 @@ repos:
     hooks:
       - id: flake8
         args: [ "--max-line-length=120", "--ignore=F401,F407,W503" ]
+        exclude: "paralleldomain/common/dgp/v1"

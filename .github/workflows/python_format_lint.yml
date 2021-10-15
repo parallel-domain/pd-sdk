@@ -43,6 +43,7 @@ jobs:
         with:
           max_line_length: 120
           ignore: "F401,F407,W503"
+          exclude: "paralleldomain/common/dgp/v1"
   pytest:
     needs: flake8-lint
     runs-on: ${{ matrix.os }}
