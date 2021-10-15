@@ -106,16 +106,10 @@ class SensorFrame(Generic[TDateTime]):
 
     @property
     def point_cloud(self) -> Optional[PointCloud]:
-        """
-        Deprecated. Remains atm for 0.2.0 compatibility
-        """
         return None
 
     @property
     def image(self) -> Optional[Image]:
-        """
-        Deprecated. Remains atm for 0.2.0 compatibility
-        """
         return None
 
     @property
