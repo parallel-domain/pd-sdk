@@ -3,29 +3,33 @@ import hashlib
 import logging
 import uuid
 from collections import defaultdict
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future
 from datetime import datetime
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import numpy as np
+from google.protobuf import any_pb2, timestamp_pb2
 
 from paralleldomain import Scene
-from paralleldomain.common.dgp.v1.annotations import (
-    BoundingBox2DAnnotationDTO,
-    BoundingBox2DAnnotationsDTO,
-    BoundingBox3DAnnotationDTO,
-    BoundingBox3dAnnotationsDTO,
+from paralleldomain.common.dgp.v0.dtos import _attribute_value_dump
+from paralleldomain.common.dgp.v1 import (
+    annotations_pb2,
+    geometry_pb2,
+    identifiers_pb2,
+    image_pb2,
+    metadata_pd_pb2,
+    point_cloud_pb2,
+    sample_pb2,
+    scene_pb2,
 )
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, POINT_FORMAT, DirectoryName
-from paralleldomain.common.dgp.v1.geometry import CameraIntrinsicsDTO, PoseDTO, QuaternionDTO, Vector3DTO
-from paralleldomain.common.dgp.v1.identifiers import DatumIdDTO
-from paralleldomain.common.dgp.v1.image import ImageDTO
-from paralleldomain.common.dgp.v1.ontology import OntologyDTO
-from paralleldomain.common.dgp.v1.point_cloud import ChannelTypeDTO, PointCloudDTO
-from paralleldomain.common.dgp.v1.sample import DatumDTO, DatumValueDTO, SampleCalibrationDTO, SampleDTO
-from paralleldomain.common.dgp.v1.scene import SceneDTO
-from paralleldomain.common.dgp.v1.statistics import DatasetStatisticsDTO, ImageStatisticsDTO, PointCloudStatisticsDTO
-from paralleldomain.common.dgp.v1.timestamp import TimestampDTO
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v1.utils import (
+    _attribute_key_dump,
+    class_map_to_ontology_proto,
+    datetime_to_timestamp_proto,
+    proto_to_dict,
+    timestamp_proto_to_timestamp,
+)
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.transformer import (
     BoundingBox2DTransformer,
@@ -182,13 +186,28 @@ class DGPSceneEncoder(SceneEncoder):
         except ValueError:  # Some renderings can exclude LiDAR from having Depth annotations
             return None
 
-    def _encode_bounding_box_2d(self, box: BoundingBox2D) -> BoundingBox2DAnnotationDTO:
-        return BoundingBox2DAnnotationDTO.from_bounding_box(box=box)
+    def _encode_bounding_box_2d(self, box: BoundingBox2D) -> annotations_pb2.BoundingBox2DAnnotation:
+        try:
+            is_crowd = box.attributes["iscrowd"]
+        except KeyError:
+            is_crowd = False
+        box_proto = annotations_pb2.BoundingBox2DAnnotation(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            area=box.area,
+            iscrowd=is_crowd,
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in box.attributes.items() if k != "iscrowd"
+            },
+            box=annotations_pb2.BoundingBox2D(x=box.x, y=box.y, w=box.width, h=box.height),
+        )
+
+        return box_proto
 
     def _encode_bounding_boxes_2d(self, sensor_frame: CameraSensorFrame[datetime]) -> Future:
         boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
         box2d_dto = BoundingBox2DTransformer.transform(objects=[self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
-        boxes2d_dto = BoundingBox2DAnnotationsDTO(annotations=box2d_dto)
+        boxes2d_dto = annotations_pb2.BoundingBox2DAnnotations(annotations=box2d_dto)
 
         output_path = (
             self._output_path
@@ -196,15 +215,56 @@ class DGPSceneEncoder(SceneEncoder):
             / sensor_frame.sensor_name
             / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
-        return self._run_async(func=fsio.write_json, obj=boxes2d_dto.to_dict(), path=output_path, append_sha1=True)
+        return self._run_async(
+            func=fsio.write_json, obj=proto_to_dict(proto=boxes2d_dto), path=output_path, append_sha1=True
+        )
 
-    def _encode_bounding_box_3d(self, box: BoundingBox3D) -> BoundingBox3DAnnotationDTO:
-        return BoundingBox3DAnnotationDTO.from_bounding_box(box=box)
+    def _encode_bounding_box_3d(self, box: BoundingBox3D) -> annotations_pb2.BoundingBox3DAnnotation:
+        try:
+            occlusion = box.attributes["occlusion"]
+        except KeyError:
+            occlusion = 0
+
+        try:
+            truncation = box.attributes["truncation"]
+        except KeyError:
+            truncation = 0
+
+        box_proto = annotations_pb2.BoundingBox3DAnnotation(
+            class_id=box.class_id,
+            instance_id=box.instance_id,
+            num_points=box.num_points,
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v)
+                for k, v in box.attributes.items()
+                if k not in ("occlusion", "truncation")
+            },
+            box=annotations_pb2.BoundingBox3D(
+                width=box.width,
+                length=box.length,
+                height=box.height,
+                occlusion=occlusion,
+                truncation=truncation,
+                pose=geometry_pb2.Pose(
+                    translation=geometry_pb2.Vector3(
+                        x=box.pose.translation[0], y=box.pose.translation[1], z=box.pose.translation[2]
+                    ),
+                    rotation=geometry_pb2.Quaternion(
+                        qw=box.pose.quaternion.w,
+                        qx=box.pose.quaternion.x,
+                        qy=box.pose.quaternion.y,
+                        qz=box.pose.quaternion.z,
+                    ),
+                ),
+            ),
+        )
+
+        return box_proto
 
     def _encode_bounding_boxes_3d(self, sensor_frame: SensorFrame[datetime]) -> Future:
         boxes3d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
         box3d_dto = BoundingBox3DTransformer.transform(objects=[self._encode_bounding_box_3d(b) for b in boxes3d.boxes])
-        boxes3d_dto = BoundingBox3dAnnotationsDTO(annotations=box3d_dto)
+        boxes3d_dto = annotations_pb2.BoundingBox3DAnnotations(annotations=box3d_dto)
 
         output_path = (
             self._output_path
@@ -212,7 +272,9 @@ class DGPSceneEncoder(SceneEncoder):
             / sensor_frame.sensor_name
             / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
-        return self._run_async(func=fsio.write_json, obj=boxes3d_dto.to_dict(), path=output_path, append_sha1=True)
+        return self._run_async(
+            func=fsio.write_json, obj=proto_to_dict(proto=boxes3d_dto), path=output_path, append_sha1=True
+        )
 
     def _process_semantic_segmentation_2d(
         self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False
@@ -365,7 +427,7 @@ class DGPSceneEncoder(SceneEncoder):
         camera_name: str,
         camera_encoding_futures: Set[Future],
         # camera_encoding_results: Iterator[Tuple[str, Dict[str, Dict[str, Future]]]],
-    ) -> Tuple[str, Dict[str, DatumDTO]]:
+    ) -> Tuple[str, Dict[str, sample_pb2.Datum]]:
         scene_data_dtos = []
 
         camera = self._scene.get_sensor(camera_name)
@@ -375,21 +437,21 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
 
-            scene_datum_dto = ImageDTO(
+            scene_datum_dto = image_pb2.Image(
                 filename=self._relative_path(sensor_data[DirectoryName.RGB].result()).as_posix(),
                 height=camera_frame.image.height,
                 width=camera_frame.image.width,
                 channels=4,
                 annotations={
-                    k: self._relative_path(v.result()).as_posix() for k, v in annotations.items() if v is not None
+                    int(k): self._relative_path(v.result()).as_posix() for k, v in annotations.items() if v is not None
                 },
-                pose=PoseDTO(
-                    translation=Vector3DTO(
+                pose=geometry_pb2.Pose(
+                    translation=geometry_pb2.Vector3(
                         x=camera_frame.pose.translation[0],
                         y=camera_frame.pose.translation[1],
                         z=camera_frame.pose.translation[2],
                     ),
-                    rotation=QuaternionDTO(
+                    rotation=geometry_pb2.Quaternion(
                         qw=camera_frame.pose.quaternion.w,
                         qx=camera_frame.pose.quaternion.x,
                         qy=camera_frame.pose.quaternion.y,
@@ -400,15 +462,15 @@ class DGPSceneEncoder(SceneEncoder):
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
-                DatumDTO(
-                    id=DatumIdDTO(
+                sample_pb2.Datum(
+                    id=identifiers_pb2.DatumId(
                         log="",
                         name=camera_frame.sensor_name,
-                        timestamp=TimestampDTO.from_datetime(dt=camera_frame.date_time),
-                        index=str(camera_frame.frame_id),
+                        timestamp=timestamp_pb2.Timestamp().FromDatetime(camera_frame.date_time),
+                        index=int(camera_frame.frame_id),
                     ),
                     key="",
-                    datum=DatumValueDTO(image=scene_datum_dto),
+                    datum=sample_pb2.DatumValue(image=scene_datum_dto),
                     next_key="",
                     prev_key="",
                 )
@@ -418,7 +480,9 @@ class DGPSceneEncoder(SceneEncoder):
         # noinspection InsecureHash
         keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
-        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
+        for idx, scene_data_dto in enumerate(
+            sorted(scene_data_dtos, key=lambda x: timestamp_proto_to_timestamp(x.id.timestamp))
+        ):
             prev_key = keys[idx - 1] if idx > 0 else ""
             key = keys[idx]
             next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
@@ -427,13 +491,13 @@ class DGPSceneEncoder(SceneEncoder):
             scene_data_dto.key = key
             scene_data_dto.next_key = next_key
 
-        return camera_name, {sd.id.index: sd for sd in scene_data_dtos}
+        return camera_name, {str(sd.id.index): sd for sd in scene_data_dtos}
 
     def _process_encode_lidar_results(
         self,
         lidar_name: str,
         lidar_encoding_futures: Set[Future],
-    ) -> Tuple[str, Dict[str, DatumDTO]]:
+    ) -> Tuple[str, Dict[str, sample_pb2.Datum]]:
         scene_data_dtos = []
 
         lidar = self._scene.get_sensor(lidar_name)
@@ -443,19 +507,19 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
 
-            scene_datum_dto = PointCloudDTO(
+            scene_datum_dto = point_cloud_pb2.PointCloud(
                 filename=self._relative_path(sensor_data[DirectoryName.POINT_CLOUD].result()).as_posix(),
-                point_format=[ChannelTypeDTO(pf).value for pf in POINT_FORMAT],
+                point_format=[getattr(point_cloud_pb2.PointCloud.ChannelType, pf) for pf in POINT_FORMAT],
                 annotations={
-                    k: self._relative_path(v.result()).as_posix() for k, v in annotations.items() if v is not None
+                    int(k): self._relative_path(v.result()).as_posix() for k, v in annotations.items() if v is not None
                 },
-                pose=PoseDTO(
-                    translation=Vector3DTO(
+                pose=geometry_pb2.Pose(
+                    translation=geometry_pb2.Vector3(
                         x=lidar_frame.pose.translation[0],
                         y=lidar_frame.pose.translation[1],
                         z=lidar_frame.pose.translation[2],
                     ),
-                    rotation=QuaternionDTO(
+                    rotation=geometry_pb2.Quaternion(
                         qw=lidar_frame.pose.quaternion.w,
                         qx=lidar_frame.pose.quaternion.x,
                         qy=lidar_frame.pose.quaternion.y,
@@ -467,15 +531,15 @@ class DGPSceneEncoder(SceneEncoder):
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
-                DatumDTO(
-                    id=DatumIdDTO(
+                sample_pb2.Datum(
+                    id=identifiers_pb2.DatumId(
                         log="",
                         name=lidar_frame.sensor_name,
-                        timestamp=TimestampDTO.from_datetime(dt=lidar_frame.date_time),
-                        index=str(lidar_frame.frame_id),
+                        timestamp=timestamp_pb2.Timestamp().FromDatetime(lidar_frame.date_time),
+                        index=int(lidar_frame.frame_id),
                     ),
                     key="",
-                    datum=DatumValueDTO(point_cloud=scene_datum_dto),
+                    datum=sample_pb2.DatumValue(point_cloud=scene_datum_dto),
                     next_key="",
                     prev_key="",
                 )
@@ -485,7 +549,9 @@ class DGPSceneEncoder(SceneEncoder):
         # noinspection InsecureHash
         keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
-        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp)):
+        for idx, scene_data_dto in enumerate(
+            sorted(scene_data_dtos, key=lambda x: timestamp_proto_to_timestamp(x.id.timestamp))
+        ):
             prev_key = keys[idx - 1] if idx > 0 else ""
             key = keys[idx]
             next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
@@ -494,7 +560,7 @@ class DGPSceneEncoder(SceneEncoder):
             scene_data_dto.key = key
             scene_data_dto.next_key = next_key
 
-        return lidar_name, {sd.id.index: sd for sd in scene_data_dtos}
+        return lidar_name, {str(sd.id.index): sd for sd in scene_data_dtos}
 
     def _encode_camera_frame(
         self, frame_id: str, camera_frame: CameraSensorFrame[datetime], last_frame: Optional[bool] = False
@@ -599,15 +665,15 @@ class DGPSceneEncoder(SceneEncoder):
             )
         )
 
-    def _encode_cameras(self) -> Iterator[Tuple[str, Dict[str, DatumDTO]]]:
+    def _encode_cameras(self) -> Iterator[Tuple[str, Dict[str, sample_pb2.Datum]]]:
         return [self._encode_camera(camera_name=c).result() for c in self._camera_names]
 
-    def _encode_lidars(self) -> Iterator[Tuple[str, Dict[str, DatumDTO]]]:
+    def _encode_lidars(self) -> Iterator[Tuple[str, Dict[str, sample_pb2.Datum]]]:
         return [self._encode_lidar(lidar_name=ln).result() for ln in self._lidar_names]
 
     def _encode_ontologies(self) -> Dict[str, Future]:
         ontology_dtos = {
-            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyDTO.from_class_map(class_map=self._scene.get_class_map(a_type))
+            ANNOTATION_TYPE_MAP_INV[a_type]: class_map_to_ontology_proto(class_map=self._scene.get_class_map(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
         }
@@ -615,7 +681,7 @@ class DGPSceneEncoder(SceneEncoder):
         output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
 
         return {
-            k: self._run_async(func=write_json, obj=v.to_dict(), path=output_path, append_sha1=True)
+            k: self._run_async(func=write_json, obj=proto_to_dict(proto=v), path=output_path, append_sha1=True)
             for k, v in ontology_dtos.items()
         }
 
@@ -629,22 +695,22 @@ class DGPSceneEncoder(SceneEncoder):
         for sn in self._lidar_names:
             lidar_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
 
-        calib_dto = SampleCalibrationDTO(names=[], extrinsics=[], intrinsics=[])
+        calib_dto = sample_pb2.SampleCalibration(names=[], extrinsics=[], intrinsics=[])
 
         def get_camera_calibration(
             sf: CameraSensorFrame[datetime],
-        ) -> Tuple[str, PoseDTO, CameraIntrinsicsDTO]:
+        ) -> Tuple[str, geometry_pb2.Pose, geometry_pb2.CameraIntrinsics]:
             intr = sf.intrinsic
             extr = sf.extrinsic
 
-            calib_dto_extrinsic = PoseDTO(
-                translation=Vector3DTO(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
-                rotation=QuaternionDTO(
+            calib_dto_extrinsic = geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=geometry_pb2.Quaternion(
                     qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
                 ),
             )
 
-            calib_dto_intrinsic = CameraIntrinsicsDTO(
+            calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
                 fx=intr.fx,
                 fy=intr.fy,
                 cx=intr.cx,
@@ -666,17 +732,17 @@ class DGPSceneEncoder(SceneEncoder):
 
         def get_lidar_calibration(
             sf: LidarSensorFrame[datetime],
-        ) -> Tuple[str, PoseDTO, CameraIntrinsicsDTO]:
+        ) -> Tuple[str, geometry_pb2.Pose, geometry_pb2.CameraIntrinsics]:
             extr = sf.extrinsic
 
-            calib_dto_extrinsic = PoseDTO(
-                translation=Vector3DTO(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
-                rotation=QuaternionDTO(
+            calib_dto_extrinsic = geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=geometry_pb2.Quaternion(
                     qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
                 ),
             )
 
-            calib_dto_intrinsic = CameraIntrinsicsDTO(
+            calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
                 fx=0.0,
                 fy=0.0,
                 cx=0.0,
@@ -704,11 +770,13 @@ class DGPSceneEncoder(SceneEncoder):
             calib_dto.intrinsics.append(r_intrinsic)
 
         output_path = self._output_path / DirectoryName.CALIBRATION / ".json"
-        return self._run_async(func=fsio.write_json, obj=calib_dto.to_dict(), path=output_path, append_sha1=True)
+        return self._run_async(
+            func=fsio.write_json, obj=proto_to_dict(proto=calib_dto), path=output_path, append_sha1=True
+        )
 
     def _encode_scene_json(
         self,
-        scene_sensor_data: Dict[str, Dict[str, DatumDTO]],
+        scene_sensor_data: Dict[str, Dict[str, sample_pb2.Datum]],
         calibration_file: Future,
         ontologies_files: Dict[str, Future],
     ) -> AnyPath:
@@ -716,15 +784,16 @@ class DGPSceneEncoder(SceneEncoder):
         scene_samples = []
         for fid in self._scene.frame_ids:
             frame = self._scene.get_frame(fid)
+            fid_int = int(fid)
             frame_data = [
                 scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]
             ]
             scene_data.extend(frame_data)
             scene_samples.append(
-                SampleDTO(
-                    id=DatumIdDTO(
+                sample_pb2.Sample(
+                    id=identifiers_pb2.DatumId(
                         log="",
-                        timestamp=TimestampDTO.from_datetime(dt=frame.date_time),
+                        timestamp=timestamp_pb2.Timestamp().FromDatetime(frame.date_time),
                         name="",
                         index=int(frame.frame_id),
                     ),
@@ -734,25 +803,28 @@ class DGPSceneEncoder(SceneEncoder):
                 )
             )
 
-        scene_dto = SceneDTO(
+        scene_dto = scene_pb2.Scene(
             name=self._scene.name,
             description=self._scene.description,
             log="",
             ontologies={k: v.result().stem for k, v in ontologies_files.items()},
-            metadata=self._scene.metadata,
+            metadata={
+                # "PD": any_pb2.Any().Pack(
+                #     metadata_pd_pb2.ParallelDomainSceneMetadata(
+                #         **{k: v for k, v in self._scene.metadata["PD"].items() if not k.startswith("@")}
+                #     )
+                # )
+            },
             samples=scene_samples,
             data=scene_data,
-            creation_date=TimestampDTO(seconds=0, nanos=0),
-            statistics=DatasetStatisticsDTO(
-                image_statistics=ImageStatisticsDTO(count=0, mean=[], stddev=[]),
-                pointcloud_statistics=PointCloudStatisticsDTO(count=0, mean=[], stddev=[]),
-            ),
+            creation_date=timestamp_pb2.Timestamp().GetCurrentTime(),
+            statistics=None,
         )
 
         output_path = self._output_path / "scene.json"
-        return fsio.write_json(obj=scene_dto.to_dict(), path=output_path, append_sha1=True)
+        return fsio.write_json(obj=proto_to_dict(proto=scene_dto), path=output_path, append_sha1=True)
 
-    def _encode_sensors(self) -> Dict[str, Dict[str, DatumDTO]]:
+    def _encode_sensors(self) -> Dict[str, Dict[str, sample_pb2.Datum]]:
         scene_camera_data = self._encode_cameras()
         scene_lidar_data = self._encode_lidars()
 

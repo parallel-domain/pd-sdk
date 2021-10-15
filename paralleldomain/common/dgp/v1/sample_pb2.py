@@ -16,12 +16,12 @@ _sym_db = _symbol_database.Default()
 
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 
-import paralleldomain.common.dgp.v1.proto.file_datum_pb2 as file__datum__pb2
-import paralleldomain.common.dgp.v1.proto.geometry_pb2 as geometry__pb2
-import paralleldomain.common.dgp.v1.proto.identifiers_pb2 as identifiers__pb2
-import paralleldomain.common.dgp.v1.proto.image_pb2 as image__pb2
-import paralleldomain.common.dgp.v1.proto.point_cloud_pb2 as point__cloud__pb2
-import paralleldomain.common.dgp.v1.proto.radar_point_cloud_pb2 as radar__point__cloud__pb2
+import paralleldomain.common.dgp.v1.file_datum_pb2 as file__datum__pb2
+import paralleldomain.common.dgp.v1.geometry_pb2 as geometry__pb2
+import paralleldomain.common.dgp.v1.identifiers_pb2 as identifiers__pb2
+import paralleldomain.common.dgp.v1.image_pb2 as image__pb2
+import paralleldomain.common.dgp.v1.point_cloud_pb2 as point__cloud__pb2
+import paralleldomain.common.dgp.v1.radar_point_cloud_pb2 as radar__point__cloud__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name="sample.proto",

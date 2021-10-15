@@ -15,7 +15,7 @@ from google.protobuf.internal import enum_type_wrapper
 _sym_db = _symbol_database.Default()
 
 
-import paralleldomain.common.dgp.v1.proto.geometry_pb2 as geometry__pb2
+import paralleldomain.common.dgp.v1.geometry_pb2 as geometry__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name="annotations.proto",

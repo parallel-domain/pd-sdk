@@ -3,9 +3,11 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
+from google.protobuf.json_format import MessageToDict
+
+from paralleldomain.common.dgp.v1 import dataset_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
-from paralleldomain.common.dgp.v1.dataset import DatasetMetadataDTO, DatasetOriginDTO, DatasetSplitDTO, SceneDatasetDTO
-from paralleldomain.common.dgp.v1.scene import SceneFilesDTO
+from paralleldomain.common.dgp.v1.utils import proto_to_dict
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.scene import DGPSceneEncoder
@@ -47,8 +49,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         self._annotation_types: Union[List[AnnotationType], None] = None
 
     def _encode_dataset_json(self, scene_files: Dict[str, AnyPath]) -> AnyPath:
-
-        metadata_dto = DatasetMetadataDTO(
+        metadata_proto = dataset_pb2.DatasetMetadata(
             name=(self._dataset_name if self._dataset_name else self._dataset.name),
             version="1.0",
             creation_date=datetime.utcnow().strftime(DATETIME_FORMAT),
@@ -56,31 +57,34 @@ class DGPDatasetEncoder(DatasetEncoder):
             bucket_path=None,
             raw_path=None,
             description="",
-            origin=DatasetOriginDTO.INTERNAL.name,
+            origin=dataset_pb2.DatasetMetadata.DatasetOrigin.INTERNAL,
             available_annotation_types=[],
             statistics=None,
             frame_per_second=0.0,
             metadata={},
         )
-        # metadata_dto = DatasetMetadataDTO(**self._dataset.metadata.custom_attributes)
 
         if self._annotation_types:
-            metadata_dto.available_annotation_types = [
-                int(ANNOTATION_TYPE_MAP_INV[a_type])
-                for a_type in self._annotation_types
-                if a_type is not Annotation  # equiv: not implemented, yet!
-            ]
+            metadata_proto.available_annotation_types.extend(
+                [
+                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    for a_type in self._annotation_types
+                    if a_type is not Annotation  # equiv: not implemented, yet!
+                ]
+            )
         else:
-            metadata_dto.available_annotation_types = [
-                int(ANNOTATION_TYPE_MAP_INV[a_type])
-                for a_type in self._dataset.available_annotation_types
-                if a_type is not Annotation  # equiv: not implemented, yet!
-            ]
+            metadata_proto.available_annotation_types.extend(
+                [
+                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    for a_type in self._dataset.available_annotation_types
+                    if a_type is not Annotation  # equiv: not implemented, yet!
+                ]
+            )
 
-        ds_dto = SceneDatasetDTO(
-            metadata=metadata_dto,  # needs refinement, currently assumes DGP->DGP
+        dataset_proto = dataset_pb2.SceneDataset(
+            metadata=metadata_proto,  # needs refinement, currently assumes DGP->DGP
             scene_splits={
-                DatasetSplitDTO.TRAIN.value: SceneFilesDTO(
+                dataset_pb2.DatasetSplit.TRAIN: scene_pb2.SceneFiles(
                     filenames=[
                         self._relative_path(scene_files[scene_key]).as_posix()
                         for scene_key in sorted(scene_files.keys())
@@ -90,7 +94,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         )
 
         output_path = self._output_path / "scene_dataset.json"
-        return fsio.write_json(obj=ds_dto.to_dict(), path=output_path)
+        return fsio.write_json(obj=proto_to_dict(proto=dataset_proto), path=output_path)
 
     def encode_dataset(self) -> AnyPath:
         scene_files = {scene_name: self._call_scene_encoder(scene_name=scene_name) for scene_name in self._scene_names}

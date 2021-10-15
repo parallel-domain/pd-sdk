@@ -17,8 +17,8 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
-import paralleldomain.common.dgp.v1.proto.sample_pb2 as sample__pb2
-import paralleldomain.common.dgp.v1.proto.statistics_pb2 as statistics__pb2
+import paralleldomain.common.dgp.v1.sample_pb2 as sample__pb2
+import paralleldomain.common.dgp.v1.statistics_pb2 as statistics__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name="scene.proto",

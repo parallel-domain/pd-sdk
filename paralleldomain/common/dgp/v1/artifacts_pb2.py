@@ -14,8 +14,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import paralleldomain.common.dgp.v1.proto.dataset_pb2 as dataset__pb2
-import paralleldomain.common.dgp.v1.proto.remote_pb2 as remote__pb2
+import paralleldomain.common.dgp.v1.dataset_pb2 as dataset__pb2
+import paralleldomain.common.dgp.v1.remote_pb2 as remote__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name="artifacts.proto",
