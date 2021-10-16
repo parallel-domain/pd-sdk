@@ -4,9 +4,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
-from google.protobuf.json_format import MessageToDict, ParseDict
+from google.protobuf.json_format import MessageToDict
 
-from paralleldomain.common.dgp.v1 import dataset_pb2, metadata_pd_pb2, ontology_pb2, sample_pb2, scene_pb2
+from paralleldomain.common.dgp.v1 import dataset_pb2, ontology_pb2, sample_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.metadata_pd_pb2 import ParallelDomainSceneMetadata
 from paralleldomain.decoding.common import DecoderSettings
@@ -19,7 +19,7 @@ from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_json
+from paralleldomain.utilities.fsio import read_json, read_json_message
 from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
@@ -44,8 +44,7 @@ class _DatasetDecoderMixin:
         if not scene_dataset_json_path.exists():
             raise FileNotFoundError(f"File {scene_dataset_json_path} not found.")
 
-        scene_dataset_json = read_json(path=scene_dataset_json_path)
-        scene_dataset_dto = ParseDict(scene_dataset_json, dataset_pb2.SceneDataset())
+        scene_dataset_dto = read_json_message(obj=dataset_pb2.SceneDataset(), path=scene_dataset_json_path)
 
         return scene_dataset_dto
 
@@ -168,9 +167,8 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         ontologies = {}
         for annotation_key, ontology_file in scene_dto.ontologies.items():
             ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
-            ontology_data = read_json(path=ontology_path)
+            ontology_dto = read_json_message(obj=ontology_pb2.Ontology(), path=ontology_path)
 
-            ontology_dto = ParseDict(ontology_data, ontology_pb2.Ontology())
             ontologies[ANNOTATION_TYPE_MAP[annotation_key]] = ClassMap(
                 classes=[
                     ClassDetail(
@@ -206,8 +204,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
         scene_file = self._dataset_path / scene_path
 
-        scene_data = read_json(path=scene_file)
-        scene_dto = ParseDict(scene_data, scene_pb2.Scene())
+        scene_dto = read_json_message(obj=scene_pb2.Scene(), path=scene_file)
 
         return scene_dto
 

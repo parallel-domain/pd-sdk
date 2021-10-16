@@ -7,7 +7,6 @@ from typing import Dict, List, Optional, Tuple, Type, TypeVar
 
 import numpy as np
 import ujson
-from google.protobuf.json_format import ParseDict
 from pyquaternion import Quaternion
 
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, sample_pb2
@@ -35,7 +34,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json, read_npz
+from paralleldomain.utilities.fsio import read_image, read_json, read_json_message, read_npz
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -203,8 +202,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> sample_pb2.SampleCalibration:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
-        cal_dict = read_json(path=calibration_path)
-        return ParseDict(cal_dict, sample_pb2.SampleCalibration())
+        return read_json_message(obj=sample_pb2.SampleCalibration(), path=calibration_path)
 
     def _decode_extrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
@@ -224,15 +222,13 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self, scene_name: str, annotation_identifier: str
     ) -> annotations_pb2.BoundingBox3DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        bb_dict = read_json(path=annotation_path)
-        return ParseDict(bb_dict, annotations_pb2.BoundingBox3DAnnotations())
+        return read_json_message(obj=annotations_pb2.BoundingBox3DAnnotations(), path=annotation_path)
 
     def _decode_bounding_boxes_2d(
         self, scene_name: str, annotation_identifier: str
     ) -> annotations_pb2.BoundingBox2DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        bb_dict = read_json(path=annotation_path)
-        return ParseDict(bb_dict, annotations_pb2.BoundingBox2DAnnotations())
+        return read_json_message(obj=annotations_pb2.BoundingBox2DAnnotations(), path=annotation_path)
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -355,8 +351,6 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
     def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
         datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
-        # return isinstance(datum, SceneDataDatumPointCloud)
-        # TODO: Check
         return datum.HasField("point_cloud")
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:

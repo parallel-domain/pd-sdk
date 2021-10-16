@@ -3,19 +3,16 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
-from google.protobuf.json_format import MessageToDict
-
 from paralleldomain.common.dgp.v1 import dataset_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
-from paralleldomain.common.dgp.v1.utils import proto_to_dict
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.scene import DGPSceneEncoder
 from paralleldomain.encoding.encoder import DatasetEncoder, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType
 from paralleldomain.model.dataset import Dataset
-from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import write_json_message
 from paralleldomain.utilities.logging import setup_loggers
 
 logger = logging.getLogger(__name__)
@@ -94,7 +91,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         )
 
         output_path = self._output_path / "scene_dataset.json"
-        return fsio.write_json(obj=proto_to_dict(proto=dataset_proto), path=output_path)
+        return write_json_message(obj=dataset_proto, path=output_path)
 
     def encode_dataset(self) -> AnyPath:
         scene_files = {scene_name: self._call_scene_encoder(scene_name=scene_name) for scene_name in self._scene_names}

@@ -23,13 +23,7 @@ from paralleldomain.common.dgp.v1 import (
     scene_pb2,
 )
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
-from paralleldomain.common.dgp.v1.utils import (
-    _attribute_key_dump,
-    class_map_to_ontology_proto,
-    datetime_to_timestamp_proto,
-    proto_to_dict,
-    timestamp_proto_to_timestamp,
-)
+from paralleldomain.common.dgp.v1.utils import _attribute_key_dump, class_map_to_ontology_proto
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.transformer import (
     BoundingBox2DTransformer,
@@ -215,9 +209,7 @@ class DGPSceneEncoder(SceneEncoder):
             / sensor_frame.sensor_name
             / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
-        return self._run_async(
-            func=fsio.write_json, obj=proto_to_dict(proto=boxes2d_dto), path=output_path, append_sha1=True
-        )
+        return self._run_async(func=fsio.write_json_message, obj=boxes2d_dto, path=output_path, append_sha1=True)
 
     def _encode_bounding_box_3d(self, box: BoundingBox3D) -> annotations_pb2.BoundingBox3DAnnotation:
         try:
@@ -272,9 +264,7 @@ class DGPSceneEncoder(SceneEncoder):
             / sensor_frame.sensor_name
             / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
         )
-        return self._run_async(
-            func=fsio.write_json, obj=proto_to_dict(proto=boxes3d_dto), path=output_path, append_sha1=True
-        )
+        return self._run_async(func=fsio.write_json_message, obj=boxes3d_dto, path=output_path, append_sha1=True)
 
     def _process_semantic_segmentation_2d(
         self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False
@@ -480,9 +470,7 @@ class DGPSceneEncoder(SceneEncoder):
         # noinspection InsecureHash
         keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
-        for idx, scene_data_dto in enumerate(
-            sorted(scene_data_dtos, key=lambda x: timestamp_proto_to_timestamp(x.id.timestamp))
-        ):
+        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp.ToDatetime())):
             prev_key = keys[idx - 1] if idx > 0 else ""
             key = keys[idx]
             next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
@@ -549,9 +537,7 @@ class DGPSceneEncoder(SceneEncoder):
         # noinspection InsecureHash
         keys = [hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest() for _ in range(scene_data_count)]
 
-        for idx, scene_data_dto in enumerate(
-            sorted(scene_data_dtos, key=lambda x: timestamp_proto_to_timestamp(x.id.timestamp))
-        ):
+        for idx, scene_data_dto in enumerate(sorted(scene_data_dtos, key=lambda x: x.id.timestamp.ToDatetime())):
             prev_key = keys[idx - 1] if idx > 0 else ""
             key = keys[idx]
             next_key = keys[idx + 1] if idx < (scene_data_count - 1) else ""
@@ -681,7 +667,7 @@ class DGPSceneEncoder(SceneEncoder):
         output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
 
         return {
-            k: self._run_async(func=write_json, obj=proto_to_dict(proto=v), path=output_path, append_sha1=True)
+            k: self._run_async(func=fsio.write_json_message, obj=v, path=output_path, append_sha1=True)
             for k, v in ontology_dtos.items()
         }
 
@@ -770,9 +756,7 @@ class DGPSceneEncoder(SceneEncoder):
             calib_dto.intrinsics.append(r_intrinsic)
 
         output_path = self._output_path / DirectoryName.CALIBRATION / ".json"
-        return self._run_async(
-            func=fsio.write_json, obj=proto_to_dict(proto=calib_dto), path=output_path, append_sha1=True
-        )
+        return self._run_async(func=fsio.write_json_message, obj=calib_dto, path=output_path, append_sha1=True)
 
     def _encode_scene_json(
         self,
@@ -821,7 +805,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
         output_path = self._output_path / "scene.json"
-        return fsio.write_json(obj=proto_to_dict(proto=scene_dto), path=output_path, append_sha1=True)
+        return fsio.write_json_message(obj=scene_dto, path=output_path, append_sha1=True)
 
     def _encode_sensors(self) -> Dict[str, Dict[str, sample_pb2.Datum]]:
         scene_camera_data = self._encode_cameras()

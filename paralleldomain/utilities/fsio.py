@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -109,7 +109,7 @@ def read_npz(
 
 def read_json_message(
     obj: Message, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
-) -> Message:
+) -> Any:
     with path.open("r") as fp:
         json_data = ujson.load(fp)
 
