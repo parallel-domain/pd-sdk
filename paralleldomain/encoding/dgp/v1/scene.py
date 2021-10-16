@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import numpy as np
-from google.protobuf import any_pb2, timestamp_pb2
+from google.protobuf import timestamp_pb2
 
 from paralleldomain import Scene
 from paralleldomain.common.dgp.v0.dtos import _attribute_value_dump
@@ -17,12 +17,11 @@ from paralleldomain.common.dgp.v1 import (
     geometry_pb2,
     identifiers_pb2,
     image_pb2,
-    metadata_pd_pb2,
     point_cloud_pb2,
     sample_pb2,
     scene_pb2,
 )
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, POINT_FORMAT, DirectoryName
 from paralleldomain.common.dgp.v1.utils import _attribute_key_dump, class_map_to_ontology_proto
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.transformer import (
@@ -40,7 +39,6 @@ from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, SensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import write_json
 
 logger = logging.getLogger(__name__)
 

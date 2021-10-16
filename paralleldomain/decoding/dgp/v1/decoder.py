@@ -19,7 +19,7 @@ from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_json, read_json_message
+from paralleldomain.utilities.fsio import read_json_message
 from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)

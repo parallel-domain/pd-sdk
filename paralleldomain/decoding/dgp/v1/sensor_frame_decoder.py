@@ -34,7 +34,7 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json, read_json_message, read_npz
+from paralleldomain.utilities.fsio import read_image, read_json_message, read_npz
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
