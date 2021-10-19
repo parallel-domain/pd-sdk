@@ -88,3 +88,8 @@ In case you are missing an important tutorial, feel free to request it via a Git
 ### API Reference
 
 Public classes / methods / properties are annotated with Docstrings. The compiled API Reference can be found under [Documentation -> API Reference](https://parallel-domain.github.io/pd-sdk/)
+
+
+### UML Diagramm
+Below you can see a UML-Diagram that is supposed to show how model classes relate to each other as well as their abstraction to the decoding layer.
+![alt text](assets/pd-sdk-uml.png)
