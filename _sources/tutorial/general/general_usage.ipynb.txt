@@ -12,7 +12,7 @@
     "## Load Dataset\n",
     "\n",
     "When working with Parallel Domain's synthetic data, the standard output format is [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md).\n",
-    "In general, the PD SDK can load from any format, as long as custom decoder exists adhering to the `DatasetDecoderProtocol`.\n",
+    "In general, the PD SDK can load from any format, as long as a custom decoder exists adhering to the `DatasetDecoderProtocol`.\n",
     "Out of the box, PD SDK comes with a pre-configured `DGPDatasetDecoder` which we can leverage to load data.\n",
     "\n",
     "In this tutorial, we are going to load and access a dataset and its scenes.\n",
@@ -156,7 +156,7 @@
   {
    "cell_type": "markdown",
    "source": [
-    "As you can see, the property `.available_annotation_types` includes classes from `paralleldomain.model.annotation`. In tutorials around reading annotations from a dataset, these exact classes will be re-used, and allows for a consistent type-check across objects."
+    "As you can see, the property `.available_annotation_types` includes classes from `paralleldomain.model.annotation`. In tutorials around reading annotations from a dataset, these exact classes will be re-used, which allows for a consistent type-check across objects."
    ],
    "metadata": {
     "collapsed": false
@@ -167,7 +167,7 @@
    "source": [
     "### Access available Scenes\n",
     "\n",
-    "Every dataset consists of scenes. These can contain ordered (usually: by time) or unordered data.\n",
+    "Every dataset consists of scenes. These can contain ordered (usually by time) or unordered data.\n",
     "In this example, we are looking to receive a list of scene names by type that have been found within the loaded dataset."
    ],
    "metadata": {
@@ -260,10 +260,10 @@
   {
    "cell_type": "markdown",
    "source": [
-    "Scene metadata usually contains any variables that changes with each scene and are not necessarily consistent across a whole data.\n",
+    "Scene metadata usually contains any variables that changes with each scene and are not necessarily consistent across a whole dataset.\n",
     "In many cases these are environment variables like weather, time of day and location.\n",
     "\n",
-    "A `Scene` object also includes the information of the available annotation types. These be consistent in most datasets with the ones on the `Dataset` level, but there is the possibility to vary them."
+    "A `Scene` object also includes information about the available annotation types. In most datasets, these will be consistent with the ones at the `Dataset` level, but there is the possibility to vary them."
    ],
    "metadata": {
     "collapsed": false
@@ -305,7 +305,7 @@
    "cell_type": "markdown",
    "source": [
     "Normally, in a scene, we expect to have more than one frame available, especially when we work with sequential data.\n",
-    "These can be accessed through their frame IDs. In DGP datasets, these are usually string representations of increasing integers, but they could be also more explicit identifiers for other datasets, e.g., a string representation of a UNIX time or recording vehicle details included.\n",
+    "These can be accessed through their frame IDs. In DGP datasets, these are usually string representations of increasing integers, but they could also be more explicit identifiers for other datasets, e.g., a string representation of a UNIX time or details of the recording vehicle.\n",
     "\n",
     "In our example, the frame IDs follow the pattern of integers in string representation:"
    ],
@@ -427,7 +427,7 @@
   {
    "cell_type": "markdown",
    "source": [
-    "Similar one how we used this information to get a scene from a dataset, we can use this to get a sensor from a scene."
+    "Similar to how we used this information to get a scene from a dataset, we can use this information to get a sensor from a scene."
    ],
    "metadata": {
     "collapsed": false
@@ -452,7 +452,7 @@
    "cell_type": "markdown",
    "source": [
     "Knowing which frames and sensors are available allows us to now query for the actual sensor data.\n",
-    "As described above, a `Frame` is the time-grouping bracket around different sensor recordings. The actual data for a specific sensor assigned to this represented in a `SensorFrame`.\n",
+    "As described above, a `Frame` is the time-grouping bracket around different sensor recordings. The actual data for a specific sensor assigned to this frame is represented in a `SensorFrame`.\n",
     "This is where sensor data and annotations live.\n",
     "\n",
     "We can either first select a `Frame` and then pick a `Sensor` or the other way around. They will return the same `SensorFrame` instance."
@@ -537,7 +537,7 @@
   {
    "cell_type": "markdown",
    "source": [
-    "Every `SensorFrame` always has information about the sensor pose (where is it in the world coordinate system?) and sensor extrinsic (how is the sensor positioned relative to the ego-vehicle reference coordinate system=).\n",
+    "Every `SensorFrame` always has information about the sensor pose (where is it in the world coordinate system?) and sensor extrinsic (how is the sensor positioned relative to the ego-vehicle reference coordinate system?).\n",
     "Poses and Extrinsics are represented as instances of the `Transformation` object. It allows storing 6-DoF information and allows for easy combination with each other.\n",
     "In the example below, we are going to calculate the difference between the camera and the lidar sensor. The difference should be the same when using pose or extrinsic."
    ],

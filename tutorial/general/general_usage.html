@@ -499,7 +499,7 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Load-Dataset">
 <h1>Load Dataset<a class="headerlink" href="#Load-Dataset" title="Permalink to this headline">¶</a></h1>
-<p>When working with Parallel Domain’s synthetic data, the standard output format is <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a>. In general, the PD SDK can load from any format, as long as custom decoder exists adhering to the <code class="docutils literal notranslate"><span class="pre">DatasetDecoderProtocol</span></code>. Out of the box, PD SDK comes with a pre-configured <code class="docutils literal notranslate"><span class="pre">DGPDatasetDecoder</span></code> which we can leverage to load data.</p>
+<p>When working with Parallel Domain’s synthetic data, the standard output format is <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a>. In general, the PD SDK can load from any format, as long as a custom decoder exists adhering to the <code class="docutils literal notranslate"><span class="pre">DatasetDecoderProtocol</span></code>. Out of the box, PD SDK comes with a pre-configured <code class="docutils literal notranslate"><span class="pre">DGPDatasetDecoder</span></code> which we can leverage to load data.</p>
 <p>In this tutorial, we are going to load and access a dataset and its scenes.</p>
 <p>Initially, we need to select the fitting decoder (in this case: <code class="docutils literal notranslate"><span class="pre">DGPDatasetDecoder</span></code>) and then tell it where our dataset is stored. The location can be either a local filesystem path or an s3 address.</p>
 <div class="nbinput nblast docutils container">
@@ -591,11 +591,11 @@ Custom Attributes:
         description:
 </pre></div></div>
 </div>
-<p>As you can see, the property <code class="docutils literal notranslate"><span class="pre">.available_annotation_types</span></code> includes classes from <code class="docutils literal notranslate"><span class="pre">paralleldomain.model.annotation</span></code>. In tutorials around reading annotations from a dataset, these exact classes will be re-used, and allows for a consistent type-check across objects.</p>
+<p>As you can see, the property <code class="docutils literal notranslate"><span class="pre">.available_annotation_types</span></code> includes classes from <code class="docutils literal notranslate"><span class="pre">paralleldomain.model.annotation</span></code>. In tutorials around reading annotations from a dataset, these exact classes will be re-used, which allows for a consistent type-check across objects.</p>
 </div>
 <div class="section" id="Access-available-Scenes">
 <h2>Access available Scenes<a class="headerlink" href="#Access-available-Scenes" title="Permalink to this headline">¶</a></h2>
-<p>Every dataset consists of scenes. These can contain ordered (usually: by time) or unordered data. In this example, we are looking to receive a list of scene names by type that have been found within the loaded dataset.</p>
+<p>Every dataset consists of scenes. These can contain ordered (usually by time) or unordered data. In this example, we are looking to receive a list of scene names by type that have been found within the loaded dataset.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -662,8 +662,8 @@ Found unordered scene pd-sdk_test_set
           &#39;wetness&#39;: 0}}
 </pre></div></div>
 </div>
-<p>Scene metadata usually contains any variables that changes with each scene and are not necessarily consistent across a whole data. In many cases these are environment variables like weather, time of day and location.</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Scene</span></code> object also includes the information of the available annotation types. These be consistent in most datasets with the ones on the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> level, but there is the possibility to vary them.</p>
+<p>Scene metadata usually contains any variables that changes with each scene and are not necessarily consistent across a whole dataset. In many cases these are environment variables like weather, time of day and location.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Scene</span></code> object also includes information about the available annotation types. In most datasets, these will be consistent with the ones at the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> level, but there is the possibility to vary them.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -691,7 +691,7 @@ Found unordered scene pd-sdk_test_set
   &lt;class &#39;paralleldomain.model.annotation.Annotation&#39;&gt;]
 </pre></div></div>
 </div>
-<p>Normally, in a scene, we expect to have more than one frame available, especially when we work with sequential data. These can be accessed through their frame IDs. In DGP datasets, these are usually string representations of increasing integers, but they could be also more explicit identifiers for other datasets, e.g., a string representation of a UNIX time or recording vehicle details included.</p>
+<p>Normally, in a scene, we expect to have more than one frame available, especially when we work with sequential data. These can be accessed through their frame IDs. In DGP datasets, these are usually string representations of increasing integers, but they could also be more explicit identifiers for other datasets, e.g., a string representation of a UNIX time or details of the recording vehicle.</p>
 <p>In our example, the frame IDs follow the pattern of integers in string representation:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
@@ -774,7 +774,7 @@ lidar_front
 lidar_rear
 </pre></div></div>
 </div>
-<p>Similar one how we used this information to get a scene from a dataset, we can use this to get a sensor from a scene.</p>
+<p>Similar to how we used this information to get a scene from a dataset, we can use this information to get a sensor from a scene.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -785,7 +785,7 @@ lidar_rear
 </pre></div>
 </div>
 </div>
-<p>Knowing which frames and sensors are available allows us to now query for the actual sensor data. As described above, a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> is the time-grouping bracket around different sensor recordings. The actual data for a specific sensor assigned to this represented in a <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code>. This is where sensor data and annotations live.</p>
+<p>Knowing which frames and sensors are available allows us to now query for the actual sensor data. As described above, a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> is the time-grouping bracket around different sensor recordings. The actual data for a specific sensor assigned to this frame is represented in a <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code>. This is where sensor data and annotations live.</p>
 <p>We can either first select a <code class="docutils literal notranslate"><span class="pre">Frame</span></code> and then pick a <code class="docutils literal notranslate"><span class="pre">Sensor</span></code> or the other way around. They will return the same <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> instance.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
@@ -844,7 +844,7 @@ camera_front recorded at 2021-06-22 15:16:21.367000+00:00
 lidar_front recorded at 2021-06-22 15:16:21.367000+00:00
 </pre></div></div>
 </div>
-<p>Every <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> always has information about the sensor pose (where is it in the world coordinate system?) and sensor extrinsic (how is the sensor positioned relative to the ego-vehicle reference coordinate system=). Poses and Extrinsics are represented as instances of the <code class="docutils literal notranslate"><span class="pre">Transformation</span></code> object. It allows storing 6-DoF information and allows for easy combination with each other. In the example below, we are going to calculate the difference between the camera and the lidar sensor. The
+<p>Every <code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code> always has information about the sensor pose (where is it in the world coordinate system?) and sensor extrinsic (how is the sensor positioned relative to the ego-vehicle reference coordinate system?). Poses and Extrinsics are represented as instances of the <code class="docutils literal notranslate"><span class="pre">Transformation</span></code> object. It allows storing 6-DoF information and allows for easy combination with each other. In the example below, we are going to calculate the difference between the camera and the lidar sensor. The
 difference should be the same when using pose or extrinsic.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
