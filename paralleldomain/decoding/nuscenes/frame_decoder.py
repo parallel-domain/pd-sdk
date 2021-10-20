@@ -44,7 +44,7 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
             sensor_names.add(sensor["channel"])
         return list(sensor_names)
-
+    ### MHS: can we use log_token?
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
         camera_names = set()
         for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=frame_id):
@@ -55,9 +55,16 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
                 camera_names.add(sensor["channel"])
         return list(camera_names)
 
-    ### MHS: fill in this function
+    ### MHS: can we use log_token?
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        return list()
+        lidar_names = set()
+        for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=frame_id):
+            calib_sensor_token = data["calibrated_sensor_token"]
+            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+            if sensor["modality"] == "lidar":
+                lidar_names.add(sensor["channel"])
+        return list(lidar_names)
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         return datetime.fromtimestamp(int(frame_id) / 1000000)
@@ -76,12 +83,16 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
     ) -> CameraSensorFrame[TDateTime]:
         return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
-    ### MHS: fill in this function
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
-        raise ValueError("Cityscapes does not contain lidar data!")
+        return NuScenesLidarSensorFrameDecoder(
+            dataset_path=self._dataset_path,
+            dataset_name=self.dataset_name,
+            scene_name=self.scene_name,
+            split_name=self.split_name,
+            settings=self.settings,
+        )
 
-    ### MHS: fill in this function
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
-        raise ValueError("Cityscapes does not contain lidar data!")
+        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
