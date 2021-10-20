@@ -47,7 +47,8 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
-
+        
+    ### MHS: nuscenes does not have camera_distortion, so will need to update this function.
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
             log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
