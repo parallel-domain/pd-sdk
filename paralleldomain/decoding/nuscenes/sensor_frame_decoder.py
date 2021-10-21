@@ -29,7 +29,22 @@ T = TypeVar("T")
 ### MHS: Add NuScenesLidarSensorFrameDecoder
 
 class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesDataAccessMixin):
-    pass
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
+        LidarSensorFrameDecoder.__init__(
+            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+        )
+        NuScenesDataAccessMixin.__init__(
+            self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
+        )
+        
 
 class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
