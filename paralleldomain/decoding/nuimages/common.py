@@ -221,26 +221,26 @@ class NuImagesDataAccessMixin:
     def nu_category(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_category")
 
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+        def get_nu_category() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=get_nu_samples_data,
+            loader=get_nu_category,
         )
 
     @property
     def nu_attribute(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_attribute")
 
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+        def get_nu_attribute() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=get_nu_samples_data,
+            loader=get_nu_attribute,
         )
 
     @property

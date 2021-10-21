@@ -65,9 +65,9 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         available_annotation_types = list()
         if self.split_name != "v1.0-test" or (len(self.nu_surface_ann) > 0 and len(self.nu_object_ann) > 0):
             available_annotation_types = [
-                AnnotationTypes.SemanticSegmentation2D,
-                AnnotationTypes.InstanceSegmentation2D,
-                AnnotationTypes.BoundingBoxes2D,
+                # AnnotationTypes.SemanticSegmentation2D,
+                # AnnotationTypes.InstanceSegmentation2D,
+                AnnotationTypes.BoundingBoxes3D,
             ]
 
         return DatasetMeta(
