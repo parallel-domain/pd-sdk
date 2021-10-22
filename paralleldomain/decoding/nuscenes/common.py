@@ -134,6 +134,10 @@ class NuScenesDataAccessMixin:
         )
 
     @property
+    def nu_scene_by_scene_token(self) -> Dict[str, Dict[str, Any]]:
+        return {scene["token"]: scene for scene in self.nu_scene}
+
+    @property
     def nu_visibility(self) -> List[Dict[str,Any]]: 
         _unique_cache_key = self.get_unique_id(extra="nu_visibility")
 

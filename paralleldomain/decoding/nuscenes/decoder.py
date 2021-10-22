@@ -84,50 +84,47 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         )
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
-        log = self.nu_logs_by_log_token[scene_name]
-        return log
+        # Because there are multiple nuScenes scenes in a log entry, this combines the log and scene metadata. 
+        scene_metadata = self.nu_scene_by_scene_token[scene_name]
+        log_metadata = self.nu_logs_by_log_token[scene_metadata['log_token']]
+        return {**log_metadata,**scene_metadata}
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
-        return ""
+        return self.nu_scene_by_scene_token[scene_name]['description']
 
-    ### MHS: Generalize from camera
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        sample_data_ids = set()
-        for sample in self.nu_samples[scene_name]:
-            sample_data_ids.add(sample["key_camera_token"])  
-        nu_samples_data = self.nu_samples_data
-        return {str(nu_samples_data[sample_id]["timestamp"]) for sample_id in sample_data_ids}
+        return {sample['token'] for sample in self.nu_samples[scene_token]}
 
-    ### MHS: Generalize from camera
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self.get_camera_names(scene_name=scene_name)
-
-    ### MHS: Generalize from camera
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_sensor_names(self, scene_name: SceneName, modality: List[str] = ["camera","lidar"]) -> List[SensorName]:
         samples = self.nu_samples[scene_name]
-        key_camera_tokens = [sample["key_camera_token"] for sample in samples] 
+        sample_tokens = [sample["token"] for sample in samples]
         camera_names = set()
+        
         data_dict = self.nu_samples_data
-        for key_camera_token in key_camera_tokens:
-            data = data_dict[key_camera_token]
-            calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            if sensor["modality"] == "camera":
-                camera_names.add(sensor["channel"])
-        return list(camera_names)
+        for sample_token in sample_tokens:
+            data_list = data_dict[sample_token]
+            for data in data_list:
+                calib_sensor_token = data["calibrated_sensor_token"]
+                calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+                sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+                if sensor["modality"] in modality:
+                    sensor_names.add(sensor["channel"])
+        return list(sensor_names)
+
+    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+        return self._decode_sensor_names(scene_name=scene_name,modality=["camera"])
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return list()
+        return self._decode_sensor_names(scene_name=scene_name,modality=["lidar"])
 
-    ### MHS: Update annotations
+    ### MHS: Update this function when lidar-semseg is added
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return {
-            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
+            # AnnotationTypes.SemanticSegmentation3D: ClassMap(classes=self.nu_class_infos),
+            AnnotationTypes.BoundingBoxes3D: ClassMap(classes=self.nu_class_infos),
         }
 
-    ### MHS: Generalize from camera
+    ### MHS: we don't actually use camera_name in this function
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[datetime]:
@@ -138,11 +135,17 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
             scene_name=scene_name,
             settings=self.settings,
         )
-    ### MHS: Remove error message, return NuScenesLidarSensorDecoder.
+
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[datetime]:
-        raise ValueError("NuImages does not contain lidar data!")
+        return NuScenesLidarSensorDecoder(
+            dataset_path=self._dataset_path,
+            dataset_name=dataset_name,
+            split_name=self.split_name,
+            scene_name=scene_name,
+            settings=self.settings,
+        )
 
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
@@ -156,4 +159,5 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids(scene_name=scene_name)}
+        samples = self.nu_samples[scene_name]
+        return {s['token']: datetime.fromtimestamp(int(s['timestamp']) / 1000000) for s in samples}
