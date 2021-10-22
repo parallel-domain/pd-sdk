@@ -55,18 +55,14 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         return self.get_scene_names()
 
     def _decode_scene_names(self) -> List[SceneName]:
-        scene_names = list()
-        for log in self.nu_logs:
-            scene_names.append(log["token"])
-        return scene_names
+        return [nu_s['token'] for nu_s in self.nu_scene]
 
-    ### MHS: no surface_ann, and these are obviously not the right annotations for OD3D
+    ### Update this function when lidar_semseg is added.
     def _decode_dataset_metadata(self) -> DatasetMeta:
         available_annotation_types = list()
-        if self.split_name != "v1.0-test" or (len(self.nu_surface_ann) > 0 and len(self.nu_object_ann) > 0):
+        if self.split_name != "v1.0-test" or (len(self.nu_sample_annotation) > 0:
             available_annotation_types = [
-                # AnnotationTypes.SemanticSegmentation2D,
-                # AnnotationTypes.InstanceSegmentation2D,
+                #AnnotationTypes.SemanticSegmentation3D,
                 AnnotationTypes.BoundingBoxes3D,
             ]
 
