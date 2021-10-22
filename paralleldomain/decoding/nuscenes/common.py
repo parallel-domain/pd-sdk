@@ -343,8 +343,7 @@ class NuScenesDataAccessMixin:
     def get_sample_data_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Generator[List[Dict[str, Any]], None, None]:
         samples = self.nu_samples[scene_token]
         for sample in samples:
-            ### MHS: We may need to make this more flexible now that timestamps don't perfectly align.
-            if sample['timestamp'] == frame_id:
+            if sample['token'] == frame_id:
                 sample_token = sample['token']
                 data = self.nu_samples_data[sample_token]
                 yield data
@@ -367,7 +366,7 @@ class NuScenesDataAccessMixin:
                 data = nu_samples_data[sample_token]
                 # Loop through all sample_data objects in data
                 for d in data:
-                    frame_id = str(d["timestamp"])
+                    frame_id = sample_token
                     calib_sensor_token = d["calibrated_sensor_token"]
                     calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
                     sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
