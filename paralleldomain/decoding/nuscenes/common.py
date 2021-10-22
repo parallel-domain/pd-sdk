@@ -190,16 +190,6 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=get_nu_samples_data,
         )
-    ### DELETE THIS PROPERTY IF ABOVE WORKS
-    # @property
-    # def nu_samples_data_by_sample_token(self) -> Dict[str, List[str]]:
-
-    #     sample_pairs = [(val['sample_token'],val['token']) for val in self.nu_samples_data.values() if val['is_key_frame']]
-    #     sample_token_map = defaultdict(list)
-    #     for sample_token, token in sample_pairs:
-    #         sample_token_map[sample_token].append(token)
-        
-    #     return sample_token_map
 
     ### MHS: surface_ann.json not in nuScenes
     # @property
@@ -340,6 +330,13 @@ class NuScenesDataAccessMixin:
     #     return list(set(next_ids + prev_ids))
 
     ### MHS: this function now returns a list of sample_data objects
+    def get_sample_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Dict[str,Any]:
+        samples = self.nu_samples[scene_token]
+        for sample in samples:
+            if sample['token'] == frame_id:
+                return sample
+        
+    
     def get_sample_data_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Generator[List[Dict[str, Any]], None, None]:
         samples = self.nu_samples[scene_token]
         for sample in samples:
@@ -397,20 +394,17 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=get_nu_class_infos,
         )
-    ### MHS: This may need to return a dictionary not a list.
+    ### MHS: Since there are multiple sample_data objects per sample, they all should have very similar ego_poses so I just take the first one.
     def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> List[np.ndarray]:
-        for data_list in self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id):
-            trans_list = []
-            for data in data_list:
-                ego_pose_token = data["ego_pose_token"]
-                ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
-                trans = np.eye(4)
+        for data in next(iter(self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id))):
+            ego_pose_token = data["ego_pose_token"]
+            ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
+            trans = np.eye(4)
 
-                trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
-                trans[:3, 3] = np.array(ego_pose["translation"])
-                trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
-                trans_list.append(trans)
-            return trans_list
+            trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
+            trans[:3, 3] = np.array(ego_pose["translation"])
+            trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
+            return trans
         raise ValueError(f"No ego pose for frame id {frame_id}")
 
 
