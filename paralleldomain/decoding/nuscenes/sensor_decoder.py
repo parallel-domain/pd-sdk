@@ -42,17 +42,18 @@ class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAcces
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         samples = self.nu_samples[self.scene_name]
-        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+        sample_tokens = [sample["token"] for sample in samples]
         frame_ids = set()
 
         data_dict = self.nu_samples_data
-        for key_camera_token in key_camera_tokens:
-            data = data_dict[key_camera_token]
-            calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            if sensor["channel"] == sensor_name:
-                frame_ids.add(str(data["timestamp"]))
+        for sample_token in sample_tokens:
+            data_list = data_dict[sample_token]
+            for data in data_list:
+                calib_sensor_token = data["calibrated_sensor_token"]
+                calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+                sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+                if sensor["channel"] == sensor_name:
+                    frame_ids.add(sample_token)
         return frame_ids
 
 class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAccessMixin):
@@ -86,16 +87,17 @@ class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAcc
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         samples = self.nu_samples[self.scene_name]
-        key_camera_tokens = [sample["key_camera_token"] for sample in samples]
+        sample_tokens = [sample["token"] for sample in samples]
         frame_ids = set()
 
         data_dict = self.nu_samples_data
-        for key_camera_token in key_camera_tokens:
-            data = data_dict[key_camera_token]
-            calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            if sensor["channel"] == sensor_name:
-                frame_ids.add(str(data["timestamp"]))
+        for sample_token in sample_tokens:
+            data_list = data_dict[sample_token]
+            for data in data_list:
+                calib_sensor_token = data["calibrated_sensor_token"]
+                calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+                sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
+                if sensor["channel"] == sensor_name:
+                    frame_ids.add(sample_token)
         return frame_ids
 
