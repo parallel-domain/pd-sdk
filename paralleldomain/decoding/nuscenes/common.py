@@ -183,7 +183,7 @@ class NuScenesDataAccessMixin:
         def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             out_dict = defaultdict(list)
-            [out_dict[d['sample_token']].append(d) for d in self.nu_samples_data.values() if d['is_key_frame']==True]
+            [out_dict[d['sample_token']].append(d) for d in data if d['is_key_frame']==True]
             return out_dict
 
         return self.nu_lazy_load_cache.get_item(
@@ -340,7 +340,7 @@ class NuScenesDataAccessMixin:
     #     return list(set(next_ids + prev_ids))
 
     ### MHS: this function now returns a list of sample_data objects
-    def get_sample_data_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Generator[List[Dict[str, Any], None, None]]:
+    def get_sample_data_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Generator[List[Dict[str, Any]], None, None]:
         samples = self.nu_samples[scene_token]
         for sample in samples:
             ### MHS: We may need to make this more flexible now that timestamps don't perfectly align.
