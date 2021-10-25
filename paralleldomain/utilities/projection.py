@@ -28,7 +28,9 @@ def project_points_3d_to_2d_pd_fisheye(
     theta = np.arctan2(r, points_3d[:, 2])
     theta_d = np.interp(x=theta, xp=distortion_lookup[:, 0], fp=distortion_lookup[:, 1])
 
-    xy_double_prime = xy_prime / r.reshape(-1, 1) * theta_d.reshape(-1, 1)  # multiply with r_d
+    r_d = (theta_d / r).reshape(-1, 1)
+
+    xy_double_prime = r_d * xy_prime
     xy_double_prime[np.isnan(xy_double_prime)] = 0.0
     xy_double_prime_one = np.ones(shape=(len(xy_double_prime), 1))
 
