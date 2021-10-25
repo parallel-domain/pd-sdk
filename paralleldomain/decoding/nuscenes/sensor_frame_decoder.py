@@ -18,6 +18,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation3D,
     SemanticSegmentation3D,
 )
+from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -79,9 +80,10 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
-        ego_to_world = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
+        ego_to_world_mat = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
+        ego_to_world = EgoPose.from_transformation_matrix(ego_to_world_mat)
         sensor_to_world = ego_to_world @ sensor_to_ego
-        return SensorPose.from_transformation_matrix(sensor_to_world)
+        return sensor_to_world
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
