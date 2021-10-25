@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 
 import cv2
@@ -18,18 +19,20 @@ def project_points_3d_to_2d_pd_fisheye(
     points_3d: np.ndarray,
     distortion_lookup: DistortionLookupTable,
 ) -> np.ndarray:
-    xy_prime = points_3d[:, [0, 1]] / points_3d[:, [2]]  # x/z y/z
+    xy_prime = points_3d[:, [0, 1]] / points_3d[:, [2]]
+    nan_idx = np.isnan(xy_prime).any(axis=1)
+    xy_prime[nan_idx, :] = points_3d[nan_idx, [0, 1]]
 
-    r = np.linalg.norm(xy_prime, axis=1)  # sqrt(x^2 + y^2)
-    theta = np.arctan(r)  # is that right?
-    theta_d = np.interp(
-        x=theta, xp=distortion_lookup[:, 0], fp=distortion_lookup[:, 1]
-    )  # column 0: theta, column 1: theta_d
-    r_d = theta_d.reshape(-1, 1)  # theta_d = r_d ?
+    r = np.linalg.norm(xy_prime, axis=1)
 
-    xy_double_prime = xy_prime * r_d  # multiply with r_d
+    theta = np.arctan2(r, points_3d[:, 2])
+    theta_d = np.interp(x=theta, xp=distortion_lookup[:, 0], fp=distortion_lookup[:, 1])
 
-    uv = xy_double_prime * k_matrix[0, [0, 2]] + k_matrix[1, [1, 2]]  # multiply with focal length and add offset
+    xy_double_prime = xy_prime / r.reshape(-1, 1) * theta_d.reshape(-1, 1)  # multiply with r_d
+    xy_double_prime[np.isnan(xy_double_prime)] = 0.0
+    xy_double_prime_one = np.ones(shape=(len(xy_double_prime), 1))
+
+    uv = (k_matrix @ np.hstack([xy_double_prime, xy_double_prime_one]).T).T[:, :2]
 
     return uv
 
