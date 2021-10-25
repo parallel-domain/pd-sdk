@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Generic, List, Optional, Set, Type, TypeVar, Union
+from typing import Dict, Generic, List, Set, Type, TypeVar, Union
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
@@ -103,14 +103,6 @@ class SensorFrame(Generic[TDateTime]):
             identifier=self._annotation_type_identifiers[annotation_type],
             annotation_type=annotation_type,
         )
-
-    @property
-    def point_cloud(self) -> Optional[PointCloud]:
-        return None
-
-    @property
-    def image(self) -> Optional[Image]:
-        return None
 
     @property
     def date_time(self) -> TDateTime:
