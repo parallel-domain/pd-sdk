@@ -11,7 +11,6 @@ import numpy as np
 from google.protobuf import timestamp_pb2
 
 from paralleldomain import Scene
-from paralleldomain.common.dgp.v0.dtos import _attribute_value_dump
 from paralleldomain.common.dgp.v1 import (
     annotations_pb2,
     geometry_pb2,
@@ -22,7 +21,6 @@ from paralleldomain.common.dgp.v1 import (
     scene_pb2,
 )
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, POINT_FORMAT, DirectoryName
-from paralleldomain.common.dgp.v1.utils import _attribute_key_dump, class_map_to_ontology_proto
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.transformer import (
     BoundingBox2DTransformer,
@@ -33,6 +31,7 @@ from paralleldomain.encoding.dgp.transformer import (
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
+from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump, class_map_to_ontology_proto
 from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, SceneEncoder
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBox3D
 from paralleldomain.model.dataset import Dataset
