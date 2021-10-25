@@ -93,7 +93,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         return self.nu_scene_by_scene_token[scene_name]['description']
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        return {sample['token'] for sample in self.nu_samples[scene_token]}
+        return {sample['token'] for sample in self.nu_samples[scene_name]}
 
     def _decode_sensor_names(self, scene_name: SceneName, modality: List[str] = ["camera","lidar"]) -> List[SensorName]:
         samples = self.nu_samples[scene_name]
