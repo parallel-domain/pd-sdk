@@ -226,7 +226,7 @@ class BoundingBoxes2D(Annotation):
 
 @dataclass
 class BoundingBox3D:
-    """Represents a 2D Bounding Box geometry.
+    """Represents a 3D Bounding Box geometry.
 
     Args:
         pose: :attr:`~.BoundingBox3D.pose`

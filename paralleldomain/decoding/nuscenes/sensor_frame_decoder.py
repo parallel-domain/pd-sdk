@@ -8,25 +8,41 @@ from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder, TDateTime
+from paralleldomain.decoding.sensor_frame_decoder import SensorFrameDecoder, CameraSensorFrameDecoder, LidarSensorFrameDecoder, TDateTime
 from paralleldomain.model.annotation import (
     AnnotationType,
     AnnotationTypes,
-    BoundingBox2D,
     BoundingBox3D, ### MHS: added, remove some others later
     BoundingBoxes2D,
     BoundingBoxes3D, ### MHS: added
-    InstanceSegmentation2D,
-    SemanticSegmentation2D,
+    InstanceSegmentation3D,
+    SemanticSegmentation3D,
 )
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image
+from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 
-### MHS: Add NuScenesLidarSensorFrameDecoder
+### TO DO: Pull common functionality into this class, have camera and lidar inherit from it.
+# class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAccessMixin):
+#     def __init__(
+#         self,
+#         dataset_path: Union[str, AnyPath],
+#         dataset_name: str,
+#         split_name: str,
+#         scene_name: SceneName,
+#         settings: DecoderSettings,
+#     ):
+#         self._dataset_path: AnyPath = AnyPath(dataset_path)
+#         SensorFrameDecoder.__init__(
+#             self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+#         )
+#         NuScenesDataAccessMixin.__init__(
+#             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
+#         )    
 
 class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
@@ -66,9 +82,9 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
     ### MHS: nuscenes does not have camera_distortion, so will need to update this function.
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
-        data = self.nu_samples_data[sample_data_id]
+        data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
         return SensorIntrinsic(
@@ -76,28 +92,20 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
             fy=calib_sensor["camera_intrinsic"][1][1],
             cx=calib_sensor["camera_intrinsic"][0][2],
             cy=calib_sensor["camera_intrinsic"][1][2],
-            k1=calib_sensor["camera_distortion"][0],
-            k2=calib_sensor["camera_distortion"][1],
-            p1=calib_sensor["camera_distortion"][2],
-            p2=calib_sensor["camera_distortion"][3],
-            k3=calib_sensor["camera_distortion"][4],
-            k4=calib_sensor["camera_distortion"][5],
-            k5=calib_sensor["camera_distortion"][6],
-            k6=calib_sensor["camera_distortion"][7],
         )
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
-        data = self.nu_samples_data[sample_data_id]
+        data = self.nu_samples_data_by_token[sample_data_id]
         return int(data["height"]), int(data["width"]), 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
-        data = self.nu_samples_data[sample_data_id]
+        data = self.nu_samples_data_by_token[sample_data_id]
 
         img_path = AnyPath(self._dataset_path) / data["filename"]
         image_data = read_image(path=img_path, convert_to_rgb=True)
@@ -106,33 +114,30 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
 
+    ### MHS: Can extend this function for lidar-semseg
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         anno_types = dict()
         if self.split_name != "v1.0-test":
-            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-            )
-            ### MHS: This needs to be updated, nu_sample_data_tokens_to_available_anno_types does not have surface_ann data in nuScenes.
-            if sample_data_id in self.nu_sample_data_tokens_to_available_anno_types:
-                has_surface, has_obj = self.nu_sample_data_tokens_to_available_anno_types[sample_data_id]
-                if has_surface:
-                    anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
+            if frame_id in self.nu_sample_data_tokens_to_available_anno_types:
+                has_obj, has_surface = self.nu_sample_data_tokens_to_available_anno_types[frame_id]
                 if has_obj:
-                    anno_types[AnnotationTypes.InstanceSegmentation2D] = "InstanceSegmentation2D"
-                    anno_types[AnnotationTypes.BoundingBoxes2D] = "BoundingBoxes2D"
+                    anno_types[AnnotationTypes.BoundingBoxes3D] = "BoundingBoxes3D"
+                # if has_surface:
+                #     anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
         return anno_types
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        return datetime.fromtimestamp(int(frame_id) / 1000000)
+        sample = self.get_sample_with_frame_id(self.scene_name,frame_id)
+        return datetime.fromtimestamp(int(sample['timestamp']) / 1000000)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
 
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
-        data = self.nu_samples_data[sample_data_id]
+        data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
         trans = np.eye(4)
@@ -144,96 +149,48 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
-        ego_to_world = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
+        ego_to_world = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
         sensor_to_world = ego_to_world @ sensor_to_ego
         return SensorPose.from_transformation_matrix(sensor_to_world)
 
-    ### MHS: update these 4 annotation functions
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
-        if issubclass(annotation_type, SemanticSegmentation2D):
-            class_ids = self._decode_semantic_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
-            return SemanticSegmentation2D(class_ids=class_ids)
-        elif issubclass(annotation_type, InstanceSegmentation2D):
-            instance_ids = self._decode_instance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
-            return InstanceSegmentation2D(instance_ids=instance_ids)
-        elif issubclass(annotation_type, BoundingBoxes2D):
-            boxes = self._decode_bounding_boxes_2d(sensor_name=sensor_name, frame_id=frame_id)
-            return BoundingBoxes2D(boxes=boxes)
+        if issubclass(annotation_type, BoundingBoxes3D):
+            boxes = self._decode_bounding_boxes_3d(sensor_name=sensor_name, frame_id=frame_id)
+            return BoundingBoxes3D(boxes=boxes)
+        # elif issubclass(annotation_type, InstanceSegmentation3D):
+        #     instance_ids = self._decode_instance_segmentation_3d(sensor_name=sensor_name, frame_id=frame_id)
+        #     return InstanceSegmentation3D(instance_ids=instance_ids)
+        # elif issubclass(annotation_type, SemanticSegmentation3D):
+        #     class_ids = self._decode_semantic_segmentation_3d(sensor_name=sensor_name, frame_id=frame_id)
+        #     return SemanticSegmentation3D(class_ids=class_ids)
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
-    def _decode_semantic_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        semseg_mask = np.zeros((900, 1600)).astype(int)
-
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-        for surface_annotation in self.nu_surface_ann[sample_data_id]:
-            mask = mask_decode(surface_annotation["mask"])
-            category_token = surface_annotation["category_token"]
-            category_name = self.nu_category[category_token]["name"]
-
-            # Draw mask for semantic segmentation.
-            semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
-
-        if sample_data_id in self.nu_object_ann:
-            object_anns = self.nu_object_ann[sample_data_id]
-            object_anns = sorted(object_anns, key=lambda k: k["token"])
-
-            for ann in object_anns:
-                if ann["mask"] is None:
-                    continue
-                # Get color, box, mask and name.
-                category_token = ann["category_token"]
-                category_name = self.nu_category[category_token]["name"]
-
-                mask = mask_decode(ann["mask"])
-                # Draw masks for semantic segmentation and instance segmentation.
-                semseg_mask[mask == 1] = self.nu_name_to_index[category_name]
-
-        return np.expand_dims(semseg_mask, axis=-1)
-
-    def _decode_instance_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        instanceseg_mask = np.zeros((900, 1600)).astype(int)
-
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-
-        object_anns = self.nu_object_ann[sample_data_id]
-        object_anns = sorted(object_anns, key=lambda k: k["token"])
-
-        for i, ann in enumerate(object_anns, start=1):
-            if ann["mask"] is None:
-                continue
-            mask = mask_decode(ann["mask"])
-            instanceseg_mask[mask == 1] = i
-
-        return np.expand_dims(instanceseg_mask, axis=-1)
-
-    def _decode_bounding_boxes_2d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox2D]:
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-
+    def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox2D]:
         boxes = list()
-        for i, ann in enumerate(self.nu_object_ann[sample_data_id], start=1):
-            box = ann["bbox"]
-            category_token = ann["category_token"]
+        for i, ann in enumerate(self.nu_sample_annotation[frame_id], start=1):
+            instance_token = ann['instance_token']
+            category_token = self.nu_instancep[instance_token]["category_token"]
             attribute_tokens = ann["attribute_tokens"]
             category_name = self.nu_category[category_token]["name"]
             attributes = {self.nu_attribute[tk]["name"]: self.nu_attribute[tk] for tk in attribute_tokens}
             class_id = self.nu_name_to_index[category_name]
+            # nuScenes annotations are in global coordinate system
+            sensor_to_world = _decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
+            box_to_world = AnnotationPose(quaternion=Quaternion(ann['rotation']),translation=ann['translation'])
+            box_to_sensor = (sensor_to_world.inverse) @ box_to_world 
+
             boxes.append(
-                BoundingBox2D(
-                    x=box[0],
-                    y=box[1],
-                    width=box[2] - box[0],
-                    height=box[3] - box[1],
+                BoundingBox3D(
+                    pose = box_to_sensor
+                    length= ann['size'][0], # x-axis
+                    width= ann['size'][1], # y-axis
+                    height= ann['size'][2], # z-axis
                     class_id=class_id,
                     instance_id=i,
+                    num_points = ann['num_lidar_pts'],
                     attributes=attributes,
                 )
             )
