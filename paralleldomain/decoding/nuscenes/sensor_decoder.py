@@ -10,7 +10,6 @@ from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
-### MHS: Add NuScenesLidarSensorDecoder
 class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
         self,
