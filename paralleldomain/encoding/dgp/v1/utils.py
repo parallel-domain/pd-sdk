@@ -1,13 +1,6 @@
-from datetime import datetime
-from math import modf
-from typing import Any, Dict, List
+from typing import Dict, List
 
-import dataclasses_json
 import ujson
-from dataclasses_json import DataClassJsonMixin
-from google.protobuf import any_pb2, timestamp_pb2
-from google.protobuf.json_format import MessageToDict
-from google.protobuf.pyext._message import Message
 
 from paralleldomain.common.dgp.v1 import ontology_pb2
 from paralleldomain.model.class_mapping import ClassMap
