@@ -7,7 +7,7 @@ from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
-from paralleldomain.decoding.nuscenes.common import NUSCENEES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
+from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
 from paralleldomain.decoding.nuscenes.sensor_frame_decoder import NuScenesCameraSensorFrameDecoder, NuScenesLidarSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder

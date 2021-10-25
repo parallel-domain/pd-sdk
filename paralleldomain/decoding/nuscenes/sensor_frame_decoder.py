@@ -27,24 +27,7 @@ from paralleldomain.utilities.transformation import Transformation
 T = TypeVar("T")
 
 ### TO DO: Pull common functionality into this class, have camera and lidar inherit from it.
-# class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAccessMixin):
-#     def __init__(
-#         self,
-#         dataset_path: Union[str, AnyPath],
-#         dataset_name: str,
-#         split_name: str,
-#         scene_name: SceneName,
-#         settings: DecoderSettings,
-#     ):
-#         self._dataset_path: AnyPath = AnyPath(dataset_path)
-#         SensorFrameDecoder.__init__(
-#             self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
-#         )
-#         NuScenesDataAccessMixin.__init__(
-#             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
-#         )    
-
-class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesDataAccessMixin):
+class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
@@ -54,65 +37,12 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         settings: DecoderSettings,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        LidarSensorFrameDecoder.__init__(
+        SensorFrameDecoder.__init__(
             self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
         )
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
-        )
-        
-
-class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesDataAccessMixin):
-    def __init__(
-        self,
-        dataset_path: Union[str, AnyPath],
-        dataset_name: str,
-        split_name: str,
-        scene_name: SceneName,
-        settings: DecoderSettings,
-    ):
-        self._dataset_path: AnyPath = AnyPath(dataset_path)
-        CameraSensorFrameDecoder.__init__(
-            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
-        )
-        NuScenesDataAccessMixin.__init__(
-            self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
-        )
-        
-    ### MHS: nuscenes does not have camera_distortion, so will need to update this function.
-    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-        data = self.nu_samples_data_by_token[sample_data_id]
-        calib_sensor_token = data["calibrated_sensor_token"]
-        calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        return SensorIntrinsic(
-            fx=calib_sensor["camera_intrinsic"][0][0],
-            fy=calib_sensor["camera_intrinsic"][1][1],
-            cx=calib_sensor["camera_intrinsic"][0][2],
-            cy=calib_sensor["camera_intrinsic"][1][2],
-        )
-
-    def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-        data = self.nu_samples_data_by_token[sample_data_id]
-        return int(data["height"]), int(data["width"]), 3
-
-    def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
-        )
-        data = self.nu_samples_data_by_token[sample_data_id]
-
-        img_path = AnyPath(self._dataset_path) / data["filename"]
-        image_data = read_image(path=img_path, convert_to_rgb=True)
-
-        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
-        concatenated = np.concatenate([image_data, ones], axis=-1)
-        return concatenated
+        )    
 
     ### MHS: Can extend this function for lidar-semseg
     def _decode_available_annotation_types(
@@ -168,7 +98,7 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
-    def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox2D]:
+    def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
         boxes = list()
         for i, ann in enumerate(self.nu_sample_annotation[frame_id], start=1):
             instance_token = ann['instance_token']
@@ -184,7 +114,7 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
 
             boxes.append(
                 BoundingBox3D(
-                    pose = box_to_sensor
+                    pose = box_to_sensor,
                     length= ann['size'][0], # x-axis
                     width= ann['size'][1], # y-axis
                     height= ann['size'][2], # z-axis
@@ -195,6 +125,79 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
                 )
             )
         return boxes
+
+class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
+        LidarSensorFrameDecoder.__init__(
+            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+        )
+        NuScenesSensorFrameDecoder.__init__(
+            self=self, dataset_path=self._dataset_path, dataset_name=dataset_name, split_name=split_name,
+            scene_name=scene_name, settings=DecoderSettings 
+        )
+        
+
+class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
+    def __init__(
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
+    ):
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
+        CameraSensorFrameDecoder.__init__(
+            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+        )
+        NuScenesSensorFrameDecoder.__init__(
+            self=self, dataset_path=self._dataset_path, dataset_name=dataset_name, split_name=split_name,
+            scene_name=scene_name, settings=DecoderSettings 
+        )
+        
+    ### MHS: nuscenes does not have camera_distortion, so will need to update this function.
+    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
+        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+        )
+        data = self.nu_samples_data_by_token[sample_data_id]
+        calib_sensor_token = data["calibrated_sensor_token"]
+        calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+        return SensorIntrinsic(
+            fx=calib_sensor["camera_intrinsic"][0][0],
+            fy=calib_sensor["camera_intrinsic"][1][1],
+            cx=calib_sensor["camera_intrinsic"][0][2],
+            cy=calib_sensor["camera_intrinsic"][1][2],
+        )
+
+    def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+        )
+        data = self.nu_samples_data_by_token[sample_data_id]
+        return int(data["height"]), int(data["width"]), 3
+
+    def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+        )
+        data = self.nu_samples_data_by_token[sample_data_id]
+
+        img_path = AnyPath(self._dataset_path) / data["filename"]
+        image_data = read_image(path=img_path, convert_to_rgb=True)
+
+        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
+        concatenated = np.concatenate([image_data, ones], axis=-1)
+        return concatenated
+
 
 ### MHS: these helper functions may or may not be useful in nuScenes.
 def mask_decode(mask: dict) -> np.ndarray:

@@ -60,7 +60,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
     ### Update this function when lidar_semseg is added.
     def _decode_dataset_metadata(self) -> DatasetMeta:
         available_annotation_types = list()
-        if self.split_name != "v1.0-test" or (len(self.nu_sample_annotation) > 0:
+        if self.split_name != "v1.0-test" or (len(self.nu_sample_annotation) > 0):
             available_annotation_types = [
                 #AnnotationTypes.SemanticSegmentation3D,
                 AnnotationTypes.BoundingBoxes3D,
@@ -98,7 +98,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def _decode_sensor_names(self, scene_name: SceneName, modality: List[str] = ["camera","lidar"]) -> List[SensorName]:
         samples = self.nu_samples[scene_name]
         sample_tokens = [sample["token"] for sample in samples]
-        camera_names = set()
+        sensor_names = set()
         
         data_dict = self.nu_samples_data
         for sample_token in sample_tokens:
