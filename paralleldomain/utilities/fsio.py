@@ -1,18 +1,19 @@
 import hashlib
 import logging
 import os
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, TypeVar, Union
 
 import cv2
 import numpy as np
 import ujson
 from google.protobuf.descriptor_pool import DescriptorPool
-from google.protobuf.json_format import MessageToDict, MessageToJson, Parse, ParseDict
+from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.message import Message
 
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger("fsio")
+TMessage = TypeVar("TMessage")
 
 
 def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False):
@@ -108,8 +109,8 @@ def read_npz(
 
 
 def read_json_message(
-    obj: Message, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
-) -> Any:
+    obj: TMessage, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
+) -> TMessage:
     with path.open("r") as fp:
         json_data = ujson.load(fp)
 
