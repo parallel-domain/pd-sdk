@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from json import JSONDecodeError
-from typing import Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 import numpy as np
 import ujson
@@ -38,6 +38,17 @@ from paralleldomain.utilities.fsio import read_image, read_json_message, read_np
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+
+
+def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
+    attributes_decoded = {}
+    for k, v in attributes.items():
+        try:
+            attributes_decoded[k] = ujson.loads(v)
+        except (ValueError, JSONDecodeError):
+            attributes_decoded[k] = v
+
+    return attributes_decoded
 
 
 class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta):
@@ -109,14 +120,16 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             for box_dto in dto.annotations:
                 pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
 
-                # Add Truncation, Occlusion
-                attr_parsed = {"occlusion": box_dto.box.occlusion, "truncation": box_dto.box.truncation}
-                # Read + parse other attributes
-                for k, v in box_dto.attributes.items():
-                    try:
-                        attr_parsed[k] = ujson.loads(v)
-                    except (ValueError, JSONDecodeError):
-                        attr_parsed[k] = v
+                # Decode generic attributes from and handle json encoded values
+                attr_decoded = _decode_attributes(attributes=box_dto.attributes)
+                # Read truncation, occlusion and move them to attribute section in model
+                attr_decoded.update(
+                    {
+                        "occlusion": box_dto.box.occlusion,
+                        "truncation": box_dto.box.truncation,
+                    }
+                )
+
                 class_id = box_dto.class_id
 
                 box = BoundingBox3D(
@@ -127,7 +140,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                     class_id=class_id,
                     instance_id=box_dto.instance_id,
                     num_points=box_dto.num_points,
-                    attributes=attr_parsed,
+                    attributes=attr_decoded,
                 )
                 box_list.append(box)
 
@@ -138,12 +151,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             box_list = []
             for box_dto in dto.annotations:
 
-                attr_parsed = {"iscrowd": box_dto.iscrowd}
-                for k, v in box_dto.attributes.items():
-                    try:
-                        attr_parsed[k] = ujson.loads(v)
-                    except (ValueError, JSONDecodeError):
-                        attr_parsed[k] = v
+                # Decode generic attributes from and handle json encoded values
+                attr_decoded = _decode_attributes(attributes=box_dto.attributes)
+                # Read "iscrowd" and move them to attribute section in model
+                attr_decoded.update(
+                    {
+                        "iscrowd": box_dto.iscrowd,
+                    }
+                )
 
                 class_id = box_dto.class_id
 
@@ -154,7 +169,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                     height=box_dto.box.h,
                     class_id=class_id,
                     instance_id=box_dto.instance_id,
-                    attributes=attr_parsed,
+                    attributes=attr_decoded,
                 )
                 box_list.append(box)
 
