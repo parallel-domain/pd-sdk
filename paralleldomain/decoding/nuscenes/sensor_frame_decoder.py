@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime
-from typing import Any, ByteString, Dict, List, Tuple, TypeVar, Union
+from functools import lru_cache
+from typing import Any, ByteString, Dict, List, Optional, Tuple, TypeVar, Union
 
 import cv2
 import numpy as np
@@ -19,6 +20,7 @@ from paralleldomain.model.annotation import (
     # SemanticSegmentation3D,
 )
 from paralleldomain.model.ego import EgoPose
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -145,6 +147,44 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             self=self, dataset_path=self._dataset_path, dataset_name=dataset_name, split_name=split_name,
             scene_name=scene_name, settings=DecoderSettings 
         )
+
+    @lru_cache(maxsize=1)
+    def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        '''
+        NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
+        '''
+        sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name)
+        lidar_filename = self.nu_samples_data_by_token[sample_data_id]['filename']
+        raw_lidar = np.fromfile(str(self._dataset_path / lidar_filename), dtype=np.float32)
+        return raw_lidar.reshape((-1, 5))
+        
+    def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return len(data)
+
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return data[:, :3]
+
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        '''
+        NuScenes point cloud does not have RGB values, so returns np.ndarray of zeros .
+        '''
+        cloud_size = self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
+        return np.zeros([cloud_size,3])
+
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return data[:, 3].reshape(-1,1)
+
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return data[:, 4]
+        
         
 
 class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
