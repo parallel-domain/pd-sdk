@@ -15,7 +15,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
     TDateTime,
 )
-from paralleldomain.model.annotation import (  # InstanceSegmentation3D,; SemanticSegmentation3D,
+from paralleldomain.model.annotation import (
     AnnotationPose,
     AnnotationType,
     AnnotationTypes,
