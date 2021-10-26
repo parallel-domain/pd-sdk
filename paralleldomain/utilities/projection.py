@@ -1,4 +1,3 @@
-import math
 from typing import Optional
 
 import cv2
@@ -10,7 +9,7 @@ from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_O
 class DistortionLookupTable(np.ndarray):
     @classmethod
     def from_ndarray(cls, data: np.ndarray) -> "DistortionLookupTable":
-        data_sorted = data[np.argsort(data[:, 0])].astype(np.float32)
+        data_sorted = data[np.argsort(data[:, 0])].astype(np.float)
         return data_sorted.view(cls)
 
 
@@ -63,12 +62,12 @@ def project_points_3d_to_2d(
         if they are on the image plane or outside.
     """
 
-    r_vec = t_vec = np.array([0, 0, 0]).astype(np.float32)
-    k_matrix = k_matrix.reshape(3, 3).astype(np.float32)
-    points_3d = points_3d.reshape(-1, 3).astype(np.float32)
+    r_vec = t_vec = np.array([0, 0, 0]).astype(np.float)
+    k_matrix = k_matrix.reshape(3, 3).astype(np.float)
+    points_3d = points_3d.reshape(-1, 3).astype(np.float)
 
     if distortion_parameters is not None:
-        distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float32)
+        distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float)
 
     if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
         uv, _ = cv2.projectPoints(points_3d, r_vec, t_vec, k_matrix, distortion_parameters)
