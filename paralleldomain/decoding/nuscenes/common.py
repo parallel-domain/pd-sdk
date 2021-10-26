@@ -98,7 +98,7 @@ class NuScenesDataAccessMixin:
         return {log["token"]: log for log in self.nu_logs}
 
     @property
-    def nu_instance(self) -> List[Dict[str,Any]]: 
+    def nu_instance(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_instance")
 
         def get_nu_instance() -> Dict[str, Dict[str, Any]]:
@@ -109,9 +109,9 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=get_nu_instance,
         )
-    
+
     @property
-    def nu_map(self) -> List[Dict[str,Any]]: 
+    def nu_map(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_map")
 
         return self.nu_lazy_load_cache.get_item(
@@ -120,11 +120,13 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_sample_annotation(self) -> List[Dict[str,Any]]: 
+    def nu_sample_annotation(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sample_annotation")
 
         def get_nu_sample_annotation() -> Dict[str, List[Dict[str, Any]]]:
-            data = load_table(dataset_root=self._dataset_path, table_name="sample_annotation", split_name=self.split_name)
+            data = load_table(
+                dataset_root=self._dataset_path, table_name="sample_annotation", split_name=self.split_name
+            )
             sample_annotation = dict()
             for d in data:
                 sample_annotation.setdefault(d["sample_token"], list()).append(d)
@@ -136,7 +138,7 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_scene(self) -> List[Dict[str,Any]]: 
+    def nu_scene(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_scene")
 
         return self.nu_lazy_load_cache.get_item(
@@ -149,15 +151,17 @@ class NuScenesDataAccessMixin:
         return {scene["token"]: scene for scene in self.nu_scene}
 
     @property
-    def nu_visibility(self) -> List[Dict[str,Any]]: 
+    def nu_visibility(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_visibility")
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: load_table(dataset_root=self._dataset_path, table_name="visibility", split_name=self.split_name),
+            loader=lambda: load_table(
+                dataset_root=self._dataset_path, table_name="visibility", split_name=self.split_name
+            ),
         )
 
-    ### MHS: nuscenes uses scene_tokens instead of log_tokens, so we'll index samples by scene_token 
+    # MHS: nuscenes uses scene_tokens instead of log_tokens, so we'll index samples by scene_token
     @property
     def nu_samples(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_samples")
@@ -166,7 +170,7 @@ class NuScenesDataAccessMixin:
             samples = load_table(dataset_root=self._dataset_path, table_name="sample", split_name=self.split_name)
             scene_wise_samples = dict()
             for s in samples:
-                scene_wise_samples.setdefault(s["scene_token"], list()).append(s)  
+                scene_wise_samples.setdefault(s["scene_token"], list()).append(s)
             return scene_wise_samples
 
         return self.nu_lazy_load_cache.get_item(
@@ -188,40 +192,38 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_samples_data(self) -> Dict[str, List[Dict[str, Any]]]:
-        ''' Because there are multiple sensors in nuScenes, multiple sample_data entries may be mapped 
-        to a single timestamp (or frame). Most of the use of the nu_smaples_data dict in nuImages uses key_camera_token, 
+        """Because there are multiple sensors in nuScenes, multiple sample_data entries may be mapped
+        to a single timestamp (or frame). Most of the use of the nu_smaples_data dict in nuImages uses key_camera_token,
         a foreign key that isn't available in nuScenes. This dictionary enables fast lookup of all sample_data for a
         given sample_token.
-        '''
+        """
         _unique_cache_key = self.get_unique_id(extra="nu_samples_data")
 
         def get_nu_samples_data_by_sample() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             out_dict = defaultdict(list)
-            [out_dict[d['sample_token']].append(d) for d in data if d['is_key_frame']==True]
+            [out_dict[d["sample_token"]].append(d) for d in data if d["is_key_frame"]]
             return out_dict
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples_data_by_sample,
         )
-    ### MHS: I need to grab single sample_data objects, is it too expensive to have two caches of sample_data?  One by sample_data token and one by sample_token.
+
     @property
     def nu_samples_data_by_token(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
 
         def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
-            data = load_table(
-                dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name
-            )
+            data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples_data,
-        )    
+        )
 
-    ### MHS: surface_ann.json not in nuScenes
+    # MHS: surface_ann.json not in nuScenes
     # @property
     # def nu_surface_ann(self) -> Dict[str, List[Dict[str, Any]]]:
     #     _unique_cache_key = self.get_unique_id(extra="nu_surface_ann")
@@ -254,13 +256,13 @@ class NuScenesDataAccessMixin:
     #         loader=get_nu_object_ann,
     #     )
 
-    ### MHS: Extend function for lidar-semseg
+    # MHS: Extend function for lidar-semseg
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sample_data_tokens_to_available_anno_types")
 
         def get_nu_frame_id_tokens_to_available_anno_types() -> Dict[str, Tuple[bool, bool]]:
-            sample_annotation = self.nu_sample_annotation   
+            sample_annotation = self.nu_sample_annotation
             mapping = dict()
             for sample_token in sample_annotation.keys():
                 mapping.setdefault(sample_token, [False, False])[0] = True
@@ -334,8 +336,9 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=lambda: name_to_index_mapping(category=list(self.nu_category.values())),
         )
-    # ### MHS: nuScenes already labels "prev" and "next" frames in sample.json
-    # ### Note: These functions gather the non-keyframe sample_data associated with the key_camera_token sample_data
+
+    # MHS: nuScenes already labels "prev" and "next" frames in sample.json
+    # Note: These functions gather the non-keyframe sample_data associated with the key_camera_token sample_data
 
     # def _get_prev_data_ids(self, key_camera_token: str) -> List[str]:
     #     sample_data = self.nu_samples_data[key_camera_token]
@@ -351,24 +354,25 @@ class NuScenesDataAccessMixin:
     #         tokens += self._get_prev_data_ids(key_camera_token=sample_data["next"])
     #     return tokens
 
-    # ### MHS: We aren't using this function, but it's easy to rewrite since 'prev' and 'next' are in sample.json
+    # MHS: We aren't using this function, but it's easy to rewrite since 'prev' and 'next' are in sample.json
     # def get_connected_sample_data_ids(self, key_camera_token: str):
     #     prev_ids = self._get_prev_data_ids(key_camera_token=key_camera_token)
     #     next_ids = self._get_next_data_ids(key_camera_token=key_camera_token)
     #     return list(set(next_ids + prev_ids))
 
-    def get_sample_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Dict[str,Any]:
+    def get_sample_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Dict[str, Any]:
         samples = self.nu_samples[scene_token]
         for sample in samples:
-            if sample['token'] == frame_id:
+            if sample["token"] == frame_id:
                 return sample
-        
-    
-    def get_sample_data_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Generator[List[Dict[str, Any]], None, None]:
+
+    def get_sample_data_with_frame_id(
+        self, scene_token: str, frame_id: FrameId
+    ) -> Generator[List[Dict[str, Any]], None, None]:
         samples = self.nu_samples[scene_token]
         for sample in samples:
-            if sample['token'] == frame_id:
-                sample_token = sample['token']
+            if sample["token"] == frame_id:
+                sample_token = sample["token"]
                 data = self.nu_samples_data[sample_token]
                 yield data
 
@@ -421,7 +425,9 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=get_nu_class_infos,
         )
-    ### MHS: Since there are multiple sample_data objects per sample, they all should have very similar ego_poses so I just take the first one.
+
+    # MHS: Since there are multiple sample_data objects per sample,
+    # they all should have very similar ego_poses so I just take the first one.
     def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> List[np.ndarray]:
         for data in next(iter(self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id))):
             ego_pose_token = data["ego_pose_token"]
