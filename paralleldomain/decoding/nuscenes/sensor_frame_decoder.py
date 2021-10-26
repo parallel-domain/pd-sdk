@@ -10,13 +10,13 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
 from paralleldomain.decoding.sensor_frame_decoder import SensorFrameDecoder, CameraSensorFrameDecoder, LidarSensorFrameDecoder, TDateTime
 from paralleldomain.model.annotation import (
+    AnnotationPose,
     AnnotationType,
     AnnotationTypes,
-    BoundingBox3D, ### MHS: added, remove some others later
-    BoundingBoxes2D,
-    BoundingBoxes3D, ### MHS: added
-    InstanceSegmentation3D,
-    SemanticSegmentation3D,
+    BoundingBox3D,
+    BoundingBoxes3D,
+    # InstanceSegmentation3D,
+    # SemanticSegmentation3D,
 )
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -51,8 +51,8 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         anno_types = dict()
         if self.split_name != "v1.0-test":
-            if frame_id in self.nu_sample_data_tokens_to_available_anno_types:
-                has_obj, has_surface = self.nu_sample_data_tokens_to_available_anno_types[frame_id]
+            if frame_id in self.nu_frame_id_to_available_anno_types:
+                has_obj, has_surface = self.nu_frame_id_to_available_anno_types[frame_id]
                 if has_obj:
                     anno_types[AnnotationTypes.BoundingBoxes3D] = "BoundingBoxes3D"
                 # if has_surface:
@@ -104,13 +104,13 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         boxes = list()
         for i, ann in enumerate(self.nu_sample_annotation[frame_id], start=1):
             instance_token = ann['instance_token']
-            category_token = self.nu_instancep[instance_token]["category_token"]
+            category_token = self.nu_instance[instance_token]["category_token"]
             attribute_tokens = ann["attribute_tokens"]
             category_name = self.nu_category[category_token]["name"]
             attributes = {self.nu_attribute[tk]["name"]: self.nu_attribute[tk] for tk in attribute_tokens}
             class_id = self.nu_name_to_index[category_name]
             # nuScenes annotations are in global coordinate system
-            sensor_to_world = _decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
+            sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
             box_to_world = AnnotationPose(quaternion=Quaternion(ann['rotation']),translation=ann['translation'])
             box_to_sensor = (sensor_to_world.inverse) @ box_to_world 
 

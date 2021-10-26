@@ -262,13 +262,13 @@ class NuScenesDataAccessMixin:
         def get_nu_frame_id_tokens_to_available_anno_types() -> Dict[str, Tuple[bool, bool]]:
             sample_annotation = self.nu_sample_annotation   
             mapping = dict()
-            for k in sample_annotation.keys():
-                mapping.setdefault(k, [False, False])[0] = True
+            for sample_token in sample_annotation.keys():
+                mapping.setdefault(sample_token, [False, False])[0] = True
             return mapping
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=get_nu_sample_data_tokens_to_available_anno_types,
+            loader=get_nu_frame_id_tokens_to_available_anno_types,
         )
 
     @property
