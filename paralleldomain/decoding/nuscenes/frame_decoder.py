@@ -8,7 +8,10 @@ from pyquaternion import Quaternion
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
 from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
-from paralleldomain.decoding.nuscenes.sensor_frame_decoder import NuScenesCameraSensorFrameDecoder, NuScenesLidarSensorFrameDecoder
+from paralleldomain.decoding.nuscenes.sensor_frame_decoder import (
+    NuScenesCameraSensorFrameDecoder,
+    NuScenesLidarSensorFrameDecoder,
+)
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoPose
@@ -64,9 +67,9 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
             if sensor["modality"] == "lidar":
                 lidar_names.add(sensor["channel"])
         return list(lidar_names)
-    
+
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
-        sample_timestamp = self.get_sample_with_frame_id(scene_token=self.scene_name, frame_id=frame_id)['timestamp']
+        sample_timestamp = self.get_sample_with_frame_id(scene_token=self.scene_name, frame_id=frame_id)["timestamp"]
         return datetime.fromtimestamp(sample_timestamp / 1000000)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:

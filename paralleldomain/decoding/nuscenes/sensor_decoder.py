@@ -3,12 +3,16 @@ from typing import Any, Dict, List, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuscenes.common import NuScenesDataAccessMixin
-from paralleldomain.decoding.nuscenes.sensor_frame_decoder import NuScenesCameraSensorFrameDecoder, NuScenesLidarSensorFrameDecoder
+from paralleldomain.decoding.nuscenes.sensor_frame_decoder import (
+    NuScenesCameraSensorFrameDecoder,
+    NuScenesLidarSensorFrameDecoder,
+)
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+
 
 class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
@@ -55,6 +59,7 @@ class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAcces
                     frame_ids.add(sample_token)
         return frame_ids
 
+
 class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
         self,
@@ -99,4 +104,3 @@ class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAcc
                 if sensor["channel"] == sensor_name:
                     frame_ids.add(sample_token)
         return frame_ids
-

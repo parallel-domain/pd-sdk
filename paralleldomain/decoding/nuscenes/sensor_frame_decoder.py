@@ -9,7 +9,12 @@ from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
-from paralleldomain.decoding.sensor_frame_decoder import SensorFrameDecoder, CameraSensorFrameDecoder, LidarSensorFrameDecoder, TDateTime
+from paralleldomain.decoding.sensor_frame_decoder import (
+    SensorFrameDecoder,
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    TDateTime,
+)
 from paralleldomain.model.annotation import (
     AnnotationPose,
     AnnotationType,
@@ -40,12 +45,10 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         settings: DecoderSettings,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        SensorFrameDecoder.__init__(
-            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
-        )
+        SensorFrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
-        )    
+        )
 
     ### MHS: Can extend this function for lidar-semseg
     def _decode_available_annotation_types(
@@ -62,8 +65,8 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         return anno_types
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        sample = self.get_sample_with_frame_id(self.scene_name,frame_id)
-        return datetime.fromtimestamp(int(sample['timestamp']) / 1000000)
+        sample = self.get_sample_with_frame_id(self.scene_name, frame_id)
+        return datetime.fromtimestamp(int(sample["timestamp"]) / 1000000)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
 
@@ -105,7 +108,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
     def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
         boxes = list()
         for i, ann in enumerate(self.nu_sample_annotation[frame_id], start=1):
-            instance_token = ann['instance_token']
+            instance_token = ann["instance_token"]
             category_token = self.nu_instance[instance_token]["category_token"]
             attribute_tokens = ann["attribute_tokens"]
             category_name = self.nu_category[category_token]["name"]
@@ -113,22 +116,23 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             class_id = self.nu_name_to_index[category_name]
             # nuScenes annotations are in global coordinate system
             sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
-            box_to_world = AnnotationPose(quaternion=Quaternion(ann['rotation']),translation=ann['translation'])
-            box_to_sensor = (sensor_to_world.inverse) @ box_to_world 
+            box_to_world = AnnotationPose(quaternion=Quaternion(ann["rotation"]), translation=ann["translation"])
+            box_to_sensor = (sensor_to_world.inverse) @ box_to_world
 
             boxes.append(
                 BoundingBox3D(
-                    pose = box_to_sensor,
-                    length= ann['size'][0], # x-axis
-                    width= ann['size'][1], # y-axis
-                    height= ann['size'][2], # z-axis
+                    pose=box_to_sensor,
+                    length=ann["size"][0],  # x-axis
+                    width=ann["size"][1],  # y-axis
+                    height=ann["size"][2],  # z-axis
                     class_id=class_id,
                     instance_id=i,
-                    num_points = ann['num_lidar_pts'],
+                    num_points=ann["num_lidar_pts"],
                     attributes=attributes,
                 )
             )
         return boxes
+
 
 class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
     def __init__(
@@ -140,25 +144,28 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         settings: DecoderSettings,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        LidarSensorFrameDecoder.__init__(
-            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
-        )
+        LidarSensorFrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         NuScenesSensorFrameDecoder.__init__(
-            self=self, dataset_path=self._dataset_path, dataset_name=dataset_name, split_name=split_name,
-            scene_name=scene_name, settings=DecoderSettings 
+            self=self,
+            dataset_path=self._dataset_path,
+            dataset_name=dataset_name,
+            split_name=split_name,
+            scene_name=scene_name,
+            settings=DecoderSettings,
         )
 
     @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        '''
+        """
         NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
-        '''
+        """
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name)
-        lidar_filename = self.nu_samples_data_by_token[sample_data_id]['filename']
+            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+        )
+        lidar_filename = self.nu_samples_data_by_token[sample_data_id]["filename"]
         raw_lidar = np.fromfile(str(self._dataset_path / lidar_filename), dtype=np.float32)
         return raw_lidar.reshape((-1, 5))
-        
+
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return len(data)
@@ -168,15 +175,15 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         return data[:, :3]
 
     def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        '''
+        """
         NuScenes point cloud does not have RGB values, so returns np.ndarray of zeros .
-        '''
+        """
         cloud_size = self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
-        return np.zeros([cloud_size,3])
+        return np.zeros([cloud_size, 3])
 
     def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, 3].reshape(-1,1)
+        return data[:, 3].reshape(-1, 1)
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
@@ -184,8 +191,7 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
     def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, 4]
-        
-        
+
 
 class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
     def __init__(
@@ -201,10 +207,14 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
             self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
         )
         NuScenesSensorFrameDecoder.__init__(
-            self=self, dataset_path=self._dataset_path, dataset_name=dataset_name, split_name=split_name,
-            scene_name=scene_name, settings=DecoderSettings 
+            self=self,
+            dataset_path=self._dataset_path,
+            dataset_name=dataset_name,
+            split_name=split_name,
+            scene_name=scene_name,
+            settings=DecoderSettings,
         )
-        
+
     ### MHS: nuscenes does not have camera_distortion, so will need to update this function.
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(

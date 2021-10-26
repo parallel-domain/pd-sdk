@@ -55,14 +55,14 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         return self.get_scene_names()
 
     def _decode_scene_names(self) -> List[SceneName]:
-        return [nu_s['token'] for nu_s in self.nu_scene]
+        return [nu_s["token"] for nu_s in self.nu_scene]
 
     ### Update this function when lidar_semseg is added.
     def _decode_dataset_metadata(self) -> DatasetMeta:
         available_annotation_types = list()
         if self.split_name != "v1.0-test" or (len(self.nu_sample_annotation) > 0):
             available_annotation_types = [
-                #AnnotationTypes.SemanticSegmentation3D,
+                # AnnotationTypes.SemanticSegmentation3D,
                 AnnotationTypes.BoundingBoxes3D,
             ]
 
@@ -84,22 +84,24 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         )
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
-        # Because there are multiple nuScenes scenes in a log entry, this combines the log and scene metadata. 
+        # Because there are multiple nuScenes scenes in a log entry, this combines the log and scene metadata.
         scene_metadata = self.nu_scene_by_scene_token[scene_name]
-        log_metadata = self.nu_logs_by_log_token[scene_metadata['log_token']]
-        return {**log_metadata,**scene_metadata}
+        log_metadata = self.nu_logs_by_log_token[scene_metadata["log_token"]]
+        return {**log_metadata, **scene_metadata}
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
-        return self.nu_scene_by_scene_token[scene_name]['description']
+        return self.nu_scene_by_scene_token[scene_name]["description"]
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        return {sample['token'] for sample in self.nu_samples[scene_name]}
+        return {sample["token"] for sample in self.nu_samples[scene_name]}
 
-    def _decode_sensor_names(self, scene_name: SceneName, modality: List[str] = ["camera","lidar"]) -> List[SensorName]:
+    def _decode_sensor_names(
+        self, scene_name: SceneName, modality: List[str] = ["camera", "lidar"]
+    ) -> List[SensorName]:
         samples = self.nu_samples[scene_name]
         sample_tokens = [sample["token"] for sample in samples]
         sensor_names = set()
-        
+
         data_dict = self.nu_samples_data
         for sample_token in sample_tokens:
             data_list = data_dict[sample_token]
@@ -112,10 +114,10 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         return list(sensor_names)
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names(scene_name=scene_name,modality=["camera"])
+        return self._decode_sensor_names(scene_name=scene_name, modality=["camera"])
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names(scene_name=scene_name,modality=["lidar"])
+        return self._decode_sensor_names(scene_name=scene_name, modality=["lidar"])
 
     ### MHS: Update this function when lidar-semseg is added
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
@@ -160,4 +162,4 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         samples = self.nu_samples[scene_name]
-        return {s['token']: datetime.fromtimestamp(int(s['timestamp']) / 1000000) for s in samples}
+        return {s["token"]: datetime.fromtimestamp(int(s["timestamp"]) / 1000000) for s in samples}
