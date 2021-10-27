@@ -30,7 +30,7 @@ class DistortionLookupTable(np.ndarray):
         return data_sorted.view(cls)
 
 
-def project_points_3d_to_2d_pd_fisheye(
+def _project_points_3d_to_2d_pd_fisheye(
     k_matrix: np.ndarray,
     points_3d: np.ndarray,
     distortion_lookup: DistortionLookupTable,
@@ -78,7 +78,6 @@ def project_points_3d_to_2d(
         if they are on the image plane or outside.
     """
 
-    r_vec = t_vec = np.array([0, 0, 0]).astype(np.float)
     k_matrix = k_matrix.reshape(3, 3).astype(np.float)
     points_3d = points_3d.reshape(-1, 3).astype(np.float)
 
@@ -86,13 +85,27 @@ def project_points_3d_to_2d(
         distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float)
 
     if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
-        uv, _ = cv2.projectPoints(points_3d, r_vec, t_vec, k_matrix, distortion_parameters)
+        uv, _ = cv2.projectPoints(
+            objectPoints=points_3d,
+            rvec=(0, 0, 0),  # already in camera sensor coordinate system
+            tvec=(0, 0, 0),  # already in camera sensor coordinate system
+            cameraMatrix=k_matrix,
+            distCoeffs=distortion_parameters,
+        )
     elif camera_model == CAMERA_MODEL_OPENCV_FISHEYE:
         points_3d = np.expand_dims(points_3d, -2)  # cv2.fisheye.projectPoints expects dimensions (N x 1 x 3)
-        uv, _ = cv2.fisheye.projectPoints(points_3d, r_vec, t_vec, k_matrix, distortion_parameters)
+        uv, _ = cv2.fisheye.projectPoints(
+            objectPoints=points_3d,
+            rvec=(0, 0, 0),  # already in camera sensor coordinate system
+            tvec=(0, 0, 0),  # already in camera sensor coordinate system
+            K=k_matrix,
+            D=distortion_parameters,
+        )
     elif camera_model == CAMERA_MODEL_PD_FISHEYE:
-        uv = project_points_3d_to_2d_pd_fisheye(
-            k_matrix=k_matrix, points_3d=points_3d, distortion_lookup=distortion_lookup
+        uv = _project_points_3d_to_2d_pd_fisheye(
+            k_matrix=k_matrix,
+            points_3d=points_3d,
+            distortion_lookup=distortion_lookup,
         )
     else:
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
