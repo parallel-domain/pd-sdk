@@ -21,4 +21,4 @@ class InstanceSegmentation3D(Annotation):
     instance_ids: np.ndarray
 
     def __sizeof__(self):
-        return getsizeof(self.instance_ids)
+        return self.instance_ids.nbytes

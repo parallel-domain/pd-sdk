@@ -29,8 +29,8 @@ class Line2D:
 
     start: Point2D
     end: Point2D
-    directed: bool
     class_id: int
+    directed: bool = False
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
 

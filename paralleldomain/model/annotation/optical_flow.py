@@ -18,7 +18,7 @@ class OpticalFlow(Annotation):
             camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.
 
     Example:
-        Using the Optical Flow vector mask in combination with :attr:`.ImageData.coordinates` allows for a
+        Using the Optical Flow vector mask in combination with :attr:`.Image.coordinates` allows for a
         fast retrieval of absolute pixel coordinates.
         ::
 
@@ -47,4 +47,4 @@ class OpticalFlow(Annotation):
     vectors: np.ndarray
 
     def __sizeof__(self):
-        return getsizeof(self.vectors)
+        return self.vectors.nbytes

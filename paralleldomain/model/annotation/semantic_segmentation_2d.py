@@ -63,4 +63,4 @@ class SemanticSegmentation2D(Annotation):
             raise ValueError("Semantic Segmentation class_ids has to have only 1 channel!")
 
     def __sizeof__(self):
-        return getsizeof(self.class_ids)
+        return self.class_ids.nbytes

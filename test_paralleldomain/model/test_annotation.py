@@ -91,6 +91,23 @@ class TestSensorFrame:
         assert flow.vectors.shape[2] == 2
         assert image.shape[:2] == flow.vectors.shape[:2]
 
+    def test_scene_flow_loading(self, scene: Scene, dataset: Dataset):
+        assert AnnotationTypes.SceneFlow in dataset.available_annotation_types
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+
+        lidar_sensor = next(
+            (x for x in frame.lidar_frames if AnnotationTypes.SceneFlow in x.available_annotation_types), None
+        )
+        assert lidar_sensor is not None
+
+        flow = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.SceneFlow)
+        assert flow is not None
+        cloud = lidar_sensor.point_cloud.xyz
+        assert flow.vectors.shape[0] == cloud.shape[0]
+        assert flow.vectors.shape[1] == 3
+
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 

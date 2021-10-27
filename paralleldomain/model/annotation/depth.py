@@ -24,4 +24,4 @@ class Depth(Annotation):
     depth: np.ndarray
 
     def __sizeof__(self):
-        return getsizeof(self.depth)
+        return self.depth.nbytes

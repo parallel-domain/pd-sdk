@@ -47,7 +47,7 @@ class InstanceSegmentation2D(Annotation):
         return boolean_mask_by_values(mask=self.instance_ids, values=instance_ids)
 
     def __sizeof__(self):
-        return getsizeof(self.instance_ids)
+        return self.instance_ids.nbytes
 
     @property
     def rgb_encoded(self) -> np.ndarray:

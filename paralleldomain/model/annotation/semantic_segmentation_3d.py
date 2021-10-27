@@ -21,4 +21,4 @@ class SemanticSegmentation3D(Annotation):
     class_ids: np.ndarray
 
     def __sizeof__(self):
-        return getsizeof(self.class_ids)
+        return self.class_ids.nbytes
