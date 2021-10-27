@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from paralleldomain.model.annotation import Annotation
+from paralleldomain.model.annotation.common import Annotation
 from paralleldomain.model.annotation.polyline_2d import Polyline2D
 
 
