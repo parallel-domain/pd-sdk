@@ -119,7 +119,6 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return self._decode_sensor_names(scene_name=scene_name, modality=["lidar"])
 
-    # MHS: Update this function when lidar-semseg is added
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return {
             # AnnotationTypes.SemanticSegmentation3D: ClassMap(classes=self.nu_class_infos),

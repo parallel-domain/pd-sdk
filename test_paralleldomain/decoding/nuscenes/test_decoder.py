@@ -218,6 +218,7 @@ class TestLidarSensorFrame:
         intensity = pt_cloud.intensity
         assert isinstance(xyz, np.ndarray)
         assert xyz.sum() - xyz_i[:, :3].sum() == 0.0
+        assert np.linalg.norm(xyz) > 0.0
         assert ring.max() < 32.0
         assert ring.min() > -1.0
         assert xyz.shape[1] == 3

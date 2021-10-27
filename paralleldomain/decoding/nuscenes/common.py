@@ -161,7 +161,6 @@ class NuScenesDataAccessMixin:
             ),
         )
 
-    # MHS: nuscenes uses scene_tokens instead of log_tokens, so we'll index samples by scene_token
     @property
     def nu_samples(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_samples")
@@ -223,7 +222,6 @@ class NuScenesDataAccessMixin:
             loader=get_nu_samples_data,
         )
 
-    # MHS: Extend function for lidar-semseg
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sample_data_tokens_to_available_anno_types")

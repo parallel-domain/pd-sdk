@@ -48,7 +48,6 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
-    # MHS: Can extend this function for lidar-semseg
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
@@ -186,7 +185,7 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         return data[:, 3].reshape(-1, 1)
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        pass
+        return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
 
     def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
@@ -215,7 +214,6 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
             settings=DecoderSettings,
         )
 
-    # MHS: nuscenes does not have camera_distortion, so will need to update this function.
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
             scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
@@ -228,6 +226,14 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
             fy=calib_sensor["camera_intrinsic"][1][1],
             cx=calib_sensor["camera_intrinsic"][0][2],
             cy=calib_sensor["camera_intrinsic"][1][2],
+            k1=0,
+            k2=0,
+            p1=0,
+            p2=0,
+            k3=0,
+            k4=0,
+            k5=0,
+            k6=0,
         )
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
@@ -249,54 +255,3 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
-
-
-# MHS: these helper functions may or may not be useful in nuScenes.
-def mask_decode(mask: dict) -> np.ndarray:
-    """
-    Decode the mask from base64 string to binary string, then decoded to get a mask.
-    :param mask: The mask dictionary with fields `size` and `counts`.
-    :return: A numpy array representing the binary mask for this class.
-    """
-    new_mask = mask.copy()
-    new_mask["counts"] = base64.b64decode(mask["counts"])
-    mask_rle = _rle_from_leb_string(leb_bytes=new_mask["counts"])
-    return _rle_to_mask(mask_rle=mask_rle, shape=new_mask["size"])
-
-
-def _rle_to_mask(mask_rle: List[int], shape: Tuple[int, int]) -> np.ndarray:
-    flat_size = shape[0] * shape[1]
-    mask = np.zeros(flat_size, dtype=int)
-    rle_np = np.array([a for a in mask_rle], dtype=int)
-    rle_np_cum = np.cumsum(rle_np)
-    one_slice = np.array(list(zip(rle_np_cum[::2], rle_np_cum[1::2])))
-    for start, stop in one_slice:
-        mask[start:stop] = 1
-    return mask.reshape(shape, order="F")
-
-
-def _rle_from_leb_string(leb_bytes: ByteString) -> List[int]:
-    """
-    Coco custom LEB128 decoding. See https://github.com/cocodataset/cocoapi/blob/master/common/maskApi.c#L205
-    """
-    m = 0
-    p = 0
-    cnts = list()
-    max_st_len = len(leb_bytes)
-    while p < max_st_len:
-        x = 0
-        k = 0
-        more = True
-        while more:
-            c = leb_bytes[p] - 48
-            x |= (c & 0x1F) << 5 * k
-            more = c & 0x20 == 32
-            p += 1
-            k += 1
-            if not more and (c & 0x10):
-                x |= -1 << 5 * k
-        if m > 2:
-            x += cnts[m - 2]
-        cnts.append(x)
-        m += 1
-    return cnts
