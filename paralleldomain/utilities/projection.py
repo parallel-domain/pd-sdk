@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 
 import cv2
@@ -7,9 +8,25 @@ from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_O
 
 
 class DistortionLookupTable(np.ndarray):
+    """Container object for distortion lookup tables used in distortion model `pd_fisheye`.
+    Can be accessed like any `np.ndarray`"""
+
     @classmethod
     def from_ndarray(cls, data: np.ndarray) -> "DistortionLookupTable":
+        """Takes a `np.ndarray` and creates a :obj:`DistortionLookupTable` instance from it.
+
+        Args:
+            data: `np.ndarray` of shape (N x 2). Array will be sorted by first column. Last two rows will be used to
+                extrapolate for maximum valid angle value of Pi.
+
+        Returns:
+            Distortion lookup table to be used with projection functions using distortion model `pd_fisheye`.
+        """
         data_sorted = data[np.argsort(data[:, 0])].astype(np.float)
+        if data_sorted[:, 0].max() < math.pi:
+            extrapolated_alpha = (math.pi - data_sorted[-2, 0]) / (data_sorted[-1, 0] - data_sorted[-2, 0])
+            extrapolated_theta_d = data_sorted[-2, 1] + extrapolated_alpha * (data_sorted[-1, 1] - data_sorted[-2, 1])
+            data_sorted = np.vstack([data_sorted, np.array([math.pi, extrapolated_theta_d])])
         return data_sorted.view(cls)
 
 
@@ -18,10 +35,7 @@ def project_points_3d_to_2d_pd_fisheye(
     points_3d: np.ndarray,
     distortion_lookup: DistortionLookupTable,
 ) -> np.ndarray:
-    xy_prime = points_3d[:, [0, 1]] / points_3d[:, [2]]
-    nan_idx = np.isnan(xy_prime).any(axis=1)
-    xy_prime[nan_idx, :] = points_3d[nan_idx, [0, 1]]
-
+    xy_prime = points_3d[:, [0, 1]]
     r = np.linalg.norm(xy_prime, axis=1)
 
     theta = np.arctan2(r, points_3d[:, 2])
@@ -50,11 +64,13 @@ def project_points_3d_to_2d(
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
             `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
-        distortion_parameters: Array of applicable distortion parameters for distortion model.
         camera_model: One of `opencv_pinhole` or `opencv_fisheye`.
             More details in :obj:`~.model.sensor.CameraModel`.
         points_3d: A matrix with dimensions (nx3) containing the points.
             Points must be already in the camera's coordinate system.
+        distortion_parameters: Array of applicable distortion parameters for
+            distortion models `opencv_pinhole` and `opencv_fisheye`.
+        distortion_lookup: Table of undistorted and distorted angles. Required for `pd_fisheye` model.
 
     Returns:
         A matrix with dimensions (nx2) containing the point projections. :obj:`dtype` is :obj:`float` and values need
