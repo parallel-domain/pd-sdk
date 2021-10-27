@@ -161,7 +161,9 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
         lidar_filename = self.nu_samples_data_by_token[sample_data_id]["filename"]
-        raw_lidar = np.fromfile(str(self._dataset_path / lidar_filename), dtype=np.float32)
+        full_anypath = self._dataset_path / lidar_filename
+        with full_anypath.open(mode="rb") as fp:
+            raw_lidar = np.frombuffer(fp.read(), dtype=np.float32)
         return raw_lidar.reshape((-1, 5))
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:

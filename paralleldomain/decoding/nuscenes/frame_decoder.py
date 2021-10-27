@@ -36,37 +36,28 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         )
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
-        trans = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
+        trans = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
         return EgoPose.from_transformation_matrix(mat=trans)
 
-    def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
+    def _decode_available_sensor_names(
+        self, frame_id: FrameId, modality: List[str] = ["camera", "lidar"]
+    ) -> List[SensorName]:
         sensor_names = set()
-        for data in self.get_sample_data_with_frame_id(scene_token=self.scene_name, frame_id=frame_id):
+
+        data_list = self.nu_samples_data[frame_id]
+        for data in data_list:
             calib_sensor_token = data["calibrated_sensor_token"]
             calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            sensor_names.add(sensor["channel"])
+            if sensor["modality"] in modality:
+                sensor_names.add(sensor["channel"])
         return list(sensor_names)
 
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
-        camera_names = set()
-        for data in self.get_sample_data_with_frame_id(scene_token=self.scene_name, frame_id=frame_id):
-            calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            if sensor["modality"] == "camera":
-                camera_names.add(sensor["channel"])
-        return list(camera_names)
+        return self._decode_available_sensor_names(frame_id=frame_id, modality=["camera"])
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        lidar_names = set()
-        for data in self.get_sample_data_with_frame_id(scene_token=self.scene_name, frame_id=frame_id):
-            calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-            sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
-            if sensor["modality"] == "lidar":
-                lidar_names.add(sensor["channel"])
-        return list(lidar_names)
+        return self._decode_available_sensor_names(frame_id=frame_id, modality=["lidar"])
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         sample_timestamp = self.get_sample_with_frame_id(scene_token=self.scene_name, frame_id=frame_id)["timestamp"]
