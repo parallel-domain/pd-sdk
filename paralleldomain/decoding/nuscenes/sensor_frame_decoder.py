@@ -73,12 +73,11 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        trans = np.eye(4)
-        trans[:3, :3] = Quaternion(calib_sensor["rotation"]).rotation_matrix
-        trans[:3, 3] = np.array(calib_sensor["translation"])
+        quaternion = Quaternion(calib_sensor["rotation"])
+        trans = Transformation(quaternion=quaternion, translation=calib_sensor["translation"])
         trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
 
-        return SensorExtrinsic.from_transformation_matrix(trans)
+        return trans
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)

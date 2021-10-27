@@ -12,6 +12,7 @@ from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
@@ -26,8 +27,7 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     """
     table_path = dataset_root / split_name / f"{table_name}.json"
     if table_path.exists():
-        with table_path.open() as f:
-            return json.load(f)
+        return read_json(table_path)
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
