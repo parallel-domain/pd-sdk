@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import ujson
@@ -27,14 +27,24 @@ from paralleldomain.model.annotation import (
     Depth,
     InstanceSegmentation2D,
     InstanceSegmentation3D,
+    Line2D,
     OpticalFlow,
+    Point2D,
+    Points2D,
+    Polygon2D,
+    Polygons2D,
+    Polyline2D,
+    Polylines2D,
+    SceneFlow,
     SemanticSegmentation2D,
     SemanticSegmentation3D,
+    SurfaceNormals2D,
+    SurfaceNormals3D,
 )
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json_message, read_npz
+from paralleldomain.utilities.fsio import read_image, read_json_message, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -200,6 +210,24 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
+        elif issubclass(annotation_type, SceneFlow):
+            flow = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SceneFlow(vectors=flow)
+        elif issubclass(annotation_type, SurfaceNormals3D):
+            normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals3D(normals=normals)
+        elif issubclass(annotation_type, SurfaceNormals2D):
+            normals = self._decode_surface_normals_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals2D(normals=normals)
+        elif issubclass(annotation_type, Polylines2D):
+            polylines = self._decode_polylines_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Polylines2D(polylines=polylines)
+        elif issubclass(annotation_type, Polygons2D):
+            polygons = self._decode_polygons_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Polygons2D(polygons=polygons)
+        elif issubclass(annotation_type, Points2D):
+            points = self._decode_points_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Points2D(points=points)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -286,6 +314,96 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
         return instance_ids
+
+    def _decode_scene_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="motion_vectors")
+        return vectors
+
+    def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="surface_normals")
+        return vectors
+
+    def _decode_surface_normals_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+
+        norms = read_png(path=annotation_path)[..., :3]
+        norms_norm = np.expand_dims(np.linalg.norm(norms, axis=-1), -1)
+        normalized_norms = norms / norms_norm
+
+        return normalized_norms
+
+    def _lines_from_pb_annotation(
+        self,
+        annotation: Union[annotations_pb2.Polygon2DAnnotation, annotations_pb2.KeyLine2DAnnotation],
+        class_id: int,
+        instance_id: int,
+    ) -> List[Line2D]:
+        lines = list()
+        points = list()
+        for vertex in annotation.vertices:
+            point = Point2D(x=vertex.x, y=vertex.y, class_id=class_id, instance_id=instance_id)
+            points.append(point)
+
+        for start, end in zip(points, points[1:]):
+            line = Line2D(start=start, end=end, class_id=class_id, directed=False, instance_id=instance_id)
+            lines.append(line)
+
+        return lines
+
+    def _decode_polygons_2d(self, scene_name: str, annotation_identifier: str) -> List[Polygon2D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        poly_annotations = read_json_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
+        polygons = list()
+        for annotation in poly_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
+
+            polygon = Polygon2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
+            polygons.append(polygon)
+        return polygons
+
+    def _decode_polylines_2d(self, scene_name: str, annotation_identifier: str) -> List[Polyline2D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        poly_annotations = read_json_message(obj=annotations_pb2.KeyLine2DAnnotations(), path=annotation_path)
+        polylines = list()
+        for annotation in poly_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            key = annotation.key
+            attributes["key"] = key
+
+            lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
+
+            polyline = Polyline2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
+            polylines.append(polyline)
+        return polylines
+
+    def _decode_points_2d(self, scene_name: str, annotation_identifier: str) -> List[Point2D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        poly_annotations = read_json_message(obj=annotations_pb2.KeyPoint2DAnnotations(), path=annotation_path)
+        points = list()
+        for annotation in poly_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            key = annotation.key
+            attributes["key"] = key
+
+            point = Point2D(
+                x=annotation.point.x,
+                y=annotation.point.y,
+                class_id=class_id,
+                instance_id=instance_id,
+                attributes=attributes,
+            )
+
+            points.append(point)
+        return points
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):

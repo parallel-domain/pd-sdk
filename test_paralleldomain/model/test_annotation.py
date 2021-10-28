@@ -108,6 +108,39 @@ class TestSensorFrame:
         assert flow.vectors.shape[0] == cloud.shape[0]
         assert flow.vectors.shape[1] == 3
 
+    def test_surface_normals_3d_loading(self, scene: Scene, dataset: Dataset):
+        assert AnnotationTypes.SurfaceNormals3D in dataset.available_annotation_types
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+
+        lidar_sensor = next(
+            (x for x in frame.lidar_frames if AnnotationTypes.SurfaceNormals3D in x.available_annotation_types), None
+        )
+        assert lidar_sensor is not None
+        normals = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.SurfaceNormals3D)
+        assert normals is not None
+        cloud = lidar_sensor.point_cloud.xyz
+        assert normals.normals.shape[0] == cloud.shape[0]
+        assert normals.normals.shape[1] == 3
+
+    def test_surface_normals_2d_loading(self, scene: Scene, dataset: Dataset):
+        assert AnnotationTypes.SurfaceNormals2D in dataset.available_annotation_types
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+
+        camera_sensor = next(
+            (x for x in frame.camera_frames if AnnotationTypes.OpticalFlow in x.available_annotation_types), None
+        )
+        assert camera_sensor is not None
+
+        normals = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SurfaceNormals2D)
+        assert normals is not None
+        image = camera_sensor.image.rgb
+        assert normals.normals.shape[:2] == image.shape[:2]
+        assert normals.normals.shape[2] == 3
+
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
