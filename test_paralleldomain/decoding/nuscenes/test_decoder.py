@@ -6,7 +6,6 @@ import pytest
 
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
-from paralleldomain.decoding.nuscenes.sensor_frame_decoder import mask_decode
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
 from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame, LidarSensor, LidarSensorFrame
 from paralleldomain.utilities.transformation import Transformation

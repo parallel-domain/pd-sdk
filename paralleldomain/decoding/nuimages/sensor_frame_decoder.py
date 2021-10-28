@@ -4,7 +4,6 @@ from typing import Any, ByteString, Dict, List, Tuple, TypeVar, Union
 
 import cv2
 import numpy as np
-from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
@@ -113,8 +112,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        quaternion = Quaternion(calib_sensor["rotation"])
-        trans = Transformation(quaternion=quaternion, translation=calib_sensor["translation"])
+        trans = Transformation(quaternion=calib_sensor["rotation"], translation=calib_sensor["translation"])
         trans = NUIMAGES_IMU_TO_INTERNAL_CS @ trans
 
         return trans

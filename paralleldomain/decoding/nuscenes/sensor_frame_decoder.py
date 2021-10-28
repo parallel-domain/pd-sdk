@@ -5,7 +5,6 @@ from typing import Any, ByteString, Dict, List, Optional, Tuple, TypeVar, Union
 
 import cv2
 import numpy as np
-from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
@@ -73,8 +72,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        quaternion = Quaternion(calib_sensor["rotation"])
-        trans = Transformation(quaternion=quaternion, translation=calib_sensor["translation"])
+        trans = Transformation(quaternion=calib_sensor["rotation"], translation=calib_sensor["translation"])
         trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
 
         return trans
@@ -112,7 +110,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             class_id = self.nu_name_to_index[category_name]
             # nuScenes annotations are in global coordinate system
             sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
-            box_to_world = AnnotationPose(quaternion=Quaternion(ann["rotation"]), translation=ann["translation"])
+            box_to_world = AnnotationPose(quaternion=ann["rotation"], translation=ann["translation"])
             box_to_sensor = (sensor_to_world.inverse) @ box_to_world
 
             boxes.append(
