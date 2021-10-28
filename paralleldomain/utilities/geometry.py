@@ -1,8 +1,49 @@
-from typing import Union
+from typing import List, Tuple, Union
 
+import cv2
 import numpy as np
 
 from paralleldomain.model.annotation import AnnotationPose, BoundingBox2D, BoundingBox3D
+
+
+def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool = True) -> np.ndarray:
+    if points.ndim != 2:
+        raise ValueError(
+            f"""Expected np.ndarray of shape (N X M) for `points`, where N is
+                number of points and M number of dimensions. Received {points.shape}."""
+        )
+    if num_points < 2:
+        raise ValueError(f"`num_points` must be at least 2, received {num_points}")
+
+    factors_lin = np.linspace(0, 1, num_points)
+    factors = np.stack([1 - factors_lin, factors_lin], axis=-1)
+    point_pairs = np.stack([points[:-1], points[1:]], axis=1)
+
+    point_pairs_interp = factors @ point_pairs
+
+    return point_pairs_interp.reshape(-1, points.shape[1]) if flatten_result else point_pairs_interp
+
+
+def point_in_polygon(
+    polygon: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
+    point: Union[np.ndarray, List[float], Tuple[float, float]],
+    include_edge: bool = True,
+) -> bool:
+    polygon = np.asarray(polygon).astype(np.float32)
+    if polygon.ndim != 2 or polygon.shape[0] < 3 or polygon.shape[1] != 2:
+        raise ValueError(
+            f"""Expected np.ndarray of shape (N X 2) for `polygon`, where N is
+                number of points >= 3. Received {polygon.shape}."""
+        )
+
+    if isinstance(point, np.ndarray):
+        point = point.tolist()
+    point = tuple(map(float, point))
+    if len(point) != 2:
+        raise ValueError(f"""Expected `points` with length 2. Received {len(point)}.""")
+
+    threshold = 0 if include_edge else 1
+    return cv2.pointPolygonTest(contour=polygon, pt=point, measureDist=False) >= threshold
 
 
 def merge_boxes(
