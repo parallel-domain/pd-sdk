@@ -61,8 +61,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         return anno_types
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        sample = self.get_sample_with_frame_id(self.scene_name, frame_id)
-        return datetime.fromtimestamp(int(sample["timestamp"]) / 1000000)
+        return self.get_datetime_with_frame_id(self.scene_name, frame_id)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
 

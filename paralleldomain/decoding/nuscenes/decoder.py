@@ -95,7 +95,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         return {sample["token"] for sample in self.nu_samples[scene_name]}
 
-    def _decode_sensor_names(
+    def _decode_sensor_names_by_modality(
         self, scene_name: SceneName, modality: List[str] = ["camera", "lidar"]
     ) -> List[SensorName]:
         samples = self.nu_samples[scene_name]
@@ -113,11 +113,14 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
                     sensor_names.add(sensor["channel"])
         return list(sensor_names)
 
+    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
+        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["camera", "lidar"])
+
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names(scene_name=scene_name, modality=["camera"])
+        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["camera"])
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names(scene_name=scene_name, modality=["lidar"])
+        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["lidar"])
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return {
@@ -125,7 +128,6 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
             AnnotationTypes.BoundingBoxes3D: ClassMap(classes=self.nu_class_infos),
         }
 
-    # MHS: we don't actually use camera_name in this function
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[datetime]:

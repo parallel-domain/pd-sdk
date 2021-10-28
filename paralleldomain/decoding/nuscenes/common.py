@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from datetime import datetime
 from threading import RLock
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
@@ -302,11 +303,9 @@ class NuScenesDataAccessMixin:
             loader=lambda: name_to_index_mapping(category=list(self.nu_category.values())),
         )
 
-    # MHS: We aren't using this function, but it's easy to rewrite since 'prev' and 'next' are in sample.json
-    # def get_connected_sample_data_ids(self, key_camera_token: str):
-    #     prev_ids = self._get_prev_data_ids(key_camera_token=key_camera_token)
-    #     next_ids = self._get_next_data_ids(key_camera_token=key_camera_token)
-    #     return list(set(next_ids + prev_ids))
+    def get_datetime_with_frame_id(self, scene_token: str, frame_id: FrameId) -> datetime:
+        sample_timestamp = self.get_sample_with_frame_id(scene_token=scene_token, frame_id=frame_id)["timestamp"]
+        return datetime.fromtimestamp(sample_timestamp / 1000000)
 
     def get_sample_with_frame_id(self, scene_token: str, frame_id: FrameId) -> Dict[str, Any]:
         samples = self.nu_samples[scene_token]
@@ -374,19 +373,22 @@ class NuScenesDataAccessMixin:
             loader=get_nu_class_infos,
         )
 
-    # MHS: Since there are multiple sample_data objects per sample,
-    # they all should have very similar ego_poses so I just take the first one.
     def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> List[np.ndarray]:
+        time_diffs = []
+        ego_pose_tokens = []
+        frame_timestamp = self.get_sample_with_frame_id(scene_token=scene_token, frame_id=frame_id)["timestamp"]
         for data in next(iter(self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id))):
-            ego_pose_token = data["ego_pose_token"]
-            ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
-            trans = np.eye(4)
+            time_diffs.append(abs(data["timestamp"] - frame_timestamp))
+            ego_pose_tokens.append(data["ego_pose_token"])
+        ego_pose_token = ego_pose_tokens[np.argmin(time_diffs)]
+        ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
+        trans = np.eye(4)
 
-            trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
-            trans[:3, 3] = np.array(ego_pose["translation"])
-            trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
-            return trans
-        raise ValueError(f"No ego pose for frame id {frame_id}")
+        trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
+        trans[:3, 3] = np.array(ego_pose["translation"])
+        trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
+        return trans
+        # raise ValueError(f"No ego pose for frame id {frame_id}")
 
 
 NUSCENES_CLASSES = list()

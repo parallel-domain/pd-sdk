@@ -39,7 +39,7 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         trans = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
         return EgoPose.from_transformation_matrix(mat=trans)
 
-    def _decode_available_sensor_names(
+    def _decode_available_sensor_names_by_modality(
         self, frame_id: FrameId, modality: List[str] = ["camera", "lidar"]
     ) -> List[SensorName]:
         sensor_names = set()
@@ -53,15 +53,17 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
                 sensor_names.add(sensor["channel"])
         return list(sensor_names)
 
+    def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
+        return self._decode_available_sensor_names_by_modality(frame_id=frame_id, modality=["camera", "lidar"])
+
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
-        return self._decode_available_sensor_names(frame_id=frame_id, modality=["camera"])
+        return self._decode_available_sensor_names_by_modality(frame_id=frame_id, modality=["camera"])
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        return self._decode_available_sensor_names(frame_id=frame_id, modality=["lidar"])
+        return self._decode_available_sensor_names_by_modality(frame_id=frame_id, modality=["lidar"])
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
-        sample_timestamp = self.get_sample_with_frame_id(scene_token=self.scene_name, frame_id=frame_id)["timestamp"]
-        return datetime.fromtimestamp(sample_timestamp / 1000000)
+        return self.get_datetime_with_frame_id(self.scene_name, frame_id)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
         return NuScenesCameraSensorFrameDecoder(
