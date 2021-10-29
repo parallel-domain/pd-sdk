@@ -16,6 +16,7 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
+from paralleldomain.utilities.transformation import Transformation
 
 NUSCENES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 # NUSCENES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
@@ -377,17 +378,15 @@ class NuScenesDataAccessMixin:
         time_diffs = []
         ego_pose_tokens = []
         frame_timestamp = self.get_sample_with_frame_id(scene_token=scene_token, frame_id=frame_id)["timestamp"]
-        for data in next(iter(self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id))):
+        sample_data_gen = next(iter(self.get_sample_data_with_frame_id(scene_token=scene_token, frame_id=frame_id)))
+        for data in sample_data_gen:
             time_diffs.append(abs(data["timestamp"] - frame_timestamp))
             ego_pose_tokens.append(data["ego_pose_token"])
         ego_pose_token = ego_pose_tokens[np.argmin(time_diffs)]
         ego_pose = self.get_nu_ego_pose(ego_pose_token=ego_pose_token)
-        trans = np.eye(4)
-
-        trans[:3, :3] = Quaternion(ego_pose["rotation"]).rotation_matrix
-        trans[:3, 3] = np.array(ego_pose["translation"])
+        trans = Transformation(quaternion=ego_pose["rotation"], translation=ego_pose["translation"])
         trans = NUSCENES_IMU_TO_INTERNAL_CS @ trans
-        return trans
+        return trans.transformation_matrix
         # raise ValueError(f"No ego pose for frame id {frame_id}")
 
 
