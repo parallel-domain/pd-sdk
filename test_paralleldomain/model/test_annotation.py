@@ -141,6 +141,8 @@ class TestSensorFrame:
         assert normals.normals.shape[:2] == image.shape[:2]
         assert normals.normals.shape[2] == 3
 
+        assert np.allclose(np.linalg.norm(normals.normals, axis=-1), 1.0)
+
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 

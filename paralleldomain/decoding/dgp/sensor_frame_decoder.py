@@ -308,11 +308,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_surface_normals_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
 
-        norms = read_png(path=annotation_path)[..., :3]
-        norms_norm = np.expand_dims(np.linalg.norm(norms, axis=-1), -1)
-        normalized_norms = norms / norms_norm
+        encoded_norms = read_png(path=annotation_path)[..., :3]
+        encoded_norms_f = encoded_norms.astype(np.float)
+        decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
+        decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 
-        return normalized_norms
+        return decoded_norms
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
