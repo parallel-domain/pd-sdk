@@ -43,3 +43,44 @@ def encode_2int16_as_rgba8(mask: np.ndarray) -> np.ndarray:
     return np.concatenate(
         [mask[..., [0]] >> 8, mask[..., [0]] & 0xFF, mask[..., [1]] >> 8, mask[..., [1]] & 0xFF], axis=-1
     ).astype(np.uint8)
+
+
+def bilinear_interpolate(mask: np.ndarray, x: Union[np.ndarray, List], y: Union[np.ndarray, List]) -> np.ndarray:
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    if x.ndim > 1 and x.shape[1] > 1:
+        raise ValueError(f"Expecting shapes (N) or (N x 1) for `x`, received {x.shape}.")
+    if y.ndim > 1 and y.shape[1] > 1:
+        raise ValueError(f"Expecting shapes (N) or (N x 1) for `y`, received {y.shape}.")
+    if x.shape != y.shape:
+        raise ValueError(f"Both `x` and `y` must have same shapes, received x: {x.shape} and y: {y.shape}.")
+
+    x = x.reshape(-1)
+    y = y.reshape(-1)
+
+    x0 = np.floor(x).astype(int)
+    x1 = x0 + 1
+    y0 = np.floor(y).astype(int)
+    y1 = y0 + 1
+
+    x0 = np.clip(x0, 0, mask.shape[1] - 1)
+    x1 = np.clip(x1, 0, mask.shape[1] - 1)
+    y0 = np.clip(y0, 0, mask.shape[0] - 1)
+    y1 = np.clip(y1, 0, mask.shape[0] - 1)
+
+    Ia = mask[y0, x0]
+    Ib = mask[y1, x0]
+    Ic = mask[y0, x1]
+    Id = mask[y1, x1]
+
+    wa = (x1 - x) * (y1 - y)
+    wb = (x1 - x) * (y - y0)
+    wc = (x - x0) * (y1 - y)
+    wd = (x - x0) * (y - y0)
+
+    interpolated_result = (Ia.T * wa).T + (Ib.T * wb).T + (Ic.T * wc).T + (Id.T * wd).T
+    border_cases = np.logical_or(x0 == x1, y0 == y1)
+    interpolated_result[border_cases] = mask[y0[border_cases], x0[border_cases]]
+
+    return interpolated_result
