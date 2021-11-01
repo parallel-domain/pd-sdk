@@ -7,6 +7,18 @@ from paralleldomain.model.annotation import AnnotationPose, BoundingBox2D, Bound
 
 
 def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool = True) -> np.ndarray:
+    """Takes a list of points and interpolates a number of additional points inbetween each point pair.
+
+    Args:
+        points: Array of consecutive points
+        num_points: Every start point per pair will result in `num_points` points after interpolation.
+        flatten_result: If `False`
+            will return interpolated points, where first axis groups by each input point pair; else returns flat list
+            of all points. Default: `True`
+
+    Returns:
+        Array of points with linearly interpolated values inbetween.
+    """
     if points.ndim != 2:
         raise ValueError(
             f"""Expected np.ndarray of shape (N X M) for `points`, where N is
@@ -15,7 +27,7 @@ def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool
     if num_points < 2:
         raise ValueError(f"`num_points` must be at least 2, received {num_points}")
 
-    factors_lin = np.linspace(0, 1, num_points)
+    factors_lin = np.linspace(0, 1, num_points, endpoint=False)
     factors = np.stack([1 - factors_lin, factors_lin], axis=-1)
     point_pairs = np.stack([points[:-1], points[1:]], axis=1)
 
@@ -50,13 +62,12 @@ def simplify_polyline_2d(
     polyline: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
     approximation_error: float = 0.1,
 ) -> np.ndarray:
-    polyline = np.asarray(polyline).astype(np.float32)
+    polyline = np.asarray(polyline)
     if polyline.ndim != 2 or polyline.shape[0] < 3 or polyline.shape[1] != 2:
         raise ValueError(
             f"""Expected np.ndarray of shape (N X 2) for `polyline`, where N is
                 number of points >= 3. Received {polyline.shape}."""
         )
-
     return cv2.approxPolyDP(curve=polyline, epsilon=approximation_error, closed=False).reshape(-1, 2)
 
 
