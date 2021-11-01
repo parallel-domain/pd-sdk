@@ -46,6 +46,19 @@ def encode_2int16_as_rgba8(mask: np.ndarray) -> np.ndarray:
 
 
 def bilinear_interpolate(mask: np.ndarray, x: Union[np.ndarray, List], y: Union[np.ndarray, List]) -> np.ndarray:
+    """Executes bilinear interpolation on a 2D plane.
+
+    Args:
+        mask: Array of shape (M x N [x L]). Note: If 3 dimensions are provided,
+            bilinear interpolation is performed on each 2D plane in the first two dimensions.
+        x: List of indices to interpolate on along the x-axis (columns).
+            Indices < 0 and > (M-1, N-1) will be clipped to 0 or (M-1, N-1), respectively.
+        y: List of indices to interpolate on along the y-axis (rows).
+            Indices < 0 and > (M-1, N-1) will be clipped to 0 or (M-1, N-1), respectively.
+
+    Returns:
+        Returns interpolated values for input (x,y) as array with shape (len(x,y) [x L]).
+    """
     x = np.asarray(x)
     y = np.asarray(y)
 

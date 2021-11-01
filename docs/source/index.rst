@@ -38,6 +38,7 @@ Parallel Domain SDK
     api/annotation
     api/transformation
     api/projection
+    api/mask
 
 
 Indices and tables
