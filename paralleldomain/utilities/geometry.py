@@ -24,7 +24,7 @@ def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool
     return point_pairs_interp.reshape(-1, points.shape[1]) if flatten_result else point_pairs_interp
 
 
-def point_in_polygon(
+def point_in_polygon_2d(
     polygon: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
     point: Union[np.ndarray, List[float], Tuple[float, float]],
     include_edge: bool = True,
@@ -44,6 +44,20 @@ def point_in_polygon(
 
     threshold = 0 if include_edge else 1
     return cv2.pointPolygonTest(contour=polygon, pt=point, measureDist=False) >= threshold
+
+
+def simplify_polyline_2d(
+    polyline: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
+    approximation_error: float = 0.1,
+) -> np.ndarray:
+    polyline = np.asarray(polyline).astype(np.float32)
+    if polyline.ndim != 2 or polyline.shape[0] < 3 or polyline.shape[1] != 2:
+        raise ValueError(
+            f"""Expected np.ndarray of shape (N X 2) for `polyline`, where N is
+                number of points >= 3. Received {polyline.shape}."""
+        )
+
+    return cv2.approxPolyDP(curve=polyline, epsilon=approximation_error, closed=False).reshape(-1, 2)
 
 
 def merge_boxes(
