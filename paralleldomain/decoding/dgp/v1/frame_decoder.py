@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 from functools import lru_cache
-from typing import Dict, List
+from json import JSONDecodeError
+from typing import Any, Dict, List
+
+import ujson
 
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
@@ -12,6 +15,17 @@ from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
+
+
+def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
+    attributes_decoded = {}
+    for k, v in attributes.items():
+        try:
+            attributes_decoded[k] = ujson.loads(v)
+        except (ValueError, JSONDecodeError):
+            attributes_decoded[k] = v
+
+    return attributes_decoded
 
 
 class DGPFrameDecoder(FrameDecoder[datetime]):
@@ -68,6 +82,10 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         sample = self.scene_samples[frame_id]
         sensor_data = self._data_by_key()
         return [sensor_data[key].id.name for key in sample.datum_keys if sensor_data[key].datum.point_cloud]
+
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        sample = self.scene_samples[frame_id]
+        return _decode_attributes(attributes=sample.metadata)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
