@@ -57,7 +57,7 @@ def bilinear_interpolate(mask: np.ndarray, x: Union[np.ndarray, List], y: Union[
             Indices < 0 and > (M-1, N-1) will be clipped to 0 or (M-1, N-1), respectively.
 
     Returns:
-        Returns interpolated values for input (x,y) as array with shape (len(x,y) [x L]).
+        Returns interpolated values for input (x,y) as array with shape (len(x) [x L]).
     """
     x = np.asarray(x)
     y = np.asarray(y)
