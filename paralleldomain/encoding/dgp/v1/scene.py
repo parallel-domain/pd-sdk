@@ -48,6 +48,7 @@ from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, SensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.mask import encode_2int16_as_rgba8
 
 logger = logging.getLogger(__name__)
 
@@ -355,9 +356,8 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_motion_vectors_2d(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
         optical_flow = sensor_frame.get_annotations(AnnotationTypes.OpticalFlow)
-        mask_out = OpticalFlowTransformer.transform(mask=optical_flow.vectors)
 
-        return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+        return self._run_async(func=fsio.write_png, obj=encode_2int16_as_rgba8(optical_flow.vectors), path=output_path)
 
     def _process_semantic_segmentation_3d(
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
@@ -541,6 +541,31 @@ class DGPSceneEncoder(SceneEncoder):
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_surface_normals_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _process_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.MOTION_VECTORS_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.MOTION_VECTORS_3D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_motion_vectors_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], output_path: AnyPath) -> Future:
+        scene_flow = sensor_frame.get_annotations(AnnotationTypes.SceneFlow)
+
+        return self._run_async(func=fsio.write_npz, obj=dict(motion_vectors=scene_flow.vectors), path=output_path)
 
     def _encode_surface_normals_3d(
         self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
@@ -737,7 +762,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar_frame(
-        self, frame_id: str, lidar_frame: LidarSensorFrame[datetime]
+        self, frame_id: str, lidar_frame: LidarSensorFrame[datetime], last_frame: Optional[bool] = False
     ) -> Tuple[str, Dict[str, Dict[str, Future]]]:
         return frame_id, dict(
             annotations={
@@ -757,8 +782,15 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.Depth in lidar_frame.available_annotation_types
                 and AnnotationTypes.Depth in self._annotation_types
                 else None,
-                "7": None,  # surface_normals_3d
-                "9": None,  # motion_vectors_3d
+                "7": self._process_surface_normals_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.SurfaceNormals3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.SurfaceNormals3D in self._annotation_types
+                else None,
+                "9": self._process_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.SceneFlow in lidar_frame.available_annotation_types
+                and AnnotationTypes.SceneFlow in self._annotation_types
+                and not last_frame
+                else None,
             },
             sensor_data={
                 "point_cloud": self._process_point_cloud(sensor_frame=lidar_frame, fs_copy=True),
@@ -790,7 +822,9 @@ class DGPSceneEncoder(SceneEncoder):
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
-                    frame_id=fid, lidar_frame=self._scene.get_frame(fid).get_lidar(lidar_name=lidar_name)
+                    frame_id=fid,
+                    lidar_frame=self._scene.get_frame(fid).get_lidar(lidar_name=lidar_name),
+                    last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
                 ),
                 frame_id,
             )
