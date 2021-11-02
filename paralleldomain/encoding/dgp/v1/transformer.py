@@ -26,12 +26,6 @@ class InstanceSegmentation2DTransformer(SemanticSegmentation2DTransformer):
     ...
 
 
-class OpticalFlowTransformer(MaskTransformer):
-    @staticmethod
-    def _transform(mask: np.ndarray) -> np.ndarray:
-        return encode_2int16_as_rgba8(mask)
-
-
 class SemanticSegmentation3DTransformer(MaskTransformer):
     @staticmethod
     def _transform(mask: np.ndarray) -> np.ndarray:

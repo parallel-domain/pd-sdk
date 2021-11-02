@@ -27,7 +27,6 @@ from paralleldomain.encoding.dgp.transformer import (
     BoundingBox3DTransformer,
     InstanceSegmentation2DTransformer,
     InstanceSegmentation3DTransformer,
-    OpticalFlowTransformer,
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
