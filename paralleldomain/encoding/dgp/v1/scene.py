@@ -22,15 +22,17 @@ from paralleldomain.common.dgp.v1 import (
 )
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, POINT_FORMAT, DirectoryName
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
-from paralleldomain.encoding.dgp.transformer import (
+from paralleldomain.encoding.dgp.v1.transformer import (
     BoundingBox2DTransformer,
     BoundingBox3DTransformer,
     InstanceSegmentation2DTransformer,
     InstanceSegmentation3DTransformer,
+    KeyLine2DTransformer,
+    KeyPoint2DTransformer,
+    Polygon2DTransformer,
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
-from paralleldomain.encoding.dgp.v1.transformer import KeyLine2DTransformer, KeyPoint2DTransformer, Polygon2DTransformer
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump, class_map_to_ontology_proto
 from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, SceneEncoder
 from paralleldomain.model.annotation import (
@@ -497,7 +499,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / DirectoryName.SURFACE_NORMALS_2D
             / sensor_frame.sensor_name
-            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
         )
 
         if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
@@ -506,7 +508,7 @@ class DGPSceneEncoder(SceneEncoder):
                 / self._scene.name
                 / DirectoryName.SURFACE_NORMALS_2D
                 / sensor_frame.sensor_name
-                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
             )
 
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
@@ -546,7 +548,7 @@ class DGPSceneEncoder(SceneEncoder):
             self._output_path
             / DirectoryName.MOTION_VECTORS_3D
             / sensor_frame.sensor_name
-            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
         )
 
         if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
@@ -555,7 +557,7 @@ class DGPSceneEncoder(SceneEncoder):
                 / self._scene.name
                 / DirectoryName.MOTION_VECTORS_3D
                 / sensor_frame.sensor_name
-                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.png"  # noqa: E501
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
             )
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
@@ -1034,6 +1036,20 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.Depth in self._annotation_types:
                     (self._output_path / DirectoryName.DEPTH / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.OpticalFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.MOTION_VECTORS_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.Points2D in self._annotation_types:
+                    (self._output_path / DirectoryName.KEY_POINT_2D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.Polylines2D in self._annotation_types:
+                    (self._output_path / DirectoryName.KEY_LINE_2D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.Polygons2D in self._annotation_types:
+                    (self._output_path / DirectoryName.POLYGON_2D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.SurfaceNormals2D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
             for lidar_name in self._lidar_names:
                 (self._output_path / DirectoryName.POINT_CLOUD / lidar_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.BoundingBoxes3D in self._annotation_types:
@@ -1046,5 +1062,13 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.InstanceSegmentation3D in self._annotation_types:
                     (self._output_path / DirectoryName.INSTANCE_SEGMENTATION_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SceneFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.MOTION_VECTORS_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
