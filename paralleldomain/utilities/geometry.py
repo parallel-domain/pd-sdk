@@ -36,7 +36,7 @@ def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool
     return point_pairs_interp.reshape(-1, points.shape[1]) if flatten_result else point_pairs_interp
 
 
-def point_in_polygon_2d(
+def is_point_in_polygon_2d(
     polygon: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
     point: Union[np.ndarray, List[float], Tuple[float, float]],
     include_edge: bool = True,
