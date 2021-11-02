@@ -199,3 +199,35 @@ class BoundingBoxes2D(Annotation):
 
     def __sizeof__(self):
         return sum([getsizeof(b) for b in self.boxes])
+
+    @staticmethod
+    def merge_boxes(target_box: BoundingBox2D, source_box: BoundingBox2D) -> BoundingBox2D:
+        """
+        Takes two 2D boxes as input and merges both into a new box.
+        The resulting box has the exact same properties as `target_box`,
+        but with extended `source_box` dimensions merged into it.
+        """
+        x_coords = []
+        y_coords = []
+        for b in [target_box, source_box]:
+            x_coords.append(b.x)
+            x_coords.append(b.x + b.width)
+            y_coords.append(b.y)
+            y_coords.append(b.y + b.height)
+
+        x_ul_new = min(x_coords)
+        x_width_new = max(x_coords) - x_ul_new
+        y_ul_new = min(y_coords)
+        y_height_new = max(y_coords) - y_ul_new
+
+        result_box = BoundingBox2D(
+            x=x_ul_new,
+            y=y_ul_new,
+            width=x_width_new,
+            height=y_height_new,
+            class_id=target_box.class_id,
+            instance_id=target_box.instance_id,
+            attributes=target_box.attributes,
+        )
+
+        return result_box
