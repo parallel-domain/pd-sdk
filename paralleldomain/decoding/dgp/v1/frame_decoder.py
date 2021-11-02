@@ -17,7 +17,7 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
 
-def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
+def _decode_metadata(attributes: Dict[str, str]) -> Dict[str, Any]:
     attributes_decoded = {}
     for k, v in attributes.items():
         try:
@@ -85,7 +85,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         sample = self.scene_samples[frame_id]
-        return _decode_attributes(attributes=sample.metadata)
+        return _decode_metadata(attributes=sample.metadata)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
