@@ -40,13 +40,16 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
+    SceneFlow,
     SemanticSegmentation2D,
     SemanticSegmentation3D,
+    SurfaceNormals2D,
+    SurfaceNormals3D,
 )
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json, read_npz
+from paralleldomain.utilities.fsio import read_image, read_json, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -197,6 +200,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
+        elif issubclass(annotation_type, SceneFlow):
+            flow = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SceneFlow(vectors=flow)
+        elif issubclass(annotation_type, SurfaceNormals3D):
+            normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals3D(normals=normals)
+        elif issubclass(annotation_type, SurfaceNormals2D):
+            normals = self._decode_surface_normals_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals2D(normals=normals)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -282,6 +294,26 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
         return instance_ids
+
+    def _decode_scene_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="motion_vectors")
+        return vectors
+
+    def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="surface_normals")
+        return vectors
+
+    def _decode_surface_normals_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+
+        encoded_norms = read_png(path=annotation_path)[..., :3]
+        encoded_norms_f = encoded_norms.astype(np.float)
+        decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
+        decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
+
+        return decoded_norms
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):

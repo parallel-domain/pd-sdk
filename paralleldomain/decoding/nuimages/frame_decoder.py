@@ -76,9 +76,9 @@ class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
         return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
-        raise ValueError("Cityscapes does not contain lidar data!")
+        raise ValueError("NuImages does not contain lidar data!")
 
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
-        raise ValueError("Cityscapes does not contain lidar data!")
+        raise ValueError("NuImages does not contain lidar data!")
