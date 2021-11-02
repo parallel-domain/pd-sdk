@@ -331,7 +331,8 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         encoded_norms = read_png(path=annotation_path)[..., :3]
         encoded_norms_f = encoded_norms.astype(np.float)
         decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
-        decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
+        # Deactivated for now so original RGB-encoded can be recovered in encoding
+        # decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 
         return decoded_norms
 
