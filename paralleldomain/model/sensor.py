@@ -9,7 +9,7 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE
+from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
 from paralleldomain.utilities.transformation import Transformation
@@ -32,10 +32,14 @@ class CameraModel:
             Accepts distortion parameters `(k1,k2,k3,k4)` and uses projection (+ distortion) function
             as described in the
             `OpenCV Fisheye documentation <https://docs.opencv.org/4.5.3/db/d58/group__calib3d__fisheye.html>`_
+        PD_FISHEYE: Returns internally used string-representation for Parallel Domain Fisheye camera model
+
+            Uses custom distortion lookup table for translation between non-distorted and distorted angles.
     """
 
     OPENCV_PINHOLE: str = CAMERA_MODEL_OPENCV_PINHOLE
     OPENCV_FISHEYE: str = CAMERA_MODEL_OPENCV_FISHEYE
+    PD_FISHEYE: str = CAMERA_MODEL_PD_FISHEYE
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):

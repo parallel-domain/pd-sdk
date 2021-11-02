@@ -124,6 +124,13 @@ def read_json_message(
     return result
 
 
+def read_binary_message(obj: TMessage, path: AnyPath) -> TMessage:
+    with path.open("rb") as fp:
+        obj.ParseFromString(fp.read())
+
+    return obj
+
+
 def write_json_message(
     obj: Message,
     path: AnyPath,
