@@ -31,9 +31,19 @@ from paralleldomain.encoding.dgp.transformer import (
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
+from paralleldomain.encoding.dgp.v1.transformer import KeyLine2DTransformer, KeyPoint2DTransformer, Polygon2DTransformer
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump, class_map_to_ontology_proto
 from paralleldomain.encoding.encoder import ENCODING_THREAD_POOL, SceneEncoder
-from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBox3D
+from paralleldomain.model.annotation import (
+    Annotation,
+    AnnotationType,
+    AnnotationTypes,
+    BoundingBox2D,
+    BoundingBox3D,
+    Point2D,
+    Polygon2D,
+    Polyline2D,
+)
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, SensorFrame
 from paralleldomain.utilities import fsio
@@ -409,6 +419,135 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj=dict(instance=mask_out), path=output_path)
 
+    def _encode_key_point_2d(self, point: Point2D) -> annotations_pb2.KeyPoint2DAnnotation:
+        keypoint_proto = annotations_pb2.KeyPoint2DAnnotation(
+            class_id=point.class_id,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in point.attributes.items()},
+            points=annotations_pb2.KeyPoint2D(x=point.x, y=point.y),
+        )
+
+        return keypoint_proto
+
+    def _encode_key_points_2d(self, sensor_frame: CameraSensorFrame[datetime]) -> Future:
+        points2d = sensor_frame.get_annotations(AnnotationTypes.Points2D)
+        keypoint2d_dto = KeyPoint2DTransformer.transform(
+            objects=[self._encode_key_point_2d(p) for p in points2d.points]
+        )
+        keypoints2d_dto = annotations_pb2.KeyPoint2DAnnotations(annotations=keypoint2d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.KEY_POINT_2D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=keypoints2d_dto, path=output_path, append_sha1=True)
+
+    def _encode_key_line_2d(self, line: Polyline2D) -> annotations_pb2.KeyLine2DAnnotation:
+        keyline_proto = annotations_pb2.KeyLine2DAnnotation(
+            class_id=line.class_id,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items()},
+            vertices=[annotations_pb2.KeyPoint2D(x=ll.start.x, y=ll.start.y) for ll in line.lines]
+            + [annotations_pb2.KeyPoint2D(x=line.lines[-1].end.x, y=line.lines[-1].end.y)],
+        )
+
+        return keyline_proto
+
+    def _encode_key_lines_2d(self, sensor_frame: CameraSensorFrame[datetime]) -> Future:
+        polylines2d = sensor_frame.get_annotations(AnnotationTypes.Polylines2D)
+        keyline2d_dto = KeyLine2DTransformer.transform(
+            objects=[self._encode_key_line_2d(p) for p in polylines2d.polylines]
+        )
+        keylines2d_dto = annotations_pb2.KeyLine2DAnnotations(annotations=keyline2d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.KEY_LINE_2D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=keylines2d_dto, path=output_path, append_sha1=True)
+
+    def _encode_polygon_2d(self, polygon: Polygon2D) -> annotations_pb2.Polygon2DAnnotation:
+        polygon_proto = annotations_pb2.Polygon2DAnnotation(
+            class_id=polygon.class_id,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in polygon.attributes.items()},
+            vertices=[annotations_pb2.KeyPoint2D(x=ll.start.x, y=ll.start.y) for ll in polygon.lines]
+            + [annotations_pb2.KeyPoint2D(x=polygon.lines[-1].end.x, y=polygon.lines[-1].end.y)],
+        )
+
+        return polygon_proto
+
+    def _encode_polygons_2d(self, sensor_frame: CameraSensorFrame[datetime]) -> Future:
+        polygons2d = sensor_frame.get_annotations(AnnotationTypes.Polygons2D)
+        polygon2d_dto = Polygon2DTransformer.transform(
+            objects=[self._encode_polygon_2d(p) for p in polygons2d.polygons]
+        )
+        polygons2d_dto = annotations_pb2.Polygon2DAnnotations(annotations=polygon2d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.POLYGON_2D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=polygons2d_dto, path=output_path, append_sha1=True)
+
+    def _process_surface_normals_2d(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.SURFACE_NORMALS_2D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.SURFACE_NORMALS_2D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_surface_normals_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_surface_normals_2d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        surface_normals = sensor_frame.get_annotations(AnnotationTypes.SurfaceNormals2D)
+        encoded_normals = ((surface_normals.normals * 0.5 + 0.5) * 255).astype(np.uint8)
+        return self._run_async(func=fsio.write_png, obj=encoded_normals, path=output_path)
+
+    def _process_surface_normals_3d(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.SURFACE_NORMALS_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.SURFACE_NORMALS_3D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_surface_normals_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_surface_normals_3d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        surface_normals = sensor_frame.get_annotations(AnnotationTypes.SurfaceNormals3D)
+        return self._run_async(func=fsio.write_npz, obj=dict(surface_normals=surface_normals.normals), path=output_path)
+
     def _process_encode_camera_results(
         self,
         camera_name: str,
@@ -575,7 +714,22 @@ class DGPSceneEncoder(SceneEncoder):
                 and AnnotationTypes.OpticalFlow in self._annotation_types
                 and not last_frame
                 else None,
-                "10": None,  # surface_normals_2d
+                "10": self._encode_key_points_2d(sensor_frame=camera_frame)
+                if AnnotationTypes.Points2D in camera_frame.available_annotation_types
+                and AnnotationTypes.Points2D in self._annotation_types
+                else None,
+                "11": self._encode_key_lines_2d(sensor_frame=camera_frame)
+                if AnnotationTypes.Polylines2D in camera_frame.available_annotation_types
+                and AnnotationTypes.Polylines2D in self._annotation_types
+                else None,
+                "12": self._encode_polygons_2d(sensor_frame=camera_frame)
+                if AnnotationTypes.Polygons2D in camera_frame.available_annotation_types
+                and AnnotationTypes.Polygons2D in self._annotation_types
+                else None,
+                "13": self._process_surface_normals_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.SurfaceNormals2D in camera_frame.available_annotation_types
+                and AnnotationTypes.SurfaceNormals2D in self._annotation_types
+                else None,
             },
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),

@@ -40,3 +40,15 @@ class SemanticSegmentation3DTransformer(MaskTransformer):
 
 class InstanceSegmentation3DTransformer(SemanticSegmentation3DTransformer):
     ...
+
+
+class KeyPoint2DTransformer(ObjectTransformer):
+    ...
+
+
+class KeyLine2DTransformer(ObjectTransformer):
+    ...
+
+
+class Polygon2DTransformer(ObjectTransformer):
+    ...

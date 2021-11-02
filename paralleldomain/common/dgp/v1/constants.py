@@ -51,3 +51,5 @@ class DirectoryName:
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     MOTION_VECTORS_3D: str = "motion_vectors_3d"
     DEPTH: str = "depth"
+    SURFACE_NORMALS_2D: str = "surface_normals_2d"
+    SURFACE_NORMALS_3D: str = "surface_normals_2d"
