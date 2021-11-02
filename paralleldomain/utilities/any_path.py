@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-from s3path import S3Path
 from awscli.clidriver import create_clidriver
+from s3path import S3Path
 
 logger = logging.getLogger(__name__)
 

@@ -61,6 +61,7 @@ class DGPSceneEncoder(SceneEncoder):
         {
             CameraModel.OPENCV_PINHOLE: 0,
             CameraModel.OPENCV_FISHEYE: 1,
+            CameraModel.PD_FISHEYE: 3,
         },
     )
 
@@ -441,7 +442,6 @@ class DGPSceneEncoder(SceneEncoder):
         self,
         lidar_name: str,
         lidar_encoding_futures: Set[Future],
-        # lidar_encoding_results: Iterator[Tuple[str, Dict[str, Dict[str, Future]]]],
     ) -> Tuple[str, Dict[str, SceneDataDTO]]:
         scene_data_dtos = []
 
