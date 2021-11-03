@@ -62,6 +62,9 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         return self._decode_available_sensor_names_by_modality(frame_id=frame_id, modality=["lidar"])
 
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        return dict()
+
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         return self.get_datetime_with_frame_id(self.scene_name, frame_id)
 

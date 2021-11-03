@@ -58,6 +58,9 @@ class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         return list()
 
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        return dict()
+
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         return datetime.fromtimestamp(int(frame_id) / 1000000)
 

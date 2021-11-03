@@ -1,7 +1,7 @@
 import abc
 from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from paralleldomain.common.dgp.v0.dtos import SceneDataDTO, SceneSampleDTO, scene_sample_to_date_time
 from paralleldomain.decoding.common import DecoderSettings
@@ -69,6 +69,10 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         sample = self.scene_samples[frame_id]
         sensor_data = self._data_by_key()
         return [sensor_data[key].id.name for key in sample.datum_keys if sensor_data[key].datum.point_cloud]
+
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        sample = self.scene_samples[frame_id]
+        return sample.metadata
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
