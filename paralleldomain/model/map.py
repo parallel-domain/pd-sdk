@@ -8,17 +8,6 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_binary_message
 from paralleldomain.utilities.geometry import is_point_in_polygon_2d
 
-Geometry = namedtuple("Geometry", ["id", "x_min", "x_max", "y_min", "y_max", "x_center", "y_center"])
-geometry_dtypes = [
-    ("id", int),
-    ("x_min", float),
-    ("x_max", float),
-    ("y_min", float),
-    ("y_max", float),
-    ("x_center", float),
-    ("y_center", float),
-]
-
 
 class NODE_PREFIX:
     ROAD_SEGMENT: str = "RS"
