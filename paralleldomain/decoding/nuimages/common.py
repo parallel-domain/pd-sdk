@@ -31,11 +31,7 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-_NU_IMAGES_DATA_MAX_SIZE = 5.0e9  # GB
-cache_max_ram_usage_factor = float(
-    os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_IMAGES_DATA_MAX_SIZE / psutil.virtual_memory().total)
-)  # use 2.0 GB by default
-ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
+cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "5GB")
 
 NU_IM_DATA_CACHE = None
 
@@ -62,8 +58,7 @@ class NuImagesDataAccessMixin:
             with self._init_lock:
                 if NU_IM_DATA_CACHE is None:
                     NU_IM_DATA_CACHE = LazyLoadCache(
-                        max_ram_usage_factor=cache_max_ram_usage_factor,
-                        ram_keep_free_factor=ram_keep_free_factor,
+                        cache_max_size=cache_max_bytes,
                         cache_name="NuImages Cache",
                     )
         return NU_IM_DATA_CACHE

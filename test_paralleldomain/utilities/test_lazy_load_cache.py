@@ -1,4 +1,5 @@
 import os
+import sys
 from multiprocessing.pool import ThreadPool
 from random import random
 from sys import getsizeof
@@ -11,76 +12,142 @@ import pytest
 from paralleldomain.utilities.lazy_load_cache import CacheEmptyException, LazyLoadCache
 
 
-def test_max_size():
-    if "SKIP_CACHE" not in os.environ:
-        with patch("psutil.virtual_memory") as mocked_virtual_memory:
-            mocked_virtual_memory.return_value.available = 2 * getsizeof(mock.MagicMock()) + 1
-            mocked_virtual_memory.return_value.total = 5 * getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used = (
-                mocked_virtual_memory.return_value.total - mocked_virtual_memory.return_value.available
-            )
+class _MockSizeElement:
+    def __init__(self, desired_size: int):
+        self.desired_size = desired_size
 
-            cache = LazyLoadCache(max_ram_usage_factor=1.0, ram_keep_free_factor=0.0)
+    def __sizeof__(self):
+        return self.desired_size - sys.getsizeof(object())
 
-            def _pop_fake():
-                LazyLoadCache.popitem(cache)
-                mocked_virtual_memory.return_value.available += getsizeof(mock.MagicMock())
-                mocked_virtual_memory.return_value.used -= getsizeof(mock.MagicMock())
-
-            cache.popitem = _pop_fake
-            mock1_loader = mock.MagicMock()
-            mock2_loader = mock.MagicMock()
-            mock3_loader = mock.MagicMock()
-
-            cache.get_item(key="key1", loader=mock1_loader.load)
-            mock1_loader.load.assert_called_once()
-            mocked_virtual_memory.return_value.available -= getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used += getsizeof(mock.MagicMock())
-
-            cache.get_item(key="key2", loader=mock2_loader.load)
-            mock2_loader.load.assert_called_once()
-            mocked_virtual_memory.return_value.available -= getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used += getsizeof(mock.MagicMock())
-            cache.get_item(key="key1", loader=mock1_loader.load)
-            mock1_loader.load.assert_called_once()
-            mock2_loader.load.assert_called_once()
-
-            cache.get_item(key="key3", loader=mock3_loader.load)
-            mock3_loader.load.assert_called_once()
-            mocked_virtual_memory.return_value.available -= getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used += getsizeof(mock.MagicMock())
-            assert "key2" not in cache
-            assert "key3" in cache
-            assert "key1" in cache
-
-            mock3_loader.load.assert_called_once()
-            cache.get_item(key="key2", loader=mock2_loader.load)
-            assert mock2_loader.load.call_count == 2
-            mocked_virtual_memory.return_value.available -= getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used += getsizeof(mock.MagicMock())
-            assert "key1" not in cache
-            assert "key3" in cache
-            assert "key2" in cache
-
-            cache.get_item(key="key4", loader=mock2_loader.load)
-            assert mock2_loader.load.call_count == 3
-            mocked_virtual_memory.return_value.available -= getsizeof(mock.MagicMock())
-            mocked_virtual_memory.return_value.used += getsizeof(mock.MagicMock())
-            assert "key1" not in cache
-            assert "key3" not in cache
-            assert "key4" in cache
-            assert "key2" in cache
+    @staticmethod
+    def get_mocked_loader(desired_size: int) -> mock.MagicMock:
+        mock_loader = mock.MagicMock()
+        element = _MockSizeElement(desired_size=desired_size)
+        mock_loader.load.return_value = element
+        return mock_loader
 
 
-def test_thread_safe_delete():
-    cache = LazyLoadCache(max_ram_usage_factor=0.2)
-    cache.get_item(key="test", loader=mock.MagicMock)
+class TestLazyLoadCache:
+    def test_removes_items_on_exceeding_max_size(self):
+        cache = LazyLoadCache(cache_max_size="1000B")
 
-    cache.pop(key="test", default=None)
+        mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock3_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock4_loader = _MockSizeElement.get_mocked_loader(desired_size=1000)
 
-    def delete(_):
-        with pytest.raises(CacheEmptyException):
-            cache.popitem()
+        cache.get_item(key="key1", loader=mock1_loader.load)
+        mock1_loader.load.assert_called_once()
+        assert len(cache.keys()) == 1
+        assert "key1" in cache
+        cache.get_item(key="key2", loader=mock2_loader.load)
+        mock2_loader.load.assert_called_once()
+        assert len(cache.keys()) == 2
+        assert "key2" in cache
+        assert "key1" in cache
 
-    p1 = ThreadPool(140)
-    p1.map_async(delete, range(140)).get()
+        # key1 and key2 should be present in cache. So no reloading needed
+        cache.get_item(key="key1", loader=mock1_loader.load)
+        mock1_loader.load.assert_called_once()
+        mock2_loader.load.assert_called_once()
+        assert len(cache.keys()) == 2
+        assert "key2" in cache
+        assert "key1" in cache
+
+        # loading key3 should remove key2 since its least recently used
+        cache.get_item(key="key3", loader=mock3_loader.load)
+        mock3_loader.load.assert_called_once()
+        assert len(cache.keys()) == 2
+        assert "key2" not in cache
+        assert "key3" in cache
+        assert "key1" in cache
+
+        # key1 and key3 should be in cache now so key1 should be removed in favor of key2
+        cache.get_item(key="key2", loader=mock2_loader.load)
+        assert mock2_loader.load.call_count == 2
+        assert len(cache.keys()) == 2
+        assert "key1" not in cache
+        assert "key3" in cache
+        assert "key2" in cache
+
+        # there should only be room for key4 so everything else should be removed to make space
+        cache.get_item(key="key4", loader=mock4_loader.load)
+        mock4_loader.load.assert_called_once()
+        assert len(cache.keys()) == 1
+        assert "key1" not in cache
+        assert "key3" not in cache
+        assert "key2" not in cache
+        assert "key4" in cache
+
+    def test_max_change_reduction_drops_values(self):
+        cache = LazyLoadCache(cache_max_size="2500B")
+        mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock3_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock4_loader = _MockSizeElement.get_mocked_loader(desired_size=1000)
+        cache.get_item(key="key1", loader=mock1_loader.load)
+        cache.get_item(key="key2", loader=mock2_loader.load)
+        cache.get_item(key="key3", loader=mock3_loader.load)
+        cache.get_item(key="key4", loader=mock4_loader.load)
+        assert len(cache.keys()) == 4
+        assert "key1" in cache
+        assert "key3" in cache
+        assert "key2" in cache
+        assert "key4" in cache
+        # should only leave space for key3 and key4
+        cache.maxsize = 1500
+        assert len(cache.keys()) == 2
+        assert "key1" not in cache
+        assert "key3" in cache
+        assert "key2" not in cache
+        assert "key4" in cache
+        # should only leave space for key4
+        cache.maxsize = "1KB"
+        assert len(cache.keys()) == 1
+        assert "key1" not in cache
+        assert "key3" not in cache
+        assert "key2" not in cache
+        assert "key4" in cache
+
+    def test_max_change_increase_keeps_values(self):
+        cache = LazyLoadCache(cache_max_size="2500B")
+        mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock3_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
+        mock4_loader = _MockSizeElement.get_mocked_loader(desired_size=1000)
+        cache.get_item(key="key1", loader=mock1_loader.load)
+        cache.get_item(key="key2", loader=mock2_loader.load)
+        cache.get_item(key="key3", loader=mock3_loader.load)
+        cache.get_item(key="key4", loader=mock4_loader.load)
+        assert len(cache.keys()) == 4
+        assert "key1" in cache
+        assert "key3" in cache
+        assert "key2" in cache
+        assert "key4" in cache
+        # should only leave space for key3 and key4
+        cache.maxsize = 3500
+        assert len(cache.keys()) == 4
+        assert "key1" in cache
+        assert "key3" in cache
+        assert "key2" in cache
+        assert "key4" in cache
+        # should only leave space for key4
+        cache.maxsize = "1GB"
+        assert len(cache.keys()) == 4
+        assert "key1" in cache
+        assert "key3" in cache
+        assert "key2" in cache
+        assert "key4" in cache
+
+    def test_thread_safe_delete(self):
+        cache = LazyLoadCache(cache_max_size="50KB")
+        cache.get_item(key="test", loader=mock.MagicMock)
+
+        cache.pop(key="test", default=None)
+
+        def delete(_):
+            with pytest.raises(CacheEmptyException):
+                cache.popitem()
+
+        p1 = ThreadPool(140)
+        p1.map_async(delete, range(140)).get()

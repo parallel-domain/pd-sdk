@@ -1,12 +1,12 @@
 import collections
 import logging
 import os
+import re
 from sys import getsizeof
 from threading import Event, RLock
-from typing import Any, Callable, Dict, Hashable, Tuple, TypeVar
+from typing import Any, Callable, Dict, Hashable, Tuple, TypeVar, Union
 
 import numpy as np
-import psutil
 from cachetools import Cache
 from humanize import naturalsize
 
@@ -30,21 +30,17 @@ class LazyLoadCache(Cache):
 
     _marker = object()
 
-    def __init__(
-        self,
-        cache_name: str = "Default pd-sdk Cache",
-        max_ram_usage_factor: float = 0.8,
-        ram_keep_free_factor: float = 0.05,
-    ):
-        self.ram_keep_free_bytes = int(ram_keep_free_factor * psutil.virtual_memory().total)
-        self.max_ram_usage_factor = max_ram_usage_factor
+    def __init__(self, cache_name: str = "Default pd-sdk Cache", cache_max_size: str = "1GiB"):
         self.cache_name = cache_name
-        self.maximum_allowed_space: int = int(psutil.virtual_memory().total * self.max_ram_usage_factor)
-        logger.info(f"Initializing LazyLoadCache '{cache_name}' with a max_ram_usage_factor of {max_ram_usage_factor}.")
-        logger.info(f"This leads to a total available space of {naturalsize(self.maximum_allowed_space)}.")
+        self._maximum_allowed_bytes: int = byte_str_to_bytes(byte_str=cache_max_size)
+        logger.info(
+            f"Initializing LazyLoadCache '{cache_name}' with available "
+            f"space of {naturalsize(self._maximum_allowed_bytes)}."
+        )
+
         self._key_load_locks: Dict[Hashable, Tuple[RLock, Event]] = dict()
         self._create_key_lock = RLock()
-        Cache.__init__(self, maxsize=self.maximum_allowed_space, getsizeof=LazyLoadCache.getsizeof)
+        Cache.__init__(self, maxsize=self._maximum_allowed_bytes, getsizeof=LazyLoadCache.getsizeof)
         self.__order = collections.OrderedDict()
 
     def get_item(self, key: Hashable, loader: Callable[[], CachedItemType]) -> CachedItemType:
@@ -90,12 +86,7 @@ class LazyLoadCache(Cache):
         if size > self.maxsize:
             raise ValueError("value too large")
         if key not in self._Cache__data or self._Cache__size[key] < size:
-            try:
-                while size > self.free_space:
-                    self.popitem()
-            except CacheEmptyException:
-                if size > self.free_space:
-                    raise CacheFullException(f"Cache is already empty but there is no more space left tho store {key}!")
+            self.free_space_for_n_bytes(n_bytes=size)
 
         if key in self._Cache__data:
             diffsize = size - self._Cache__size[key]
@@ -117,23 +108,43 @@ class LazyLoadCache(Cache):
                 del self.__order[key]
                 wait_event.clear()
 
+    def free_space_for_n_bytes(self, n_bytes: Union[float, int]):
+        try:
+            while n_bytes > self.free_space:
+                self.popitem()
+        except CacheEmptyException:
+            if n_bytes > self.free_space:
+                raise CacheFullException(
+                    f"Cache is already empty but there is no more space left tho store {n_bytes}B!"
+                )
+
     @property
-    def maxsize(self):
+    def maxsize(self) -> int:
         """The maximum size of the cache."""
-        return psutil.virtual_memory().total
+        return self._maximum_allowed_bytes
+
+    @maxsize.setter
+    def maxsize(self, value: Union[str, int]):
+        if isinstance(value, int):
+            self._maximum_allowed_bytes = value
+        elif isinstance(value, str):
+            self._maximum_allowed_bytes: int = byte_str_to_bytes(byte_str=value)
+        else:
+            raise ValueError(f"invalid type for maxsite {type(value)}! Has to be int or str.")
+        logger.info(f"Changed '{self.cache_name}' available space to {naturalsize(self._maximum_allowed_bytes)}.")
+        # If size got smaller make sure cache is cleared up
+        self.free_space_for_n_bytes(n_bytes=0)
+
+    @property
+    def currsize(self) -> int:
+        """The current size of the cache."""
+        return int(self._Cache__currsize)
 
     @property
     def free_space(self) -> int:
         """The maximum size of the caches free space."""
-        remaining_allowed_space = self.maximum_allowed_space - self._Cache__currsize
-        # always reserve 10% memory for other things
-        free_space = psutil.virtual_memory().available
-        memory_free_space = max(0, free_space - self.ram_keep_free_bytes)
-        free_space = int(max(0, min(memory_free_space, remaining_allowed_space)))
-
-        if SHOW_CACHE_LOGS:
-            logger.debug(f"current cache free space {naturalsize(free_space)}")
-        return free_space
+        remaining_allowed_space = self.maxsize - self.currsize
+        return remaining_allowed_space
 
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
@@ -190,9 +201,25 @@ class LazyLoadCache(Cache):
         return size
 
 
-cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
-ram_keep_free_factor = float(os.environ.get("CACHE_KEEP_FREE_FACTOR", 0.05))  # 10% free space max
+def byte_str_to_bytes(byte_str: str) -> int:
+    split_numbers_and_letters = re.match(r"([0-9]+)([kKMGTPEZY]*)([i]*)([bB]+)", byte_str.replace(" ", ""), re.I)
+    powers = {"": 0, "k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6, "z": 7, "y": 8}
+    if split_numbers_and_letters is None:
+        raise ValueError(f"Invalid byte string format {byte_str}. Has to be a int number followed by a byte unit!")
+    number, power_letter, base_letter, bites_or_bytes = split_numbers_and_letters.groups()
+    bit_factor = 1 if bites_or_bytes == "B" else 1 / 8
+    base = 1024 if base_letter == "i" else 1000
+    power = powers[power_letter.lower()]
+    number = float(number)
+    total_bits = number * base ** power * bit_factor
+    return int(total_bits)
 
-LAZY_LOAD_CACHE = LazyLoadCache(
-    max_ram_usage_factor=cache_max_ram_usage_factor, ram_keep_free_factor=ram_keep_free_factor
-)
+
+cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
+cache_max_size = os.environ.get("CACHE_MAX_BYTES", "1GiB")
+if "CACHE_MAX_USAGE_FACTOR" in os.environ:
+    logger.warning(
+        "CACHE_MAX_USAGE_FACTOR is not longer supported! Use CACHE_MAX_BYTES instead to set a cache size in bytes!"
+    )
+
+LAZY_LOAD_CACHE = LazyLoadCache(cache_max_size=cache_max_size)
