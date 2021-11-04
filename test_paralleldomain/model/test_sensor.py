@@ -10,17 +10,15 @@ class TestSensorFrame:
     def test_date_time_type(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        lidar_sensor = frame.lidar_names[0]
+        sensor_frame = frame.get_lidar(lidar_name=lidar_sensor)
         assert isinstance(sensor_frame.date_time, datetime)
 
     def test_lazy_cloud_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
-        sensors = frame.sensor_names
-        lidar_sensor = next(iter([s for s in sensors if s.startswith("lidar")]))
-        sensor_frame = frame.get_sensor(sensor_name=lidar_sensor)
+        lidar_sensor = frame.lidar_names[0]
+        sensor_frame = frame.get_lidar(lidar_name=lidar_sensor)
         cloud = sensor_frame.point_cloud
         assert cloud is not None
         xyz = cloud.xyz
