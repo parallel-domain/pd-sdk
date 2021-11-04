@@ -20,7 +20,7 @@ from paralleldomain.common.dgp.v1 import (
     sample_pb2,
     scene_pb2,
 )
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName, PointFormat
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.transformer import (
     BoundingBox2DTransformer,
@@ -659,7 +659,7 @@ class DGPSceneEncoder(SceneEncoder):
 
             scene_datum_dto = point_cloud_pb2.PointCloud(
                 filename=self._relative_path(sensor_data[DirectoryName.POINT_CLOUD].result()).as_posix(),
-                point_format=[getattr(point_cloud_pb2.PointCloud.ChannelType, pf) for pf in POINT_FORMAT],
+                point_format=[getattr(point_cloud_pb2.PointCloud.ChannelType, pf) for pf in PointFormat.to_list()],
                 annotations={
                     int(k): self._relative_path(v.result()).as_posix() for k, v in annotations.items() if v is not None
                 },

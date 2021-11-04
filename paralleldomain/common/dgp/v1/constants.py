@@ -31,7 +31,62 @@ ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
 }
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP")
+
+
+class PointFormat:
+    X: str = "X"
+    Y: str = "Y"
+    Z: str = "Z"
+    I: str = "INTENSITY"  # noqa: E741
+    R: str = "R"
+    G: str = "G"
+    B: str = "B"
+    RING: str = "RING"
+    RAYTYPE: str = "RAYTYPE"
+    TS: str = "TIMESTAMP"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.I,
+            cls.R,
+            cls.G,
+            cls.B,
+            cls.RING,
+            # cls.RAYTYPE,  # deactivated until in official DGP v1.0 proto schema
+            cls.TS,
+        ]
+
+
+class PointFormatDtype:
+    X: str = "<f4"
+    Y: str = "<f4"
+    Z: str = "<f4"
+    I: str = "<f4"  # noqa: E741
+    R: str = "<f4"
+    G: str = "<f4"
+    B: str = "<f4"
+    RING: str = "<u4"
+    RAYTYPE: str = "<u4"
+    TS: str = "<u8"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.I,
+            cls.R,
+            cls.G,
+            cls.B,
+            cls.RING,
+            # cls.RAYTYPE,  # deactivated until in official DGP v1.0 proto schema
+            cls.TS,
+        ]
 
 
 class DirectoryName:

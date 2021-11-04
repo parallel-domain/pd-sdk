@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional, Set, Union
 from google.protobuf.json_format import MessageToDict
 
 from paralleldomain.common.dgp.v1 import dataset_pb2, ontology_pb2, sample_pb2, scene_pb2
-from paralleldomain.common.dgp.v1.common import timestamp_to_datetime
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.metadata_pd_pb2 import ParallelDomainSceneMetadata
+from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder

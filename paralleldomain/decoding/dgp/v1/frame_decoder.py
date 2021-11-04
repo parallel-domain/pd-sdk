@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 import ujson
 
 from paralleldomain.common.dgp.v1 import sample_pb2
-from paralleldomain.common.dgp.v1.common import timestamp_to_datetime
+from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder

@@ -5,19 +5,6 @@ import numpy as np
 from google.protobuf import timestamp_pb2
 
 
-class PointFormat:
-    X: str = "X"
-    Y: str = "Y"
-    Z: str = "Z"
-    I: str = "INTENSITY"  # noqa: E741
-    R: str = "R"
-    G: str = "G"
-    B: str = "B"
-    RING: str = "RING"
-    RAYTYPE: str = "RAYTYPE"
-    TS: str = "TIMESTAMP"
-
-
 def timestamp_to_datetime(ts: timestamp_pb2.Timestamp):
     return ts.ToDatetime().replace(tzinfo=timezone.utc)
 
