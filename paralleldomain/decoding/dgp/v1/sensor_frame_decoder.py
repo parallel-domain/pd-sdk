@@ -11,6 +11,7 @@ from pyquaternion import Quaternion
 
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
@@ -102,7 +103,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
-        return data.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
+        return timestamp_to_datetime(ts=data.id.timestamp)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
