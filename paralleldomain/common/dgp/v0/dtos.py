@@ -387,3 +387,7 @@ class OntologyFileDTO:
 
 def scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
     return iso8601.parse_date(sample.id.timestamp)
+
+
+def scene_data_to_date_time(data: SceneDataDTO) -> datetime:
+    return iso8601.parse_date(data.id.timestamp)
