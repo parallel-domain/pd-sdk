@@ -1,11 +1,5 @@
-import os
-import sys
 from multiprocessing.pool import ThreadPool
-from random import random
-from sys import getsizeof
-from time import sleep
 from unittest import mock
-from unittest.mock import patch
 
 import pytest
 
@@ -17,7 +11,7 @@ class _MockSizeElement:
         self.desired_size = desired_size
 
     def __sizeof__(self):
-        return self.desired_size - sys.getsizeof(object())
+        return self.desired_size
 
     @staticmethod
     def get_mocked_loader(desired_size: int) -> mock.MagicMock:
@@ -29,7 +23,7 @@ class _MockSizeElement:
 
 class TestLazyLoadCache:
     def test_removes_items_on_exceeding_max_size(self):
-        cache = LazyLoadCache(cache_max_size="1000B")
+        cache = LazyLoadCache(cache_max_size="1200B")
 
         mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
         mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
@@ -80,7 +74,7 @@ class TestLazyLoadCache:
         assert "key4" in cache
 
     def test_max_change_reduction_drops_values(self):
-        cache = LazyLoadCache(cache_max_size="2500B")
+        cache = LazyLoadCache(cache_max_size="2700B")
         mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
         mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
         mock3_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
@@ -95,14 +89,14 @@ class TestLazyLoadCache:
         assert "key2" in cache
         assert "key4" in cache
         # should only leave space for key3 and key4
-        cache.maxsize = 1500
+        cache.maxsize = 1700
         assert len(cache.keys()) == 2
         assert "key1" not in cache
         assert "key3" in cache
         assert "key2" not in cache
         assert "key4" in cache
         # should only leave space for key4
-        cache.maxsize = "1KB"
+        cache.maxsize = "1100B"
         assert len(cache.keys()) == 1
         assert "key1" not in cache
         assert "key3" not in cache
@@ -110,7 +104,7 @@ class TestLazyLoadCache:
         assert "key4" in cache
 
     def test_max_change_increase_keeps_values(self):
-        cache = LazyLoadCache(cache_max_size="2500B")
+        cache = LazyLoadCache(cache_max_size="2700B")
         mock1_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
         mock2_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
         mock3_loader = _MockSizeElement.get_mocked_loader(desired_size=500)
