@@ -1,9 +1,16 @@
 from collections import namedtuple
+from dataclasses import dataclass
+from enum import IntEnum
+from typing import List, Tuple
 
 import numpy as np
 from igraph import Graph
 
+from paralleldomain.common.umd.v1.UMD_pb2 import Edge as ProtoEdge
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap
+from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
+from paralleldomain.model.annotation.point_3d import Point3D
+from paralleldomain.model.annotation.polyline_3d import Line3D, Polyline3D
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_binary_message
 from paralleldomain.utilities.geometry import is_point_in_polygon_2d
@@ -16,8 +23,52 @@ class NODE_PREFIX:
     AREA: str = "AR"
 
 
+class RoadType(IntEnum):
+    MOTORWAY = 0
+    TRUNK = 1
+    PRIMARY = 2
+    SECONDARY = 3
+    TERTIARY = 4
+    UNCLASSIFIED = 5
+    RESIDENTIAL = 6
+    MOTORWAY_LINK = 7
+    TRUNK_LINK = 8
+    PRIMARY_LINK = 9
+    SECONDARY_LINK = 10
+    TERTIARY_LINK = 11
+    SERVICE = 12
+    DRIVEWAY = 13
+
+
+class LaneType(IntEnum):
+    UNDEFINED_LANE = 0
+    DRIVABLE = 1
+    NON_DRIVABLE = 2
+    PARKING = 3
+    SHOULDER = 4
+    BIKING = 5
+    CROSSWALK = 6
+    RESTRICTED = 7
+
+
+class Direction(IntEnum):
+    UNDEFINED_DIR = 0
+    FORWARD = 1
+    BACKWARD = 2
+    BIDIRECTIONAL = 3
+
+
+class TurnType(IntEnum):
+    STRAIGHT = 0
+    LEFT = 1
+    RIGHT = 2
+    SLIGHT_LEFT = 3
+    SLIGHT_RIGHT = 4
+    U_TURN = 5
+
+
 class Map:
-    def __init__(self, umd_map: UniversalMap) -> None:
+    def __init__(self, umd_map: ProtoUniversalMap) -> None:
         self._umd_map = umd_map
 
         self._map_graph = Graph(directed=True)
@@ -547,8 +598,75 @@ class Lane:
     ...
 
 
+class Edge(Polyline3D):
+    @classmethod
+    def from_proto(cls, edge: ProtoUniversalMap):
+        ...
+        # lines = [Line3D(start=Point3D, end=Point3D) for ]
+        # cls()
+
+
+class LaneSegment2D:
+    def __init__(
+        self,
+        id: int,
+        points_left: List[Tuple[float, float]],
+        points_right: List[Tuple[float, float]],
+        points_reference: List[Tuple[float, float]],
+        lane_type: LaneType,
+        direction: Direction,
+        turn_type: TurnType,
+    ):
+        self.id: int = id
+        self.points_left: List[Tuple[float, float]] = points_left
+        self.points_right: List[Tuple[float, float]] = points_right
+        self.points_reference: List[Tuple[float, float]] = points_reference
+        self.lane_type: LaneType = lane_type
+        self.direction: Direction = direction
+        self.turn_type: TurnType = turn_type
+
+    def as_polygon(self, closed: bool = False) -> List[Tuple[float, float]]:
+        return self.points_left + self.points_right[::-1]
+
+
+@dataclass
 class LaneSegment:
-    ...
+    id: int
+    type: LaneType
+    direction: Direction
+    left_edge: Edge
+    right_edge: Edge
+    reference_line: Edge
+
+    def to_2D(self) -> LaneSegment2D:
+        return LaneSegment2D(
+            id=self.id,
+            lane_type=self.lane_type,
+            direction=self.direction,
+            turn_type=self.turn_type,
+            points_left=[(p[0], p[1]) for p in self.points_left],
+            points_right=[(p[0], p[1]) for p in self.points_right],
+            points_reference=[(p[0], p[1]) for p in self.points_reference],
+        )
+
+    @property
+    def node_id(self) -> str:
+        return f"{NODE_PREFIX.LANE_SEGMENT}_{self.id}"
+
+    """@staticmethod
+    def from_proto(
+        umd_map: ProtoUniversalMap,
+        lane_segment_id: int,
+    ) -> "LaneSegment":
+        return LaneSegment(
+            id=lane_segment_id.id,
+            lane_type=LaneType(lane_segment.type),
+            direction=Direction(lane_segment.direction),
+            turn_type=TurnType(lane_segment.turn_type),
+            points_left=[(p.x, p.y, p.z) for p in left_edge.points],
+            points_right=[(p.x, p.y, p.z) for p in right_edge.points],
+            points_reference=[(p.x, p.y, p.z) for p in reference_line.points],
+        )"""
 
 
 class Area:
