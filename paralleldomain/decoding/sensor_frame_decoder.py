@@ -226,6 +226,18 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id)
 
+    def get_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ray_type"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_ray_type(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_ray_type(sensor_name=sensor_name, frame_id=frame_id)
+
     @abc.abstractmethod
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
@@ -248,4 +260,8 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
 
     @abc.abstractmethod
     def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
+    @abc.abstractmethod
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass

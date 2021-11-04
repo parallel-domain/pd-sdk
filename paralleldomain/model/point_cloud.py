@@ -42,6 +42,11 @@ class PointCloud:
         pass
 
     @property
+    @abc.abstractmethod
+    def ray_type(self) -> np.ndarray:
+        pass
+
+    @property
     def xyz_i(self) -> np.ndarray:
         return np.concatenate((self.xyz, self.intensity), axis=1)
 
@@ -71,6 +76,9 @@ class PointCloudDecoderProtocol(Protocol):
     def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
 
+    def get_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        pass
+
 
 class DecoderPointCloud(PointCloud):
     def __init__(self, decoder: PointCloudDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
@@ -83,6 +91,7 @@ class DecoderPointCloud(PointCloud):
         self._intensity = None
         self._ts = None
         self._ring = None
+        self._ray_type = None
 
     @property
     def length(self) -> int:
@@ -121,3 +130,11 @@ class DecoderPointCloud(PointCloud):
         if self._ring is None:
             self._ring = self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._ring
+
+    @property
+    def ray_type(self) -> np.ndarray:
+        if self._ray_type is None:
+            self._ray_type = self._decoder.get_point_cloud_ray_type(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._ray_type
