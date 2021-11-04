@@ -5,7 +5,7 @@ import numpy as np
 from paralleldomain.model.type_aliases import FrameId, SensorName
 
 try:
-    from typing import Protocol
+    from typing import Optional, Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
@@ -61,22 +61,22 @@ class PointCloudDecoderProtocol(Protocol):
     def get_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
 
-    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
 
@@ -100,19 +100,19 @@ class DecoderPointCloud(PointCloud):
         return self._length
 
     @property
-    def xyz(self) -> np.ndarray:
+    def xyz(self) -> Optional[np.ndarray]:
         if self._xyz is None:
             self._xyz = self._decoder.get_point_cloud_xyz(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._xyz
 
     @property
-    def rgb(self) -> np.ndarray:
+    def rgb(self) -> Optional[np.ndarray]:
         if self._rgb is None:
             self._rgb = self._decoder.get_point_cloud_rgb(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._rgb
 
     @property
-    def intensity(self) -> np.ndarray:
+    def intensity(self) -> Optional[np.ndarray]:
         if self._intensity is None:
             self._intensity = self._decoder.get_point_cloud_intensity(
                 sensor_name=self.sensor_name, frame_id=self.frame_id
@@ -120,19 +120,19 @@ class DecoderPointCloud(PointCloud):
         return self._intensity
 
     @property
-    def ts(self) -> np.ndarray:
+    def ts(self) -> Optional[np.ndarray]:
         if self._ts is None:
             self._ts = self._decoder.get_point_cloud_timestamp(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._ts
 
     @property
-    def ring(self) -> np.ndarray:
+    def ring(self) -> Optional[np.ndarray]:
         if self._ring is None:
             self._ring = self._decoder.get_point_cloud_ring_index(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._ring
 
     @property
-    def ray_type(self) -> np.ndarray:
+    def ray_type(self) -> Optional[np.ndarray]:
         if self._ray_type is None:
             self._ray_type = self._decoder.get_point_cloud_ray_type(
                 sensor_name=self.sensor_name, frame_id=self.frame_id
