@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 import ujson
 
 from paralleldomain.common.dgp.v1 import sample_pb2
+from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
@@ -62,7 +63,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         sample = self.scene_samples[frame_id]
-        return sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
+        return timestamp_to_datetime(sample.id.timestamp)
 
     @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:

@@ -9,6 +9,7 @@ from google.protobuf.json_format import MessageToDict
 from paralleldomain.common.dgp.v1 import dataset_pb2, ontology_pb2, sample_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.metadata_pd_pb2 import ParallelDomainSceneMetadata
+from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
@@ -130,10 +131,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return {
-            str(sample.id.index): sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
-            for sample in scene_dto.samples
-        }
+        return {str(sample.id.index): timestamp_to_datetime(sample.id.timestamp) for sample in scene_dto.samples}
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
