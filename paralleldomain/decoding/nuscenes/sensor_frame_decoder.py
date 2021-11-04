@@ -187,6 +187,9 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, 4]
 
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> None:
+        return None
+
 
 class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
     def __init__(

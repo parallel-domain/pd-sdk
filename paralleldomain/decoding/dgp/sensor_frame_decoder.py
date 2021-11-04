@@ -441,6 +441,9 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, ring_index]
 
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> None:
+        return None
+
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
     transform = transformation_type(
