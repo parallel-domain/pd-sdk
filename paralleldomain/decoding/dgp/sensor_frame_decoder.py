@@ -402,7 +402,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return len(data)
 
-    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         xyz_index = [
             self._get_index(p_info=PointInfo.X, sensor_name=sensor_name, frame_id=frame_id),
             self._get_index(p_info=PointInfo.Y, sensor_name=sensor_name, frame_id=frame_id),
@@ -411,7 +411,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, xyz_index]
 
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         rgb_index = [
             self._get_index(p_info=PointInfo.R, sensor_name=sensor_name, frame_id=frame_id),
             self._get_index(p_info=PointInfo.G, sensor_name=sensor_name, frame_id=frame_id),
@@ -420,26 +420,29 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, rgb_index]
 
-    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         intensity_index = [
             self._get_index(p_info=PointInfo.I, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, intensity_index]
 
-    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         ts_index = [
             self._get_index(p_info=PointInfo.TS, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, ts_index]
 
-    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         ring_index = [
             self._get_index(p_info=PointInfo.RING, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, ring_index]
+
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
