@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
+from sys import getsizeof
 from typing import Any, Dict, List
 
-import numpy as np
-
 from paralleldomain.model.annotation.common import Annotation
+from paralleldomain.model.geometry.point_3d import Point3DGeometry
 
 
 @dataclass
-class Point3D:
+class Point3D(Point3DGeometry):
     """Represents a 3D Point.
 
     Args:
@@ -27,16 +27,12 @@ class Point3D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: float
-    y: float
-    z: float
     class_id: int
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
 
-    def to_numpy(self):
-        """Returns the coordinates as a numpy array with shape (1 x 3)."""
-        return np.array([[self.x, self.y, self.z]])
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
 
 @dataclass

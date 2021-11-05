@@ -2,7 +2,7 @@ from paralleldomain.model.annotation.albedo_2d import Albedo2D
 from paralleldomain.model.annotation.annotation_types import AnnotationType, AnnotationTypes
 from paralleldomain.model.annotation.bounding_box_2d import BoundingBox2D, BoundingBoxes2D
 from paralleldomain.model.annotation.bounding_box_3d import BoundingBox3D, BoundingBoxes3D
-from paralleldomain.model.annotation.common import Annotation, AnnotationPose
+from paralleldomain.model.annotation.common import Annotation
 from paralleldomain.model.annotation.depth import Depth
 from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
 from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D

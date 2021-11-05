@@ -3,11 +3,11 @@ from typing import List
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_3d import Point3D
+from paralleldomain.model.geometry.point_3d import Point3DGeometry
 
 
 @dataclass
-class Line3D:
+class Line3DGeometry:
     """Represents a 3D Line.
 
     Args:
@@ -19,8 +19,8 @@ class Line3D:
         end: the 3D end point of the line in image coordinates
     """
 
-    start: Point3D
-    end: Point3D
+    start: Point3DGeometry
+    end: Point3DGeometry
 
     def numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 3)."""
@@ -28,7 +28,7 @@ class Line3D:
 
 
 @dataclass
-class Polyline3D:
+class Polyline3DGeometry:
     """A polyline made of a collection of 3D Lines
 
     Args:
@@ -38,7 +38,7 @@ class Polyline3D:
         lines: Ordered list of :obj:`Line3D` instances
     """
 
-    lines: List[Line3D]
+    lines: List[Line3DGeometry]
 
     def numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 3)."""

@@ -4,7 +4,7 @@ import numpy as np
 
 
 @dataclass
-class Point3D:
+class Point3DGeometry:
     """Represents a 3D Point.
 
     Args:

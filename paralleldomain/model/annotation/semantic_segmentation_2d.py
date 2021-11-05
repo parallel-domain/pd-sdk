@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from sys import getsizeof
 from typing import List
 
 import numpy as np

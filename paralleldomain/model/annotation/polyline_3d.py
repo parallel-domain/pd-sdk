@@ -1,14 +1,13 @@
 from dataclasses import dataclass, field
+from sys import getsizeof
 from typing import Any, Dict, List
 
-import numpy as np
-
 from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.model.annotation.point_3d import Point3D
+from paralleldomain.model.geometry.polyline_3d import Line3DGeometry, Polyline3DGeometry
 
 
 @dataclass
-class Line3D:
+class Line3D(Line3DGeometry):
     """Represents a 3D Line.
 
     Args:
@@ -29,20 +28,17 @@ class Line3D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    start: Point3D
-    end: Point3D
     class_id: int
     directed: bool = False
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
 
-    def to_numpy(self):
-        """Returns the start and end coordinates as a numpy array with shape (2 x 3)."""
-        return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
 
 @dataclass
-class Polyline3D:
+class Polyline3D(Polyline3DGeometry):
     """A polyline made of a collection of 3D Lines
 
     Args:
@@ -60,20 +56,12 @@ class Polyline3D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    lines: List[Line3D]
     class_id: int
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
 
-    def to_numpy(self):
-        """Returns all ordered vertices as a numpy array of shape (N x 3)."""
-        num_lines = len(self.lines)
-        if num_lines == 0:
-            return np.empty((0, 3))
-        elif num_lines == 1:
-            return self.lines[0].to_numpy()
-        else:
-            return np.vstack([ll.to_numpy()[0] for ll in self.lines[:-1]] + [self.lines[-1].to_numpy()[1]])
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
 
 @dataclass

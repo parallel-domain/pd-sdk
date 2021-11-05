@@ -4,7 +4,7 @@ import numpy as np
 
 
 @dataclass
-class BoundingBox2D:
+class BoundingBox2DGeometry:
     """Represents a 2D Bounding Box geometry.
 
     Args:
@@ -101,3 +101,32 @@ class BoundingBox2D:
     def __repr__(self):
         rep = f"x: {self.x}, y: {self.y}, w: {self.width}, h: {self.height}"
         return rep
+
+    @staticmethod
+    def merge_boxes(
+        target_box: "BoundingBox2DGeometry", source_box: "BoundingBox2DGeometry"
+    ) -> "BoundingBox2DGeometry":
+        """
+        Takes two 2D box geometries as input and merges both into a new box geometry.
+        The resulting box geometry has dimensions from `target_box` and `source_box`
+        merged into it.
+        """
+        x_coords = []
+        y_coords = []
+        for b in [target_box, source_box]:
+            x_coords.append(b.x)
+            x_coords.append(b.x + b.width)
+            y_coords.append(b.y)
+            y_coords.append(b.y + b.height)
+
+        x_ul_new = min(x_coords)
+        x_width_new = max(x_coords) - x_ul_new
+        y_ul_new = min(y_coords)
+        y_height_new = max(y_coords) - y_ul_new
+
+        return BoundingBox2DGeometry(
+            x=x_ul_new,
+            y=y_ul_new,
+            width=x_width_new,
+            height=y_height_new,
+        )

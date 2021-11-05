@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
+from sys import getsizeof
 from typing import Any, Dict, List
 
 from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.model.annotation.point_2d import Point2D
+from paralleldomain.model.geometry.polyline_2d import Line2DGeometry, Polyline2DGeometry
 
 
 @dataclass
-class Line2D:
+class Line2D(Line2DGeometry):
     """Represents a 2D Line.
 
     Args:
@@ -27,16 +28,17 @@ class Line2D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    start: Point2D
-    end: Point2D
     class_id: int
     directed: bool = False
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
 
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 3 * 8 + super().__sizeof__()  # 3 * 8 bytes ints or floats
+
 
 @dataclass
-class Polyline2D:
+class Polyline2D(Polyline2DGeometry):
     """A polyline made of a collection of 2D Lines
 
     Args:
@@ -54,10 +56,12 @@ class Polyline2D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    lines: List[Line2D]
     class_id: int
     instance_id: int = -1
     attributes: Dict[str, Any] = field(default_factory=dict)
+
+    def __sizeof__(self):
+        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
 
 @dataclass

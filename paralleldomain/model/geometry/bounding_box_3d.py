@@ -20,7 +20,7 @@ _UNIT_BOUNDING_BOX_3D = np.array(
 
 
 @dataclass
-class BoundingBox3D:
+class BoundingBox3DGeometry:
     """Represents a 3D Bounding Box geometry.
 
     Args:
@@ -181,3 +181,52 @@ class BoundingBox3D:
         faces[5, :, :] = vertices[[7, 3, 0, 4], :]  # down (bottom)
 
         return faces
+
+    @staticmethod
+    def merge_boxes(
+        target_box: "BoundingBox3DGeometry", source_box: "BoundingBox3DGeometry"
+    ) -> "BoundingBox3DGeometry":
+        """
+        Takes two 3D box geometries as input and merges both into a new box geometry.
+        The resulting box geometry has dimensions from `target_box` and `source_box`
+        merged into it.
+        """
+
+        source_faces = np.array(
+            [
+                [source_box.length / 2, 0.0, 0.0, 1.0],
+                [-1 * source_box.length / 2, 0.0, 0.0, 1.0],
+                [0.0, source_box.width / 2, 0.0, 1.0],
+                [0.0, -1.0 * source_box.width / 2, 0.0, 1.0],
+                [0.0, 0.0, source_box.height / 2, 1.0],
+                [0.0, 0.0, -1 * source_box.height / 2, 1.0],
+            ]
+        )
+        target_faces = np.array(
+            [
+                [target_box.length / 2, 0.0, 0.0, 1.0],
+                [-1 * target_box.length / 2, 0.0, 0.0, 1.0],
+                [0.0, target_box.width / 2, 0.0, 1.0],
+                [0.0, -1.0 * target_box.width / 2, 0.0, 1.0],
+                [0.0, 0.0, target_box.height / 2, 1.0],
+                [0.0, 0.0, -1 * target_box.height / 2, 1.0],
+            ]
+        )
+        sensor_frame_faces = source_box.pose @ source_faces.transpose()
+        bike_frame_faces = (target_box.pose.inverse @ sensor_frame_faces).transpose()
+        max_faces = np.where(np.abs(target_faces) > np.abs(bike_frame_faces), target_faces, bike_frame_faces)
+        length = max_faces[0, 0] - max_faces[1, 0]
+        width = max_faces[2, 1] - max_faces[3, 1]
+        height = max_faces[4, 2] - max_faces[5, 2]
+        center = np.array(
+            [max_faces[1, 0] + 0.5 * length, max_faces[3, 1] + 0.5 * width, max_faces[5, 2] + 0.5 * height, 1.0]
+        )
+        translation = target_box.pose @ center
+        fused_pose = Transformation(quaternion=target_box.pose.quaternion, translation=translation[:3])
+
+        return BoundingBox3DGeometry(
+            pose=fused_pose,
+            length=length,
+            width=width,
+            height=height,
+        )

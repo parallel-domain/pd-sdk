@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from paralleldomain.model.geometry.polyline_2d import Polyline2D
+from paralleldomain.model.geometry.polyline_2d import Polyline2DGeometry
 
 
 @dataclass
-class Polygon2D(Polyline2D):
+class Polygon2DGeometry(Polyline2DGeometry):
     """A closed polygon made a collection of 2D Lines.
 
     Args:

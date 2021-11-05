@@ -3,11 +3,11 @@ from typing import List
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_2d import Point2D
+from paralleldomain.model.geometry.point_2d import Point2DGeometry
 
 
 @dataclass
-class Line2D:
+class Line2DGeometry:
     """Represents a 2D Line.
 
     Args:
@@ -28,8 +28,8 @@ class Line2D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    start: Point2D
-    end: Point2D
+    start: Point2DGeometry
+    end: Point2DGeometry
 
     def numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
@@ -37,7 +37,7 @@ class Line2D:
 
 
 @dataclass
-class Polyline2D:
+class Polyline2DGeometry:
     """A polyline made of a collection of 2D Lines
 
     Args:
@@ -47,7 +47,7 @@ class Polyline2D:
         lines: Ordered list of :obj:`Line2D` instances
     """
 
-    lines: List[Line2D]
+    lines: List[Line2DGeometry]
 
     def numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 2)."""
