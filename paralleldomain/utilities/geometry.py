@@ -3,8 +3,6 @@ from typing import List, Tuple, Union
 import cv2
 import numpy as np
 
-from paralleldomain.model.annotation import AnnotationPose, BoundingBox2D, BoundingBox3D
-
 
 def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool = True) -> np.ndarray:
     """Takes a list of points and interpolates a number of additional points inbetween each point pair.

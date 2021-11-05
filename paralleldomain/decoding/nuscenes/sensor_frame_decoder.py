@@ -14,13 +14,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
     TDateTime,
 )
-from paralleldomain.model.annotation import (
-    AnnotationPose,
-    AnnotationType,
-    AnnotationTypes,
-    BoundingBox3D,
-    BoundingBoxes3D,
-)
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -109,7 +103,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             class_id = self.nu_name_to_index[category_name]
             # nuScenes annotations are in global coordinate system
             sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
-            box_to_world = AnnotationPose(quaternion=ann["rotation"], translation=ann["translation"])
+            box_to_world = Transformation(quaternion=ann["rotation"], translation=ann["translation"])
             box_to_sensor = (sensor_to_world.inverse) @ box_to_world
 
             boxes.append(

@@ -30,7 +30,6 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
 )
 from paralleldomain.model.annotation import (
-    AnnotationPose,
     AnnotationType,
     BoundingBox2D,
     BoundingBox3D,
@@ -122,7 +121,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             box_list = []
             for box_dto in dto.annotations:
-                pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=AnnotationPose)
+                pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=Transformation)
 
                 # Add Truncation, Occlusion
                 attr_parsed = {"occlusion": box_dto.box.occlusion, "truncation": box_dto.box.truncation}
