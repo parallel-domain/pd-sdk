@@ -12,7 +12,7 @@ from test_paralleldomain.decoding.constants import DGP_DATASET_PATH_ENV, DGP_V1_
 
 @pytest.fixture(
     params=[
-        ("dgp", DGPDatasetDecoder, DGP_DATASET_PATH_ENV),
+        # ("dgp", DGPDatasetDecoder, DGP_DATASET_PATH_ENV),
         ("dgpv1", DGPV1DatasetDecoder, DGP_V1_DATASET_PATH_ENV),
     ]
 )

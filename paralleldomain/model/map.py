@@ -165,8 +165,73 @@ class RoadSegment:
         )
 
 
-class Lane:
-    ...
+@dataclass
+class LaneSegmentCollection:
+    ids: List[int]
+    types: List[LaneType]
+    directions: List[Direction]
+    left_edges: List[Edge]
+    right_edges: List[Edge]
+    reference_lines: List[Edge]
+
+    @property
+    def left_edge(self) -> Edge:
+        combined_edge = Edge(
+            id=int("".join([str(id) for id in self.ids])),
+            lines=[],
+        )
+        for i, l_edge in enumerate(self.left_edges):
+            direction = self.directions[i]
+
+            if direction is Direction.FORWARD:
+                combined_edge.lines.extend(l_edge.lines)
+            else:
+                combined_edge.lines.extend(l_edge.lines[::-1])
+
+        return combined_edge
+
+    @property
+    def right_edge(self) -> Edge:
+        combined_edge = Edge(
+            id=int("".join([str(id) for id in self.ids])),
+            lines=[],
+        )
+        for i, r_edge in enumerate(self.right_edges):
+            direction = self.directions[i]
+
+            if direction is Direction.FORWARD:
+                combined_edge.lines.extend(r_edge.lines)
+            else:
+                combined_edge.lines.extend(r_edge.lines[::-1])
+
+        return combined_edge
+
+    @property
+    def reference_line(self) -> Edge:
+        combined_line = Edge(
+            id=int("".join([str(id) for id in self.ids])),
+            lines=[],
+        )
+        for i, r_lines in enumerate(self.reference_lines):
+            direction = self.directions[i]
+
+            if direction is Direction.FORWARD:
+                combined_line.lines.extend(r_lines.lines)
+            else:
+                combined_line.lines.extend(r_lines.lines[::-1])
+
+        return combined_line
+
+    @classmethod
+    def from_lane_segments(cls, lane_segments: List["LaneSegment"]) -> "LaneSegmentCollection":
+        return cls(
+            ids=[ls.id for ls in lane_segments],
+            types=[ls.type for ls in lane_segments],
+            directions=[ls.direction for ls in lane_segments],
+            left_edges=[ls.left_edge for ls in lane_segments],
+            right_edges=[ls.right_edge for ls in lane_segments],
+            reference_lines=[ls.reference_line for ls in lane_segments],
+        )
 
 
 @dataclass
@@ -185,10 +250,6 @@ class LaneSegment:
     turn_angle: Optional[float] = None
     turn_type: Optional[TurnType] = None
     user_data: Dict[str, Any] = field(default=dict)
-
-    @property
-    def node_id(self) -> str:
-        return f"{NODE_PREFIX.LANE_SEGMENT}_{self.id}"
 
     def numpy(self, closed: bool = False) -> np.ndarray:
         if not closed:
@@ -263,6 +324,18 @@ class Map:
     def _get_lane_segments_preceeding_lane_segments_graph(self) -> Graph:
         return self._map_graph.subgraph_edges(
             self._map_graph.es.select(type_eq=f"{NODE_PREFIX.LANE_SEGMENT}_preceeds_{NODE_PREFIX.LANE_SEGMENT}"),
+            delete_vertices=False,
+        )
+
+    def _get_junctions_containing_lane_segments_graph(self) -> Graph:
+        return self._map_graph.subgraph_edges(
+            self._map_graph.es.select(type_eq=f"{NODE_PREFIX.JUNCTION}_contains_{NODE_PREFIX.LANE_SEGMENT}"),
+            delete_vertices=False,
+        )
+
+    def _get_road_segments_containing_lane_segments_graph(self) -> Graph:
+        return self._map_graph.subgraph_edges(
+            self._map_graph.es.select(type_eq=f"{NODE_PREFIX.ROAD_SEGMENT}_contains_{NODE_PREFIX.LANE_SEGMENT}"),
             delete_vertices=False,
         )
 
@@ -596,27 +669,27 @@ class Map:
             node_prefix=NODE_PREFIX.AREA, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, method=method
         )
 
-    # def get_junction_for_lane_segment(self, node_id: int) -> List[int]:
-    #     junctions = filter(
-    #         lambda x: x[2]["type"] == "contains",
-    #         self._membership_graph.in_edges(f"{NODE_PREFIX.LANE_SEGMENT}_{node_id}", data=True),
-    #     )
-    #
-    #     return [int(j[0].lstrip(f"{NODE_PREFIX.JUNCTION}_")) for j in junctions]
-    #
-    # def get_parent_road_segment(self, node_id: int) -> int:
-    #     road_segment_ownership = list(
-    #         filter(
-    #             lambda x: x[2]["type"] == "belongs_to",
-    #             self._membership_graph.in_edges(f"{NODE_PREFIX.LANE_SEGMENT}_{node_id}", data=True),
-    #         )
-    #     )
-    #     assert len(road_segment_ownership) == 1
-    #
-    #     return int(road_segment_ownership[0][0].lstrip(f"{NODE_PREFIX.ROAD_SEGMENT}_"))
+    def get_junctions_for_lane_segment(self, id: int) -> List[int]:
+        subgraph = self._get_junctions_containing_lane_segments_graph()
+        source_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
+
+        junctions = subgraph.es.select(_source=source_node)
+
+        return [j.target_vertex["object"] for j in junctions]
+
+    def get_road_segment_for_lane_segment(self, id: int) -> Optional[int]:
+        subgraph = self._get_road_segments_containing_lane_segments_graph()
+        target_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
+
+        road_segments = subgraph.es.select(_target=target_node)
+
+        if len(road_segments) > 0:
+            return road_segments[0].source_vertex["object"]
+        else:
+            return None
 
     def get_lane_segment_successors(
-        self, id: int, depth: int = None
+        self, id: int, depth: int = -1
     ) -> Tuple[List[LaneSegment], List[int], List[Optional[int]]]:
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
         start_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
@@ -625,9 +698,9 @@ class Map:
         levels = []
         parent_ids = []
 
-        level = 0
+        level = -1
         bfs_iterator = subgraph.bfsiter(vid=start_node.index, mode="out", advanced=True)
-        while depth is None or level <= depth:
+        while depth == -1 or level < depth:
             try:
                 lane_segment, level, parent_lane_segment = next(bfs_iterator)
                 lane_segments.append(lane_segment["object"])
@@ -638,40 +711,27 @@ class Map:
 
         return lane_segments, levels, parent_ids
 
-    def get_lane_segments_successors_shortest_paths(self, id: int, target_id: int) -> List[List[LaneSegment]]:
+    def get_lane_segments_successors_shortest_paths(self, source_id: int, target_id: int) -> List[List[LaneSegment]]:
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
-        start_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
+        start_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{source_id}")
         end_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{target_id}")
 
         shortest_paths = subgraph.get_shortest_paths(v=start_node, to=end_node.index, mode="out")
         return [[subgraph.vs[node_id]["object"] for node_id in shortest_path] for shortest_path in shortest_paths]
 
-    def get_lane_segment_successors_single_path(self, id: int, depth: int = None, mode: str = "random"):
+    def get_lane_segment_successors_random_path(self, id: int, steps: int = None):
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
         start_vertex = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
-        if mode == "random":
-            random_walk = subgraph.random_walk(start=start_vertex.index, steps=(2 ** 16))
-            return [subgraph.vs[node_id]["object"] for node_id in random_walk]
-        elif mode == "longest":
-            lane_segments, levels, parent_ids = self.get_lane_segment_successors(id=id, depth=None)
-            deepest_level_index = levels.index(max(levels))
-
-            lane_segments_graph_ids = [
-                self._map_graph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{ls.id}").index for ls in lane_segments
-            ]
-            longest_walk = [lane_segments_graph_ids[deepest_level_index]]
-            # TODO: Figure out correct indexing for getting next parent
-            next_parent = parent_ids[deepest_level_index]
-            while next_parent is not None:
-                longest_walk.append(next_parent)
-                next_parent = parent_ids[lane_segments_graph_ids.index(next_parent)]
-
-            return [subgraph.vs[node_id]["object"] for node_id in longest_walk[::-1]]
-        else:
-            raise NotImplementedError(f"Currently, mode '{mode}' is not supported.")
+        random_walk = subgraph.random_walk(
+            start=start_vertex.index,
+            steps=steps if steps is not None else (2 ** 16),
+            mode="out",
+            stuck="return",
+        )
+        return [subgraph.vs[node_id]["object"] for node_id in random_walk]
 
     def get_lane_segment_predecessors(
-        self, id: int, depth: int = None
+        self, id: int, depth: int = -1
     ) -> Tuple[List[LaneSegment], List[int], List[Optional[int]]]:
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
         start_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
@@ -680,9 +740,9 @@ class Map:
         levels = []
         parent_ids = []
 
-        level = 0
+        level = -1
         bfs_iterator = subgraph.bfsiter(vid=start_node.index, mode="in", advanced=True)
-        while depth is None or level <= depth:
+        while depth == -1 or level < depth:
             try:
                 lane_segment, level, parent_lane_segment = next(bfs_iterator)
                 lane_segments.append(lane_segment["object"])
@@ -693,55 +753,17 @@ class Map:
 
         return lane_segments, levels, parent_ids
 
-    # def get_lane_segment_predecessors_single_path(self, node_id: int, depth: int = None, mode: str = "random"):
-    #     if mode == "random":
-    #         random_picked_path = [node_id]
-    #         iteration = 0
-    #         while depth is None or iteration < depth:
-    #             iteration += 1
-    #             candidates = set(self.get_lane_segment_predecessors(node_id=random_picked_path[-1], depth=1))
-    #             candidates.remove(random_picked_path[-1])
-    #             candidates = list(candidates)
-    #
-    #             if candidates:
-    #                 picked_candidate = candidates[0]
-    #                 if picked_candidate in random_picked_path:
-    #                     print("Circular path detected - abort.")
-    #                     break
-    #                 else:
-    #                     random_picked_path.append(candidates[0])
-    #             else:
-    #                 break
-    #         return random_picked_path
-    #     elif mode == "longest":
-    #         dfs_tree = list(
-    #             nx.to_edgelist(
-    #                 nx.bfs_tree(
-    #                     self._successor_graph, f"{NODE_PREFIX.LANE_SEGMENT}_{node_id}",
-    #                     reverse=True, depth_limit=depth
-    #                 )
-    #             )
-    #         )
-    #
-    #         furthest_node = dfs_tree[-1][1]
-    #         dfs_tree_dict = {edge[1]: edge[0] for edge in dfs_tree}
-    #
-    #         longest_path = [furthest_node]
-    #         while True:
-    #             if furthest_node in dfs_tree_dict:
-    #                 previous_node = dfs_tree_dict[furthest_node]
-    #                 if previous_node in longest_path:
-    #                     print("Circular path detected - abort.")
-    #                     break
-    #                 longest_path.append(previous_node)
-    #                 furthest_node = previous_node
-    #             else:
-    #                 break
-    #
-    #         return [int(node.lstrip(f"{NODE_PREFIX.LANE_SEGMENT}_")) for node in longest_path[::-1]]
-    #     else:
-    #         raise NotImplementedError(f"Currently, mode '{mode}' is not supported.")
-    #
+    def get_lane_segment_predecessors_random_path(self, id: int, steps: int = None):
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        start_vertex = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
+        random_walk = subgraph.random_walk(
+            start=start_vertex.index,
+            steps=steps if steps is not None else (2 ** 16),
+            mode="in",
+            stuck="return",
+        )
+        return [subgraph.vs[node_id]["object"] for node_id in random_walk]
+
     def get_lane_segment_neighbors(self, id: int) -> (Optional[LaneSegment], Optional[LaneSegment]):
         lane_segment = self.get_lane_segment(id=id)
 
@@ -754,15 +776,12 @@ class Map:
             else (None, None)
         )
 
-    #
-    # def has_lane_segment_split(self, node_id: int):
-    #     return len(self.get_lane_segment_successors(node_id=node_id, depth=1)) > 2  # [start_node, one_successor, ...]
-    #
-    # def has_lane_segment_merge(self, node_id: int):
-    #     return (
-    #         len(self.get_lane_segment_predecessors(node_id=node_id, depth=1)) > 2
-    #     )  # [start_node, one_predecessor, ...]
-    #
+    def has_lane_segment_split(self, id: int):
+        return len(self.get_lane_segment_successors(id=id, depth=1)) > 2  # [start_node, one_successor, ...]
+
+    def has_lane_segment_merge(self, id: int):
+        return len(self.get_lane_segment_predecessors(id=id, depth=1)) > 2  # [start_node, one_predecessor, ...]
+
     def get_lane_segments_for_point(self, point: PointENU) -> List[LaneSegment]:
 
         ls_candidates = self.get_lane_segments_within_bounds(
@@ -773,7 +792,7 @@ class Map:
             return [
                 ls_candidates[i]
                 for i, polygon in enumerate(ls_candidates)
-                if is_point_in_polygon_2d(polygon=polygon.numpy(closed=True), point=point_under_test)
+                if is_point_in_polygon_2d(polygon=polygon.numpy(closed=True)[:, :2], point=point_under_test)
             ]
         else:
             return []
