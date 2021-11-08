@@ -9,8 +9,9 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, sample_pb2
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, TransformType
+from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
@@ -93,11 +94,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
+        return scene_data
+
+    def _get_sensor_frame_data_datum(self, frame_id: FrameId, sensor_name: SensorName) -> sample_pb2.DatumValue:
+        scene_data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         return scene_data.datum
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        sample = self._get_current_frame_sample(frame_id=frame_id)
-        return sample.id.timestamp.ToDatetime().replace(tzinfo=timezone.utc)
+        data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return timestamp_to_datetime(ts=data.id.timestamp)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
@@ -113,7 +118,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return sensor_to_custom_reference
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
         else:
@@ -233,7 +238,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             type_to_path = datum.image.annotations
         else:
@@ -409,11 +414,11 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return (datum.image.height, datum.image.width, datum.image.channels)
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.image.filename
         image_data = read_image(path=cloud_path)
 
@@ -431,6 +436,8 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model = CameraModel.OPENCV_FISHEYE
         elif dto.fisheye is False or dto.fisheye == 0:
             camera_model = CameraModel.OPENCV_PINHOLE
+        elif dto.fisheye == 3:
+            camera_model = CameraModel.PD_FISHEYE
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
 
@@ -453,82 +460,103 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
         )
 
 
-class PointInfo(Enum):
-    X = "X"
-    Y = "Y"
-    Z = "Z"
-    I = "INTENSITY"  # noqa: E741
-    R = "R"
-    G = "G"
-    B = "B"
-    RING = "RING"
-    TS = "TIMESTAMP"
-
-
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
-    def _get_index(self, p_info: PointInfo, sensor_name: SensorName, frame_id: FrameId):
-        point_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
-        point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
-        return point_cloud_info[p_info]
-
     @lru_cache(maxsize=1)
     def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
-        return datum.point_cloud.point_format
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return [point_cloud_pb2.PointCloud.ChannelType.Name(pf) for pf in datum.point_cloud.point_format]
 
     @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
         pc_data = read_npz(path=cloud_path, files="data")
-        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+        return pc_data
 
     def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.HasField("point_cloud")
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return len(data)
 
-    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        xyz_index = [
-            self._get_index(p_info=PointInfo.X, sensor_name=sensor_name, frame_id=frame_id),
-            self._get_index(p_info=PointInfo.Y, sensor_name=sensor_name, frame_id=frame_id),
-            self._get_index(p_info=PointInfo.Z, sensor_name=sensor_name, frame_id=frame_id),
-        ]
-        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, xyz_index]
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.X, PointFormat.Y, PointFormat.Z]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
 
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        rgb_index = [
-            self._get_index(p_info=PointInfo.R, sensor_name=sensor_name, frame_id=frame_id),
-            self._get_index(p_info=PointInfo.G, sensor_name=sensor_name, frame_id=frame_id),
-            self._get_index(p_info=PointInfo.B, sensor_name=sensor_name, frame_id=frame_id),
-        ]
-        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, rgb_index]
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.R, PointFormat.G, PointFormat.B]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
 
-    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        intensity_index = [
-            self._get_index(p_info=PointInfo.I, sensor_name=sensor_name, frame_id=frame_id),
-        ]
-        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, intensity_index]
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
 
-    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        ts_index = [
-            self._get_index(p_info=PointInfo.TS, sensor_name=sensor_name, frame_id=frame_id),
-        ]
-        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, ts_index]
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.I]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
 
-    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        ring_index = [
-            self._get_index(p_info=PointInfo.RING, sensor_name=sensor_name, frame_id=frame_id),
-        ]
-        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, ring_index]
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.TS]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.uint64)
+        else:
+            return None
+
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.RING]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.uint32)
+        else:
+            return None
+
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [PointFormat.RAYTYPE]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.uint32)
+        else:
+            return None
 
 
 def _pose_dto_to_transformation(dto: geometry_pb2.Pose, transformation_type: Type[TransformType]) -> TransformType:
