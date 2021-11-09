@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
 from paralleldomain.decoding.common import DecoderSettings
