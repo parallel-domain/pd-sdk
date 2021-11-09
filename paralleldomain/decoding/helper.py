@@ -1,9 +1,10 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
+from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
@@ -18,6 +19,7 @@ def decode_dataset(
     settings: Optional[DecoderSettings] = None,
     **decoder_kwargs,
 ) -> Dataset:
+
     if dataset_format == "dgp":
         return DGPDatasetDecoder(
             dataset_path=dataset_path,
@@ -31,6 +33,10 @@ def decode_dataset(
 
     elif dataset_format == "nuimages":
         return NuImagesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
+
+    elif dataset_format == "nuscenes":
+        return NuScenesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
+
     else:
         raise ValueError(
             f"Unknown Dataset format {dataset_format}. Currently supported dataset formats are {known_formats}"
