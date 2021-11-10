@@ -82,8 +82,11 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         dto = self._decode_dataset_dto()
         anno_types = [ANNOTATION_TYPE_MAP[a] for a in dto.metadata.available_annotation_types]
+
         return DatasetMeta(
-            name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=dto.metadata
+            name=dto.metadata.name,
+            available_annotation_types=anno_types,
+            custom_attributes=MessageToDict(dto.metadata, preserving_proto_field_name=True),
         )
 
 
