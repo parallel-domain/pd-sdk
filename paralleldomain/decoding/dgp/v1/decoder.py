@@ -86,7 +86,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         return DatasetMeta(
             name=dto.metadata.name,
             available_annotation_types=anno_types,
-            custom_attributes=MessageToDict(dto.metadata),
+            custom_attributes=MessageToDict(dto.metadata, preserving_proto_field_name=True),
         )
 
 
