@@ -4,8 +4,11 @@
 
 The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain's synthetic data as Python objects.
 
-The PD SDK can decode different data formats into its Python objects, including [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md) format.
+The PD SDK can decode different data formats into its Python objects, including [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md) format as well as [CityScapes](https://www.cityscapes-dataset.com/dataset-overview/), [NuImages](https://www.nuscenes.org/nuimages) and [NuScenes](https://www.nuscenes.org/nuscenes) (more public dataset formats will be supported in the future).
 Currently, local file system and s3 buckets are supported as dataset locations for decoding.
+
+In order to support diffrent data formats PD SDK uses dataset format specific Decoders that are tasked with converting the respective dataset format into the PD SDK common Python objects (aka model classes).
+To support this the model is designed to represent an arbitrary sensor rig that collects sequential or non-sequential data that may be annotated with different annotations.
 
 ## Quick Start
 

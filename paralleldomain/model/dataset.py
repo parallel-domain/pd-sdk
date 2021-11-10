@@ -84,7 +84,8 @@ class Dataset:
 
     @property
     def unordered_scenes(self) -> Dict[SceneName, UnorderedScene[Union[datetime, None]]]:
-        """Returns a dictionary of :obj:`SensorFrameSet` instances with the scene name as key."""
+        """Returns a dictionary of :obj:`SensorFrameSet` instances with the scene name as key. This a superset of
+        scenes and hence will also include all scenes."""
         return {name: self._decoder.get_unordered_scene(scene_name=name) for name in self.unordered_scene_names}
 
     @property
