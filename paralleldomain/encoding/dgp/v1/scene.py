@@ -21,6 +21,7 @@ from paralleldomain.common.dgp.v1 import (
     scene_pb2,
 )
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName, PointFormat
+from paralleldomain.common.dgp.v1.utils import datetime_to_timestamp
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.transformer import (
     BoundingBox2DTransformer,
@@ -618,7 +619,7 @@ class DGPSceneEncoder(SceneEncoder):
                     id=identifiers_pb2.DatumId(
                         log="",
                         name=camera_frame.sensor_name,
-                        timestamp=timestamp_pb2.Timestamp().FromDatetime(camera_frame.date_time),
+                        timestamp=datetime_to_timestamp(dt=camera_frame.date_time),
                         index=int(camera_frame.frame_id),
                     ),
                     key="",
@@ -685,7 +686,7 @@ class DGPSceneEncoder(SceneEncoder):
                     id=identifiers_pb2.DatumId(
                         log="",
                         name=lidar_frame.sensor_name,
-                        timestamp=timestamp_pb2.Timestamp().FromDatetime(lidar_frame.date_time),
+                        timestamp=datetime_to_timestamp(dt=lidar_frame.date_time),
                         index=int(lidar_frame.frame_id),
                     ),
                     key="",
@@ -962,7 +963,7 @@ class DGPSceneEncoder(SceneEncoder):
                 sample_pb2.Sample(
                     id=identifiers_pb2.DatumId(
                         log="",
-                        timestamp=timestamp_pb2.Timestamp().FromDatetime(frame.date_time),
+                        timestamp=datetime_to_timestamp(dt=frame.date_time),
                         name="",
                         index=int(frame.frame_id),
                     ),
