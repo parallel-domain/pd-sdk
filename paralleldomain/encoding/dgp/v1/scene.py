@@ -448,8 +448,8 @@ class DGPSceneEncoder(SceneEncoder):
         keyline_proto = annotations_pb2.KeyLine2DAnnotation(
             class_id=line.class_id,
             attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items()},
-            vertices=[annotations_pb2.KeyPoint2D(x=ll.start.x, y=ll.start.y) for ll in line.lines]
-            + [annotations_pb2.KeyPoint2D(x=line.lines[-1].end.x, y=line.lines[-1].end.y)],
+            vertices=[annotations_pb2.KeyPoint2D(x=int(ll.start.x), y=int(ll.start.y)) for ll in line.lines]
+            + [annotations_pb2.KeyPoint2D(x=int(line.lines[-1].end.x), y=int(line.lines[-1].end.y))],
         )
 
         return keyline_proto

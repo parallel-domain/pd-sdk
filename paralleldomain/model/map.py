@@ -1,9 +1,11 @@
 import math
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Dict, List, Optional, Tuple
+from json import JSONDecodeError
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
+import ujson
 from igraph import Graph
 from more_itertools import windowed
 
@@ -11,6 +13,7 @@ from paralleldomain.common.umd.v1.UMD_pb2 import Edge as ProtoEdge
 from paralleldomain.common.umd.v1.UMD_pb2 import Junction as ProtoJunction
 from paralleldomain.common.umd.v1.UMD_pb2 import LaneSegment as ProtoLaneSegment
 from paralleldomain.common.umd.v1.UMD_pb2 import Point_ENU as ProtoPointENU
+from paralleldomain.common.umd.v1.UMD_pb2 import RoadMarking as ProtoRoadMarking
 from paralleldomain.common.umd.v1.UMD_pb2 import RoadSegment as ProtoRoadSegment
 from paralleldomain.common.umd.v1.UMD_pb2 import SpeedLimit as ProtoSpeedLimit
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
@@ -84,6 +87,54 @@ class GroundType(IntEnum):
     TUNNEL = 2
 
 
+class RoadMarkingType(IntEnum):
+    SOLID = 0
+    DASHED = 1
+    SOLID_SOLID = 2  # for double solid line
+    SOLID_DASHED = 3  # from left to right, note this is different from ODR spec
+    DASHED_SOLID = 4  # from left to right, note this is different from ODR spec
+    DASHED_DASHED = 5  # for double dashed line
+    BOTTS_DOTS = 6  # For these three, we can specify as a RoadMark or should they be captured elsewhere
+    NO_PAINT = 7
+
+
+class RoadMarkingColor(IntEnum):
+    WHITE = 0
+    BLUE = 1
+    GREEN = 2
+    RED = 3
+    YELLOW = 4
+
+
+T = TypeVar("T")
+
+
+def load_user_data(user_data: T) -> Union[T, Dict[str, Any]]:
+    try:
+        return ujson.loads(user_data)
+    except (ValueError, JSONDecodeError):
+        return user_data
+
+
+@dataclass
+class RoadMarking:
+    id: int
+    edge_id: int
+    width: float
+    type: RoadMarkingType
+    color: RoadMarkingColor
+
+    @classmethod
+    def from_proto(cls, road_marking: ProtoRoadMarking) -> "RoadMarking":
+        return cls(
+            id=road_marking.id,
+            edge_id=road_marking.id,
+            width=road_marking.width,
+            type=RoadMarkingType(road_marking.type) if road_marking.HasField("type") else None,
+            color=RoadMarkingColor(road_marking.color) if road_marking.HasField("color") else None,
+        )
+
+
 @dataclass
 class SpeedLimit:
     speed: int
@@ -109,10 +160,41 @@ class PointENU(Point3DGeometry):
 class Edge(Polyline3DGeometry):
     id: int
     closed: bool = False
+    road_marking: Union[RoadMarking, List[RoadMarking]] = None
     user_data: Dict[str, Any] = field(default_factory=dict)
 
+    def transform(self, tf: Transformation) -> "Edge":
+        return Edge(
+            id=self.id,
+            closed=self.closed,
+            road_marking=self.road_marking,
+            user_data=self.user_data,
+            lines=[ll.transform(tf=tf) for ll in self.lines],
+        )
+
     @classmethod
-    def from_proto(cls, edge: ProtoEdge):
+    def from_numpy(
+        cls,
+        points: np.ndarray,
+        id: int,
+        closed: bool = False,
+        road_marking: Optional[RoadMarking] = None,
+        user_data: Optional[Dict[str, Any]] = None,
+    ) -> "Edge":
+        if user_data is None:
+            user_data = {}
+        points = points.reshape(-1, 3)
+        point_pairs = np.hstack([points[:-1], points[1:]])
+        return Edge(
+            id=id,
+            closed=closed,
+            road_marking=road_marking,
+            user_data=user_data,
+            lines=np.apply_along_axis(Line3DGeometry.from_numpy, point_pairs),
+        )
+
+    @classmethod
+    def from_proto(cls, edge: ProtoEdge, road_marking: Optional[ProtoRoadMarking] = None):
         return cls(
             id=edge.id,
             closed=not (edge.open),
@@ -122,7 +204,8 @@ class Edge(Polyline3DGeometry):
                 )
                 for point_pair in windowed(edge.points, 2)
             ],
-            user_data=edge.user_data if edge.HasField("user_data") else {},
+            road_marking=RoadMarking.from_proto(road_marking=road_marking) if road_marking is not None else None,
+            user_data=load_user_data(edge.user_data) if edge.HasField("user_data") else {},
         )
 
 
@@ -161,7 +244,7 @@ class RoadSegment:
             if road_segment.HasField("speed_limit")
             else None,
             junction_id=road_segment.junction_id,
-            user_data=road_segment.user_data if road_segment.HasField("user_data") else {},
+            user_data=load_user_data(road_segment.user_data) if road_segment.HasField("user_data") else {},
         )
 
 
@@ -176,33 +259,25 @@ class LaneSegmentCollection:
 
     @property
     def left_edge(self) -> Edge:
-        combined_edge = Edge(
-            id=int("".join([str(id) for id in self.ids])),
-            lines=[],
-        )
+        combined_edge = Edge(id=int("".join([str(id) for id in self.ids])), lines=[], road_marking=[])
         for i, l_edge in enumerate(self.left_edges):
-            direction = self.directions[i]
-
-            if direction is Direction.FORWARD:
+            combined_edge.road_marking.append(l_edge.road_marking)
+            if self.directions[i] is Direction.FORWARD:
                 combined_edge.lines.extend(l_edge.lines)
             else:
-                combined_edge.lines.extend(l_edge.lines[::-1])
+                combined_edge.lines.extend([Line3DGeometry(start=ll.end, end=ll.start) for ll in l_edge.lines[::-1]])
 
         return combined_edge
 
     @property
     def right_edge(self) -> Edge:
-        combined_edge = Edge(
-            id=int("".join([str(id) for id in self.ids])),
-            lines=[],
-        )
+        combined_edge = Edge(id=int("".join([str(id) for id in self.ids])), lines=[], road_marking=[])
         for i, r_edge in enumerate(self.right_edges):
-            direction = self.directions[i]
-
-            if direction is Direction.FORWARD:
+            combined_edge.road_marking.append(r_edge.road_marking)
+            if self.directions[i] is Direction.FORWARD:
                 combined_edge.lines.extend(r_edge.lines)
             else:
-                combined_edge.lines.extend(r_edge.lines[::-1])
+                combined_edge.lines.extend([Line3DGeometry(start=ll.end, end=ll.start) for ll in r_edge.lines[::-1]])
 
         return combined_edge
 
@@ -218,9 +293,19 @@ class LaneSegmentCollection:
             if direction is Direction.FORWARD:
                 combined_line.lines.extend(r_lines.lines)
             else:
-                combined_line.lines.extend(r_lines.lines[::-1])
+                combined_line.lines.extend([Line3DGeometry(start=ll.end, end=ll.start) for ll in r_lines.lines[::-1]])
 
         return combined_line
+
+    def transform(self, tf: Transformation) -> "LaneSegmentCollection":
+        return LaneSegmentCollection(
+            ids=self.ids,
+            types=self.types,
+            directions=self.directions,
+            left_edges=self.left_edges,
+            right_edges=self.right_edges,
+            reference_lines=self.reference_lines,
+        )
 
     @classmethod
     def from_lane_segments(cls, lane_segments: List["LaneSegment"]) -> "LaneSegmentCollection":
@@ -251,11 +336,13 @@ class LaneSegment:
     turn_type: Optional[TurnType] = None
     user_data: Dict[str, Any] = field(default=dict)
 
-    def numpy(self, closed: bool = False) -> np.ndarray:
+    def to_numpy(self, closed: bool = False) -> np.ndarray:
         if not closed:
-            return np.vstack([self.left_edge.numpy(), self.right_edge.numpy()[::-1]])
+            return np.vstack([self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1]])
         else:
-            return np.vstack([self.left_edge.numpy(), self.right_edge.numpy()[::-1], self.left_edge.numpy()[0]])
+            return np.vstack(
+                [self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1], self.left_edge.to_numpy()[0]]
+            )
 
     @classmethod
     def from_proto(cls, id: int, umd_map: ProtoUniversalMap) -> "LaneSegment":
@@ -264,8 +351,18 @@ class LaneSegment:
             id=lane_segment.id,
             type=LaneType(lane_segment.type),
             direction=Direction(lane_segment.direction),
-            left_edge=Edge.from_proto(edge=umd_map.edges[lane_segment.left_edge]),
-            right_edge=Edge.from_proto(edge=umd_map.edges[lane_segment.right_edge]),
+            left_edge=Edge.from_proto(
+                edge=umd_map.edges[lane_segment.left_edge],
+                road_marking=umd_map.road_markings[lane_segment.left_edge]
+                if lane_segment.left_edge in umd_map.road_markings
+                else None,
+            ),
+            right_edge=Edge.from_proto(
+                edge=umd_map.edges[lane_segment.right_edge],
+                road_marking=umd_map.road_markings[lane_segment.right_edge]
+                if lane_segment.right_edge in umd_map.road_markings
+                else None,
+            ),
             reference_line=Edge.from_proto(edge=umd_map.edges[lane_segment.reference_line]),
             predecessors=[ls_p for ls_p in lane_segment.predecessors],
             successors=[ls_s for ls_s in lane_segment.successors],
@@ -274,7 +371,7 @@ class LaneSegment:
             compass_angle=lane_segment.compass_angle,
             turn_angle=lane_segment.turn_angle,
             turn_type=TurnType(lane_segment.turn_type),
-            user_data=lane_segment.user_data if lane_segment.HasField("user_data") else {},
+            user_data=load_user_data(lane_segment.user_data) if lane_segment.HasField("user_data") else {},
         )
 
 
@@ -303,7 +400,7 @@ class Junction:
             signaled_intersection=junction.signaled_intersection
             if junction.HasField("signaled_intersection")
             else None,
-            user_data=junction.user_data if junction.HasField("user_data") else {},
+            user_data=load_user_data(junction.user_data) if junction.HasField("user_data") else {},
             corners=[j_co for j_co in junction.corners],
             crosswalk_lanes=[j_cw for j_cw in junction.crosswalk_lanes],
             signed_intersection=junction.signed_intersection if junction.HasField("signed_intersection") else None,
@@ -776,14 +873,26 @@ class Map:
             else (None, None)
         )
 
-    def has_lane_segment_split(self, id: int):
+    def has_lane_segment_split(self, id: int) -> bool:
         return len(self.get_lane_segment_successors(id=id, depth=1)) > 2  # [start_node, one_successor, ...]
 
-    def has_lane_segment_merge(self, id: int):
+    def has_lane_segment_merge(self, id: int) -> bool:
         return len(self.get_lane_segment_predecessors(id=id, depth=1)) > 2  # [start_node, one_predecessor, ...]
 
-    def get_lane_segments_for_point(self, point: PointENU) -> List[LaneSegment]:
+    def are_connected_lane_segments(self, id_1: int, id_2: int) -> bool:
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        node_1 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_1}")
+        node_2 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_2}")
+        edge_id = subgraph.get_eid(node_1, node_2, directed=False, error=False)
+        return False if edge_id == -1 else True
 
+    def are_opposite_direction_lane_segments(self, id_1: int, id_2: int) -> bool:
+        lane_segment_1 = self.get_lane_segment(id=id_1)
+        lane_segment_2 = self.get_lane_segment(id=id_2)
+
+        return True if lane_segment_1.direction != lane_segment_2.direction else False
+
+    def get_lane_segments_for_point(self, point: PointENU) -> List[LaneSegment]:
         ls_candidates = self.get_lane_segments_within_bounds(
             x_min=point.x - 0.1, x_max=point.x + 0.1, y_min=point.y - 0.1, y_max=point.y + 0.1, method="overlap"
         )
@@ -792,7 +901,7 @@ class Map:
             return [
                 ls_candidates[i]
                 for i, polygon in enumerate(ls_candidates)
-                if is_point_in_polygon_2d(polygon=polygon.numpy(closed=True)[:, :2], point=point_under_test)
+                if is_point_in_polygon_2d(polygon=polygon.to_numpy(closed=True)[:, :2], point=point_under_test)
             ]
         else:
             return []

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from paralleldomain.utilities.transformation import Transformation
+
 
 @dataclass
 class Point3DGeometry:
@@ -30,6 +32,15 @@ class Point3DGeometry:
     y: float
     z: float
 
-    def numpy(self):
+    def to_numpy(self):
         """Returns the coordinates as a numpy array with shape (1 x 3)."""
         return np.array([[self.x, self.y, self.z]])
+
+    def transform(self, tf: Transformation) -> "Point3DGeometry":
+        tf_point = (tf @ np.array([self.x, self.y, self.z, 1]))[:3]
+        return Point3DGeometry(x=tf_point[0], y=tf_point[1], z=tf_point[2])
+
+    @classmethod
+    def from_numpy(cls, point: np.ndarray):
+        pt = point.reshape(-3)
+        return cls(x=pt[0], y=pt[1], z=pt[2])
