@@ -1,12 +1,18 @@
-from datetime import timezone
+from datetime import datetime, timezone
 from typing import List, Optional
 
 import numpy as np
 from google.protobuf import timestamp_pb2
 
 
-def timestamp_to_datetime(ts: timestamp_pb2.Timestamp):
+def timestamp_to_datetime(ts: timestamp_pb2.Timestamp) -> datetime:
     return ts.ToDatetime().replace(tzinfo=timezone.utc)
+
+
+def datetime_to_timestamp(dt: datetime) -> timestamp_pb2.Timestamp:
+    ts = timestamp_pb2.Timestamp()
+    ts.FromDatetime(dt)
+    return ts
 
 
 def rec2array(rec: np.ndarray, fields: Optional[List[str]] = None):
