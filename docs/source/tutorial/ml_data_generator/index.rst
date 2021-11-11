@@ -1,5 +1,5 @@
 ML Data Generator
-==============
+==================
 
 .. toctree::
     :maxdepth: 1
