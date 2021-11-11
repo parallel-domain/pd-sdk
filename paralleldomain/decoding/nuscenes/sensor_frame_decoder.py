@@ -115,8 +115,8 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             boxes.append(
                 BoundingBox3D(
                     pose=box_to_sensor,
-                    length=ann["size"][0],  # x-axis
-                    width=ann["size"][1],  # y-axis
+                    length=ann["size"][1],  # x-axis
+                    width=ann["size"][0],  # y-axis
                     height=ann["size"][2],  # z-axis
                     class_id=class_id,
                     instance_id=i,
