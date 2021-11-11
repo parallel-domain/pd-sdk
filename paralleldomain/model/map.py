@@ -766,15 +766,15 @@ class Map:
             node_prefix=NODE_PREFIX.AREA, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, method=method
         )
 
-    def get_junctions_for_lane_segment(self, id: int) -> List[int]:
+    def get_junctions_for_lane_segment(self, id: int) -> List[Junction]:
         subgraph = self._get_junctions_containing_lane_segments_graph()
         source_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
 
-        junctions = subgraph.es.select(_source=source_node)
+        junctions = subgraph.es.select(_target=source_node)
 
-        return [j.target_vertex["object"] for j in junctions]
+        return [j.source_vertex["object"] for j in junctions]
 
-    def get_road_segment_for_lane_segment(self, id: int) -> Optional[int]:
+    def get_road_segment_for_lane_segment(self, id: int) -> Optional[RoadSegment]:
         subgraph = self._get_road_segments_containing_lane_segments_graph()
         target_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
 
@@ -891,6 +891,16 @@ class Map:
         lane_segment_2 = self.get_lane_segment(id=id_2)
 
         return True if lane_segment_1.direction != lane_segment_2.direction else False
+
+    def are_succeeding_lane_segments(self, id_1: int, id_2: int) -> bool:
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        node_1 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_1}")
+        node_2 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_2}")
+        edge_id = subgraph.get_eid(node_1, node_2, directed=True, error=False)
+        return False if edge_id == -1 else True
+
+    def is_lane_segment_inside_junction(self, id: int) -> bool:
+        return True if len(self.get_junctions_for_lane_segment(id=id)) > 0 else False
 
     def get_lane_segments_for_point(self, point: PointENU) -> List[LaneSegment]:
         ls_candidates = self.get_lane_segments_within_bounds(

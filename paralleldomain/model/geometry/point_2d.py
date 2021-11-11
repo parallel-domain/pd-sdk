@@ -27,6 +27,6 @@ class Point2DGeometry:
     x: int
     y: int
 
-    def numpy(self):
+    def to_numpy(self):
         """Returns the coordinates as a numpy array with shape (1 x 2)."""
         return np.array([[self.x, self.y]])

@@ -31,9 +31,9 @@ class Line2DGeometry:
     start: Point2DGeometry
     end: Point2DGeometry
 
-    def numpy(self):
+    def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
-        return np.vstack([self.start.numpy(), self.end.numpy()])
+        return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
 
 
 @dataclass
@@ -49,12 +49,12 @@ class Polyline2DGeometry:
 
     lines: List[Line2DGeometry]
 
-    def numpy(self):
+    def to_numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 2)."""
         num_lines = len(self.lines)
         if num_lines == 0:
             return np.empty((0, 2))
         elif num_lines == 1:
-            return self.lines[0].numpy()
+            return self.lines[0].to_numpy()
         else:
-            return np.vstack([ll.numpy()[0] for ll in self.lines[:-1]] + [self.lines[-1].numpy()[1]])
+            return np.vstack([ll.to_numpy()[0] for ll in self.lines[:-1]] + [self.lines[-1].to_numpy()[1]])
