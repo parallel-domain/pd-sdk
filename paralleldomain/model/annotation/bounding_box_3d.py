@@ -46,6 +46,32 @@ class BoundingBox3D:
             other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
         num_points: Number of LiDAR points of related :obj:`Sensor`.
         attributes: Dictionary of arbitrary object attributes.
+
+    Example:
+        Using the Surface Normal mask in combination with :attr:`.PointCloud.xyz` to visualize the
+        normals of each point.
+        ::
+
+            lidar_frame: LidarSensorFrame = ...  # get any lidars's SensorFrame
+
+            boxes_3d = lidar_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
+            xyz = lidar_frame.point_cloud.xyz
+
+            import open3d as o3d
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(xyz)
+
+            boxes = list()
+            for box in boxes_3d.boxes:
+                center = box.pose.translation
+                dims = np.array([box.length, box.width, box.height])
+                R = box.pose.rotation
+                o3d_box = o3d.geometry.OrientedBoundingBox(center=center,
+                                                           R=R,
+                                                           extent=dims)
+                boxes.append(o3d_box)
+
+            o3d.visualization.draw_geometries(boxes + [pcd])
     """
 
     pose: AnnotationPose
