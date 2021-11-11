@@ -9,6 +9,12 @@ Currently, local file system and s3 buckets are supported as dataset locations f
 
 In order to support diffrent data formats PD SDK uses dataset format specific Decoders that are tasked with converting the respective dataset format into the PD SDK common Python objects (aka model classes).
 To support this the model is designed to represent an arbitrary sensor rig that collects sequential or non-sequential data that may be annotated with different annotations.
+PD SDK follows the principal of lazy loading data, meaning that any data is loaded as late as possible to ensure quick browsing through datasets. Furthermore PD SDK contains an encoding module tasked with saving model classes into specific dataset formats.
+This can be useful if you have an existing data pipeline that works on a certain format and you want to convert a dataset to this format to be compatible with your infrastructure.
+
+The two main use cases PD SDK is designed for are:
+- to load data in ML data pipelines from local or cloud storage directly into RAM.
+- to encode data into different dataset formats. Currently it's possible to convert into DGP format from DGP, CityScapes, NuImages and NuScenes.
 
 ## Quick Start
 
