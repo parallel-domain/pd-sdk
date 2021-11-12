@@ -51,7 +51,7 @@ napoleon_google_docstring = True
 napoleon_use_param = True
 
 highlight_language = "python3"
-nbsphinx_execute = "auto"
+nbsphinx_execute = "never"
 # nbsphinx_input_prompt = "In [%s]:"
 # nbsphinx_output_prompt = "Out[%s]:"
 nbsphinx_timeout = 600

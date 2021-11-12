@@ -55,6 +55,14 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
 
 
 class UnorderedScene(Generic[TDateTime]):
+    """The sensor frames of a UnorderedScene are not temporally ordered.
+
+    Args:
+        name: Name of scene
+        available_annotation_types: List of available annotation types for this scene.
+        decoder: Decoder instance to be used for loading all relevant objects (frames, annotations etc.)
+    """
+
     def __init__(
         self,
         name: SceneName,
