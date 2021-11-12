@@ -837,11 +837,12 @@ class Map:
         levels = []
         parent_ids = []
 
-        level = -1
         bfs_iterator = subgraph.bfsiter(vid=start_node.index, mode="in", advanced=True)
-        while depth == -1 or level < depth:
+        while True:
             try:
                 lane_segment, level, parent_lane_segment = next(bfs_iterator)
+                if level > depth:
+                    break
                 lane_segments.append(lane_segment["object"])
                 levels.append(level)
                 parent_ids.append(parent_lane_segment["object"].id if parent_lane_segment is not None else None)
@@ -863,15 +864,49 @@ class Map:
 
     def get_lane_segment_neighbors(self, id: int) -> (Optional[LaneSegment], Optional[LaneSegment]):
         lane_segment = self.get_lane_segment(id=id)
-
+        neighbor_left = self.get_lane_segment(id=lane_segment.left_neighbor)
+        neighbor_right = self.get_lane_segment(id=lane_segment.right_neighbor)
         return (
             (
-                self.get_lane_segment(id=lane_segment.left_neighbor),
-                self.get_lane_segment(id=lane_segment.right_neighbor),
+                neighbor_left,
+                neighbor_right,
             )
             if lane_segment is not None
             else (None, None)
         )
+
+        # reference_lane_segment = self.get_lane_segment(id=id)
+        #
+        # reference_lane_segment_left = reference_lane_segment
+        # reference_lane_segment_right = reference_lane_segment
+        # for i in range(degree):
+        #     reference_lane_segment_left = (
+        #         self.get_lane_segment(
+        #             id=reference_lane_segment_left.left_neighbor
+        #             if reference_lane_segment.direction is reference_lane_segment_left.direction
+        #             else reference_lane_segment_left.right_neighbor
+        #         )
+        #         if reference_lane_segment_left is not None
+        #         else None
+        #     )
+        #     reference_lane_segment_right = (
+        #         self.get_lane_segment(
+        #             id=reference_lane_segment_right.right_neighbor
+        #             if reference_lane_segment.direction is reference_lane_segment_right.direction
+        #             else reference_lane_segment_right.left_neighbor
+        #         )
+        #         if reference_lane_segment_right is not None
+        #         else None
+        #     )
+        #
+        # return (
+        #     (
+        #         reference_lane_segment_left,
+        #         reference_lane_segment_right,
+        #     )
+        #     if reference_lane_segment is not None
+        #     else (None, None)
+        # )
 
     def has_lane_segment_split(self, id: int) -> bool:
         return len(self.get_lane_segment_successors(id=id, depth=1)) > 2  # [start_node, one_successor, ...]
