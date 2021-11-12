@@ -25,6 +25,6 @@ class LazyLoadPropertyMixin:
 
 @dataclass
 class DecoderSettings:
-    cache_images: bool = True
-    cache_point_clouds: bool = True
-    cache_annotations: bool = True
+    cache_images: bool = False
+    cache_point_clouds: bool = False
+    cache_annotations: bool = False

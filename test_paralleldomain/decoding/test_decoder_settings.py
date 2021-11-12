@@ -46,6 +46,13 @@ def dataset(dataset_params: Dict[str, Any], with_caching: bool) -> Dataset:
     return dataset
 
 
+def test_decoder_cache_default_setting_is_all_false():
+    settings = DecoderSettings()
+    assert not settings.cache_point_clouds
+    assert not settings.cache_annotations
+    assert not settings.cache_images
+
+
 class TestImageCaching:
     def test_cache_size_on_image_load(self, dataset: Dataset, with_caching: bool):
         LAZY_LOAD_CACHE.clear()
