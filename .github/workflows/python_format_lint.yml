@@ -42,7 +42,7 @@ jobs:
       - uses: TrueBrain/actions-flake8@v2
         with:
           max_line_length: 120
-          ignore: "F401,F407,W503"
+          ignore: "E203,F401,F407,W503"
   pytest:
     needs: flake8-lint
     runs-on: ${{ matrix.os }}
