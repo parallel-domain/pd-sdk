@@ -29,25 +29,35 @@ def nuscenes_mini_dataset_path() -> str:
 
 
 @pytest.fixture
-def nuscenes_trainval_dataset(nuscenes_trainval_dataset_path: str) -> Dataset:
-    decoder = NuScenesDatasetDecoder(dataset_path=nuscenes_trainval_dataset_path, split_name="v1.0-trainval")
+def nuscenes_val_dataset(nuscenes_trainval_dataset_path: str) -> Dataset:
+    decoder = NuScenesDatasetDecoder(dataset_path=nuscenes_trainval_dataset_path, split_name="val")
+    dataset = decoder.get_dataset()
+    return dataset
+
+
+@pytest.fixture
+def nuscenes_train_dataset(nuscenes_trainval_dataset_path: str) -> Dataset:
+    decoder = NuScenesDatasetDecoder(dataset_path=nuscenes_trainval_dataset_path, split_name="train")
     dataset = decoder.get_dataset()
     return dataset
 
 
 @pytest.fixture
 def nuscenes_mini_dataset(nuscenes_mini_dataset_path: str) -> Dataset:
-    decoder = NuScenesDatasetDecoder(dataset_path=nuscenes_mini_dataset_path, split_name="v1.0-mini")
+    decoder = NuScenesDatasetDecoder(dataset_path=nuscenes_mini_dataset_path, split_name="mini_train")
     dataset = decoder.get_dataset()
     return dataset
 
 
 class TestDataset:
-    def test_decode_trainval_scene_names(self, nuscenes_trainval_dataset: Dataset):
-        assert len(nuscenes_trainval_dataset.scene_names) == 850
+    def test_decode_train_scene_names(self, nuscenes_train_dataset: Dataset):
+        assert len(nuscenes_train_dataset.scene_names) == 700
+
+    def test_decode_val_scene_names(self, nuscenes_val_dataset: Dataset):
+        assert len(nuscenes_val_dataset.scene_names) == 150
 
     def test_decode_mini_scene_names(self, nuscenes_mini_dataset: Dataset):
-        assert len(nuscenes_mini_dataset.scene_names) == 10
+        assert len(nuscenes_mini_dataset.scene_names) == 8
 
 
 @pytest.fixture
@@ -176,26 +186,40 @@ class TestCameraSensorFrame:
             assert box.volume > 0
 
     @pytest.mark.skip("For debugging")
-    def test_data_loader(self, nuscenes_trainval_dataset: Dataset):
-        for scene_name in nuscenes_trainval_dataset.scene_names[:5]:
-            scene = nuscenes_trainval_dataset.get_scene(scene_name=scene_name)
+    def test_data_loader(self, nuscenes_train_dataset: Dataset):
+        for scene_name in nuscenes_train_dataset.scene_names[:5]:
+            scene = nuscenes_train_dataset.get_scene(scene_name=scene_name)
             for frame in scene.frames:
                 for camera in frame.camera_frames:
                     if AnnotationTypes.BoundingBoxes3D in camera.available_annotation_types:
-                        pass
+                        a = camera.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
+                        rgb = camera.image.rgb
+                        assert a is not None
+                        assert rgb is not None
 
     @pytest.mark.skip("For debugging")
-    def test_data_loader_with_data_loading(self, nuscenes_trainval_dataset: Dataset):
-        for scene_name in nuscenes_trainval_dataset.scene_names[:2]:
-            scene = nuscenes_trainval_dataset.get_scene(scene_name=scene_name)
+    def test_data_lidar_loader(self, nuscenes_train_dataset: Dataset):
+        for scene_name in nuscenes_train_dataset.scene_names[:1]:
+            scene = nuscenes_train_dataset.get_scene(scene_name=scene_name)
+            for frame_id in scene.frame_ids[:15]:
+                frame = scene.get_frame(frame_id=frame_id)
+                for lidar_name in frame.lidar_names[:2]:
+                    lidar = frame.get_lidar(lidar_name=lidar_name)
+                    if AnnotationTypes.BoundingBoxes3D in lidar.available_annotation_types:
+                        a = lidar.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
+                        xyz = lidar.point_cloud.xyz
+                        assert a is not None
+                        assert xyz is not None
+
+    @pytest.mark.skip("For debugging")
+    def test_data_loader_with_data_loading(self, nuscenes_train_dataset: Dataset):
+        for scene_name in nuscenes_train_dataset.scene_names[:2]:
+            scene = nuscenes_train_dataset.get_scene(scene_name=scene_name)
             for frame in scene.frames[:5]:
                 for camera in frame.camera_frames:
                     if AnnotationTypes.BoundingBoxes3D in camera.available_annotation_types:
                         assert camera.image.rgb is not None
-                        assert (
-                            camera.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).class_ids
-                            is not None
-                        )
+                        assert camera.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes is not None
 
 
 @pytest.fixture()

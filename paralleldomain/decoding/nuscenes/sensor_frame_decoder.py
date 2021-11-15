@@ -46,6 +46,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
+        self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -61,12 +62,11 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         return anno_types
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        return self.get_datetime_with_frame_id(self.scene_name, frame_id)
+        return self.get_datetime_with_frame_id(scene_token=self.scene_token, frame_id=frame_id)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
-
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
         )
         data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
@@ -78,7 +78,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
-        ego_to_world_mat = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
+        ego_to_world_mat = self.get_ego_pose(scene_token=self.scene_token, frame_id=frame_id)
         ego_to_world = EgoPose.from_transformation_matrix(ego_to_world_mat)
         sensor_to_world = ego_to_world @ sensor_to_ego
         return sensor_to_world
@@ -100,6 +100,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
 
     def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
         boxes = list()
+        sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
         for i, ann in enumerate(self.nu_sample_annotation[frame_id], start=1):
             instance_token = ann["instance_token"]
             category_token = self.nu_instance[instance_token]["category_token"]
@@ -108,7 +109,6 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
             attributes = {self.nu_attribute[tk]["name"]: self.nu_attribute[tk] for tk in attribute_tokens}
             class_id = self.nu_name_to_index[category_name]
             # nuScenes annotations are in global coordinate system
-            sensor_to_world = self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id)
             box_to_world = AnnotationPose(quaternion=ann["rotation"], translation=ann["translation"])
             box_to_sensor = (sensor_to_world.inverse) @ box_to_world
 
@@ -144,7 +144,7 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             dataset_name=dataset_name,
             split_name=split_name,
             scene_name=scene_name,
-            settings=DecoderSettings,
+            settings=settings,
         )
 
     @lru_cache(maxsize=1)
@@ -153,7 +153,7 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
         """
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
         )
         lidar_filename = self.nu_samples_data_by_token[sample_data_id]["filename"]
         full_anypath = self._dataset_path / lidar_filename
@@ -210,12 +210,12 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
             dataset_name=dataset_name,
             split_name=split_name,
             scene_name=scene_name,
-            settings=DecoderSettings,
+            settings=settings,
         )
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
         )
         data = self.nu_samples_data_by_token[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
@@ -237,14 +237,14 @@ class NuScenesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuSce
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
         )
         data = self.nu_samples_data_by_token[sample_data_id]
         return int(data["height"]), int(data["width"]), 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            scene_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
         )
         data = self.nu_samples_data_by_token[sample_data_id]
 
