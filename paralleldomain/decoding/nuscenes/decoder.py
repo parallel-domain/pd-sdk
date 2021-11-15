@@ -21,8 +21,8 @@ SPLIT_NAME_TO_NU_SPLIT = {
     "train": "v1.0-trainval",
     "val": "v1.0-trainval",
     "test": "v1.0-test",
-    "mini-train": "v1.0-mini",
-    "mini-val": "v1.0-mini",
+    "mini_train": "v1.0-mini",
+    "mini_val": "v1.0-mini",
 }
 
 
@@ -43,7 +43,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
             be picket from SPLIT_NAME_TO_NU_SPLIT. Other Options are ["v1.0-trainval", "v1.0-test", "v1.0-mini"]
             split_name: The scenes split within the split. For example in "v1.0-trainval" are train and
              validation samples. To access the validation samples pass "val". Options are
-             ["mini-train", "mini-val", "test", "val", "train"]. Defaults to "mini_train"
+             ["mini_train", "mini_val", "test", "val", "train"]. Defaults to "mini_train"
         """
         self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)

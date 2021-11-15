@@ -62,7 +62,8 @@ class TestDataset:
 
 @pytest.fixture
 def two_cam_scene(nuscenes_mini_dataset: Dataset) -> Scene:
-    return nuscenes_mini_dataset.get_scene(scene_name="fcbccedd61424f1b85dcbf8f897f9754")
+    return nuscenes_mini_dataset.get_scene(scene_name="scene-0061")
+    # return nuscenes_mini_dataset.get_scene(scene_name="fcbccedd61424f1b85dcbf8f897f9754")
 
 
 class TestScene:
