@@ -2,6 +2,7 @@ from typing import List, Tuple, Union
 
 import cv2
 import numpy as np
+from more_itertools import pairwise
 
 
 def interpolate_points(points: np.ndarray, num_points: int, flatten_result: bool = True) -> np.ndarray:
@@ -58,6 +59,7 @@ def is_point_in_polygon_2d(
 
 def simplify_polyline_2d(
     polyline: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
+    supporting_points_indices: List[int] = None,
     approximation_error: float = 0.1,
 ) -> np.ndarray:
     polyline = np.asarray(polyline)
@@ -66,4 +68,20 @@ def simplify_polyline_2d(
             f"""Expected np.ndarray of shape (N X 2) for `polyline`, where N is
                 number of points >= 3. Received {polyline.shape}."""
         )
-    return cv2.approxPolyDP(curve=polyline, epsilon=approximation_error, closed=False).reshape(-1, 2)
+    if supporting_points_indices is None or len(supporting_points_indices) == 0:
+        return cv2.approxPolyDP(curve=polyline, epsilon=approximation_error, closed=False).reshape(-1, 2)
+    else:
+        supporting_points_indices = [0] + supporting_points_indices + [len(polyline)]
+        supporting_points_indices = sorted(list(set(supporting_points_indices)))
+        supporting_points_pairs = list(pairwise(supporting_points_indices))
+        polyline_simplified = np.empty(shape=(0, 2))
+        for spp in supporting_points_pairs:
+            polyline_sub = polyline[spp[0] : spp[1] + 1]
+            polyline_sub_simplified = cv2.approxPolyDP(
+                curve=polyline_sub, epsilon=approximation_error, closed=False
+            ).reshape(-1, 2)[:-1, :]
+
+            polyline_simplified = np.vstack([polyline_simplified, polyline_sub_simplified])
+        polyline_simplified = np.vstack([polyline_simplified, polyline[-1, :]])
+
+        return polyline_simplified
