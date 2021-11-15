@@ -183,19 +183,27 @@ class LazyLoadCache(Cache):
             self.__order[key] = None
 
     @staticmethod
-    def getsizeof(value):
+    def getsizeof(value, seen=None):
         """Return the size of a cache element's value."""
+        # handle recursion
+        if seen is None:
+            seen = set()
+        obj_id = id(value)
+        if obj_id in seen:
+            return 0
+        seen.add(obj_id)
         size = getsizeof(value)
+
         if hasattr(value, "__dict__"):
             pass
             # for k, v in value.__dict__.items():
             #     size += getsizeof(v)
         elif isinstance(value, list):
             for i in value:
-                size += LazyLoadCache.getsizeof(i)
+                size += LazyLoadCache.getsizeof(i, seen)
         elif isinstance(value, dict):
             for k, v in value.items():
-                size += LazyLoadCache.getsizeof(v)
+                size += LazyLoadCache.getsizeof(v, seen)
         elif isinstance(value, np.ndarray):
             size = value.nbytes
         return size

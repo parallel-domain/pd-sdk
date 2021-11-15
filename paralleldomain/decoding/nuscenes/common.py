@@ -95,7 +95,7 @@ class NuScenesDataAccessMixin:
         return {log["token"]: log for log in self.nu_logs}
 
     @property
-    def nu_instance(self) -> List[Dict[str, Any]]:
+    def nu_instance(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_instance")
 
         def get_nu_instance() -> Dict[str, Dict[str, Any]]:
@@ -117,7 +117,7 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_sample_annotation(self) -> List[Dict[str, Any]]:
+    def nu_sample_annotation(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sample_annotation")
 
         def get_nu_sample_annotation() -> Dict[str, List[Dict[str, Any]]]:
@@ -144,8 +144,12 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_scene_by_scene_token(self) -> Dict[str, Dict[str, Any]]:
-        return {scene["token"]: scene for scene in self.nu_scene}
+    def nu_scene_by_scene_name(self) -> Dict[str, Dict[str, Any]]:
+        return {scene["name"]: scene for scene in self.nu_scene}
+
+    @property
+    def nu_scene_name_to_scene_token(self) -> Dict[str, str]:
+        return {scene["name"]: scene["token"] for scene in self.nu_scene}
 
     @property
     def nu_visibility(self) -> List[Dict[str, Any]]:
@@ -195,7 +199,7 @@ class NuScenesDataAccessMixin:
         """
         _unique_cache_key = self.get_unique_id(extra="nu_samples_data")
 
-        def get_nu_samples_data_by_sample() -> Dict[str, Dict[str, Any]]:
+        def get_nu_samples_data_by_sample() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             out_dict = defaultdict(list)
             [out_dict[d["sample_token"]].append(d) for d in data if d["is_key_frame"]]
@@ -207,17 +211,18 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_samples_data_by_token(self) -> Dict[str, List[Dict[str, Any]]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
-
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
-            data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
-            return {d["token"]: d for d in data}
-
-        return self.nu_lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=get_nu_samples_data,
-        )
+    def nu_samples_data_by_token(self) -> Dict[str, Dict[str, Any]]:
+        return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
+        # _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
+        #
+        # def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+        #     data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
+        #     return {d["token"]: d for d in data}
+        #
+        # return self.nu_lazy_load_cache.get_item(
+        #     key=_unique_cache_key,
+        #     loader=get_nu_samples_data,
+        # )
 
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
@@ -251,18 +256,20 @@ class NuScenesDataAccessMixin:
         )
 
     @property
-    def nu_ego_pose(self) -> List[Dict[str, Any]]:
+    def nu_ego_pose(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
 
-        return self.nu_lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: load_table(
-                dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name
-            ),
-        )
+        def get_nu_ego_pose() -> Dict[str, List[Dict[str, Any]]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name)
+            sample_poses = dict()
+            for d in data:
+                sample_poses.setdefault(d["token"], list()).append(d)
+            return sample_poses
+
+        return self.nu_lazy_load_cache.get_item(key=_unique_cache_key, loader=get_nu_ego_pose)
 
     def get_nu_ego_pose(self, ego_pose_token: str) -> Dict[str, Any]:
-        return next(iter([pose for pose in self.nu_ego_pose if pose["token"] == ego_pose_token]), dict())
+        return next(iter(self.nu_ego_pose[ego_pose_token]), dict())
 
     @property
     def nu_category(self) -> Dict[str, Dict[str, Any]]:
@@ -369,7 +376,7 @@ class NuScenesDataAccessMixin:
             loader=get_nu_class_infos,
         )
 
-    def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> List[np.ndarray]:
+    def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> np.ndarray:
         time_diffs = []
         ego_pose_tokens = []
         frame_timestamp = self.get_sample_with_frame_id(scene_token=scene_token, frame_id=frame_id)["timestamp"]

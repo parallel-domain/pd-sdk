@@ -28,6 +28,7 @@ class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAcces
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
+        self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
@@ -44,7 +45,7 @@ class NuScenesLidarSensorDecoder(LidarSensorDecoder[datetime], NuScenesDataAcces
         )
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        samples = self.nu_samples[self.scene_name]
+        samples = self.nu_samples[self.scene_token]
         sample_tokens = [sample["token"] for sample in samples]
         frame_ids = set()
 
@@ -74,6 +75,7 @@ class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAcc
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
+        self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
@@ -90,7 +92,7 @@ class NuScenesCameraSensorDecoder(CameraSensorDecoder[datetime], NuScenesDataAcc
         )
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        samples = self.nu_samples[self.scene_name]
+        samples = self.nu_samples[self.scene_token]
         sample_tokens = [sample["token"] for sample in samples]
         frame_ids = set()
 
