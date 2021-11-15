@@ -40,7 +40,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         Args:
             dataset_path: AnyPath to the root folder of a NuScenes dataset.
             nu_split_name: Split to use within this dataset. By default the matching split for split_name will
-            be picket from SPLIT_NAME_TO_NU_SPLIT. Other Options are ["v1.0-trainval", "v1.0-test", "v1.0-mini"]
+            be picked from SPLIT_NAME_TO_NU_SPLIT. Other Options are ["v1.0-trainval", "v1.0-test", "v1.0-mini"]
             split_name: The scenes split within the split. For example in "v1.0-trainval" are train and
              validation samples. To access the validation samples pass "val". Options are
              ["mini_train", "mini_val", "test", "val", "train"]. Defaults to "mini_train"
