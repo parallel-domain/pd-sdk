@@ -64,7 +64,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         return NuScenesSceneDecoder(
             dataset_path=self._dataset_path,
             dataset_name=self.dataset_name,
-            split_name=self.split_name,
+            split_name=self.nu_split_name,
             settings=self.settings,
         )
 
@@ -86,7 +86,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
         return DatasetMeta(
             name=self.dataset_name,
             available_annotation_types=available_annotation_types,
-            custom_attributes=dict(split_name=self.split_name),
+            custom_attributes=dict(split_name=self.split_name, nu_split_name=self.nu_split_name),
         )
 
 
