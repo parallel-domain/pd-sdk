@@ -683,11 +683,6 @@ class Map:
         query_results = self._map_graph.vs.select(name_eq=f"{NODE_PREFIX.AREA}_{id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
-    #
-    # def get_lane_segment_collection(self, ids: List[int]) -> LaneSegmentCollection:
-    #     return LaneSegmentCollection.from_lane_segments(lane_segments=[self.get_lane_segment(id=id) for id in ids])
-    #
-
     def _get_nodes_within_bounds(
         self,
         node_prefix: str,
@@ -875,38 +870,17 @@ class Map:
             else (None, None)
         )
 
-        # reference_lane_segment = self.get_lane_segment(id=id)
-        #
-        # reference_lane_segment_left = reference_lane_segment
-        # reference_lane_segment_right = reference_lane_segment
-        # for i in range(degree):
-        #     reference_lane_segment_left = (
-        #         self.get_lane_segment(
-        #             id=reference_lane_segment_left.left_neighbor
-        #             if reference_lane_segment.direction is reference_lane_segment_left.direction
-        #             else reference_lane_segment_left.right_neighbor
-        #         )
-        #         if reference_lane_segment_left is not None
-        #         else None
-        #     )
-        #     reference_lane_segment_right = (
-        #         self.get_lane_segment(
-        #             id=reference_lane_segment_right.right_neighbor
-        #             if reference_lane_segment.direction is reference_lane_segment_right.direction
-        #             else reference_lane_segment_right.left_neighbor
-        #         )
-        #         if reference_lane_segment_right is not None
-        #         else None
-        #     )
-        #
-        # return (
-        #     (
-        #         reference_lane_segment_left,
-        #         reference_lane_segment_right,
-        #     )
-        #     if reference_lane_segment is not None
-        #     else (None, None)
-        # )
+    def get_lane_segment_predecessors_successors(
+        self, id: int, depth: int = -1
+    ) -> Tuple[List[LaneSegment], List[int], List[Optional[int]]]:
+        lane_segments_pred, levels_pred, parent_ids_pred = self.get_lane_segment_predecessors(id=id, depth=depth)
+        lane_segments_succ, levels_succ, parent_ids_succ = self.get_lane_segment_successors(id=id, depth=depth)
+
+        return (
+            (lane_segments_pred + lane_segments_succ),
+            (levels_pred + levels_succ),
+            (parent_ids_pred + parent_ids_succ),
+        )
 
     def has_lane_segment_split(self, id: int) -> bool:
         return len(self.get_lane_segment_successors(id=id, depth=1)) > 2  # [start_node, one_successor, ...]
@@ -921,11 +895,47 @@ class Map:
         edge_id = subgraph.get_eid(node_1, node_2, directed=False, error=False)
         return False if edge_id == -1 else True
 
-    def are_opposite_direction_lane_segments(self, id_1: int, id_2: int) -> bool:
+    def are_opposite_direction_lane_segments(self, id_1: int, id_2: int) -> Optional[bool]:
         lane_segment_1 = self.get_lane_segment(id=id_1)
         lane_segment_2 = self.get_lane_segment(id=id_2)
 
-        return True if lane_segment_1.direction != lane_segment_2.direction else False
+        road_segment_1 = self.get_road_segment_for_lane_segment(id=id_1)
+        road_segment_2 = self.get_road_segment_for_lane_segment(id=id_2)
+
+        if road_segment_1 == road_segment_2:
+            return True if lane_segment_1.direction != lane_segment_2.direction else False
+        else:
+            lane_segment_1_connected = self.get_lane_segment_predecessors_successors(id=id_1, depth=1)[0]
+            lane_segment_2_connected = self.get_lane_segment_predecessors_successors(id=id_2, depth=1)[0]
+
+            lane_segment_1_connected_road_segments = [
+                self.get_road_segment_for_lane_segment(id=ls.id).id for ls in lane_segment_1_connected
+            ]
+
+            lane_segment_2_connected_road_segments = [
+                self.get_road_segment_for_lane_segment(id=ls.id).id for ls in lane_segment_2_connected
+            ]
+
+            road_segment_intersection = set.intersection(
+                set(lane_segment_1_connected_road_segments), set(lane_segment_2_connected_road_segments)
+            )
+
+            try:
+                road_segment = next(iter(road_segment_intersection))
+            except StopIteration:
+                return None
+
+            lane_segment_1_in_road_segment = lane_segment_1_connected[
+                lane_segment_1_connected_road_segments.index(road_segment)
+            ]
+
+            lane_segment_2_in_road_segment = lane_segment_2_connected[
+                lane_segment_2_connected_road_segments.index(road_segment)
+            ]
+
+            return (
+                True if lane_segment_1_in_road_segment.direction != lane_segment_2_in_road_segment.direction else False
+            )
 
     def are_succeeding_lane_segments(self, id_1: int, id_2: int) -> bool:
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
