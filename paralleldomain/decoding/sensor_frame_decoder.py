@@ -166,7 +166,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
 
-    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_xyz"
@@ -178,7 +178,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id)
 
-    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_rgb"
@@ -190,7 +190,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id)
 
-    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_intensity"
@@ -202,7 +202,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_intensity(sensor_name=sensor_name, frame_id=frame_id)
 
-    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_timestamp"
@@ -214,7 +214,7 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id)
 
-    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ring_index"
@@ -226,26 +226,42 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_ring_index(sensor_name=sensor_name, frame_id=frame_id)
 
+    def get_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="point_cloud_ray_type"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_ray_type(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_point_cloud_ray_type(sensor_name=sensor_name, frame_id=frame_id)
+
     @abc.abstractmethod
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass

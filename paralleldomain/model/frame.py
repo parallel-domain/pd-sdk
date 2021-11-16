@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Generator, Generic, List, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, TypeVar, Union
 
 try:
     from typing import Protocol
@@ -33,6 +33,9 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_date_time(self, frame_id: FrameId) -> TDateTime:
+        pass
+
+    def get_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         pass
 
 
@@ -97,6 +100,10 @@ class Frame(Generic[TDateTime]):
         return (
             self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=name) for name in self.lidar_names
         )
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        return self._decoder.get_metadata(frame_id=self.frame_id)
 
     def __lt__(self, other: "Frame[TDateTime]"):
         if self.date_time is not None and other.date_time is not None:

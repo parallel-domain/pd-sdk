@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pytest
 
 from paralleldomain import Scene
@@ -48,6 +50,11 @@ class TestSceneFrames:
         assert isinstance(ego_frame, EgoFrame)
         pose = ego_frame.pose
         assert isinstance(pose, EgoPose)
+
+    def test_frame_metadata_is_loadable(self, frame: Frame):
+        metadata = frame.metadata
+        assert metadata is not None
+        assert isinstance(metadata, Dict)
 
     """
     You can use this test method to plot the locations of the vehicle and the orientation

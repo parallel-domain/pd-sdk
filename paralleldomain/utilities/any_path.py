@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-from s3path import S3Path
 from awscli.clidriver import create_clidriver
+from s3path import S3Path
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +227,11 @@ class AnyPath:
         """
         Remove this key from its bucket.
         """
-        return self._backend.unlink(missing_ok=missing_ok)
+        try:
+            return self._backend.unlink()
+        except FileNotFoundError:
+            if not missing_ok:
+                raise
 
     def rmdir(self):
         """

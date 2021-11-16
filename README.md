@@ -4,8 +4,17 @@
 
 The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain's synthetic data as Python objects.
 
-The PD SDK can decode different data formats into its Python objects, including [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md) format.
+The PD SDK can decode different data formats into its Python objects, including [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md) format as well as [CityScapes](https://www.cityscapes-dataset.com/dataset-overview/), [NuImages](https://www.nuscenes.org/nuimages) and [NuScenes](https://www.nuscenes.org/nuscenes) (more public dataset formats will be supported in the future).
 Currently, local file system and s3 buckets are supported as dataset locations for decoding.
+
+In order to support diffrent data formats PD SDK uses dataset format specific Decoders that are tasked with converting the respective dataset format into the PD SDK common Python objects (aka model classes).
+To support this the model is designed to represent an arbitrary sensor rig that collects sequential or non-sequential data that may be annotated with different annotations.
+PD SDK follows the principal of lazy loading data, meaning that any data is loaded as late as possible to ensure quick browsing through datasets. Furthermore PD SDK contains an encoding module tasked with saving model classes into specific dataset formats.
+This can be useful if you have an existing data pipeline that works on a certain format and you want to convert a dataset to this format to be compatible with your infrastructure.
+
+The two main use cases PD SDK is designed for are:
+- to load data in ML data pipelines from local or cloud storage directly into RAM.
+- to encode data into different dataset formats. Currently it's possible to convert into DGP format from DGP, CityScapes, NuImages and NuScenes.
 
 ## Quick Start
 

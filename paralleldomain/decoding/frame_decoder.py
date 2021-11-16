@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime
-from typing import Generic, List, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
@@ -75,6 +75,17 @@ class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
 
     @abc.abstractmethod
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
+        pass
+
+    def get_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, extra="metadata")
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_metadata(frame_id=frame_id),
+        )
+
+    @abc.abstractmethod
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         pass
 
     def get_date_time(self, frame_id: FrameId) -> TDateTime:

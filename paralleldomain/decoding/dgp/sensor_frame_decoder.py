@@ -40,13 +40,16 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
+    SceneFlow,
     SemanticSegmentation2D,
     SemanticSegmentation3D,
+    SurfaceNormals2D,
+    SurfaceNormals3D,
 )
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json, read_npz
+from paralleldomain.utilities.fsio import read_image, read_json, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -201,6 +204,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
+        elif issubclass(annotation_type, SceneFlow):
+            flow = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SceneFlow(vectors=flow)
+        elif issubclass(annotation_type, SurfaceNormals3D):
+            normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals3D(normals=normals)
+        elif issubclass(annotation_type, SurfaceNormals2D):
+            normals = self._decode_surface_normals_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SurfaceNormals2D(normals=normals)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -287,6 +299,26 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return instance_ids
 
+    def _decode_scene_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="motion_vectors")
+        return vectors
+
+    def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        vectors = read_npz(path=annotation_path, files="surface_normals")
+        return vectors
+
+    def _decode_surface_normals_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+
+        encoded_norms = read_png(path=annotation_path)[..., :3]
+        encoded_norms_f = encoded_norms.astype(np.float)
+        decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
+        decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
+
+        return decoded_norms
+
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
@@ -312,7 +344,9 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model = CameraModel.OPENCV_FISHEYE
         elif dto.fisheye is False or dto.fisheye == 0:
             camera_model = CameraModel.OPENCV_PINHOLE
-        elif dto.fisheye > 1:
+        elif dto.fisheye == 3:
+            camera_model = CameraModel.PD_FISHEYE
+        else:
             camera_model = f"custom_{dto.fisheye}"
 
         return SensorIntrinsic(
@@ -372,7 +406,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return len(data)
 
-    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         xyz_index = [
             self._get_index(p_info=PointInfo.X, sensor_name=sensor_name, frame_id=frame_id),
             self._get_index(p_info=PointInfo.Y, sensor_name=sensor_name, frame_id=frame_id),
@@ -381,7 +415,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, xyz_index]
 
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         rgb_index = [
             self._get_index(p_info=PointInfo.R, sensor_name=sensor_name, frame_id=frame_id),
             self._get_index(p_info=PointInfo.G, sensor_name=sensor_name, frame_id=frame_id),
@@ -390,26 +424,29 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, rgb_index]
 
-    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         intensity_index = [
             self._get_index(p_info=PointInfo.I, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, intensity_index]
 
-    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         ts_index = [
             self._get_index(p_info=PointInfo.TS, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, ts_index]
 
-    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         ring_index = [
             self._get_index(p_info=PointInfo.RING, sensor_name=sensor_name, frame_id=frame_id),
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, ring_index]
+
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:

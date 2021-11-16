@@ -12,6 +12,7 @@ from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
+from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
@@ -26,16 +27,11 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     """
     table_path = dataset_root / split_name / f"{table_name}.json"
     if table_path.exists():
-        with table_path.open() as f:
-            return json.load(f)
+        return read_json(table_path)
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-_NU_IMAGES_DATA_MAX_SIZE = 5.0e9  # GB
-cache_max_ram_usage_factor = float(
-    os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_IMAGES_DATA_MAX_SIZE / psutil.virtual_memory().total)
-)  # use 2.0 GB by default
-ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
+cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "5GB")
 
 NU_IM_DATA_CACHE = None
 
@@ -62,8 +58,7 @@ class NuImagesDataAccessMixin:
             with self._init_lock:
                 if NU_IM_DATA_CACHE is None:
                     NU_IM_DATA_CACHE = LazyLoadCache(
-                        max_ram_usage_factor=cache_max_ram_usage_factor,
-                        ram_keep_free_factor=ram_keep_free_factor,
+                        cache_max_size=cache_max_bytes,
                         cache_name="NuImages Cache",
                     )
         return NU_IM_DATA_CACHE
@@ -221,26 +216,26 @@ class NuImagesDataAccessMixin:
     def nu_category(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_category")
 
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+        def get_nu_category() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=get_nu_samples_data,
+            loader=get_nu_category,
         )
 
     @property
     def nu_attribute(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_attribute")
 
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
+        def get_nu_attribute() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
         return self.nu_lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=get_nu_samples_data,
+            loader=get_nu_attribute,
         )
 
     @property
