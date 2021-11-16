@@ -21,7 +21,7 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneDataDatumPointCloud,
     SceneDataDTO,
     SceneSampleDTO,
-    scene_sample_to_date_time,
+    scene_data_to_date_time,
 )
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
@@ -80,7 +80,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return self.scene_samples[frame_id]
 
     @lru_cache(maxsize=1)
-    def _get_sensor_frame_data(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDatum:
+    def _get_sensor_frame_data(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDTO:
         sample = self._get_current_frame_sample(frame_id=frame_id)
         # all sensor data of the sensor
         sensor_data = self._data_by_sensor_name(sensor_name=sensor_name)
@@ -88,11 +88,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         # datum ley of sample that references the given sensor name
         datum_key = next(iter([key for key in sample.datum_keys if key in sensor_data]))
         scene_data = sensor_data[datum_key]
+        return scene_data
+
+    def _get_sensor_frame_data_datum(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDatum:
+        scene_data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         return scene_data.datum
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        sample = self._get_current_frame_sample(frame_id=frame_id)
-        return scene_sample_to_date_time(sample=sample)
+        data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        return scene_data_to_date_time(data=data)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)
@@ -108,7 +112,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return sensor_to_custom_reference
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
         else:
@@ -215,7 +219,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             type_to_path = datum.image.annotations
         else:
@@ -318,11 +322,11 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return (datum.image.height, datum.image.width, datum.image.channels)
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.image.filename
         image_data = read_image(path=cloud_path)
 
@@ -384,18 +388,18 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
     @lru_cache(maxsize=1)
     def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.point_cloud.point_format
 
     @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
         pc_data = read_npz(path=cloud_path, files="data")
         return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
 
     def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
-        datum = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return isinstance(datum, SceneDataDatumPointCloud)
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
