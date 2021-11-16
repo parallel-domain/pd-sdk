@@ -10,8 +10,6 @@ import numpy as np
 from cachetools import Cache
 from humanize import naturalsize
 
-from paralleldomain.utilities.os import virtual_memory
-
 CachedItemType = TypeVar("CachedItemType")
 
 logger = logging.getLogger(__name__)
@@ -227,11 +225,8 @@ def byte_str_to_bytes(byte_str: str) -> int:
     return int(total_bits)
 
 
-cache_max_size = os.environ.get("CACHE_MAX_BYTES")
-if cache_max_size is None:
-    total_ram_size = virtual_memory().total
-    cache_max_size = naturalsize(max(1_000_000_000, int(total_ram_size * 0.9)), binary=False)
-
+cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
+cache_max_size = os.environ.get("CACHE_MAX_BYTES", "1GiB")
 if "CACHE_MAX_USAGE_FACTOR" in os.environ:
     logger.warning(
         "CACHE_MAX_USAGE_FACTOR is not longer supported! Use CACHE_MAX_BYTES instead to set a cache size in bytes!"
