@@ -26,6 +26,7 @@ Parallel Domain SDK
 
     tutorial/general/index
     tutorial/any_path/index
+    tutorial/ml_data_generator/index
 
 
 .. toctree::
@@ -38,6 +39,7 @@ Parallel Domain SDK
     api/annotation
     api/transformation
     api/projection
+    api/mask
 
 
 Indices and tables

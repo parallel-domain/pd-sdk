@@ -147,6 +147,10 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/ml_data_generator/index.html">ML Data Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -156,6 +160,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api/annotation.html">paralleldomain.model.annotation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/transformation.html">paralleldomain.utilities.transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/projection.html">paralleldomain.utilities.projection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/mask.html">paralleldomain.utilities.mask</a></li>
 </ul>
 
             
@@ -252,8 +257,17 @@
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain’s synthetic data as Python objects.</p>
-<p>The PD SDK can decode different data formats into its Python objects, including <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a> format.
+<p>The PD SDK can decode different data formats into its Python objects, including <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a> format as well as <a class="reference external" href="https://www.cityscapes-dataset.com/dataset-overview/">CityScapes</a>, <a class="reference external" href="https://www.nuscenes.org/nuimages">NuImages</a> and <a class="reference external" href="https://www.nuscenes.org/nuscenes">NuScenes</a> (more public dataset formats will be supported in the future).
 Currently, local file system and s3 buckets are supported as dataset locations for decoding.</p>
+<p>In order to support diffrent data formats PD SDK uses dataset format specific Decoders that are tasked with converting the respective dataset format into the PD SDK common Python objects (aka model classes).
+To support this the model is designed to represent an arbitrary sensor rig that collects sequential or non-sequential data that may be annotated with different annotations.
+PD SDK follows the principal of lazy loading data, meaning that any data is loaded as late as possible to ensure quick browsing through datasets. Furthermore PD SDK contains an encoding module tasked with saving model classes into specific dataset formats.
+This can be useful if you have an existing data pipeline that works on a certain format and you want to convert a dataset to this format to be compatible with your infrastructure.</p>
+<p>The two main use cases PD SDK is designed for are:</p>
+<ul class="simple">
+<li><p>to load data in ML data pipelines from local or cloud storage directly into RAM.</p></li>
+<li><p>to encode data into different dataset formats. Currently it’s possible to convert into DGP format from DGP, CityScapes, NuImages and NuScenes.</p></li>
+</ul>
 </div>
 <div class="section" id="quick-start">
 <h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>

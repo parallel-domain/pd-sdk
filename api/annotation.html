@@ -147,6 +147,10 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/ml_data_generator/index.html">ML Data Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -156,6 +160,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.model.annotation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformation.html">paralleldomain.utilities.transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projection.html">paralleldomain.utilities.projection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mask.html">paralleldomain.utilities.mask</a></li>
 </ul>
 
             
@@ -251,14 +256,14 @@
 <h1>paralleldomain.model.annotation<a class="headerlink" href="#paralleldomain-model-annotation" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AnnotationTypes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AnnotationTypes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allows to get type-safe access to annotation type related information, e.g., annotation data or class maps.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes2D">
 <span class="sig-name descname"><span class="pre">BoundingBoxes2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes2D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBoxes2D" title="paralleldomain.model.annotation.BoundingBoxes2D">paralleldomain.model.annotation.BoundingBoxes2D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -268,7 +273,7 @@
 <span class="sig-name descname"><span class="pre">BoundingBoxes3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes3D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBoxes3D" title="paralleldomain.model.annotation.BoundingBoxes3D">paralleldomain.model.annotation.BoundingBoxes3D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -278,7 +283,7 @@
 <span class="sig-name descname"><span class="pre">SemanticSegmentation2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation2D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.SemanticSegmentation2D" title="paralleldomain.model.annotation.SemanticSegmentation2D">paralleldomain.model.annotation.SemanticSegmentation2D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -288,7 +293,7 @@
 <span class="sig-name descname"><span class="pre">InstanceSegmentation2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation2D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation2D" title="paralleldomain.model.annotation.InstanceSegmentation2D">paralleldomain.model.annotation.InstanceSegmentation2D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -298,7 +303,7 @@
 <span class="sig-name descname"><span class="pre">SemanticSegmentation3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation3D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.SemanticSegmentation3D" title="paralleldomain.model.annotation.SemanticSegmentation3D">paralleldomain.model.annotation.SemanticSegmentation3D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -308,7 +313,7 @@
 <span class="sig-name descname"><span class="pre">InstanceSegmentation3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation3D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation3D" title="paralleldomain.model.annotation.InstanceSegmentation3D">paralleldomain.model.annotation.InstanceSegmentation3D</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -318,7 +323,7 @@
 <span class="sig-name descname"><span class="pre">OpticalFlow</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.OpticalFlow" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.OpticalFlow" title="paralleldomain.model.annotation.OpticalFlow">paralleldomain.model.annotation.OpticalFlow</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.optical_flow.OpticalFlow]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -328,7 +333,87 @@
 <span class="sig-name descname"><span class="pre">Depth</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Depth" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.Depth" title="paralleldomain.model.annotation.Depth">paralleldomain.model.annotation.Depth</a>]</p>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.depth.Depth]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals3D">
+<span class="sig-name descname"><span class="pre">SurfaceNormals3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals2D">
+<span class="sig-name descname"><span class="pre">SurfaceNormals2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.SceneFlow">
+<span class="sig-name descname"><span class="pre">SceneFlow</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.SceneFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.scene_flow.SceneFlow]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.MaterialProperties2D">
+<span class="sig-name descname"><span class="pre">MaterialProperties2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.Albedo2D">
+<span class="sig-name descname"><span class="pre">Albedo2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Albedo2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.albedo_2d.Albedo2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.Points2D">
+<span class="sig-name descname"><span class="pre">Points2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Points2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.point_2d.Points2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.Polygons2D">
+<span class="sig-name descname"><span class="pre">Polygons2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Polygons2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.polygon_2d.Polygons2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.Polylines2D">
+<span class="sig-name descname"><span class="pre">Polylines2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Polylines2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.polyline_2d.Polylines2D]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -356,1147 +441,7 @@
 </div>
 </dd></dl>
 
-<span class="target" id="module-paralleldomain.model.annotation"></span><dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AnnotationPose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>quaternion</strong> (<em>Union</em><em>[</em><em>pyquaternion.quaternion.Quaternion</em><em>, </em><em>List</em><em>[</em><em>float</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – </p></li>
-<li><p><strong>translation</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>List</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.as_euler_angles">
-<span class="sig-name descname"><span class="pre">as_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.as_euler_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the rotation of a <cite>Transformation</cite> object as euler angles.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order</strong> (<em>str</em>) – Defines the axes rotation order. Use lower case for extrinsic rotation, upper case for intrinsic
-rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
-<li><p><strong>degrees</strong> (<em>bool</em>) – Defines if euler angles should be returned in degrees instead of radians. Default: <cite>False</cite></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Ordered array of euler angles with length 3.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.from_euler_angles">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.from_euler_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a transformation object from euler angles and optionally translation (default: (0,0,0))</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>angles</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – Ordered euler angles array with length 3</p></li>
-<li><p><strong>translation</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Translation vector in order <cite>(x,y,z)</cite>. Default: <cite>[0,0,0]</cite></p></li>
-<li><p><strong>order</strong> (<em>str</em>) – Defines the axes rotation order. Use lower case for extrinsic rotation, upper case for intrinsic
-rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
-<li><p><strong>degrees</strong> (<em>bool</em>) – Defines if euler angles are provided in degrees instead of radians. Default: <cite>False</cite></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> with provided parameters.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.from_transformation_matrix">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mat</strong> (<em>numpy.ndarray</em>) – Transformation matrix as described in <a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation.transformation_matrix" title="paralleldomain.utilities.transformation.Transformation.transformation_matrix"><code class="xref py py-attr docutils literal notranslate"><span class="pre">transformation_matrix</span></code></a></p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> with provided parameters.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.inverse">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.inverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the inverse transformation as a new <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.quaternion">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="pre">:</span> <span class="pre">pyquaternion.quaternion.Quaternion</span></em><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.quaternion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the rotation as a <code class="xref py py-obj docutils literal notranslate"><span class="pre">pyquaternion.quaternion.Quaternion</span></code> instance.</p>
-<p>Full documentation can be found in
-<a class="reference external" href="http://kieranwynn.github.io/pyquaternion/">pyquaternion API Documentation</a>.</p>
-<p>To get the quaternion coefficients, either call <cite>.elements</cite>, iterate over the object itself or use
-the dedicated named properties. The element order (until explicitly stated otherwise) should always be assumed
-as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.transformation</span> <span class="kn">import</span> <span class="n">Transformation</span>
-
-<span class="n">tf</span> <span class="o">=</span> <span class="n">Transformation</span><span class="o">.</span><span class="n">from_euler_angles</span><span class="p">(</span><span class="n">yaw</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">is_degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">elements</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Please note that when using <code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.spatial.transform.Rotation</span></code>, <cite>scipy</cite> assumes the order as <cite>(x,y,w,z)</cite>.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.transformation</span> <span class="kn">import</span> <span class="n">Transformation</span>
-<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="n">tf</span> <span class="o">=</span> <span class="n">Transformation</span><span class="o">.</span><span class="n">from_euler_angles</span><span class="p">(</span><span class="n">yaw</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">pitch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">roll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">is_degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">tf_scipy</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_quat</span><span class="p">([</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">quaternion</span><span class="o">.</span><span class="n">w</span>
-<span class="p">])</span>
-
-<span class="c1"># Check that rotation quaternion is equal within tolerance</span>
-<span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">rotation</span> <span class="o">==</span> <span class="n">tf_scipy</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">())</span>  <span class="c1"># returns True</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Quaternion</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.rotation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rotation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.rotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the rotation matrix in shape (3,3).</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>              \
-<span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span><span class="o">|</span>
-<span class="o">|</span><span class="n">R_21</span> <span class="n">R_22</span> <span class="n">R_23</span><span class="o">|</span>
-<span class="o">|</span><span class="n">R_31</span> <span class="n">R_32</span> <span class="n">R_33</span><span class="o">|</span>
-\              <span class="o">/</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.transformation_matrix">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transformation_matrix</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.transformation_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the homogeneous transformation matrix in shape (4,4).</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>                  \
-<span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span> <span class="n">t_x</span><span class="o">|</span>
-<span class="o">|</span><span class="n">R_21</span> <span class="n">R_22</span> <span class="n">R_23</span> <span class="n">t_y</span><span class="o">|</span>
-<span class="o">|</span><span class="n">R_31</span> <span class="n">R_32</span> <span class="n">R_33</span> <span class="n">t_z</span><span class="o">|</span>
-<span class="o">|</span><span class="mi">0</span>    <span class="mi">0</span>    <span class="mi">0</span>    <span class="mi">1</span>  <span class="o">|</span>
-\                  <span class="o">/</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationPose.translation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">translation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationPose.translation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the translation vector <cite>(x,y,z)</cite> in shape (3,).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BoundingBox2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em>, <em class="sig-param"><span class="pre">y</span></em>, <em class="sig-param"><span class="pre">width</span></em>, <em class="sig-param"><span class="pre">height</span></em>, <em class="sig-param"><span class="pre">class_id</span></em>, <em class="sig-param"><span class="pre">instance_id</span></em>, <em class="sig-param"><span class="pre">attributes=&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 2D Bounding Box geometry.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.x" title="paralleldomain.model.annotation.BoundingBox2D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">x</span></code></a></p></li>
-<li><p><strong>y</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.y" title="paralleldomain.model.annotation.BoundingBox2D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">y</span></code></a></p></li>
-<li><p><strong>width</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.width" title="paralleldomain.model.annotation.BoundingBox2D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">width</span></code></a></p></li>
-<li><p><strong>height</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.height" title="paralleldomain.model.annotation.BoundingBox2D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">height</span></code></a></p></li>
-<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.class_id" title="paralleldomain.model.annotation.BoundingBox2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.instance_id" title="paralleldomain.model.annotation.BoundingBox2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D.attributes" title="paralleldomain.model.annotation.BoundingBox2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">attributes</span></code></a></p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.x">
-<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.x" title="Permalink to this definition">¶</a></dt>
-<dd><p>Top-Left corner in image pixels coordinates along x-axis</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.y">
-<span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.y" title="Permalink to this definition">¶</a></dt>
-<dd><p>Top-Left corner in image pixels coordinates along y-axis</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.width">
-<span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.width" title="Permalink to this definition">¶</a></dt>
-<dd><p>Width of box in pixel along x-axis</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.height">
-<span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Height of box in pixel along y-axis</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.class_id">
-<span class="sig-name descname"><span class="pre">class_id</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.class_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class ID of annotated object. Can be used to lookup more details in <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassMap</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.instance_id">
-<span class="sig-name descname"><span class="pre">instance_id</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.instance_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instance ID of annotated object. Can be used to cross-reference with
-other instance annotation types, e.g., <a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation2D" title="paralleldomain.model.annotation.InstanceSegmentation2D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation2D</span></code></a> or <a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation3D" title="paralleldomain.model.annotation.InstanceSegmentation3D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation3D</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.attributes">
-<span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dictionary of arbitrary object attributes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.area">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">area</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.area" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns area of 2D Bounding Box in square pixel.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.vertices">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 2D vertices of a bounding box.</p>
-<p>Vertices are returned in the following order:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="o">--------</span><span class="mi">1</span>
-<span class="o">|</span>        <span class="o">|</span>
-<span class="o">|</span>        <span class="o">|</span> <span class="n">right</span>
-<span class="o">|</span>        <span class="o">|</span>
-<span class="mi">3</span><span class="o">--------</span><span class="mi">2</span>
-  <span class="n">bottom</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox2D.edges">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox2D.edges" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 2D edges of a bounding box.</p>
-<p>Edges are returned in order of connecting the vertices in the following order:</p>
-<ul class="simple">
-<li><p><cite>[0, 1]</cite></p></li>
-<li><p><cite>[1, 2]</cite></p></li>
-<li><p><cite>[2, 3]</cite></p></li>
-<li><p><cite>[3, 0]</cite></p></li>
-</ul>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="o">--------</span><span class="mi">1</span>
-<span class="o">|</span>        <span class="o">|</span>
-<span class="o">|</span>        <span class="o">|</span> <span class="n">right</span>
-<span class="o">|</span>        <span class="o">|</span>
-<span class="mi">3</span><span class="o">--------</span><span class="mi">2</span>
-  <span class="n">bottom</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BoundingBoxes2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collection of 2D Bounding Boxes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>boxes</strong> (<em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><em>paralleldomain.model.annotation.BoundingBox2D</em></a><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBoxes2D.boxes" title="paralleldomain.model.annotation.BoundingBoxes2D.boxes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">boxes</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.boxes">
-<span class="sig-name descname"><span class="pre">boxes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.boxes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unordered list of <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a> instances</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D">paralleldomain.model.annotation.BoundingBox2D</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_box_by_instance_id">
-<span class="sig-name descname"><span class="pre">get_box_by_instance_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_box_by_instance_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the box with matching instance ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_id</strong> (<em>int</em>) – Instance ID of box that should be returned.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Matching box instance. If none found, returns <cite>None</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_key">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_key" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having a certain attribute, independent of value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_value">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having the specified attribute and value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p></li>
-<li><p><strong>attr_value</strong> (<em>Any</em>) – Value of attribute.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute and value.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_values">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_attribute_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having the specified attribute and any of the values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p></li>
-<li><p><strong>attr_values</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – Allowed values of attribute.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute and any of the values.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_class_id">
-<span class="sig-name descname"><span class="pre">get_boxes_by_class_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_class_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having a the specified class ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_id</strong> (<em>int</em>) – Class ID.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that are of the specified class.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_class_ids">
-<span class="sig-name descname"><span class="pre">get_boxes_by_class_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes2D.get_boxes_by_class_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having any of the specified class IDs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Class IDs.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that are of any of the specified classes.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox2D" title="paralleldomain.model.annotation.BoundingBox2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BoundingBox3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pose</span></em>, <em class="sig-param"><span class="pre">width</span></em>, <em class="sig-param"><span class="pre">height</span></em>, <em class="sig-param"><span class="pre">length</span></em>, <em class="sig-param"><span class="pre">class_id</span></em>, <em class="sig-param"><span class="pre">instance_id</span></em>, <em class="sig-param"><span class="pre">num_points</span></em>, <em class="sig-param"><span class="pre">attributes=&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 2D Bounding Box geometry.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pose</strong> (<a class="reference internal" href="#paralleldomain.model.annotation.AnnotationPose" title="paralleldomain.model.annotation.AnnotationPose"><em>paralleldomain.model.annotation.AnnotationPose</em></a>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.pose" title="paralleldomain.model.annotation.BoundingBox3D.pose"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pose</span></code></a></p></li>
-<li><p><strong>length</strong> (<em>float</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.length" title="paralleldomain.model.annotation.BoundingBox3D.length"><code class="xref py py-attr docutils literal notranslate"><span class="pre">length</span></code></a></p></li>
-<li><p><strong>width</strong> (<em>float</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.width" title="paralleldomain.model.annotation.BoundingBox3D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">width</span></code></a></p></li>
-<li><p><strong>height</strong> (<em>float</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.height" title="paralleldomain.model.annotation.BoundingBox3D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">height</span></code></a></p></li>
-<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.class_id" title="paralleldomain.model.annotation.BoundingBox3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.instance_id" title="paralleldomain.model.annotation.BoundingBox3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_id</span></code></a></p></li>
-<li><p><strong>num_points</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.num_points" title="paralleldomain.model.annotation.BoundingBox3D.num_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">num_points</span></code></a></p></li>
-<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D.attributes" title="paralleldomain.model.annotation.BoundingBox3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">attributes</span></code></a></p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.pose">
-<span class="sig-name descname"><span class="pre">pose</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.pose" title="Permalink to this definition">¶</a></dt>
-<dd><p>6D Pose for box in 3D sensor space.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.annotation.AnnotationPose" title="paralleldomain.model.annotation.AnnotationPose">paralleldomain.model.annotation.AnnotationPose</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.length">
-<span class="sig-name descname"><span class="pre">length</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.length" title="Permalink to this definition">¶</a></dt>
-<dd><p>Length of box in meter along x-axis.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.width">
-<span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.width" title="Permalink to this definition">¶</a></dt>
-<dd><p>Width of box in meter along y-axis.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.height">
-<span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Height of box in meter along z-axis.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.class_id">
-<span class="sig-name descname"><span class="pre">class_id</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.class_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class ID of annotated object. Can be used to lookup more details in <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassMap</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.instance_id">
-<span class="sig-name descname"><span class="pre">instance_id</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.instance_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instance ID of annotated object. Can be used to cross-reference with
-other instance annotation types, e.g., <a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation2D" title="paralleldomain.model.annotation.InstanceSegmentation2D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation2D</span></code></a> or <a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation3D" title="paralleldomain.model.annotation.InstanceSegmentation3D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation3D</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.num_points">
-<span class="sig-name descname"><span class="pre">num_points</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.num_points" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of LiDAR points of related <code class="xref py py-obj docutils literal notranslate"><span class="pre">Sensor</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.attributes">
-<span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dictionary of arbitrary object attributes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.volume">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">volume</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.volume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns volume of 3D Bounding Box in cubic meter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.vertices">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 3D vertices of a bounding box.</p>
-<p>Vertices are returned in the following order:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
-  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
- <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
-<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
-<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
-<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
-<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
-<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
-  <span class="n">front</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.edges">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.edges" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 3D edges of a bounding box.</p>
-<p>Edges are returned in order of connecting the vertices in the following order:</p>
-<ul class="simple">
-<li><p><cite>[0, 1]</cite></p></li>
-<li><p><cite>[1, 2]</cite></p></li>
-<li><p><cite>[2, 3]</cite></p></li>
-<li><p><cite>[3, 0]</cite></p></li>
-<li><p><cite>[4, 5]</cite></p></li>
-<li><p><cite>[5, 6]</cite></p></li>
-<li><p><cite>[6, 7]</cite></p></li>
-<li><p><cite>[7, 4]</cite></p></li>
-<li><p><cite>[2, 6]</cite></p></li>
-<li><p><cite>[7, 3]</cite></p></li>
-<li><p><cite>[1, 5]</cite></p></li>
-<li><p><cite>[4, 0]</cite></p></li>
-</ul>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
-  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
- <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
-<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
-<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
-<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
-<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
-<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
-  <span class="n">front</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBox3D.faces">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBox3D.faces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the 3D faces of a bounding box.</p>
-<p>Faces are returned in order of connecting the vertices in the following order:</p>
-<ul class="simple">
-<li><p><cite>[0, 1, 2, 3]</cite> (front)</p></li>
-<li><p><cite>[4, 5, 6, 7]</cite> (back)</p></li>
-<li><p><cite>[3, 2, 6, 7]</cite> (left)</p></li>
-<li><p><cite>[0, 1, 5, 4]</cite> (right)</p></li>
-<li><p><cite>[6, 2, 1, 5]</cite> (top)</p></li>
-<li><p><cite>[7, 3, 0, 4]</cite> (bottom)</p></li>
-</ul>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
-  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
- <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
-<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
-<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
-<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
-<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
-<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
-  <span class="n">front</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BoundingBoxes3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collection of 3D Bounding Boxes</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>boxes</strong> (<em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><em>paralleldomain.model.annotation.BoundingBox3D</em></a><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBoxes3D.boxes" title="paralleldomain.model.annotation.BoundingBoxes3D.boxes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">boxes</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.boxes">
-<span class="sig-name descname"><span class="pre">boxes</span></span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.boxes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unordered list of <a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a> instances</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>List[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D">paralleldomain.model.annotation.BoundingBox3D</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_box_by_instance_id">
-<span class="sig-name descname"><span class="pre">get_box_by_instance_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_box_by_instance_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the box with matching instance ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_id</strong> (<em>int</em>) – Instance ID of box that should be returned.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Matching box instance. If none found, returns <cite>None</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_key">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_key" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having a certain attribute, independent of value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_value">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having the specified attribute and value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p></li>
-<li><p><strong>attr_value</strong> (<em>Any</em>) – Value of attribute.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute and value.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_values">
-<span class="sig-name descname"><span class="pre">get_boxes_by_attribute_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attr_values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_attribute_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having the specified attribute and any of the values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attr_key</strong> (<em>str</em>) – Name of attribute.</p></li>
-<li><p><strong>attr_values</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – Allowed values of attribute.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that have the specified attribute and any of the values.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_class_id">
-<span class="sig-name descname"><span class="pre">get_boxes_by_class_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_class_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having a the specified class ID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_id</strong> (<em>int</em>) – Class ID.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that are of the specified class.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_class_ids">
-<span class="sig-name descname"><span class="pre">get_boxes_by_class_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.BoundingBoxes3D.get_boxes_by_class_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all boxes having any of the specified class IDs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Class IDs.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>List of box instances that are of any of the specified classes.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#paralleldomain.model.annotation.BoundingBox3D" title="paralleldomain.model.annotation.BoundingBox3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SemanticSegmentation2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 2D Semantic Segmentation mask for a camera image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_ids</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.SemanticSegmentation2D.class_ids" title="paralleldomain.model.annotation.SemanticSegmentation2D.class_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation2D.class_ids">
-<span class="sig-name descname"><span class="pre">class_ids</span></span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation2D.class_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(H x W x 1)</cite>, where <cite>H</cite> is height and <cite>W</cite> is width of corresponding camera image.
-The third axis contains the class ID for each pixel as <cite>int</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation2D.get_class_mask">
-<span class="sig-name descname"><span class="pre">get_class_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation2D.get_class_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <cite>bool</cite> mask where class is present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_id</strong> (<em>int</em>) – ID of class to be masked</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mask of same shape as <a class="reference internal" href="#paralleldomain.model.annotation.SemanticSegmentation2D.class_ids" title="paralleldomain.model.annotation.SemanticSegmentation2D.class_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code></a> and <cite>bool</cite> values.
-<cite>True</cite> where pixel matches class, <cite>False</cite> where it doesn’t.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation2D.get_classes_mask">
-<span class="sig-name descname"><span class="pre">get_classes_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation2D.get_classes_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <cite>bool</cite> mask where classes are present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – IDs of classes to be masked</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mask of same shape as <cite>class_ids</cite> and <cite>bool</cite> values.
-<cite>True</cite> where pixel matches one of the classes, <cite>False</cite> where it doesn’t.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation2D.rgb_encoded">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rgb_encoded</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation2D.rgb_encoded" title="Permalink to this definition">¶</a></dt>
-<dd><p>Outputs <code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code> mask as RGB-encoded image matrix with shape <cite>(H x W x 3)</cite>,
-with <cite>R</cite> (index: 0) being the lowest and <cite>B</cite> (index: 2) being the highest 8 bit.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">InstanceSegmentation2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 2D Instance Segmentation mask for a camera image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_ids</strong> (<em>numpy.ndarray</em>) – <code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_ids</span></code></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation2D.instance_ids">
-<span class="sig-name descname"><span class="pre">instance_ids</span></span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation2D.instance_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(H x W x 1)</cite>, where <cite>H</cite> is the height and <cite>W</cite> is the width of corresponding
-camera image. The third axis contains the instance ID for each pixel as <cite>int</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation2D.get_instance">
-<span class="sig-name descname"><span class="pre">get_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation2D.get_instance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <cite>bool</cite> mask where instance is present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_id</strong> (<em>int</em>) – ID of instance to be masked</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mask of same shape as <code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code> and <cite>bool</cite> values.
-<cite>True</cite> where pixel matches instance, <cite>False</cite> where it doesn’t.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation2D.get_instances">
-<span class="sig-name descname"><span class="pre">get_instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation2D.get_instances" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a <cite>bool</cite> mask where instances are present.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – IDs of instances to be masked</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mask of same shape as <cite>class_ids</cite> and <cite>bool</cite> values.
-<cite>True</cite> where pixel matches one of the instances, <cite>False</cite> where it doesn’t.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation2D.rgb_encoded">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rgb_encoded</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation2D.rgb_encoded" title="Permalink to this definition">¶</a></dt>
-<dd><p>Outputs <code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_ids</span></code> mask as RGB matrix with shape <cite>(H x W x 3)</cite>,
-with <cite>R</cite> being the lowest and <cite>B</cite> being the highest 8 bit.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.OpticalFlow">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">OpticalFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.OpticalFlow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents an Optical Flow mask for a camera image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vectors</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.OpticalFlow.vectors" title="paralleldomain.model.annotation.OpticalFlow.vectors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vectors</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.OpticalFlow.vectors">
-<span class="sig-name descname"><span class="pre">vectors</span></span><a class="headerlink" href="#paralleldomain.model.annotation.OpticalFlow.vectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(H X W x 2)</cite>, , where <cite>H</cite> is the height and <cite>W</cite> is the width of corresponding
-camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Example</p>
-<p>Using the Optical Flow vector mask in combination with <code class="xref py py-attr docutils literal notranslate"><span class="pre">ImageData.coordinates</span></code> allows for a
-fast retrieval of absolute pixel coordinates.</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_frame</span><span class="p">:</span> <span class="n">SensorFrame</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># get any camera&#39;s SensorFrame</span>
-
-<span class="n">flow</span> <span class="o">=</span> <span class="n">camera_frame</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">OpticalFlow</span><span class="p">)</span>
-<span class="n">rgb</span> <span class="o">=</span> <span class="n">camera_frame</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">rgb</span>
-<span class="n">next_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rgb</span><span class="p">)</span>
-<span class="n">coordinates</span> <span class="o">=</span> <span class="n">camera_frame</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">coordinates</span>
-<span class="n">next_frame_coords</span> <span class="o">=</span> <span class="n">coordinates</span> <span class="o">+</span> <span class="n">flow</span><span class="o">.</span><span class="n">vectors</span>
-
-<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-        <span class="n">next_coord</span> <span class="o">=</span> <span class="n">next_frame_coords</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span>
-        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">next_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">next_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-            <span class="n">next_image</span><span class="p">[</span><span class="n">next_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">next_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">rgb</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="p">:]</span>
-
-<span class="kn">import</span> <span class="nn">cv2</span>
-<span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s2">&quot;window_name&quot;</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span>
-        <span class="n">src</span><span class="o">=</span><span class="n">next_image</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_RGBA2BGRA</span><span class="p">,</span>
-<span class="p">))</span>
-<span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">()</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.Depth">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Depth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">depth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.Depth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a Depth mask for a camera image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>depth</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.Depth.depth" title="paralleldomain.model.annotation.Depth.depth"><code class="xref py py-attr docutils literal notranslate"><span class="pre">depth</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.Depth.depth">
-<span class="sig-name descname"><span class="pre">depth</span></span><a class="headerlink" href="#paralleldomain.model.annotation.Depth.depth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(H X W x 1)</cite>, , where <cite>H</cite> is the height and <cite>W</cite> is the width of corresponding
-camera image. The third axis contains the depth distance for each pixel as <cite>int</cite> in meter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation3D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SemanticSegmentation3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 3D Instance Segmentation mask for a point cloud.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>class_ids</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.SemanticSegmentation3D.class_ids" title="paralleldomain.model.annotation.SemanticSegmentation3D.class_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SemanticSegmentation3D.class_ids">
-<span class="sig-name descname"><span class="pre">class_ids</span></span><a class="headerlink" href="#paralleldomain.model.annotation.SemanticSegmentation3D.class_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
-The second axis contains the class ID for each point as <cite>int</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation3D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">InstanceSegmentation3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 3D Instance Segmentation mask for a point cloud.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>instance_ids</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.InstanceSegmentation3D.instance_ids" title="paralleldomain.model.annotation.InstanceSegmentation3D.instance_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_ids</span></code></a></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.InstanceSegmentation3D.instance_ids">
-<span class="sig-name descname"><span class="pre">instance_ids</span></span><a class="headerlink" href="#paralleldomain.model.annotation.InstanceSegmentation3D.instance_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>2D Matrix of size <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
-The second axis contains the instance ID for each point as <cite>int</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SurfaceNormals3D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SurfaceNormals3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.SurfaceNormals3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not Implemented yet!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SurfaceNormals2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SurfaceNormals2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.SurfaceNormals2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not Implemented yet!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.SceneFlow">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SceneFlow</span></span><a class="headerlink" href="#paralleldomain.model.annotation.SceneFlow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not Implemented yet!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.MaterialProperties2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">MaterialProperties2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.MaterialProperties2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not Implemented yet!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.Albedo2D">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Albedo2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.Albedo2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Not Implemented yet!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
+<span class="target" id="module-paralleldomain.model.annotation"></span></div>
 
 
            </div>

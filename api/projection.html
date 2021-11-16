@@ -42,6 +42,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="paralleldomain.utilities.mask" href="mask.html" />
     <link rel="prev" title="paralleldomain.utilities.transformation" href="transformation.html" /> 
 </head>
 
@@ -146,6 +147,10 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/ml_data_generator/index.html">ML Data Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -155,6 +160,7 @@
 <li class="toctree-l1"><a class="reference internal" href="annotation.html">paralleldomain.model.annotation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformation.html">paralleldomain.utilities.transformation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.utilities.projection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mask.html">paralleldomain.utilities.mask</a></li>
 </ul>
 
             
@@ -248,20 +254,47 @@
 </style>
 <div class="section" id="module-paralleldomain.utilities.projection">
 <span id="paralleldomain-utilities-projection"></span><h1>paralleldomain.utilities.projection<a class="headerlink" href="#module-paralleldomain.utilities.projection" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.utilities.projection.DistortionLookupTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DistortionLookupTable</span></span><a class="headerlink" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container object for distortion lookup tables used in distortion model <cite>pd_fisheye</cite>.
+Can be accessed like any <cite>np.ndarray</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.projection.DistortionLookupTable.from_ndarray">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_ndarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.DistortionLookupTable.from_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a <cite>np.ndarray</cite> and creates a <a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DistortionLookupTable</span></code></a> instance from it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>numpy.ndarray</em>) – <cite>np.ndarray</cite> of shape (N x 2). Array will be sorted by first column. Last two rows will be used to
+extrapolate for maximum valid angle value of Pi.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Distortion lookup table to be used with projection functions using distortion model <cite>pd_fisheye</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">DistortionLookupTable</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="paralleldomain.utilities.projection.project_points_3d_to_2d">
-<span class="sig-name descname"><span class="pre">project_points_3d_to_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_3d</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.project_points_3d_to_2d" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">project_points_3d_to_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_3d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_lookup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.project_points_3d_to_2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Projects an array of 3D points in Cartesian coordinates onto an image plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>k_matrix</strong> (<em>numpy.ndarray</em>) – Camera intrinsic matrix. Definition can be found in
 <a class="reference external" href="https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html">OpenCV documentation</a>.</p></li>
-<li><p><strong>distortion_parameters</strong> (<em>numpy.ndarray</em>) – Array of applicable distortion parameters for distortion model.</p></li>
 <li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite> or <cite>opencv_fisheye</cite>.
 More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
 <li><p><strong>points_3d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx3) containing the points.
 Points must be already in the camera’s coordinate system.</p></li>
+<li><p><strong>distortion_parameters</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Array of applicable distortion parameters for
+distortion models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</p></li>
+<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><em>paralleldomain.utilities.projection.DistortionLookupTable</em></a><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -283,6 +316,7 @@ if they are on the image plane or outside.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="mask.html" class="btn btn-neutral float-right" title="paralleldomain.utilities.mask" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="transformation.html" class="btn btn-neutral float-left" title="paralleldomain.utilities.transformation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

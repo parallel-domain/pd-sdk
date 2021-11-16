@@ -147,6 +147,10 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/ml_data_generator/index.html">ML Data Generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -156,6 +160,7 @@
 <li class="toctree-l1"><a class="reference internal" href="annotation.html">paralleldomain.model.annotation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformation.html">paralleldomain.utilities.transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="projection.html">paralleldomain.utilities.projection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mask.html">paralleldomain.utilities.mask</a></li>
 </ul>
 
             
@@ -251,7 +256,7 @@
 <span id="paralleldomain-model-sensor"></span><h1>paralleldomain.model.sensor<a class="headerlink" href="#module-paralleldomain.model.sensor" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CameraModel</span></span><a class="headerlink" href="#paralleldomain.model.sensor.CameraModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraModel</span></span><a class="headerlink" href="#paralleldomain.model.sensor.CameraModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Camera Model short hands for value-safe access.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraModel.OPENCV_PINHOLE">
@@ -281,107 +286,53 @@ as described in the
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraModel.PD_FISHEYE">
+<span class="sig-name descname"><span class="pre">PD_FISHEYE</span></span><a class="headerlink" href="#paralleldomain.model.sensor.CameraModel.PD_FISHEYE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns internally used string-representation for Parallel Domain Fisheye camera model</p>
+<p>Uses custom distortion lookup table for translation between non-distorted and distorted angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.point_cloud">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">point_cloud</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">paralleldomain.model.point_cloud.PointCloud</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.point_cloud" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PointCloud</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.image">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">paralleldomain.model.image.Image</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Image</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">LidarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.point_cloud">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">point_cloud</span></span><em class="property"><span class="pre">:</span> <span class="pre">paralleldomain.model.point_cloud.PointCloud</span></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.point_cloud" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">PointCloud</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.image">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">paralleldomain.model.image.Image</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Image</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CameraSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.image">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="pre">:</span> <span class="pre">paralleldomain.model.image.Image</span></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.image" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Image</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.point_cloud">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">point_cloud</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">paralleldomain.model.point_cloud.PointCloud</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.point_cloud" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deprecated. Remains atm for 0.2.0 compatibility</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PointCloud</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.Sensor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Sensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.Sensor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Sensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.Sensor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CameraSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">LidarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SensorPose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SensorPose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -413,7 +364,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.from_euler_angles">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.from_euler_angles" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.from_euler_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a transformation object from euler angles and optionally translation (default: (0,0,0))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -436,7 +387,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.from_transformation_matrix">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -453,7 +404,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.inverse">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.inverse" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.inverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the inverse transformation as a new <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -464,7 +415,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.quaternion">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="pre">:</span> <span class="pre">pyquaternion.quaternion.Quaternion</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.quaternion" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyquaternion.quaternion.Quaternion</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.quaternion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the rotation as a <code class="xref py py-obj docutils literal notranslate"><span class="pre">pyquaternion.quaternion.Quaternion</span></code> instance.</p>
 <p>Full documentation can be found in
 <a class="reference external" href="http://kieranwynn.github.io/pyquaternion/">pyquaternion API Documentation</a>.</p>
@@ -507,7 +458,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.rotation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rotation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.rotation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the rotation matrix in shape (3,3).</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>              \
 <span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span><span class="o">|</span>
@@ -525,7 +476,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.transformation_matrix">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transformation_matrix</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.transformation_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transformation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.transformation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the homogeneous transformation matrix in shape (4,4).</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>                  \
 <span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span> <span class="n">t_x</span><span class="o">|</span>
@@ -544,7 +495,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.translation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">translation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.translation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.translation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the translation vector <cite>(x,y,z)</cite> in shape (3,).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -557,7 +508,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SensorExtrinsic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SensorExtrinsic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quaternion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -589,7 +540,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_euler_angles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a transformation object from euler angles and optionally translation (default: (0,0,0))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -612,7 +563,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -629,7 +580,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.inverse">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.inverse" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.inverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the inverse transformation as a new <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -640,7 +591,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.quaternion">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="pre">:</span> <span class="pre">pyquaternion.quaternion.Quaternion</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.quaternion" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">quaternion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyquaternion.quaternion.Quaternion</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.quaternion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the rotation as a <code class="xref py py-obj docutils literal notranslate"><span class="pre">pyquaternion.quaternion.Quaternion</span></code> instance.</p>
 <p>Full documentation can be found in
 <a class="reference external" href="http://kieranwynn.github.io/pyquaternion/">pyquaternion API Documentation</a>.</p>
@@ -683,7 +634,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.rotation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rotation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.rotation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the rotation matrix in shape (3,3).</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>              \
 <span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span><span class="o">|</span>
@@ -701,7 +652,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.transformation_matrix">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">transformation_matrix</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.transformation_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transformation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.transformation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the homogeneous transformation matrix in shape (4,4).</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">/</span>                  \
 <span class="o">|</span><span class="n">R_11</span> <span class="n">R_12</span> <span class="n">R_13</span> <span class="n">t_x</span><span class="o">|</span>
@@ -720,7 +671,7 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.translation">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">translation</span></span><em class="property"><span class="pre">:</span> <span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.translation" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.translation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the translation vector <cite>(x,y,z)</cite> in shape (3,).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
