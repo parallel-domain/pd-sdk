@@ -227,7 +227,11 @@ class AnyPath:
         """
         Remove this key from its bucket.
         """
-        return self._backend.unlink(missing_ok=missing_ok)
+        try:
+            return self._backend.unlink()
+        except FileNotFoundError:
+            if not missing_ok:
+                raise
 
     def rmdir(self):
         """
