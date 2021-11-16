@@ -347,20 +347,21 @@ class LaneSegment:
     @classmethod
     def from_proto(cls, id: int, umd_map: ProtoUniversalMap) -> "LaneSegment":
         lane_segment: ProtoLaneSegment = umd_map.lane_segments[id]
+        road_markings_by_edge_id = {rm.edge_id: rm for rm in umd_map.road_markings.values()}
         return LaneSegment(
             id=lane_segment.id,
             type=LaneType(lane_segment.type),
             direction=Direction(lane_segment.direction),
             left_edge=Edge.from_proto(
                 edge=umd_map.edges[lane_segment.left_edge],
-                road_marking=umd_map.road_markings[lane_segment.left_edge]
-                if lane_segment.left_edge in umd_map.road_markings
+                road_marking=road_markings_by_edge_id[lane_segment.left_edge]
+                if lane_segment.left_edge in road_markings_by_edge_id
                 else None,
             ),
             right_edge=Edge.from_proto(
                 edge=umd_map.edges[lane_segment.right_edge],
-                road_marking=umd_map.road_markings[lane_segment.right_edge]
-                if lane_segment.right_edge in umd_map.road_markings
+                road_marking=road_markings_by_edge_id[lane_segment.right_edge]
+                if lane_segment.right_edge in road_markings_by_edge_id
                 else None,
             ),
             reference_line=Edge.from_proto(edge=umd_map.edges[lane_segment.reference_line]),
