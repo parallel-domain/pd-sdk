@@ -1,13 +1,14 @@
 import math
 from dataclasses import dataclass, field
 from enum import IntEnum
+from itertools import chain
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 import ujson
 from igraph import Graph
-from more_itertools import windowed
+from more_itertools import pairwise, split_when, triplewise, windowed
 
 from paralleldomain.common.umd.v1.UMD_pb2 import Edge as ProtoEdge
 from paralleldomain.common.umd.v1.UMD_pb2 import Junction as ProtoJunction
@@ -680,6 +681,9 @@ class Map:
         query_results = self._map_graph.vs.select(name_eq=f"{NODE_PREFIX.LANE_SEGMENT}_{id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
+    def get_lane_segments(self, ids: List[int]) -> List[Optional[LaneSegment]]:
+        return [self.get_lane_segment(id=id) for id in ids]
+
     def get_area(self, id: int) -> Area:
         query_results = self._map_graph.vs.select(name_eq=f"{NODE_PREFIX.AREA}_{id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
@@ -823,6 +827,14 @@ class Map:
         )
         return [subgraph.vs[node_id]["object"] for node_id in random_walk]
 
+    def get_lane_segments_connceted_shortest_paths(self, source_id: int, target_id: int) -> List[List[LaneSegment]]:
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        start_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{source_id}")
+        end_node = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{target_id}")
+
+        shortest_paths = subgraph.get_shortest_paths(v=start_node, to=end_node.index, mode="all")
+        return [[subgraph.vs[node_id]["object"] for node_id in shortest_path] for shortest_path in shortest_paths]
+
     def get_lane_segment_predecessors(
         self, id: int, depth: int = -1
     ) -> Tuple[List[LaneSegment], List[int], List[Optional[int]]]:
@@ -870,6 +882,83 @@ class Map:
             if lane_segment is not None
             else (None, None)
         )
+
+    def get_lane_segments_neighbors(self, ids: List[int]) -> (List[Optional[LaneSegment]], List[Optional[LaneSegment]]):
+        lane_segments = [self.get_lane_segment(id=id) for id in ids]
+        assert all(self.are_succeeding_lane_segments(id_1=p[0].id, id_2=p[1].id) for p in pairwise(lane_segments))
+
+    def bridge_lane_segments(
+        self, id_1: int, id_2: int, bridge_length: int = None, directed: bool = True
+    ) -> Optional[List[LaneSegment]]:
+        if directed:
+            if not self.are_succeeding_lane_segments(id_1=id_1, id_2=id_2):
+                shortest_paths = self.get_lane_segments_successors_shortest_paths(source_id=id_1, target_id=id_2)
+                if shortest_paths and (
+                    bridge_length is None or len(shortest_paths[0]) - 2 == bridge_length
+                ):  # shortest path exists with max gap length
+                    return shortest_paths[0][1:-1]  # return only bridge elements
+                else:
+                    return None
+            else:  # LS are directly connected, bridge is empty.
+                return []
+        else:
+            if not self.are_connected_lane_segments(id_1=id_1, id_2=id_2):
+                shortest_paths = self.get_lane_segments_connceted_shortest_paths(source_id=id_1, target_id=id_2)
+                if shortest_paths and (
+                    bridge_length is None or len(shortest_paths[0]) - 2 == bridge_length
+                ):  # shortest path exists with max gap length
+                    return shortest_paths[0][1:-1]  # return only bridge elements
+                else:
+                    return None
+            else:  # LS are directly connected, bridge is empty.
+                return []
+
+    def complete_lane_segments(self, ids: List[Optional[int]], directed: bool = True) -> List[Optional[int]]:
+        if directed:
+            groups = self.group_succeeding_lane_segments(ids=ids)
+        else:
+            groups = self.group_connected_lane_segments(ids=ids)
+
+        # Minimum groups required, because we need to have [..,LS],[None,...],[LS,...] to completed gaps
+        if len(groups) >= 3:
+            for i, (start_group, bridge_group, end_group) in enumerate(triplewise(groups)):
+                start_element = start_group[-1]
+                end_element = end_group[0]
+                bridge_candidates = self.bridge_lane_segments(
+                    id_1=start_element.id, id_2=end_element.id, bridge_length=len(bridge_group), directed=directed
+                )
+                if bridge_candidates is not None:
+                    groups[i + 1] = bridge_candidates
+
+        return list(chain.from_iterable(groups))
+
+    def group_succeeding_lane_segments(self, ids: List[int]) -> List[List[Optional[LaneSegment]]]:
+        def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:
+            if x is None and y is not None:
+                return True
+            elif x is not None and y is None:
+                return True
+            elif x is None and y is None:
+                return False
+            elif x is not None and y is not None:
+                return not self.are_succeeding_lane_segments(id_1=x.id, id_2=y.id)
+
+        lane_segments = self.get_lane_segments(ids=ids)
+        return list(split_when(lane_segments, split_fn))
+
+    def group_connected_lane_segments(self, ids: List[int]) -> List[List[Optional[LaneSegment]]]:
+        def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:
+            if x is None and y is not None:
+                return True
+            elif x is not None and y is None:
+                return True
+            elif x is None and y is None:
+                return False
+            elif x is not None and y is not None:
+                return not self.are_connected_lane_segments(id_1=x.id, id_2=y.id)
+
+        lane_segments = self.get_lane_segments(ids=ids)
+        return list(split_when(lane_segments, split_fn))
 
     def get_lane_segment_predecessors_successors(
         self, id: int, depth: int = -1
@@ -943,6 +1032,13 @@ class Map:
         node_1 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_1}")
         node_2 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_2}")
         edge_id = subgraph.get_eid(node_1, node_2, directed=True, error=False)
+        return False if edge_id == -1 else True
+
+    def are_preceeding_lane_segments(self, id_1: int, id_2: int) -> bool:
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        node_1 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_1}")
+        node_2 = subgraph.vs.find(f"{NODE_PREFIX.LANE_SEGMENT}_{id_2}")
+        edge_id = subgraph.get_eid(node_2, node_1, directed=True, error=False)
         return False if edge_id == -1 else True
 
     def is_lane_segment_inside_junction(self, id: int) -> bool:
