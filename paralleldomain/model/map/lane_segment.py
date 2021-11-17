@@ -19,6 +19,8 @@ class LaneType(IntEnum):
     BIKING = 5
     CROSSWALK = 6
     RESTRICTED = 7
+    PARKING_AISLE = 8
+    PARKING_SPACE = 9
 
 
 class Direction(IntEnum):

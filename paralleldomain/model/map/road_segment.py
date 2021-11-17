@@ -24,6 +24,7 @@ class RoadType(IntEnum):
     TERTIARY_LINK = 11
     SERVICE = 12
     DRIVEWAY = 13
+    PARKING_AISLE = 14
 
 
 class GroundType(IntEnum):
