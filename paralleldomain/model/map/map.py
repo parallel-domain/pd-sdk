@@ -1,10 +1,10 @@
 import math
-from itertools import chain
+from itertools import chain, groupby
 from typing import List, Optional, Tuple
 
 import numpy as np
 from igraph import Graph
-from more_itertools import pairwise, split_when, triplewise
+from more_itertools import split_when, triplewise, unique_everseen
 
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
 from paralleldomain.model.map.area import Area
@@ -16,6 +16,12 @@ from paralleldomain.model.map.road_segment import RoadSegment
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_binary_message
 from paralleldomain.utilities.geometry import is_point_in_polygon_2d
+from paralleldomain.utilities.transformation import Transformation
+
+
+class Neighbor:
+    LEFT: str = "left"
+    RIGHT: str = "right"
 
 
 class Map:
@@ -293,9 +299,60 @@ class Map:
     def get_lane_segments(self, ids: List[int]) -> List[Optional[LaneSegment]]:
         return [self.get_lane_segment(id=id) for id in ids]
 
+    def get_lane_segments_from_poses(self, poses: List[Transformation]) -> List[LaneSegment]:
+        enu_points = [PointENU.from_transformation(tf=pose) for pose in poses]
+        lane_segments_candidates = [self.get_lane_segments_for_point(point=point) for point in enu_points]
+
+        # 2 Group all "single lane segment" matches and all "more than one lane segment" matches (ambiguous!)
+        lane_segments_candidates_length = [len(s) > 1 for s in lane_segments_candidates]
+        lane_segments_candidates_grouped = groupby(
+            range(len(lane_segments_candidates_length)), lambda x: lane_segments_candidates_length[x]
+        )
+        lane_segments_candidates_grouped = [(g[0], list(g[1])) for g in lane_segments_candidates_grouped]
+
+        # 2B Assert that the first and last pose in the vehicle path is of type "single lane segment"
+        assert lane_segments_candidates_grouped[0][0] is False  # for now until extrapolation logic is implemented
+        assert lane_segments_candidates_grouped[-1][0] is False  # for now until extrapolation logic is implemented
+
+        # 3 For each group, either do nothing ("single lane segment") or for "more than one lane segment":
+        #   Take the previous and next "single lane segment" and calculate their shortest lane segment path
+        #   In each "more than one lane segment" timestamp, then find which node from the shortest path is within
+        #   Return only that single node and convert this timestamp to "single lane segment"
+        for i, (a, seq) in enumerate(lane_segments_candidates_grouped):
+            if a is True:
+                _, prev_indices = lane_segments_candidates_grouped[i - 1]
+                _, next_indices = lane_segments_candidates_grouped[i + 1]
+                prev_node = lane_segments_candidates[prev_indices[-1]][0]
+                next_node = lane_segments_candidates[next_indices[0]][0]
+                shortest_path = self.get_lane_segments_successors_shortest_paths(
+                    source_id=prev_node.id, target_id=next_node.id
+                )
+                shortest_path = shortest_path[0]
+                for idx in seq:
+                    candidates = lane_segments_candidates[idx]
+                    for n in shortest_path[::-1]:  # reverse, greedy search
+                        if n in candidates:
+                            lane_segments_candidates[idx] = [n]
+                            break
+
+        # 4 Now that everything is an unambiguous "single lane segment", convert list of lists of nodes to list of nodes
+        lane_segments = [m[0] for m in lane_segments_candidates]
+        # 4B We do not want re-occurences, just interest in the unique segment path
+        lane_segments = list(unique_everseen(lane_segments))
+
+        return lane_segments
+
     def get_area(self, id: int) -> Area:
         query_results = self._map_graph.vs.select(name_eq=f"{NodePrefix.AREA}_{id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
+
+    def pad_lane_segments(self, lane_segments: List[LaneSegment], padding: int = 1) -> List[LaneSegment]:
+        lane_segments_predecessors = self.get_lane_segment_predecessors_random_path(
+            id=lane_segments[0].id, steps=padding
+        )
+        lane_segments_successors = self.get_lane_segment_successors_random_path(id=lane_segments[-1].id, steps=padding)
+
+        return lane_segments_predecessors[::-1][:-1] + lane_segments + lane_segments_successors[1:]
 
     def _get_nodes_within_bounds(
         self,
@@ -436,12 +493,12 @@ class Map:
         )
         return [subgraph.vs[node_id]["object"] for node_id in random_walk]
 
-    def get_lane_segments_connceted_shortest_paths(self, source_id: int, target_id: int) -> List[List[LaneSegment]]:
+    def get_lane_segments_connected_shortest_paths(self, source_id: int, target_id: int) -> List[List[LaneSegment]]:
         subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
         start_node = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{source_id}")
         end_node = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{target_id}")
 
-        shortest_paths = subgraph.get_shortest_paths(v=start_node, to=end_node.index, mode="all")
+        shortest_paths = subgraph.get_shortest_paths(v=start_node, to=end_node, mode="all")
         return [[subgraph.vs[node_id]["object"] for node_id in shortest_path] for shortest_path in shortest_paths]
 
     def get_lane_segment_predecessors(
@@ -479,22 +536,40 @@ class Map:
         )
         return [subgraph.vs[node_id]["object"] for node_id in random_walk]
 
-    def get_lane_segment_neighbors(self, id: int) -> (Optional[LaneSegment], Optional[LaneSegment]):
+    def get_lane_segment_relative_neighbor(self, id: int, side: str, degree: int = 1) -> LaneSegment:
         lane_segment = self.get_lane_segment(id=id)
-        neighbor_left = self.get_lane_segment(id=lane_segment.left_neighbor)
-        neighbor_right = self.get_lane_segment(id=lane_segment.right_neighbor)
-        return (
-            (
-                neighbor_left,
-                neighbor_right,
-            )
-            if lane_segment is not None
-            else (None, None)
-        )
 
-    def get_lane_segments_neighbors(self, ids: List[int]) -> (List[Optional[LaneSegment]], List[Optional[LaneSegment]]):
+        neighbor = lane_segment  # set to initial lane segment and start the loop if degree >= 1
+        for i in range(degree):
+            if side == Neighbor.LEFT:
+                neighbor = (
+                    self.get_lane_segment(id=neighbor.left_neighbor)
+                    if not self.are_opposite_direction_lane_segments(id_1=lane_segment.id, id_2=neighbor.id)
+                    else self.get_lane_segment(id=neighbor.right_neighbor)
+                )
+            else:  # Neighbor.RIGHT
+                neighbor = (
+                    self.get_lane_segment(id=neighbor.right_neighbor)
+                    if not self.are_opposite_direction_lane_segments(id_1=lane_segment.id, id_2=neighbor.id)
+                    else self.get_lane_segment(id=neighbor.left_neighbor)
+                )
+            if neighbor is None:
+                break
+
+        return neighbor
+
+    def get_lane_segments_relative_neighbors(
+        self, ids: List[int], side: str, degree: int = 1, bridge: bool = False
+    ) -> List[Optional[LaneSegment]]:
         lane_segments = [self.get_lane_segment(id=id) for id in ids]
-        assert all(self.are_succeeding_lane_segments(id_1=p[0].id, id_2=p[1].id) for p in pairwise(lane_segments))
+        neighbors = [
+            self.get_lane_segment_relative_neighbor(id=ls.id, side=side, degree=degree) for ls in lane_segments
+        ]
+
+        if bridge:
+            return self.complete_lane_segments(ids=[n.id if n is not None else None for n in neighbors], directed=False)
+        else:
+            return neighbors
 
     def bridge_lane_segments(
         self, id_1: int, id_2: int, bridge_length: int = None, directed: bool = True
@@ -512,7 +587,7 @@ class Map:
                 return []
         else:
             if not self.are_connected_lane_segments(id_1=id_1, id_2=id_2):
-                shortest_paths = self.get_lane_segments_connceted_shortest_paths(source_id=id_1, target_id=id_2)
+                shortest_paths = self.get_lane_segments_connected_shortest_paths(source_id=id_1, target_id=id_2)
                 if shortest_paths and (
                     bridge_length is None or len(shortest_paths[0]) - 2 == bridge_length
                 ):  # shortest path exists with max gap length
@@ -522,7 +597,7 @@ class Map:
             else:  # LS are directly connected, bridge is empty.
                 return []
 
-    def complete_lane_segments(self, ids: List[Optional[int]], directed: bool = True) -> List[Optional[int]]:
+    def complete_lane_segments(self, ids: List[Optional[int]], directed: bool = True) -> List[Optional[LaneSegment]]:
         if directed:
             groups = self.group_succeeding_lane_segments(ids=ids)
         else:
@@ -533,13 +608,14 @@ class Map:
             for i, (start_group, bridge_group, end_group) in enumerate(triplewise(groups)):
                 start_element = start_group[-1]
                 end_element = end_group[0]
-                bridge_candidates = self.bridge_lane_segments(
-                    id_1=start_element.id, id_2=end_element.id, bridge_length=len(bridge_group), directed=directed
-                )
-                if bridge_candidates is not None:
-                    groups[i + 1] = bridge_candidates
+                if start_element is not None and end_element is not None:
+                    bridge_candidates = self.bridge_lane_segments(
+                        id_1=start_element.id, id_2=end_element.id, bridge_length=len(bridge_group), directed=directed
+                    )
+                    if bridge_candidates is not None:
+                        groups[i + 1] = bridge_candidates
 
-        return list(chain.from_iterable(groups))
+        return [self.get_lane_segment(ls.id) if ls is not None else None for ls in chain.from_iterable(groups)]
 
     def group_succeeding_lane_segments(self, ids: List[int]) -> List[List[Optional[LaneSegment]]]:
         def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:

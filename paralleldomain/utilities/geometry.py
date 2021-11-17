@@ -76,7 +76,7 @@ def simplify_polyline_2d(
         supporting_points_pairs = list(pairwise(supporting_points_indices))
         polyline_simplified = np.empty(shape=(0, 2))
         for spp in supporting_points_pairs:
-            polyline_sub = polyline[spp[0] : spp[1] + 1]
+            polyline_sub = polyline[spp[0] : spp[1] + 1].astype(np.float32)
             polyline_sub_simplified = cv2.approxPolyDP(
                 curve=polyline_sub, epsilon=approximation_error, closed=False
             ).reshape(-1, 2)[:-1, :]
