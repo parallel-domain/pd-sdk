@@ -32,8 +32,6 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
 ItemType = TypeVar("ItemType")
 cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "50GB")
 
-NU_SC_DATA_STORAGE = None  # persistent between threads
-
 
 class _FixedStorage:
     def __init__(self):
@@ -49,7 +47,7 @@ class _FixedStorage:
 
 
 class NuScenesDataAccessMixin:
-    _init_lock = RLock()
+    _storage = _FixedStorage()
 
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuScenes dataset
@@ -65,12 +63,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_lazy_load_cache(self) -> _FixedStorage:
-        global NU_SC_DATA_STORAGE
-        if NU_SC_DATA_STORAGE is None:
-            with self._init_lock:
-                if NU_SC_DATA_STORAGE is None:
-                    NU_SC_DATA_STORAGE = _FixedStorage()
-        return NU_SC_DATA_STORAGE
+        return NuScenesDataAccessMixin._storage
 
     def get_unique_id(
         self,

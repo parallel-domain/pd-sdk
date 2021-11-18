@@ -28,8 +28,6 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-NU_IM_DATA_CACHE = None  # persistent between threads
-
 ItemType = TypeVar("ItemType")
 
 
@@ -47,7 +45,7 @@ class _FixedStorage:
 
 
 class NuImagesDataAccessMixin:
-    _init_lock = RLock()
+    _storage = _FixedStorage()
 
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuImages dataset
@@ -63,12 +61,7 @@ class NuImagesDataAccessMixin:
 
     @property
     def nu_lazy_load_cache(self) -> _FixedStorage:
-        global NU_IM_DATA_CACHE
-        if NU_IM_DATA_CACHE is None:
-            with self._init_lock:
-                if NU_IM_DATA_CACHE is None:
-                    NU_IM_DATA_CACHE = _FixedStorage()
-        return NU_IM_DATA_CACHE
+        return NuImagesDataAccessMixin._storage
 
     def get_unique_id(
         self,
