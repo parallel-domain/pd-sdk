@@ -39,7 +39,7 @@ cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "50GB")
 NU_SC_DATA_STORAGE = None  # persistent between threads
 
 
-class _TableStorage:
+class _FixedStorage:
     def __init__(self):
         self.stored_tables = dict()
         self.table_load_locks = defaultdict(RLock)
@@ -68,12 +68,12 @@ class NuScenesDataAccessMixin:
         self.split_name = split_name
 
     @property
-    def nu_lazy_load_cache(self) -> _TableStorage:
+    def nu_lazy_load_cache(self) -> _FixedStorage:
         global NU_SC_DATA_STORAGE
         if NU_SC_DATA_STORAGE is None:
             with self._init_lock:
                 if NU_SC_DATA_STORAGE is None:
-                    NU_SC_DATA_STORAGE = _TableStorage()
+                    NU_SC_DATA_STORAGE = _FixedStorage()
         return NU_SC_DATA_STORAGE
 
     def get_unique_id(

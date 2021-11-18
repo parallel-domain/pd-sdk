@@ -1,7 +1,8 @@
 import json
 import os
+from collections import defaultdict
 from threading import RLock
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tuple, TypeVar
 
 import numpy as np
 import psutil
@@ -13,7 +14,6 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.fsio import read_json
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 # NUIMAGES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
@@ -31,9 +31,22 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "5GB")
+NU_IM_DATA_CACHE = None  # persistent between threads
 
-NU_IM_DATA_CACHE = None
+ItemType = TypeVar("ItemType")
+
+
+class _FixedStorage:
+    def __init__(self):
+        self.stored_tables = dict()
+        self.table_load_locks = defaultdict(RLock)
+
+    def get_item(self, key: Hashable, loader: Callable[[], ItemType]) -> ItemType:
+        if key not in self.stored_tables:
+            with self.table_load_locks[key]:
+                if key not in self.stored_tables:
+                    self.stored_tables[key] = loader()
+        return self.stored_tables[key]
 
 
 class NuImagesDataAccessMixin:
@@ -52,15 +65,12 @@ class NuImagesDataAccessMixin:
         self.split_name = split_name
 
     @property
-    def nu_lazy_load_cache(self) -> LazyLoadCache:
+    def nu_lazy_load_cache(self) -> _FixedStorage:
         global NU_IM_DATA_CACHE
         if NU_IM_DATA_CACHE is None:
             with self._init_lock:
                 if NU_IM_DATA_CACHE is None:
-                    NU_IM_DATA_CACHE = LazyLoadCache(
-                        cache_max_size=cache_max_bytes,
-                        cache_name="NuImages Cache",
-                    )
+                    NU_IM_DATA_CACHE = _FixedStorage()
         return NU_IM_DATA_CACHE
 
     def get_unique_id(
