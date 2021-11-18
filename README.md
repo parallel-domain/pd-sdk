@@ -23,7 +23,7 @@ To use the PD SDK, you can simply install it using `pip` in your Python environm
 
 ```bash
 # Clone latest PD SDK release
-$ git clone git@github.com:parallel-domain/pd-sdk.git
+$ git clone https://github.com/parallel-domain/pd-sdk.git
 
 # Change directory
 $ cd pd-sdk
