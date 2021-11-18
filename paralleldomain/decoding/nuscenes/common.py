@@ -1,4 +1,3 @@
-import json
 import os
 from collections import defaultdict
 from datetime import datetime
@@ -6,8 +5,6 @@ from threading import RLock
 from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tuple, TypeVar
 
 import numpy as np
-import psutil
-from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
 from paralleldomain.model.class_mapping import ClassDetail
@@ -15,7 +12,6 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.fsio import read_json
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 from paralleldomain.utilities.transformation import Transformation
 
 NUSCENES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
