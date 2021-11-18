@@ -3,7 +3,7 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from threading import RLock
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tuple, TypeVar
 
 import numpy as np
 import psutil
@@ -19,7 +19,6 @@ from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 from paralleldomain.utilities.transformation import Transformation
 
 NUSCENES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
-# NUSCENES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
 
 
 def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[Dict[str, Any]]:
@@ -34,9 +33,23 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "5GB")
+ItemType = TypeVar("ItemType")
+cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "50GB")
 
-NU_SC_DATA_CACHE = None
+NU_SC_DATA_STORAGE = None  # persistent between threads
+
+
+class _TableStorage:
+    def __init__(self):
+        self.stored_tables = dict()
+        self.table_load_locks = defaultdict(RLock)
+
+    def get_item(self, key: Hashable, loader: Callable[[], ItemType]) -> ItemType:
+        if key not in self.stored_tables:
+            with self.table_load_locks[key]:
+                if key not in self.stored_tables:
+                    self.stored_tables[key] = loader()
+        return self.stored_tables[key]
 
 
 class NuScenesDataAccessMixin:
@@ -55,16 +68,13 @@ class NuScenesDataAccessMixin:
         self.split_name = split_name
 
     @property
-    def nu_lazy_load_cache(self) -> LazyLoadCache:
-        global NU_SC_DATA_CACHE
-        if NU_SC_DATA_CACHE is None:
+    def nu_lazy_load_cache(self) -> _TableStorage:
+        global NU_SC_DATA_STORAGE
+        if NU_SC_DATA_STORAGE is None:
             with self._init_lock:
-                if NU_SC_DATA_CACHE is None:
-                    NU_SC_DATA_CACHE = LazyLoadCache(
-                        cache_max_size=cache_max_bytes,
-                        cache_name="NuScenes Cache",
-                    )
-        return NU_SC_DATA_CACHE
+                if NU_SC_DATA_STORAGE is None:
+                    NU_SC_DATA_STORAGE = _TableStorage()
+        return NU_SC_DATA_STORAGE
 
     def get_unique_id(
         self,
@@ -213,16 +223,6 @@ class NuScenesDataAccessMixin:
     @property
     def nu_samples_data_by_token(self) -> Dict[str, Dict[str, Any]]:
         return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
-        # _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
-        #
-        # def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
-        #     data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
-        #     return {d["token"]: d for d in data}
-        #
-        # return self.nu_lazy_load_cache.get_item(
-        #     key=_unique_cache_key,
-        #     loader=get_nu_samples_data,
-        # )
 
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
@@ -259,14 +259,14 @@ class NuScenesDataAccessMixin:
     def nu_ego_pose(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
 
-        def get_nu_ego_pose() -> Dict[str, List[Dict[str, Any]]]:
+        def get_nu_ego_pose_by_token() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name)
             sample_poses = dict()
             for d in data:
                 sample_poses.setdefault(d["token"], list()).append(d)
             return sample_poses
 
-        return self.nu_lazy_load_cache.get_item(key=_unique_cache_key, loader=get_nu_ego_pose)
+        return self.nu_lazy_load_cache.get_item(key=_unique_cache_key, loader=get_nu_ego_pose_by_token)
 
     def get_nu_ego_pose(self, ego_pose_token: str) -> Dict[str, Any]:
         return next(iter(self.nu_ego_pose[ego_pose_token]), dict())
