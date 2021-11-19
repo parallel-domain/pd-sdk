@@ -338,7 +338,7 @@ class Map:
         # 4 Now that everything is an unambiguous "single lane segment", convert list of lists of nodes to list of nodes
         lane_segments = [m[0] for m in lane_segments_candidates]
         # 4B We do not want re-occurences, just interest in the unique segment path
-        lane_segments = list(unique_everseen(lane_segments))
+        # lane_segments = list(unique_everseen(lane_segments))
 
         return lane_segments
 
@@ -617,19 +617,38 @@ class Map:
 
         return [self.get_lane_segment(ls.id) if ls is not None else None for ls in chain.from_iterable(groups)]
 
-    def group_succeeding_lane_segments(self, ids: List[int]) -> List[List[Optional[LaneSegment]]]:
-        def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:
-            if x is None and y is not None:
-                return True
-            elif x is not None and y is None:
-                return True
-            elif x is None and y is None:
-                return False
-            elif x is not None and y is not None:
-                return not self.are_succeeding_lane_segments(id_1=x.id, id_2=y.id)
+    def group_succeeding_lane_segments(
+        self, ids: List[int], reorder: bool = False
+    ) -> List[List[Optional[LaneSegment]]]:
+        if not reorder:
 
-        lane_segments = self.get_lane_segments(ids=ids)
-        return list(split_when(lane_segments, split_fn))
+            def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:
+                if x is None and y is not None:
+                    return True
+                elif x is not None and y is None:
+                    return True
+                elif x is None and y is None:
+                    return False
+                elif x is not None and y is not None:
+                    return not self.are_succeeding_lane_segments(id_1=x.id, id_2=y.id)
+
+            lane_segments = self.get_lane_segments(ids=ids)
+            return list(split_when(lane_segments, split_fn))
+        else:
+            vertices = [self._map_graph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{id}") for id in ids]
+            subgraph = self._get_lane_segments_preceeding_lane_segments_graph().induced_subgraph(vertices=vertices)
+
+            decomposed_subgraphs = subgraph.decompose(mode="weak")
+            lane_segments_groups = []
+            for sub in decomposed_subgraphs:
+                in_degrees = sub.degree(mode="in")
+                out_degrees = sub.degree(mode="out")
+                start_vertex = sub.vs[np.argmin(in_degrees)]
+                end_vertex = sub.vs[np.argmin(out_degrees)]
+                shortest_path = sub.get_shortest_paths(v=start_vertex, to=end_vertex)[-1]
+                lane_segments_groups.append([sub.vs[vertex_id]["object"] for vertex_id in shortest_path])
+
+            return lane_segments_groups
 
     def group_connected_lane_segments(self, ids: List[int]) -> List[List[Optional[LaneSegment]]]:
         def split_fn(x: Optional[LaneSegment], y: Optional[LaneSegment]) -> bool:

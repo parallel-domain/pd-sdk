@@ -75,7 +75,8 @@ def project_points_3d_to_2d(
     Returns:
         A matrix with dimensions (nx2) containing the point projections. :obj:`dtype` is :obj:`float` and values need
         to be rounded to integers by the user to receive actual pixel coordinates. Includes all points, independent
-        if they are on the image plane or outside.
+        if they are on the image plane or outside. Points behind the image plane will be projected, too. If values are
+        not valid (e.g., for undistorted pinhole cameras), filtering needs to be applied by the calling function.
     """
 
     k_matrix = k_matrix.reshape(3, 3).astype(np.float)
