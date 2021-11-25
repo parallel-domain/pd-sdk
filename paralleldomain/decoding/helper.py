@@ -3,6 +3,7 @@ from typing import Optional, Union
 from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
+from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
 from paralleldomain.model.dataset import Dataset
@@ -19,9 +20,17 @@ def decode_dataset(
     settings: Optional[DecoderSettings] = None,
     **decoder_kwargs,
 ) -> Dataset:
+    dataset_format = dataset_format.lower()
 
     if dataset_format == "dgp":
         return DGPDatasetDecoder(
+            dataset_path=dataset_path,
+            custom_reference_to_box_bottom=custom_reference_to_box_bottom,
+            settings=settings,
+            **decoder_kwargs,
+        ).get_dataset()
+    if dataset_format == "dgpv1":
+        return DGPV1DatasetDecoder(
             dataset_path=dataset_path,
             custom_reference_to_box_bottom=custom_reference_to_box_bottom,
             settings=settings,
