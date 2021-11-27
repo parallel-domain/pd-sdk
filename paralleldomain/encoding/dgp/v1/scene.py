@@ -1,6 +1,7 @@
 import concurrent
 import hashlib
 import logging
+import time
 import uuid
 from collections import defaultdict
 from concurrent.futures import Future
@@ -448,9 +449,12 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_key_line_2d(self, line: Polyline2D) -> annotations_pb2.KeyLine2DAnnotation:
         keyline_proto = annotations_pb2.KeyLine2DAnnotation(
             class_id=line.class_id,
-            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items()},
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items() if k != "key"
+            },
             vertices=[annotations_pb2.KeyPoint2D(x=int(ll.start.x), y=int(ll.start.y)) for ll in line.lines]
             + [annotations_pb2.KeyPoint2D(x=int(line.lines[-1].end.x), y=int(line.lines[-1].end.y))],
+            key=line.attributes["key"] if "key" in line.attributes else "",
         )
 
         return keyline_proto
@@ -801,17 +805,36 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_camera(self, camera_name: str) -> Future:
         frame_ids = self._scene.frame_ids
-        futures = {
-            ENCODING_THREAD_POOL.submit(
-                lambda fid: self._encode_camera_frame(
-                    frame_id=fid,
-                    camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
-                    last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
-                ),
-                frame_id,
-            )
-            for frame_id in frame_ids
-        }
+        futures = set()
+        for frame_id in frame_ids:
+            while True:
+                if ENCODING_THREAD_POOL.queue.qsize() < max(1, ENCODING_THREAD_POOL.max_workers // 4):
+                    logger.debug(f"Scheduling camera frame {camera_name} {frame_id}")
+                    futures.add(
+                        ENCODING_THREAD_POOL.submit(
+                            lambda fid: self._encode_camera_frame(
+                                frame_id=fid,
+                                camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
+                                last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
+                            ),
+                            frame_id,
+                        )
+                    )
+                    break
+                else:
+                    time.sleep(2)
+
+        # futures = {
+        #     ENCODING_THREAD_POOL.submit(
+        #         lambda fid: self._encode_camera_frame(
+        #             frame_id=fid,
+        #             camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
+        #             last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
+        #         ),
+        #         frame_id,
+        #     )
+        #     for frame_id in frame_ids
+        # }
         return ENCODING_THREAD_POOL.submit(
             lambda: self._process_encode_camera_results(
                 camera_name=camera_name,

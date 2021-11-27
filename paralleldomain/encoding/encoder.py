@@ -27,6 +27,7 @@ class EncoderThreadPool(ThreadPoolExecutor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max_workers = self._max_workers
+        self.queue = self._work_queue
 
     def map_async(self, fn: Callable[[Any], Any], iterable: Iterable[Any]) -> List[Future]:
         return [self.submit(fn, i) for i in iterable]
