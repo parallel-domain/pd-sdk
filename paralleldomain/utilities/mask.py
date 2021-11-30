@@ -101,4 +101,4 @@ def lookup_values(
 
         return interpolated_result
     else:
-        return mask[y, x]
+        return mask[y.astype(int), x.astype(int)]
