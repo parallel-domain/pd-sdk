@@ -40,14 +40,16 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         return EgoPose.from_transformation_matrix(mat=trans)
 
     def _decode_available_sensor_names_by_modality(
-        self, frame_id: FrameId, modality: List[str] = ["camera", "lidar"]
+        self, frame_id: FrameId, modality: List[str] = None
     ) -> List[SensorName]:
         sensor_names = set()
-
+        if modality is None:
+            modality = ["camera", "lidar"]
         data_list = self.nu_samples_data[frame_id]
+        sensors = self.nu_calibrated_sensors
         for data in data_list:
             calib_sensor_token = data["calibrated_sensor_token"]
-            calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+            calib_sensor = sensors[calib_sensor_token]
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
             if sensor["modality"] in modality:
                 sensor_names.add(sensor["channel"])

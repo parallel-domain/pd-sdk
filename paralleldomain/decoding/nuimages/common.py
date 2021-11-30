@@ -1,10 +1,8 @@
-import json
-import os
+from collections import defaultdict
 from threading import RLock
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tuple, TypeVar
 
 import numpy as np
-import psutil
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
@@ -13,7 +11,6 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.fsio import read_json
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 NUIMAGES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
 # NUIMAGES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
@@ -31,17 +28,24 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-_NU_IMAGES_DATA_MAX_SIZE = 5.0e9  # GB
-cache_max_ram_usage_factor = float(
-    os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_IMAGES_DATA_MAX_SIZE / psutil.virtual_memory().total)
-)  # use 2.0 GB by default
-ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
+ItemType = TypeVar("ItemType")
 
-NU_IM_DATA_CACHE = None
+
+class _FixedStorage:
+    def __init__(self):
+        self.stored_tables = dict()
+        self.table_load_locks = defaultdict(RLock)
+
+    def get_item(self, key: Hashable, loader: Callable[[], ItemType]) -> ItemType:
+        if key not in self.stored_tables:
+            with self.table_load_locks[key]:
+                if key not in self.stored_tables:
+                    self.stored_tables[key] = loader()
+        return self.stored_tables[key]
 
 
 class NuImagesDataAccessMixin:
-    _init_lock = RLock()
+    _storage = _FixedStorage()
 
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuImages dataset
@@ -56,17 +60,8 @@ class NuImagesDataAccessMixin:
         self.split_name = split_name
 
     @property
-    def nu_lazy_load_cache(self) -> LazyLoadCache:
-        global NU_IM_DATA_CACHE
-        if NU_IM_DATA_CACHE is None:
-            with self._init_lock:
-                if NU_IM_DATA_CACHE is None:
-                    NU_IM_DATA_CACHE = LazyLoadCache(
-                        max_ram_usage_factor=cache_max_ram_usage_factor,
-                        ram_keep_free_factor=ram_keep_free_factor,
-                        cache_name="NuImages Cache",
-                    )
-        return NU_IM_DATA_CACHE
+    def nu_table_storage(self) -> _FixedStorage:
+        return NuImagesDataAccessMixin._storage
 
     def get_unique_id(
         self,
@@ -87,7 +82,7 @@ class NuImagesDataAccessMixin:
     def nu_logs(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_logs")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="log", split_name=self.split_name),
         )
@@ -107,7 +102,7 @@ class NuImagesDataAccessMixin:
                 log_wise_samples.setdefault(s["log_token"], list()).append(s)
             return log_wise_samples
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples,
         )
@@ -116,7 +111,7 @@ class NuImagesDataAccessMixin:
     def nu_sensors(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sensors")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="sensor", split_name=self.split_name),
         )
@@ -132,7 +127,7 @@ class NuImagesDataAccessMixin:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples_data,
         )
@@ -148,7 +143,7 @@ class NuImagesDataAccessMixin:
                 surface_ann.setdefault(d["sample_data_token"], list()).append(d)
             return surface_ann
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_surface_ann,
         )
@@ -164,7 +159,7 @@ class NuImagesDataAccessMixin:
                 object_ann.setdefault(d["sample_data_token"], list()).append(d)
             return object_ann
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_object_ann,
         )
@@ -183,7 +178,7 @@ class NuImagesDataAccessMixin:
                 mapping.setdefault(k, [False, False])[1] = True
             return mapping
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_sample_data_tokens_to_available_anno_types,
         )
@@ -198,7 +193,7 @@ class NuImagesDataAccessMixin:
             )
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_calibrated_sensors,
         )
@@ -207,7 +202,7 @@ class NuImagesDataAccessMixin:
     def nu_ego_pose(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(
                 dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name
@@ -225,7 +220,7 @@ class NuImagesDataAccessMixin:
             data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_category,
         )
@@ -238,7 +233,7 @@ class NuImagesDataAccessMixin:
             data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_attribute,
         )
@@ -247,7 +242,7 @@ class NuImagesDataAccessMixin:
     def nu_name_to_index(self) -> Dict[str, int]:
         _unique_cache_key = self.get_unique_id(extra="nu_name_to_index")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: name_to_index_mapping(category=list(self.nu_category.values())),
         )
@@ -305,7 +300,7 @@ class NuImagesDataAccessMixin:
                 mapping[(frame_id, sensor_name)] = key_camera_token
             return mapping
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_sample_data_ids_by_frame_and_sensor,
         )
@@ -324,7 +319,7 @@ class NuImagesDataAccessMixin:
             details.append(ClassDetail(name="background", id=name_to_index["background"], meta=dict()))
             return details
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_class_infos,
         )

@@ -1,13 +1,10 @@
-import json
 import os
 from collections import defaultdict
 from datetime import datetime
 from threading import RLock
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tuple, TypeVar
 
 import numpy as np
-import psutil
-from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
 from paralleldomain.model.class_mapping import ClassDetail
@@ -15,11 +12,9 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.fsio import read_json
-from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 from paralleldomain.utilities.transformation import Transformation
 
 NUSCENES_IMU_TO_INTERNAL_CS = CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM
-# NUSCENES_TO_INTERNAL_CS = CoordinateSystem("RFU") > INTERNAL_COORDINATE_SYSTEM
 
 
 def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[Dict[str, Any]]:
@@ -34,17 +29,25 @@ def load_table(dataset_root: AnyPath, split_name: str, table_name: str) -> List[
     raise ValueError(f"Error: Table {table_name} does not exist!")
 
 
-_NU_SCENES_DATA_MAX_SIZE = 5.0e9  # GB
-cache_max_ram_usage_factor = float(
-    os.environ.get("NU_CACHE_MAX_USAGE_FACTOR", _NU_SCENES_DATA_MAX_SIZE / psutil.virtual_memory().total)
-)  # use 2.0 GB by default
-ram_keep_free_factor = float(os.environ.get("NU_CACHE_KEEP_FREE_FACTOR", 0.05))  # 5% have to stay free
+ItemType = TypeVar("ItemType")
+cache_max_bytes = os.environ.get("NU_CACHE_MAX_BYTES", "50GB")
 
-NU_SC_DATA_CACHE = None
+
+class _FixedStorage:
+    def __init__(self):
+        self.stored_tables = dict()
+        self.table_load_locks = defaultdict(RLock)
+
+    def get_item(self, key: Hashable, loader: Callable[[], ItemType]) -> ItemType:
+        if key not in self.stored_tables:
+            with self.table_load_locks[key]:
+                if key not in self.stored_tables:
+                    self.stored_tables[key] = loader()
+        return self.stored_tables[key]
 
 
 class NuScenesDataAccessMixin:
-    _init_lock = RLock()
+    _storage = _FixedStorage()
 
     def __init__(self, dataset_path: AnyPath, dataset_name: str, split_name: str):
         """Decodes a NuScenes dataset
@@ -59,17 +62,8 @@ class NuScenesDataAccessMixin:
         self.split_name = split_name
 
     @property
-    def nu_lazy_load_cache(self) -> LazyLoadCache:
-        global NU_SC_DATA_CACHE
-        if NU_SC_DATA_CACHE is None:
-            with self._init_lock:
-                if NU_SC_DATA_CACHE is None:
-                    NU_SC_DATA_CACHE = LazyLoadCache(
-                        max_ram_usage_factor=cache_max_ram_usage_factor,
-                        ram_keep_free_factor=ram_keep_free_factor,
-                        cache_name="NuScenes Cache",
-                    )
-        return NU_SC_DATA_CACHE
+    def nu_table_storage(self) -> _FixedStorage:
+        return NuScenesDataAccessMixin._storage
 
     def get_unique_id(
         self,
@@ -90,7 +84,7 @@ class NuScenesDataAccessMixin:
     def nu_logs(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_logs")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="log", split_name=self.split_name),
         )
@@ -100,14 +94,14 @@ class NuScenesDataAccessMixin:
         return {log["token"]: log for log in self.nu_logs}
 
     @property
-    def nu_instance(self) -> List[Dict[str, Any]]:
+    def nu_instance(self) -> Dict[str, Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_instance")
 
         def get_nu_instance() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="instance", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_instance,
         )
@@ -116,13 +110,13 @@ class NuScenesDataAccessMixin:
     def nu_map(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_map")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="map", split_name=self.split_name),
         )
 
     @property
-    def nu_sample_annotation(self) -> List[Dict[str, Any]]:
+    def nu_sample_annotation(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sample_annotation")
 
         def get_nu_sample_annotation() -> Dict[str, List[Dict[str, Any]]]:
@@ -134,7 +128,7 @@ class NuScenesDataAccessMixin:
                 sample_annotation.setdefault(d["sample_token"], list()).append(d)
             return sample_annotation
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_sample_annotation,
         )
@@ -143,20 +137,24 @@ class NuScenesDataAccessMixin:
     def nu_scene(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_scene")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="scene", split_name=self.split_name),
         )
 
     @property
-    def nu_scene_by_scene_token(self) -> Dict[str, Dict[str, Any]]:
-        return {scene["token"]: scene for scene in self.nu_scene}
+    def nu_scene_by_scene_name(self) -> Dict[str, Dict[str, Any]]:
+        return {scene["name"]: scene for scene in self.nu_scene}
+
+    @property
+    def nu_scene_name_to_scene_token(self) -> Dict[str, str]:
+        return {scene["name"]: scene["token"] for scene in self.nu_scene}
 
     @property
     def nu_visibility(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_visibility")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(
                 dataset_root=self._dataset_path, table_name="visibility", split_name=self.split_name
@@ -174,7 +172,7 @@ class NuScenesDataAccessMixin:
                 scene_wise_samples.setdefault(s["scene_token"], list()).append(s)
             return scene_wise_samples
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples,
         )
@@ -183,7 +181,7 @@ class NuScenesDataAccessMixin:
     def nu_sensors(self) -> List[Dict[str, Any]]:
         _unique_cache_key = self.get_unique_id(extra="nu_sensors")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: load_table(dataset_root=self._dataset_path, table_name="sensor", split_name=self.split_name),
         )
@@ -200,29 +198,20 @@ class NuScenesDataAccessMixin:
         """
         _unique_cache_key = self.get_unique_id(extra="nu_samples_data")
 
-        def get_nu_samples_data_by_sample() -> Dict[str, Dict[str, Any]]:
+        def get_nu_samples_data_by_sample() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             out_dict = defaultdict(list)
             [out_dict[d["sample_token"]].append(d) for d in data if d["is_key_frame"]]
             return out_dict
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_samples_data_by_sample,
         )
 
     @property
-    def nu_samples_data_by_token(self) -> Dict[str, List[Dict[str, Any]]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
-
-        def get_nu_samples_data() -> Dict[str, Dict[str, Any]]:
-            data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
-            return {d["token"]: d for d in data}
-
-        return self.nu_lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=get_nu_samples_data,
-        )
+    def nu_samples_data_by_token(self) -> Dict[str, Dict[str, Any]]:
+        return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
 
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
@@ -235,7 +224,7 @@ class NuScenesDataAccessMixin:
                 mapping.setdefault(sample_token, [False, False])[0] = True
             return mapping
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_frame_id_tokens_to_available_anno_types,
         )
@@ -250,24 +239,26 @@ class NuScenesDataAccessMixin:
             )
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_calibrated_sensors,
         )
 
     @property
-    def nu_ego_pose(self) -> List[Dict[str, Any]]:
+    def nu_ego_pose(self) -> Dict[str, List[Dict[str, Any]]]:
         _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
 
-        return self.nu_lazy_load_cache.get_item(
-            key=_unique_cache_key,
-            loader=lambda: load_table(
-                dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name
-            ),
-        )
+        def get_nu_ego_pose_by_token() -> Dict[str, List[Dict[str, Any]]]:
+            data = load_table(dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name)
+            sample_poses = dict()
+            for d in data:
+                sample_poses.setdefault(d["token"], list()).append(d)
+            return sample_poses
+
+        return self.nu_table_storage.get_item(key=_unique_cache_key, loader=get_nu_ego_pose_by_token)
 
     def get_nu_ego_pose(self, ego_pose_token: str) -> Dict[str, Any]:
-        return next(iter([pose for pose in self.nu_ego_pose if pose["token"] == ego_pose_token]), dict())
+        return next(iter(self.nu_ego_pose[ego_pose_token]), dict())
 
     @property
     def nu_category(self) -> Dict[str, Dict[str, Any]]:
@@ -277,7 +268,7 @@ class NuScenesDataAccessMixin:
             data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_category,
         )
@@ -290,7 +281,7 @@ class NuScenesDataAccessMixin:
             data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
             return {d["token"]: d for d in data}
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_attribute,
         )
@@ -299,7 +290,7 @@ class NuScenesDataAccessMixin:
     def nu_name_to_index(self) -> Dict[str, int]:
         _unique_cache_key = self.get_unique_id(extra="nu_name_to_index")
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=lambda: name_to_index_mapping(category=list(self.nu_category.values())),
         )
@@ -350,7 +341,7 @@ class NuScenesDataAccessMixin:
                     mapping[(frame_id, sensor_name)] = d["token"]
             return mapping
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_sample_data_ids_by_frame_and_sensor,
         )
@@ -369,12 +360,12 @@ class NuScenesDataAccessMixin:
             details.append(ClassDetail(name="background", id=name_to_index["background"], meta=dict()))
             return details
 
-        return self.nu_lazy_load_cache.get_item(
+        return self.nu_table_storage.get_item(
             key=_unique_cache_key,
             loader=get_nu_class_infos,
         )
 
-    def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> List[np.ndarray]:
+    def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> np.ndarray:
         time_diffs = []
         ego_pose_tokens = []
         frame_timestamp = self.get_sample_with_frame_id(scene_token=scene_token, frame_id=frame_id)["timestamp"]
