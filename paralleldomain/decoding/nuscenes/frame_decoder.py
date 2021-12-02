@@ -34,6 +34,7 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
+        self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         trans = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
@@ -68,7 +69,7 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         return dict()
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
-        return self.get_datetime_with_frame_id(self.scene_name, frame_id)
+        return self.get_datetime_with_frame_id(self.scene_token, frame_id)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
         return NuScenesCameraSensorFrameDecoder(
