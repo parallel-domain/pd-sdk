@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.5.1",
+    version="0.5.2",
     author=["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"],
     author_email=[
         "nisse@paralleldomain.com",
