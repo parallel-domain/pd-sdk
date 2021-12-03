@@ -61,6 +61,9 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
                 #     anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
         return anno_types
 
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        return {}
+
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         return self.get_datetime_with_frame_id(scene_token=self.scene_token, frame_id=frame_id)
 

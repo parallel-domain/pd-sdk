@@ -8,7 +8,6 @@ from google.protobuf.json_format import MessageToDict
 
 from paralleldomain.common.dgp.v1 import dataset_pb2, ontology_pb2, sample_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
-from paralleldomain.common.dgp.v1.metadata_pd_pb2 import ParallelDomainSceneMetadata
 from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
@@ -138,10 +137,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        metadata = {k: v for k, v in scene_dto.metadata.items()}
-        if "PD" in metadata:
-            metadata["PD"] = dict(MessageToDict(scene_dto.metadata["PD"], ParallelDomainSceneMetadata()))
-        return metadata
+        # metadata = {k: v for k, v in scene_dto.metadata.items()}
+        # if "PD" in metadata:
+        #     metadata["PD"] = dict(MessageToDict(scene_dto.metadata["PD"], ParallelDomainSceneMetadata()))
+        return scene_dto.metadata
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
@@ -197,6 +196,8 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> scene_pb2.Scene:
+        import paralleldomain.common.dgp.v1.metadata_pd_pb2  # noqa: F401
+
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
 

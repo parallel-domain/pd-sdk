@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime
-from typing import Dict, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
@@ -81,6 +81,19 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
+        pass
+
+    def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        _unique_cache_key = self.get_unique_sensor_frame_id(
+            sensor_name=sensor_name, frame_id=frame_id, extra="-metadata"
+        )
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_metadata(sensor_name=sensor_name, frame_id=frame_id),
+        )
+
+    @abc.abstractmethod
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         pass
 
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:

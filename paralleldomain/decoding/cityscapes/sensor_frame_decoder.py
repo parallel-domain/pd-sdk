@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, TypeVar
+from typing import Any, Dict, List, Tuple, TypeVar
 
 import cv2
 import numpy as np
@@ -57,6 +57,9 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
             AnnotationTypes.SemanticSegmentation2D: semseg_file_name,
             AnnotationTypes.InstanceSegmentation2D: instseg_file_name,
         }
+
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        return {}
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> None:
         return None
