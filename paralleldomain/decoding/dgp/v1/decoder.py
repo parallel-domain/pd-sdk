@@ -137,9 +137,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        # metadata = {k: v for k, v in scene_dto.metadata.items()}
-        # if "PD" in metadata:
-        #     metadata["PD"] = dict(MessageToDict(scene_dto.metadata["PD"], ParallelDomainSceneMetadata()))
         return scene_dto.metadata
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
