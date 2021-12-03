@@ -593,6 +593,7 @@ class DGPSceneEncoder(SceneEncoder):
             camera_frame = camera.get_frame(frame_id)
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
+            metadata = result_dict["metadata"]
 
             scene_datum_dto = image_pb2.Image(
                 filename=self._relative_path(sensor_data[DirectoryName.RGB].result()).as_posix(),
@@ -615,7 +616,7 @@ class DGPSceneEncoder(SceneEncoder):
                         qz=camera_frame.pose.quaternion.z,
                     ),
                 ),
-                metadata={},
+                metadata={str(k): v for k, v in metadata.items()},
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
@@ -661,6 +662,7 @@ class DGPSceneEncoder(SceneEncoder):
             lidar_frame = lidar.get_frame(frame_id)
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
+            metadata = result_dict["metadata"]
 
             scene_datum_dto = point_cloud_pb2.PointCloud(
                 filename=self._relative_path(sensor_data[DirectoryName.POINT_CLOUD].result()).as_posix(),
@@ -682,7 +684,7 @@ class DGPSceneEncoder(SceneEncoder):
                     ),
                 ),
                 point_fields=[],
-                metadata={},
+                metadata={str(k): v for k, v in metadata.items()},
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
@@ -765,6 +767,7 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),
             },
+            metadata={},
         )
 
     def _encode_lidar_frame(
@@ -801,6 +804,7 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data={
                 "point_cloud": self._process_point_cloud(sensor_frame=lidar_frame, fs_copy=True),
             },
+            metadata={},
         )
 
     def _encode_camera(self, camera_name: str) -> Future:
