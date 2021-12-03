@@ -1,6 +1,5 @@
 import abc
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import datetime
 from functools import lru_cache
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
@@ -460,6 +459,10 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model=camera_model,
         )
 
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return datum.image.metadata
+
 
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
     @lru_cache(maxsize=1)
@@ -558,6 +561,10 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
             ).astype(np.uint32)
         else:
             return None
+
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return datum.point_cloud.metadata
 
 
 def _pose_dto_to_transformation(dto: geometry_pb2.Pose, transformation_type: Type[TransformType]) -> TransformType:

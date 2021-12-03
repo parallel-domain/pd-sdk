@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Generic, List, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Set, Type, TypeVar, Union
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
@@ -59,6 +59,9 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
+    def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        pass
+
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         pass
 
@@ -93,6 +96,10 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list(self._annotation_type_identifiers.keys())
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        return self._decoder.get_metadata(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 from json import JSONDecodeError
-from typing import Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 import numpy as np
 import ujson
@@ -225,6 +225,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         else:
             type_to_path = datum.point_cloud.annotations
         return {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return datum["metadata"]
 
     # ---------------------------------
 
