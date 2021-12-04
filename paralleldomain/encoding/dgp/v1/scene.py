@@ -814,7 +814,7 @@ class DGPSceneEncoder(SceneEncoder):
         for frame_id in frame_ids:
             while True:
                 # if ENCODING_THREAD_POOL.queue.qsize() < max(1, ENCODING_THREAD_POOL.max_workers // 4):
-                if ENCODING_THREAD_POOL.queue.qsize() < 4:
+                if ENCODING_THREAD_POOL.queue.qsize() < 8:
                     logger.debug(f"Scheduling camera frame {camera_name} {frame_id}")
                     futures.add(
                         ENCODING_THREAD_POOL.submit(
