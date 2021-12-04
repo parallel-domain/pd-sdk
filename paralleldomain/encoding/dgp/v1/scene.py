@@ -1,6 +1,7 @@
 import concurrent
 import hashlib
 import logging
+import random
 import time
 import uuid
 from collections import defaultdict
@@ -827,7 +828,7 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                     break
                 else:
-                    time.sleep(2)
+                    time.sleep(2 + random.random())
 
         # futures = {
         #     ENCODING_THREAD_POOL.submit(
