@@ -810,37 +810,18 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_camera(self, camera_name: str) -> Future:
         frame_ids = self._scene.frame_ids
-        futures = set()
-        for frame_id in frame_ids:
-            while True:
-                # if ENCODING_THREAD_POOL.queue.qsize() < max(1, ENCODING_THREAD_POOL.max_workers // 4):
-                if ENCODING_THREAD_POOL.queue.qsize() < 8:
-                    logger.debug(f"Scheduling camera frame {camera_name} {frame_id}")
-                    futures.add(
-                        ENCODING_THREAD_POOL.submit(
-                            lambda fid: self._encode_camera_frame(
-                                frame_id=fid,
-                                camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
-                                last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
-                            ),
-                            frame_id,
-                        )
-                    )
-                    break
-                else:
-                    time.sleep(2 + random.random())
 
-        # futures = {
-        #     ENCODING_THREAD_POOL.submit(
-        #         lambda fid: self._encode_camera_frame(
-        #             frame_id=fid,
-        #             camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
-        #             last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
-        #         ),
-        #         frame_id,
-        #     )
-        #     for frame_id in frame_ids
-        # }
+        futures = {
+            ENCODING_THREAD_POOL.submit(
+                lambda fid: self._encode_camera_frame(
+                    frame_id=fid,
+                    camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
+                    last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
+                ),
+                frame_id,
+            )
+            for frame_id in frame_ids
+        }
         return ENCODING_THREAD_POOL.submit(
             lambda: self._process_encode_camera_results(
                 camera_name=camera_name,
