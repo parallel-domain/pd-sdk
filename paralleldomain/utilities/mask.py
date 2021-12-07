@@ -101,4 +101,4 @@ def lookup_values(
 
         return interpolated_result
     else:
-        return mask[y.astype(int), x.astype(int)]
+        return mask[np.clip(y, 0, mask.shape[0] - 1).astype(int), np.clip(x, 0, mask.shape[1] - 1).astype(int)]
