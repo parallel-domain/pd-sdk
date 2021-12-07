@@ -97,10 +97,10 @@ class DGPDatasetEncoder(DatasetEncoder):
     def encode_dataset(self) -> AnyPath:
         scene_files = {}
         for scene_name in self._scene_names:
-            try:
-                scene_files[scene_name] = self._call_scene_encoder(scene_name=scene_name)
-            except Exception:
-                continue
+            # try:
+            scene_files[scene_name] = self._call_scene_encoder(scene_name=scene_name)
+            # except Exception:
+            #     continue
 
         return self._encode_dataset_json(scene_files=scene_files)
 
