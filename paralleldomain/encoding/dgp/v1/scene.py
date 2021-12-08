@@ -71,9 +71,10 @@ class DGPSceneEncoder(SceneEncoder):
         dataset: Dataset,
         scene_name: str,
         output_path: AnyPath,
-        camera_names: Optional[Union[List[str], None]] = None,
-        lidar_names: Optional[Union[List[str], None]] = None,
-        annotation_types: Optional[Union[List[AnnotationType], None]] = None,
+        camera_names: Optional[List[str]] = None,
+        lidar_names: Optional[List[str]] = None,
+        frame_ids: Optional[List[str]] = None,
+        annotation_types: Optional[List[AnnotationType]] = None,
     ):
         super().__init__(
             dataset=dataset,
@@ -81,6 +82,7 @@ class DGPSceneEncoder(SceneEncoder):
             output_path=output_path,
             camera_names=camera_names,
             lidar_names=lidar_names,
+            frame_ids=frame_ids,
             annotation_types=annotation_types,
         )
 
@@ -809,7 +811,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_camera(self, camera_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
 
         futures = {
             ENCODING_THREAD_POOL.submit(
@@ -830,7 +832,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar(self, lidar_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
@@ -871,7 +873,7 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_calibrations(self) -> Future:
         camera_frames = []
         lidar_frames = []
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
 
         for sn in self._camera_names:
             camera_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
@@ -963,7 +965,7 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> AnyPath:
         scene_data = []
         scene_samples = []
-        for fid in self._scene.frame_ids:
+        for fid in self._frame_ids:
             frame = self._scene.get_frame(fid)
             frame_data = [
                 scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]
