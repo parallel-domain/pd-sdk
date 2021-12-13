@@ -1,18 +1,17 @@
 import os
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 import psutil
 from cgroupspy.trees import Tree
 
-from paralleldomain.utilities.any_path import AnyPath
-
 
 def is_container() -> bool:
     """Returns `True` if process is running inside a (Docker) container."""
-    cgroup_path = AnyPath("/proc/self/cgroup")
+    cgroup_path = Path("/proc/self/cgroup")
     return (
-        AnyPath("/.dockerenv").exists()
+        Path("/.dockerenv").exists()
         or cgroup_path.is_file()
         and any("docker" in line for line in cgroup_path.open(mode="r"))
     )
