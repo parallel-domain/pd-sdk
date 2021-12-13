@@ -10,6 +10,8 @@ import numpy as np
 from cachetools import Cache
 from humanize import naturalsize
 
+from paralleldomain.utilities.os import virtual_memory
+
 CachedItemType = TypeVar("CachedItemType")
 
 logger = logging.getLogger(__name__)
@@ -210,10 +212,12 @@ class LazyLoadCache(Cache):
 
 
 def byte_str_to_bytes(byte_str: str) -> int:
-    split_numbers_and_letters = re.match(r"([0-9]+)([kKMGTPEZY]*)([i]*)([bB]+)", byte_str.replace(" ", ""), re.I)
+    split_numbers_and_letters = re.match(r"([.0-9]+)([kKMGTPEZY]*)([i]*)([bB]+)", byte_str.replace(" ", ""), re.I)
     powers = {"": 0, "k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6, "z": 7, "y": 8}
     if split_numbers_and_letters is None:
-        raise ValueError(f"Invalid byte string format {byte_str}. Has to be a int number followed by a byte unit!")
+        raise ValueError(
+            f"Invalid byte string format {byte_str}. `byte_str` has to be an integer string followed by a byte unit."
+        )
     number, power_letter, base_letter, bites_or_bytes = split_numbers_and_letters.groups()
     bit_factor = 1 if bites_or_bytes == "B" else 1 / 8
     base = 1024 if base_letter == "i" else 1000
@@ -223,8 +227,11 @@ def byte_str_to_bytes(byte_str: str) -> int:
     return int(total_bits)
 
 
-cache_max_ram_usage_factor = float(os.environ.get("CACHE_MAX_USAGE_FACTOR", 0.1))  # 10% free space max
-cache_max_size = os.environ.get("CACHE_MAX_BYTES", "1GiB")
+cache_max_size = os.environ.get("CACHE_MAX_BYTES")
+if cache_max_size is None:
+    total_ram_size = virtual_memory().total
+    cache_max_size = naturalsize(max(1_000_000_000, int(total_ram_size * 0.9)), binary=False)
+
 if "CACHE_MAX_USAGE_FACTOR" in os.environ:
     logger.warning(
         "CACHE_MAX_USAGE_FACTOR is not longer supported! Use CACHE_MAX_BYTES instead to set a cache size in bytes!"
