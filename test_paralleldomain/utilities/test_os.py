@@ -1,14 +1,11 @@
-from paralleldomain.utilities.os import cpu_count, is_container, virtual_memory
+from paralleldomain.utilities.os import cpu_count, is_container
 
 
 def test_is_container():
-    _ = is_container()
+    # Test execution to assure no error is thrown on non-unix (non-cgroup) OS
+    is_container()
 
 
 def test_cpu_count():
-    _ = cpu_count()
-
-
-def test_virtual_memory():
-    v_memory = virtual_memory()
-    assert v_memory.total >= v_memory.used
+    # Test execution to assure no error is thrown on non-unix (non-cgroup) OS
+    cpu_count()
