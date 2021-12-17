@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from paralleldomain.utilities.lazy_load_cache import CacheEmptyException, LazyLoadCache
+from paralleldomain.utilities.lazy_load_cache import CacheEmptyException, LazyLoadCache, byte_str_to_bytes
 
 
 class _MockSizeElement:
@@ -145,3 +145,20 @@ class TestLazyLoadCache:
 
         p1 = ThreadPool(140)
         p1.map_async(delete, range(140)).get()
+
+    def test_byte_str_to_bytes(self):
+        test_values = [
+            ("1.048576 MB", "1 MiB", 1_048_576),
+            ("2.45366784 MB", "2.34 MiB", 2_453_667),
+            ("1 TB", "0.90949470177293 TiB", 1_000_000_000_000),
+            ("1 KB", "8 kbit", 1_000),
+        ]
+
+        for ga_bytes, bi_bytes, byte_value in test_values:
+            ga_bytes_no_whitespace = ga_bytes.replace(" ", "")
+            bi_bytes_no_whitespace = ga_bytes.replace(" ", "")
+
+            assert byte_str_to_bytes(byte_str=ga_bytes) == byte_value
+            assert byte_str_to_bytes(byte_str=ga_bytes_no_whitespace) == byte_value
+            assert byte_str_to_bytes(byte_str=bi_bytes) == byte_value
+            assert byte_str_to_bytes(byte_str=bi_bytes_no_whitespace) == byte_value
