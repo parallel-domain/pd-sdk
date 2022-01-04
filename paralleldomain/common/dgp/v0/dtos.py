@@ -110,32 +110,6 @@ class SceneDataDatum(SceneDataDatumImage, SceneDataDatumPointCloud):
 
 @dataclass_json
 @dataclass
-class SceneMetadataPDDTO:
-    type_: str = field(metadata=config(field_name="@type"))
-    location: str
-    time_of_day: str
-    version: int
-    cloud_cover: float
-    sun_elevation: float
-    sun_azimuth: float
-    fog_intensity: float
-    rain_intensity: float
-    wetness: float
-    street_lights: float
-    batch_id: int
-    region_type: str
-    scene_type: Optional[str] = None
-
-
-@dataclass_json(undefined=Undefined.INCLUDE)
-@dataclass
-class SceneMetadataDTO:
-    PD: SceneMetadataPDDTO
-    other: CatchAll
-
-
-@dataclass_json
-@dataclass
 class SceneDataDTO:
     next_key: str
     datum: SceneDataDatum
@@ -161,7 +135,7 @@ class SceneDTO:
     log: str
     data: List[SceneDataDTO]
     ontologies: Dict[str, str]
-    metadata: SceneMetadataDTO
+    metadata: Dict[str, Any]
     samples: List[SceneSampleDTO]
 
 
