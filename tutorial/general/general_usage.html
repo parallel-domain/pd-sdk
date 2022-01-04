@@ -439,7 +439,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
@@ -508,8 +508,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.dgp.decoder</span> <span class="kn">import</span> <span class="n">DGPDatasetDecoder</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.dgp.decoder</span> <span class="kn">import</span> <span class="n">DGPDatasetDecoder</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.model.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 <span class="n">dataset_path</span> <span class="o">=</span> <span class="s2">&quot;s3://pd-sdk-c6b4d2ea-0301-46c9-8b63-ef20c0d014e9/testset_dgp&quot;</span>
@@ -524,8 +523,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.helper</span> <span class="kn">import</span> <span class="n">decode_dataset</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.helper</span> <span class="kn">import</span> <span class="n">decode_dataset</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.decoding.common</span> <span class="kn">import</span> <span class="n">DecoderSettings</span>
 
 <span class="c1"># To deactivate caching of certain data types use the DecoderSettings</span>
@@ -540,8 +538,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">nu_images_dataset_path</span> <span class="o">=</span> <span class="s2">&quot;some/path/to/a/nuimages/root/folder&quot;</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">nu_images_dataset_path</span> <span class="o">=</span> <span class="s2">&quot;some/path/to/a/nuimages/root/folder&quot;</span>
 <span class="n">nu_images_dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">decode_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="n">nu_images_dataset_path</span><span class="p">,</span> <span class="n">dataset_format</span><span class="o">=</span><span class="s2">&quot;nuimages&quot;</span><span class="p">)</span>
 
 <span class="n">cityscapes_dataset_path</span> <span class="o">=</span> <span class="s2">&quot;some/path/to/a/cityscapes/root/folder&quot;</span>
@@ -556,8 +553,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dataset Metadata:&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dataset Metadata:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Name:&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Available Annotation Types:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Custom Attributes:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">custom_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -602,8 +598,7 @@ Custom Attributes:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scene_names</span><span class="p">:</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scene_names</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found scene </span><span class="si">{</span><span class="n">sn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">usn</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">unordered_scene_names</span><span class="p">:</span>
@@ -629,8 +624,7 @@ Found unordered scene pd-sdk_test_set
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.scene</span> <span class="kn">import</span> <span class="n">Scene</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.scene</span> <span class="kn">import</span> <span class="n">Scene</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">PrettyPrinter</span>
 
 
@@ -670,8 +664,7 @@ Found unordered scene pd-sdk_test_set
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -699,8 +692,7 @@ Found unordered scene pd-sdk_test_set
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scene</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">frame_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> frames available.&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scene</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">frame_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> frames available.&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">scene</span><span class="o">.</span><span class="n">frame_ids</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -724,8 +716,7 @@ pd-sdk_test_set has 10 frames available.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">frame_0_id</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">frame_0_id</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
 <span class="n">frame_0</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_0_id</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="p">)</span>
 </pre></div>
@@ -748,8 +739,7 @@ pd-sdk_test_set has 10 frames available.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cameras:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cameras:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LiDARs:&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">scene</span><span class="o">.</span><span class="n">lidar_names</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
@@ -781,8 +771,7 @@ lidar_rear
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">camera_0_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_0_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">camera_0</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_camera_sensor</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -793,8 +782,7 @@ lidar_rear
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">camera_frame_via_frame</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_frame_via_frame</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
 <span class="n">camera_frame_via_camera</span> <span class="o">=</span> <span class="n">camera_0</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_0_id</span><span class="p">)</span>
 
 <span class="k">assert</span><span class="p">(</span><span class="n">camera_frame_via_camera</span> <span class="ow">is</span> <span class="n">camera_frame_via_camera</span><span class="p">)</span>
@@ -823,8 +811,7 @@ Both objects are equal: 140255650227008 == 140255650227008
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Get `CameraSensorFrame` for the first camera on the first frame within the scene.</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get `CameraSensorFrame` for the first camera on the first frame within the scene.</span>
 <span class="n">lidar_0_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">lidar_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="n">camera_0_frame_0</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_0_name</span><span class="p">)</span>
@@ -832,9 +819,7 @@ Both objects are equal: 140255650227008 == 140255650227008
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="si">}</span><span class="s2"> recorded at </span><span class="si">{</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">sensor_name</span><span class="si">}</span><span class="s2"> recorded at </span><span class="si">{</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">date_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-</pre></div>
+<br/><br/></pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -852,8 +837,7 @@ difference should be the same when using pose or extrinsic.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="p">)</span>
 <span class="n">camera_to_lidar_pose</span> <span class="o">=</span> <span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">pose</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
@@ -875,8 +859,7 @@ R: [0.0, 90.0, -90.0],t: [1.5, 0.0, 1.5]  -&gt;  R: [0.0, 80.0, -90.0],t: [1.0, 
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diff Pose:&quot;</span><span class="p">,</span> <span class="n">camera_to_lidar_pose</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Diff Extrinsic:&quot;</span><span class="p">,</span> <span class="n">camera_to_lidar_extrinsic</span><span class="p">)</span>
@@ -901,8 +884,7 @@ If you see this, the difference are close to equal.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">camera_1_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_1_name</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">camera_names</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">camera_1_frame_0</span> <span class="o">=</span> <span class="n">frame_0</span><span class="o">.</span><span class="n">get_camera</span><span class="p">(</span><span class="n">camera_name</span><span class="o">=</span><span class="n">camera_1_name</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">,</span> <span class="s2">&quot; -&gt; &quot;</span><span class="p">,</span> <span class="n">camera_1_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
@@ -926,8 +908,7 @@ front, one rear facing) that are perfectly aligned with the ego-vehicle’s long
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.utilities.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.utilities.coordinate_system</span> <span class="kn">import</span> <span class="n">CoordinateSystem</span>
 
 
 <span class="n">extrinsic_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="o">.</span><span class="n">inverse</span> <span class="o">@</span> <span class="n">camera_1_frame_0</span><span class="o">.</span><span class="n">extrinsic</span><span class="p">)</span>
@@ -953,11 +934,9 @@ R: [90.0, -90.0, -180.0],t: [-3.0, -0.0, 0.0]
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">camera_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">available_annotation_types</span><span class="p">)</span>
-
-</pre></div>
+<br/></pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -983,8 +962,7 @@ R: [90.0, -90.0, -180.0],t: [-3.0, -0.0, 0.0]
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">AnnotationTypes</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">AnnotationTypes</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">BoundingBoxes2D</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 
@@ -1019,8 +997,7 @@ Class ID: 5, Instance ID: 187
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">SemanticSegmentation3D</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">SemanticSegmentation3D</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 
 <span class="n">annotation_type</span> <span class="o">=</span> <span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">BoundingBoxes2D</span>
@@ -1081,8 +1058,7 @@ The annotation type &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.class_mapping</span> <span class="kn">import</span> <span class="n">ClassMap</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.class_mapping</span> <span class="kn">import</span> <span class="n">ClassMap</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 <span class="n">semseg3d_classmap</span><span class="p">:</span> <span class="n">ClassMap</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">get_class_map</span><span class="p">(</span><span class="n">annotation_type</span><span class="o">=</span><span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">SemanticSegmentation3D</span><span class="p">)</span>
 
@@ -1125,8 +1101,7 @@ The annotation type &lt;class &#39;paralleldomain.model.annotation.BoundingBoxes
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">Image</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 
@@ -1188,8 +1163,7 @@ Below is an image with 4 channels and resolution 1920x1080 sqpx
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">PointCloud</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">PointCloud</span>  <span class="c1"># optional import, just for type reference in this tutorial</span>
 
 
 <span class="n">pc_data</span><span class="p">:</span> <span class="n">PointCloud</span> <span class="o">=</span> <span class="n">lidar_0_frame_0</span><span class="o">.</span><span class="n">point_cloud</span>
@@ -1232,8 +1206,7 @@ Text(0.5, 1.0, &#39;lidar_front&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre>
-<span></span>
+<div class="input_area highlight-ipython2 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
