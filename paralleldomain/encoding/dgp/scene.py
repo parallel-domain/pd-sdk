@@ -29,7 +29,6 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneDataDTO,
     SceneDataIdDTO,
     SceneDTO,
-    SceneMetadataDTO,
     SceneSampleDTO,
     SceneSampleIdDTO,
     TranslationDTO,
@@ -748,7 +747,7 @@ class DGPSceneEncoder(SceneEncoder):
             description=self._scene.description,
             log="",
             ontologies={k: v.result().stem for k, v in ontologies_files.items()},
-            metadata=SceneMetadataDTO.from_dict(self._scene.metadata),
+            metadata=self._scene.metadata,
             samples=scene_samples,
             data=scene_data,
         )
