@@ -302,3 +302,9 @@ class AnyPath:
     def absolute(self) -> "AnyPath":
         pth = self._backend.absolute()
         return self._create_valid_any_path(new_path=pth)
+
+    def __lt__(self, other):
+        return str(self) < str(other)
+
+    def __gt__(self, other):
+        return str(self) > str(other)

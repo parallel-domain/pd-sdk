@@ -1,6 +1,8 @@
 import concurrent
 import hashlib
 import logging
+import random
+import time
 import uuid
 from collections import defaultdict
 from concurrent.futures import Future
@@ -69,9 +71,10 @@ class DGPSceneEncoder(SceneEncoder):
         dataset: Dataset,
         scene_name: str,
         output_path: AnyPath,
-        camera_names: Optional[Union[List[str], None]] = None,
-        lidar_names: Optional[Union[List[str], None]] = None,
-        annotation_types: Optional[Union[List[AnnotationType], None]] = None,
+        camera_names: Optional[List[str]] = None,
+        lidar_names: Optional[List[str]] = None,
+        frame_ids: Optional[List[str]] = None,
+        annotation_types: Optional[List[AnnotationType]] = None,
     ):
         super().__init__(
             dataset=dataset,
@@ -79,6 +82,7 @@ class DGPSceneEncoder(SceneEncoder):
             output_path=output_path,
             camera_names=camera_names,
             lidar_names=lidar_names,
+            frame_ids=frame_ids,
             annotation_types=annotation_types,
         )
 
@@ -448,9 +452,12 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_key_line_2d(self, line: Polyline2D) -> annotations_pb2.KeyLine2DAnnotation:
         keyline_proto = annotations_pb2.KeyLine2DAnnotation(
             class_id=line.class_id,
-            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items()},
-            vertices=[annotations_pb2.KeyPoint2D(x=ll.start.x, y=ll.start.y) for ll in line.lines]
-            + [annotations_pb2.KeyPoint2D(x=line.lines[-1].end.x, y=line.lines[-1].end.y)],
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items() if k != "key"
+            },
+            vertices=[annotations_pb2.KeyPoint2D(x=int(ll.start.x), y=int(ll.start.y)) for ll in line.lines]
+            + [annotations_pb2.KeyPoint2D(x=int(line.lines[-1].end.x), y=int(line.lines[-1].end.y))],
+            key=line.attributes["key"] if "key" in line.attributes else "",
         )
 
         return keyline_proto
@@ -589,6 +596,7 @@ class DGPSceneEncoder(SceneEncoder):
             camera_frame = camera.get_frame(frame_id)
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
+            metadata = result_dict["metadata"]
 
             scene_datum_dto = image_pb2.Image(
                 filename=self._relative_path(sensor_data[DirectoryName.RGB].result()).as_posix(),
@@ -611,7 +619,7 @@ class DGPSceneEncoder(SceneEncoder):
                         qz=camera_frame.pose.quaternion.z,
                     ),
                 ),
-                metadata={},
+                metadata={str(k): v for k, v in metadata.items()},
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
@@ -657,6 +665,7 @@ class DGPSceneEncoder(SceneEncoder):
             lidar_frame = lidar.get_frame(frame_id)
             sensor_data = result_dict["sensor_data"]
             annotations = result_dict["annotations"]
+            metadata = result_dict["metadata"]
 
             scene_datum_dto = point_cloud_pb2.PointCloud(
                 filename=self._relative_path(sensor_data[DirectoryName.POINT_CLOUD].result()).as_posix(),
@@ -678,7 +687,7 @@ class DGPSceneEncoder(SceneEncoder):
                     ),
                 ),
                 point_fields=[],
-                metadata={},
+                metadata={str(k): v for k, v in metadata.items()},
             )
             # noinspection PyTypeChecker
             scene_data_dtos.append(
@@ -761,6 +770,7 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),
             },
+            metadata={},
         )
 
     def _encode_lidar_frame(
@@ -797,10 +807,12 @@ class DGPSceneEncoder(SceneEncoder):
             sensor_data={
                 "point_cloud": self._process_point_cloud(sensor_frame=lidar_frame, fs_copy=True),
             },
+            metadata={},
         )
 
     def _encode_camera(self, camera_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
+
         futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_camera_frame(
@@ -820,7 +832,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar(self, lidar_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
@@ -861,7 +873,7 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_calibrations(self) -> Future:
         camera_frames = []
         lidar_frames = []
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
 
         for sn in self._camera_names:
             camera_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
@@ -953,7 +965,7 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> AnyPath:
         scene_data = []
         scene_samples = []
-        for fid in self._scene.frame_ids:
+        for fid in self._frame_ids:
             frame = self._scene.get_frame(fid)
             frame_data = [
                 scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]

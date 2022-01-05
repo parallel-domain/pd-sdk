@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 import pytest
 
-from paralleldomain.utilities.mask import bilinear_interpolate
+from paralleldomain.utilities.mask import lookup_values
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def integer_grids() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return xv, yv, xy
 
 
-def test_bilinear_interpolation(integer_grids):
+def test_lookup_interpolation(integer_grids):
     xv, yv, xy = integer_grids
 
     indices = np.asarray(
@@ -28,9 +28,9 @@ def test_bilinear_interpolation(integer_grids):
         ]
     )
 
-    xv_interp = bilinear_interpolate(mask=xv, x=indices[:, 0], y=indices[:, 1])
-    yv_interp = bilinear_interpolate(mask=yv, x=indices[:, 0], y=indices[:, 1])
-    xy_interp = bilinear_interpolate(mask=xy, x=indices[:, 0], y=indices[:, 1])
+    xv_interp = lookup_values(mask=xv, x=indices[:, 0], y=indices[:, 1], interpolate=True)
+    yv_interp = lookup_values(mask=yv, x=indices[:, 0], y=indices[:, 1], interpolate=True)
+    xy_interp = lookup_values(mask=xy, x=indices[:, 0], y=indices[:, 1], interpolate=True)
 
     # Test Output Shapes
     assert xv_interp.shape == (indices.shape[0],)

@@ -3,14 +3,13 @@ from dataclasses import dataclass, field
 from sys import getsizeof
 from typing import Any, Dict, List, Optional
 
-import numpy as np
-
 from paralleldomain.model.annotation.common import Annotation
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
 
 
 @dataclass
-class BoundingBox2D:
-    """Represents a 2D Bounding Box geometry.
+class BoundingBox2D(BoundingBox2DGeometry):
+    """Represents a 2D Bounding Box annotation including geometry.
 
     Args:
         x: :attr:`~.BoundingBox2D.x`
@@ -32,86 +31,16 @@ class BoundingBox2D:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: int
-    y: int
-    width: int
-    height: int
     class_id: int
     instance_id: int
     attributes: Dict[str, Any] = field(default_factory=dict)
 
-    @property
-    def area(self):
-        """Returns area of 2D Bounding Box in square pixel."""
-        return self.width * self.height
-
-    @property
-    def vertices(self) -> np.ndarray:
-        """Returns the 2D vertices of a bounding box.
-
-        Vertices are returned in the following order:
-
-        ::
-
-            0--------1
-            |        |
-            |        | right
-            |        |
-            3--------2
-              bottom
-
-        """
-
-        vertices = np.array(
-            [
-                [self.x, self.y],
-                [self.x + self.width, self.y],
-                [self.x + self.width, self.y + self.height],
-                [self.x, self.y + self.height],
-            ]
-        )
-
-        return vertices
-
-    @property
-    def edges(self) -> np.ndarray:
-        """Returns the 2D edges of a bounding box.
-
-        Edges are returned in order of connecting the vertices in the following order:
-
-        - `[0, 1]`
-        - `[1, 2]`
-        - `[2, 3]`
-        - `[3, 0]`
-
-        ::
-
-            0--------1
-            |        |
-            |        | right
-            |        |
-            3--------2
-              bottom
-
-
-
-        """
-        vertices = self.vertices
-        edges = np.empty(shape=(4, 2, 2))
-
-        edges[0, :, :] = vertices[[0, 1], :]  # UL -> UR (0 -> 1)
-        edges[1, :, :] = vertices[[1, 2], :]  # UR -> LR (1 -> 2)
-        edges[2, :, :] = vertices[[2, 3], :]  # LR -> LL (2 -> 3)
-        edges[3, :, :] = vertices[[3, 0], :]  # LL -> UL (3 -> 0)
-
-        return edges
-
     def __repr__(self):
-        rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id}"
+        rep = f"Class ID: {self.class_id}, Instance ID: {self.instance_id} | {super().__repr__()}"
         return rep
 
     def __sizeof__(self):
-        return getsizeof(self.attributes) + 6 * 8  # 6 * 8 bytes ints or floats
+        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
 
 @dataclass
@@ -207,27 +136,15 @@ class BoundingBoxes2D(Annotation):
         The resulting box has the exact same properties as `target_box`,
         but with extended `source_box` dimensions merged into it.
         """
-        x_coords = []
-        y_coords = []
-        for b in [target_box, source_box]:
-            x_coords.append(b.x)
-            x_coords.append(b.x + b.width)
-            y_coords.append(b.y)
-            y_coords.append(b.y + b.height)
 
-        x_ul_new = min(x_coords)
-        x_width_new = max(x_coords) - x_ul_new
-        y_ul_new = min(y_coords)
-        y_height_new = max(y_coords) - y_ul_new
+        merged_box_geometry = BoundingBox2DGeometry.merge_boxes(target_box=target_box, source_box=source_box)
 
-        result_box = BoundingBox2D(
-            x=x_ul_new,
-            y=y_ul_new,
-            width=x_width_new,
-            height=y_height_new,
+        return BoundingBox2D(
+            x=merged_box_geometry.x,
+            y=merged_box_geometry.y,
+            width=merged_box_geometry.width,
+            height=merged_box_geometry.width,
             class_id=target_box.class_id,
             instance_id=target_box.instance_id,
             attributes=target_box.attributes,
         )
-
-        return result_box

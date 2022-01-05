@@ -193,8 +193,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> scene_pb2.Scene:
-        import paralleldomain.common.dgp.v1.metadata_pd_pb2  # noqa: F401
-
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
 
