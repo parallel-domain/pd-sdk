@@ -6,7 +6,8 @@ dataclasses>=0.8,<1.0.0; python_version == "3.6"
 dataclasses_json>=0.5.3,<1.0.0
 humanize>=3.10.0,<4.0.0
 iso8601>=0.1.16,<1.0.0
-more-itertools>=8.8.0,<9.0.0
+igraph>=0.9.8,<1.0.0
+more-itertools>=8.11.0,<9.0.0
 numpy>=1.19,<2.0; python_version > "3.6"
 numpy>=1.19,<1.20; python_version == "3.6"
 opencv-python-headless>=4.5.3.56,<5.0.0.0

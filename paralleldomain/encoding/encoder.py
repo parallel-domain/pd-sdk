@@ -74,22 +74,24 @@ class SceneEncoder:
         dataset: Dataset,
         scene_name: SceneName,
         output_path: AnyPath,
-        camera_names: Optional[Union[List[str], None]] = None,
-        lidar_names: Optional[Union[List[str], None]] = None,
-        annotation_types: Optional[Union[List[AnnotationType], None]] = None,
+        camera_names: Optional[List[str]] = None,
+        lidar_names: Optional[List[str]] = None,
+        frame_ids: Optional[List[str]] = None,
+        annotation_types: Optional[List[AnnotationType]] = None,
     ):
         self._dataset: Dataset = dataset
         self._scene_name: SceneName = scene_name
         self._output_path: AnyPath = output_path
         self._unordered_scene: UnorderedScene = dataset.get_unordered_scene(scene_name=scene_name)
 
-        self._camera_names: Union[List[str], None] = (
+        self._camera_names: Optional[List[str]] = (
             self._unordered_scene.camera_names if camera_names is None else camera_names
         )
-        self._lidar_names: Union[List[str], None] = (
+        self._lidar_names: Optional[List[str]] = (
             self._unordered_scene.lidar_names if lidar_names is None else lidar_names
         )
-        self._annotation_types: Union[List[AnnotationType], None] = (
+        self._frame_ids: Optional[List[str]] = self._unordered_scene.frame_ids if frame_ids is None else frame_ids
+        self._annotation_types: Optional[List[AnnotationType]] = (
             self._unordered_scene.available_annotation_types if annotation_types is None else annotation_types
         )
 
@@ -121,7 +123,7 @@ class SceneEncoder:
         return [self._encode_camera(camera_name=c).result() for c in self._camera_names]
 
     def _encode_camera(self, camera_name: SensorName) -> Future:
-        frame_ids = self._unordered_scene.frame_ids
+        frame_ids = self._frame_ids
         camera_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_camera_frame(
@@ -135,7 +137,7 @@ class SceneEncoder:
         return ENCODING_THREAD_POOL.submit(lambda: concurrent.futures.wait(camera_encoding_futures))
 
     def _encode_lidar(self, lidar_name: SensorName) -> Future:
-        frame_ids = self._unordered_scene.frame_ids
+        frame_ids = self._frame_ids
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
@@ -183,6 +185,8 @@ class DatasetEncoder:
         self._camera_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
         self._lidar_names: Union[List[str], None] = None
+        # Adapt if should be limited to a set of frames, or empty list for no frames
+        self._frame_ids: Optional[List[str]] = None
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations
         self._annotation_types: Union[List[AnnotationType], None] = None
 
@@ -202,6 +206,7 @@ class DatasetEncoder:
             output_path=self._output_path / scene_name,
             camera_names=self._camera_names,
             lidar_names=self._lidar_names,
+            frame_ids=self._frame_ids,
             annotation_types=self._annotation_types,
         )
         return encoder.encode_scene()

@@ -45,7 +45,9 @@ def encode_2int16_as_rgba8(mask: np.ndarray) -> np.ndarray:
     ).astype(np.uint8)
 
 
-def bilinear_interpolate(mask: np.ndarray, x: Union[np.ndarray, List], y: Union[np.ndarray, List]) -> np.ndarray:
+def lookup_values(
+    mask: np.ndarray, x: Union[np.ndarray, List], y: Union[np.ndarray, List], interpolate: bool = False
+) -> np.ndarray:
     """Executes bilinear interpolation on a 2D plane.
 
     Args:
@@ -72,28 +74,31 @@ def bilinear_interpolate(mask: np.ndarray, x: Union[np.ndarray, List], y: Union[
     x = x.reshape(-1)
     y = y.reshape(-1)
 
-    x0 = np.floor(x).astype(int)
-    x1 = x0 + 1
-    y0 = np.floor(y).astype(int)
-    y1 = y0 + 1
+    if interpolate:
+        x0 = np.floor(x).astype(int)
+        x1 = x0 + 1
+        y0 = np.floor(y).astype(int)
+        y1 = y0 + 1
 
-    x0 = np.clip(x0, 0, mask.shape[1] - 1)
-    x1 = np.clip(x1, 0, mask.shape[1] - 1)
-    y0 = np.clip(y0, 0, mask.shape[0] - 1)
-    y1 = np.clip(y1, 0, mask.shape[0] - 1)
+        x0 = np.clip(x0, 0, mask.shape[1] - 1)
+        x1 = np.clip(x1, 0, mask.shape[1] - 1)
+        y0 = np.clip(y0, 0, mask.shape[0] - 1)
+        y1 = np.clip(y1, 0, mask.shape[0] - 1)
 
-    Ia = mask[y0, x0]
-    Ib = mask[y1, x0]
-    Ic = mask[y0, x1]
-    Id = mask[y1, x1]
+        Ia = mask[y0, x0]
+        Ib = mask[y1, x0]
+        Ic = mask[y0, x1]
+        Id = mask[y1, x1]
 
-    wa = (x1 - x) * (y1 - y)
-    wb = (x1 - x) * (y - y0)
-    wc = (x - x0) * (y1 - y)
-    wd = (x - x0) * (y - y0)
+        wa = (x1 - x) * (y1 - y)
+        wb = (x1 - x) * (y - y0)
+        wc = (x - x0) * (y1 - y)
+        wd = (x - x0) * (y - y0)
 
-    interpolated_result = (Ia.T * wa).T + (Ib.T * wb).T + (Ic.T * wc).T + (Id.T * wd).T
-    border_cases = np.logical_or(x0 == x1, y0 == y1)
-    interpolated_result[border_cases] = mask[y0[border_cases], x0[border_cases]]
+        interpolated_result = (Ia.T * wa).T + (Ib.T * wb).T + (Ic.T * wc).T + (Id.T * wd).T
+        border_cases = np.logical_or(x0 == x1, y0 == y1)
+        interpolated_result[border_cases] = mask[y0[border_cases], x0[border_cases]]
 
-    return interpolated_result
+        return interpolated_result
+    else:
+        return mask[np.clip(y, 0, mask.shape[0] - 1).astype(int), np.clip(x, 0, mask.shape[1] - 1).astype(int)]

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from sys import getsizeof
 
 import numpy as np
 

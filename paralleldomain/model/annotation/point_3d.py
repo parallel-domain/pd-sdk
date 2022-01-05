@@ -3,26 +3,26 @@ from sys import getsizeof
 from typing import Any, Dict, List
 
 from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.model.geometry.point_2d import Point2DGeometry
+from paralleldomain.model.geometry.point_3d import Point3DGeometry
 
 
 @dataclass
-class Point2D(Point2DGeometry):
-    """Represents a 2D Point.
+class Point3D(Point3DGeometry):
+    """Represents a 3D Point.
 
     Args:
-        x: :attr:`~.Point2D.x`
-        y: :attr:`~.Point2D.y`
-        class_id: :attr:`~.Point2D.class_id`
-        instance_id: :attr:`~.Point2D.instance_id`
-        attributes: :attr:`~.Point2D.attributes`
+        x: :attr:`~.Point3D.x`
+        y: :attr:`~.Point3D.y`
+        class_id: :attr:`~.Point3D.class_id`
+        instance_id: :attr:`~.Point3D.instance_id`
+        attributes: :attr:`~.Point3D.attributes`
 
     Attributes:
         x: coordinate along x-axis in image pixels
         y: coordinate along y-axis in image pixels
         class_id: Class ID of the point. Can be used to lookup more details in :obj:`ClassMap`.
         instance_id: Instance ID of annotated object. Can be used to cross-reference with
-            other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
+            other instance annotation types, e.g., :obj:`InstanceSegmentation3D` or :obj:`InstanceSegmentation3D`.
             If unknown defaults to -1.
         attributes: Dictionary of arbitrary object attributes.
     """
@@ -36,14 +36,14 @@ class Point2D(Point2DGeometry):
 
 
 @dataclass
-class Points2D(Annotation):
-    """Collection of 2D Points
+class Points3D(Annotation):
+    """Collection of 3D Points
 
     Args:
-        points: :attr:`~.Points2D.points`
+        points: :attr:`~.Points3D.points`
 
     Attributes:
-        points: Unordered list of :obj:`Point2D` instances
+        points: Unordered list of :obj:`Point3D` instances
     """
 
-    points: List[Point2D]
+    points: List[Point3D]

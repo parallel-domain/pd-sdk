@@ -1,13 +1,10 @@
-from dataclasses import dataclass, field
-from sys import getsizeof
-from typing import Any, Dict, List
+from dataclasses import dataclass
 
-from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.model.geometry.point_2d import Point2DGeometry
+import numpy as np
 
 
 @dataclass
-class Point2D(Point2DGeometry):
+class Point2DGeometry:
     """Represents a 2D Point.
 
     Args:
@@ -27,23 +24,9 @@ class Point2D(Point2DGeometry):
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    class_id: int
-    instance_id: int = -1
-    attributes: Dict[str, Any] = field(default_factory=dict)
+    x: int
+    y: int
 
-    def __sizeof__(self):
-        return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
-
-
-@dataclass
-class Points2D(Annotation):
-    """Collection of 2D Points
-
-    Args:
-        points: :attr:`~.Points2D.points`
-
-    Attributes:
-        points: Unordered list of :obj:`Point2D` instances
-    """
-
-    points: List[Point2D]
+    def to_numpy(self):
+        """Returns the coordinates as a numpy array with shape (1 x 2)."""
+        return np.array([[self.x, self.y]])
