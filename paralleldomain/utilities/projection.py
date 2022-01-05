@@ -65,7 +65,7 @@ def project_points_3d_to_2d(
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
             `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
-        camera_model: One of `opencv_pinhole` or `opencv_fisheye`.
+        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`.
             More details in :obj:`~.model.sensor.CameraModel`.
         points_3d: A matrix with dimensions (nx3) containing the points.
             Points must be already in the camera's coordinate system.
@@ -129,7 +129,7 @@ def project_points_2d_to_3d(
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
             `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
-        camera_model: One of `opencv_pinhole` or `opencv_fisheye`.
+        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`.
             More details in :obj:`~.model.sensor.CameraModel`.
         points_2d: A matrix with dimensions (nx2) containing the points.
             Points must be in image coordinate system (x,y).
@@ -174,3 +174,41 @@ def project_points_2d_to_3d(
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
 
     return points_3d.reshape(-1, 3)
+
+
+def points_2d_inside_image(
+    width: int,
+    height: int,
+    camera_model: str,
+    points_2d: np.ndarray,
+    points_3d: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    """Returns the indices for an array of 2D image points that are inside the image canvas.
+
+    Args:
+        width: Pixel width of the image canvas.
+        height: Pixel height of the image canvas.
+        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`.
+            More details in :obj:`~.model.sensor.CameraModel`.
+        points_2d: A matrix with dimensions (nx2) containing the points that should be tested
+             if inside the image canvas. Points must be in image coordinate system (x,y).
+        points_3d: Optional array of size (nx3) which provides the 3D camera coordinates for each point. Required for
+            camera models `opencv_pinhole` and `opencv_fisheye`.
+    Returns:
+        An array with dimensions (n,).
+    """
+
+    if camera_model in (CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_OPENCV_FISHEYE) and points_3d is None:
+        raise ValueError(f"`points_3d` must be provided for camera model {camera_model}")
+    if len(points_2d) != len(points_3d):
+        raise ValueError(
+            f"Mismatch in length between `points_2d` and `points_3d` with {len(points_2d)} vs. {len(points_3d)}"
+        )
+
+    return np.where(
+        (points_2d[:, 0] >= 0)
+        & (points_2d[:, 0] < width)
+        & (points_2d[:, 1] >= 0)
+        & (points_2d[:, 1] < height)
+        & (points_3d[:, 2] > 0 if camera_model in (CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_OPENCV_FISHEYE) else True)
+    )
