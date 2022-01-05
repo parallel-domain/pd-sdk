@@ -30,3 +30,67 @@ class Point2DGeometry:
     def to_numpy(self):
         """Returns the coordinates as a numpy array with shape (1 x 2)."""
         return np.array([[self.x, self.y]])
+
+    def __add__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x + other.x, y=self.y + other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=self.x + int(other), y=self.y + int(other))
+        else:
+            raise ValueError(f"Unsupported value {other} of type {type(other)}!")
+
+    def __radd__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x + other.x, y=self.y + other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=self.x + int(other), y=self.y + int(other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __sub__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x - other.x, y=self.y - other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=self.x - int(other), y=self.y - int(other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rsub__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x - other.x, y=self.y - other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=self.x - int(other), y=self.y - int(other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __mul__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x * other.x, y=self.y * other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=int(self.x * other), y=int(self.y * other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rmul__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=self.x * other.x, y=self.y * other.y)
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=int(self.x * other), y=int(self.y * other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __div__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=int(self.x / other.x), y=int(self.y / other.y))
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=int(self.x / other), y=int(self.y / other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rdiv__(self, other):
+        if isinstance(other, Point2DGeometry):
+            return Point2DGeometry(x=int(self.x / other.x), y=int(self.y / other.y))
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point2DGeometry(x=int(self.x / other), y=int(self.y / other))
+        else:
+            raise ValueError(f"Unsupported value {other}!")
