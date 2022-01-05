@@ -1,6 +1,10 @@
+import copy
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
+
+from paralleldomain.model.geometry.point_2d import Point2DGeometry
 
 
 @dataclass
@@ -97,6 +101,38 @@ class BoundingBox2DGeometry:
         edges[3, :, :] = vertices[[3, 0], :]  # LL -> UL (3 -> 0)
 
         return edges
+
+    def include_point(self, point: Point2DGeometry, inline: bool = False) -> Optional["BoundingBox2DGeometry"]:
+        """Extends the dimensions of the box to include the specified point.
+
+        Args:
+            point: Instance of :obj:`Point2DGeometry` which needs to be included in updated bounding box.
+            inline: When set, do not return a copy of the object but update the current object. Default: `False`.
+
+        Returns:
+            A copy of the current object with extended dimensions, if `inline` is set. Otherwise, returns None.
+
+        """
+        width_from_ul = point.x - self.x
+        height_from_ul = point.y - self.y
+
+        x_new, y_new, width_new, height_new = self.x, self.y, self.width, self.height
+        if width_from_ul > self.width:
+            width_new = width_from_ul
+        elif width_from_ul < 0:
+            x_new = self.x + width_from_ul
+
+        if height_from_ul > self.height:
+            height_new = height_from_ul
+        elif height_from_ul < 0:
+            y_new = self.y + height_from_ul
+
+        if inline:
+            self.x, self.y, self.width, self.height = x_new, y_new, width_new, height_new
+        else:
+            box_new = copy.deepcopy(self)
+            box_new.x, box_new.y, box_new.width, box_new.height = x_new, y_new, width_new, height_new
+            return box_new
 
     def __repr__(self):
         rep = f"x: {self.x}, y: {self.y}, w: {self.width}, h: {self.height}"
