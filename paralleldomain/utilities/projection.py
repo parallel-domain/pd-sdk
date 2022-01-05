@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 
 from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
+from paralleldomain.utilities.mask import lookup_values
 
 
 class DistortionLookupTable(np.ndarray):
@@ -112,3 +113,64 @@ def project_points_3d_to_2d(
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
 
     return uv.reshape(-1, 2)
+
+
+def project_points_2d_to_3d(
+    k_matrix: np.ndarray,
+    camera_model: str,
+    points_2d: np.ndarray,
+    depth: np.ndarray,
+    distortion_parameters: Optional[np.ndarray] = None,
+    distortion_lookup: Optional[DistortionLookupTable] = None,
+    interpolate: bool = True,
+) -> np.ndarray:
+    """Projects an array of 3D points in Cartesian coordinates onto an image plane.
+
+    Args:
+        k_matrix: Camera intrinsic matrix. Definition can be found in
+            `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
+        camera_model: One of `opencv_pinhole` or `opencv_fisheye`.
+            More details in :obj:`~.model.sensor.CameraModel`.
+        points_2d: A matrix with dimensions (nx2) containing the points.
+            Points must be in image coordinate system (x,y).
+        depth: Depth mask with the same dimensions as the image canvas.
+        distortion_parameters: Array of applicable distortion parameters for
+            distortion models `opencv_pinhole` and `opencv_fisheye`.
+        distortion_lookup: Table of undistorted and distorted angles. Required for `pd_fisheye` model.
+        interpolate: When points are not exactly on an image pixel, apply bi-linear interpolation to estimate
+            the corresponding depth value. Default: True.
+    Returns:
+        A matrix with dimensions (nx3) containing the point projections in 3D using the provided depth mask.
+    """
+
+    k_matrix = k_matrix.reshape(3, 3).astype(np.float)
+    points_2d = points_2d.reshape(-1, 2).astype(np.float)
+
+    # Uncomment when OpenCV with distortion reprojection is being implemented
+    # if distortion_parameters is not None:
+    #     distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float)
+
+    depth_for_points_2d = lookup_values(mask=depth, x=points_2d[:, 0], y=points_2d[:, 1], interpolate=interpolate)
+    if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
+        points_3d = (
+            np.linalg.inv(k_matrix) @ np.hstack([points_2d, np.ones(shape=(len(points_2d), 1))]).T
+        ).T * depth_for_points_2d
+
+    elif camera_model == CAMERA_MODEL_PD_FISHEYE:
+        points_3d_distorted = (np.linalg.inv(k_matrix) @ np.hstack([points_2d, np.ones(shape=(len(points_2d), 1))]).T).T
+
+        xy_prime = points_3d_distorted[:, [0, 1]]
+        theta_d = np.linalg.norm(xy_prime, axis=1)
+        theta = np.interp(x=theta_d, xp=distortion_lookup[:, 1], fp=distortion_lookup[:, 0])
+
+        r = np.tan(theta)
+
+        xy_double_prime = (r / theta_d).reshape(-1, 1) * xy_prime
+        xy_double_prime[np.isnan(xy_double_prime)] = 0.0
+        xy_double_prime_one = np.ones(shape=(len(xy_double_prime), 1))
+
+        points_3d = np.hstack([xy_double_prime, xy_double_prime_one]) * depth_for_points_2d
+    else:
+        raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
+
+    return points_3d.reshape(-1, 3)
