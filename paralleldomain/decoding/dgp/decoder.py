@@ -133,7 +133,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return scene_dto.metadata.to_dict()
+        return scene_dto.metadata
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)

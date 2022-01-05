@@ -6,13 +6,15 @@ with open("requirements.txt") as f:
 setup(
     name="paralleldomain",
     version="0.5.6",
-    author=["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"],
-    author_email=[
-        "nisse@paralleldomain.com",
-        "phillip@paralleldomain.com",
-        "lars@paralleldomain.com",
-        "michael.stanley@paralleldomain.com",
-    ],
+    author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
+    author_email=", ".join(
+        [
+            "nisse@paralleldomain.com",
+            "phillip@paralleldomain.com",
+            "lars@paralleldomain.com",
+            "michael.stanley@paralleldomain.com",
+        ]
+    ),
     packages=find_packages(exclude=["test_paralleldomain"]),
     package_data={
         "paralleldomain": ["py.typed"],

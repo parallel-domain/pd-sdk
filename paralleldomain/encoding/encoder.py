@@ -17,10 +17,11 @@ from paralleldomain.model.type_aliases import SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import relative_path
+from paralleldomain.utilities.os import cpu_count
 
 logger = logging.getLogger(__name__)
 
-_thread_pool_size = max(int(os.environ.get("ENCODER_THREAD_POOL_MAX_SIZE", os.cpu_count() * 4)), 4)
+_thread_pool_size = max(int(os.environ.get("ENCODER_THREAD_POOL_MAX_SIZE", cpu_count() * 4)), 4)
 
 
 class EncoderThreadPool(ThreadPoolExecutor):

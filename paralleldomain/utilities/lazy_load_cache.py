@@ -210,10 +210,12 @@ class LazyLoadCache(Cache):
 
 
 def byte_str_to_bytes(byte_str: str) -> int:
-    split_numbers_and_letters = re.match(r"([0-9]+)([kKMGTPEZY]*)([i]*)([bB]+)", byte_str.replace(" ", ""), re.I)
+    split_numbers_and_letters = re.match(r"([.0-9]+)([kKMGTPEZY]*)([i]*)([bB]+)", byte_str.replace(" ", ""), re.I)
     powers = {"": 0, "k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6, "z": 7, "y": 8}
     if split_numbers_and_letters is None:
-        raise ValueError(f"Invalid byte string format {byte_str}. Has to be a int number followed by a byte unit!")
+        raise ValueError(
+            f"Invalid byte string format {byte_str}. `byte_str` has to be an integer string followed by a byte unit."
+        )
     number, power_letter, base_letter, bites_or_bytes = split_numbers_and_letters.groups()
     bit_factor = 1 if bites_or_bytes == "B" else 1 / 8
     base = 1024 if base_letter == "i" else 1000
