@@ -1,3 +1,4 @@
+from math import atan
 from typing import List, Tuple, Union
 
 import cv2
@@ -84,3 +85,12 @@ def simplify_polyline_2d(
         polyline_simplified = np.vstack([polyline_simplified, polyline[-1, :]])
 
         return polyline_simplified
+
+
+def angle_between_lines_2d(a: np.ndarray, b: np.ndarray) -> float:
+    m_a = (a[1, 1] - a[0, 1]) / (a[1, 0] - a[0, 0])
+    m_b = (b[1, 1] - b[0, 1]) / (b[1, 0] - b[0, 0])
+    phi_a = atan(m_a)
+    phi_b = atan(m_b)
+
+    return phi_a - phi_b

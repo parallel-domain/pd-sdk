@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 from paralleldomain.model.geometry.point_2d import Point2DGeometry
+from paralleldomain.utilities.geometry import angle_between_lines_2d
 
 
 @dataclass
@@ -34,6 +35,16 @@ class Line2DGeometry:
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
+
+    def angle(self, other: "Line2DGeometry") -> float:
+        """Calculate the angle between the current and another line.
+        Args:
+            other: Other Line to calculate the angle towards
+
+        Returns:
+            Angle in `rad`.
+        """
+        return angle_between_lines_2d(a=self.to_numpy(), b=other.to_numpy())
 
     def intersects_at(self, other: "Line2DGeometry") -> Tuple[Optional[Point2DGeometry], bool, bool]:
         """
