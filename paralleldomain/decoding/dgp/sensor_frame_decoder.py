@@ -274,12 +274,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             identifier=bbox_annotation_identifier,
             annotation_type=BoundingBoxes3D,
         )
-        caches = list()
+        caches = []
 
         for box in boxes.boxes:
             if "point_cache" in box.attributes:
-                component_dicts = read_json_str(json_str=box.attributes["point_cache"])
-                components = list()
+                component_dicts = box.attributes["point_cache"]
+                components = []
                 for component_dict in component_dicts:
                     pose = _pose_dto_to_transformation(
                         dto=PoseDTO.from_dict(component_dict["pose"]), transformation_type=Transformation
@@ -288,9 +288,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                         component_name=component_dict["component"],
                         points_decoder=DGPPointCachePointsDecoder(
                             sha=component_dict["sha"],
+                            size=component_dict["size"],
                             cache_folder=point_cache_folder,
                             pose=pose,
-                            size=component_dict["size"],
+                            parent_pose=box.pose,
                         ),
                     )
                     components.append(component)
@@ -503,15 +504,16 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
 
 class DGPPointCachePointsDecoder:
-    def __init__(self, sha: str, size: float, cache_folder: AnyPath, pose: Transformation):
+    def __init__(self, sha: str, size: float, cache_folder: AnyPath, pose: Transformation, parent_pose: Transformation):
         self._size = size
         self._cache_folder = cache_folder
         self._sha = sha
         self._pose = pose
+        self._parent_pose = parent_pose
         self._file_path = cache_folder / (sha + ".npz")
 
     @lru_cache(maxsize=1)
-    def get_point_data(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_point_data(self) -> np.ndarray:
         with self._file_path.open("rb") as f:
             cache_points = np.load(f)["data"]
         return cache_points
@@ -521,12 +523,12 @@ class DGPPointCachePointsDecoder:
         point_data = np.column_stack([cache_points["X"], cache_points["Y"], cache_points["Z"]]) * self._size
 
         points = np.column_stack([point_data, np.ones(point_data.shape[0])])
-        return (self._pose @ points.T).T[:, :3]
+        return (self._parent_pose @ (self._pose @ points.T)).T[:, :3]
 
     def get_points_normals(self) -> Optional[np.ndarray]:
         cache_points = self.get_point_data()
         normals = np.column_stack([cache_points["NX"], cache_points["NY"], cache_points["NZ"]]) * self._size
-        return (self._pose.rotation @ normals.T).T
+        return (self._parent_pose.rotation @ (self._pose.rotation @ normals.T)).T
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
