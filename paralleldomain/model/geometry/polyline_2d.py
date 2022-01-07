@@ -47,25 +47,11 @@ class Line2DGeometry:
         """Returns the slope of the line. Returns `np.inf` for vertical lines."""
         with np.errstate(divide="ignore"):  # allow div by zero on vertical lines
             direction = self.direction.to_numpy().reshape(2)
-            return direction[1] / direction[0]
+            return direction.y / direction.x
 
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
-
-    def angle(self, other: "Line2DGeometry") -> float:
-        """Calculate the angle between the current and another line.
-        Args:
-            other: Other Line to calculate the angle towards
-
-        Returns:
-            Angle in `rad`.
-        """
-        unit_self = np.array([self.direction.x / self.magnitude, self.direction.y / self.magnitude])
-        unit_other = np.array([other.direction.x / self.magnitude, other.direction.y / self.magnitude])
-
-        dot_product = np.dot(unit_self, unit_other)
-        return np.arccos(dot_product)
 
     def intersects_at(self, other: "Line2DGeometry") -> Tuple[Optional[Point2DGeometry], bool, bool]:
         """
