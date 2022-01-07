@@ -6,16 +6,13 @@ from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import ujson
+from google.protobuf.json_format import ParseDict
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.dtos import PoseDTO  # DGP v0 dependency. Copy code in case this causes trouble!
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, TransformType
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.sensor_frame_decoder import (
-    DGPPointCachePointsDecoder,  # DGP v0 dependency. Copy code in case this causes trouble!
-)
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -35,6 +32,7 @@ from paralleldomain.model.annotation import (
     Point2D,
     PointCache,
     PointCacheComponent,
+    PointCaches,
     Points2D,
     Polygon2D,
     Polygons2D,
@@ -237,6 +235,9 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Points2D):
             points = self._decode_points_2d(scene_name=self.scene_name, annotation_identifier=identifier)
             return Points2D(points=points)
+        elif issubclass(annotation_type, PointCaches):
+            caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
+            return PointCaches(caches=caches)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -248,7 +249,16 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             type_to_path = datum.image.annotations
         else:
             type_to_path = datum.point_cloud.annotations
-        return {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+
+        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+
+        point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
+        if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
+            available_annotation_types[PointCaches] = "$".join(
+                [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
+            )
+
+        return available_annotation_types
 
     # ---------------------------------
 
@@ -279,23 +289,24 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             identifier=bbox_annotation_identifier,
             annotation_type=BoundingBoxes3D,
         )
-        caches = list()
+        caches = []
 
         for box in boxes.boxes:
             if "point_cache" in box.attributes:
-                component_dicts = read_json_str(json_str=box.attributes["point_cache"])
-                components = list()
+                component_dicts = box.attributes["point_cache"]
+                components = []
                 for component_dict in component_dicts:
-                    pose = _pose_dto_to_transformation(
-                        dto=PoseDTO.from_dict(component_dict["pose"]), transformation_type=Transformation
-                    )
+                    pose_dto = geometry_pb2.Pose()
+                    ParseDict(js_dict=component_dict["pose"], message=pose_dto)
+                    pose = _pose_dto_to_transformation(dto=pose_dto, transformation_type=Transformation)
                     component = PointCacheComponent(
                         component_name=component_dict["component"],
                         points_decoder=DGPPointCachePointsDecoder(
                             sha=component_dict["sha"],
+                            size=component_dict["size"],
                             cache_folder=point_cache_folder,
                             pose=pose,
-                            size=component_dict["size"],
+                            parent_pose=box.pose,
                         ),
                     )
                     components.append(component)
@@ -605,6 +616,34 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.point_cloud.metadata
+
+
+class DGPPointCachePointsDecoder:
+    def __init__(self, sha: str, size: float, cache_folder: AnyPath, pose: Transformation, parent_pose: Transformation):
+        self._size = size
+        self._cache_folder = cache_folder
+        self._sha = sha
+        self._pose = pose
+        self._parent_pose = parent_pose
+        self._file_path = cache_folder / (sha + ".npz")
+
+    @lru_cache(maxsize=1)
+    def get_point_data(self) -> np.ndarray:
+        with self._file_path.open("rb") as f:
+            cache_points = np.load(f)["data"]
+        return cache_points
+
+    def get_points_xyz(self) -> Optional[np.ndarray]:
+        cache_points = self.get_point_data()
+        point_data = np.column_stack([cache_points["X"], cache_points["Y"], cache_points["Z"]]) * self._size
+
+        points = np.column_stack([point_data, np.ones(point_data.shape[0])])
+        return (self._parent_pose @ (self._pose @ points.T)).T[:, :3]
+
+    def get_points_normals(self) -> Optional[np.ndarray]:
+        cache_points = self.get_point_data()
+        normals = np.column_stack([cache_points["NX"], cache_points["NY"], cache_points["NZ"]]) * self._size
+        return (self._parent_pose.rotation @ (self._pose.rotation @ normals.T)).T
 
 
 def _pose_dto_to_transformation(dto: geometry_pb2.Pose, transformation_type: Type[TransformType]) -> TransformType:
