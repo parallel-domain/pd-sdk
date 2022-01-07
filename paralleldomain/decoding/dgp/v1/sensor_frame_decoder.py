@@ -8,10 +8,13 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
+# DGP v0 dependency. Copy code in case this causes trouble!
+from paralleldomain.common.dgp.v0.dtos import PoseDTO
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, TransformType
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPPointCachePointsDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -29,6 +32,8 @@ from paralleldomain.model.annotation import (
     Line2D,
     OpticalFlow,
     Point2D,
+    PointCache,
+    PointCacheComponent,
     Points2D,
     Polygon2D,
     Polygons2D,
@@ -43,8 +48,11 @@ from paralleldomain.model.annotation import (
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json_message, read_npz, read_png
+from paralleldomain.utilities.fsio import read_image, read_json_message, read_json_str, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
+
+# --------------------------------------------------------
+
 
 T = TypeVar("T")
 
@@ -263,6 +271,41 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         calibration_dto = self._decode_calibration(scene_name=scene_name, calibration_key=calibration_key)
         index = next(i for i, v in enumerate(calibration_dto.names) if v == sensor_name)
         return calibration_dto.intrinsics[index]
+
+    def _decode_point_caches(self, scene_name: str, annotation_identifier: str) -> List[PointCache]:
+        bbox_annotation_identifier, sensor_name, frame_id = annotation_identifier.split("$")
+        point_cache_folder = self._dataset_path / scene_name / "point_cache"
+        boxes = self.get_annotations(
+            sensor_name=sensor_name,
+            frame_id=frame_id,
+            identifier=bbox_annotation_identifier,
+            annotation_type=BoundingBoxes3D,
+        )
+        caches = list()
+
+        for box in boxes.boxes:
+            if "point_cache" in box.attributes:
+                component_dicts = read_json_str(json_str=box.attributes["point_cache"])
+                components = list()
+                for component_dict in component_dicts:
+                    pose = _pose_dto_to_transformation(
+                        dto=PoseDTO.from_dict(component_dict["pose"]), transformation_type=Transformation
+                    )
+                    component = PointCacheComponent(
+                        component_name=component_dict["component"],
+                        pose=pose,
+                        points_decoder=DGPPointCachePointsDecoder(
+                            sha=component_dict["sha"],
+                            cache_folder=point_cache_folder,
+                            size=component_dict["size"],
+                        ),
+                    )
+                    components.append(component)
+
+                cache = PointCache(instance_id=box.instance_id, components=components)
+                caches.append(cache)
+
+        return caches
 
     def _decode_bounding_boxes_3d(
         self, scene_name: str, annotation_identifier: str

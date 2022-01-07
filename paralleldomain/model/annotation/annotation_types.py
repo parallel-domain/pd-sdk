@@ -10,6 +10,7 @@ from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSeg
 from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Points2D
+from paralleldomain.model.annotation.point_cache import PointCaches
 from paralleldomain.model.annotation.polygon_2d import Polygons2D
 from paralleldomain.model.annotation.polyline_2d import Polylines2D
 from paralleldomain.model.annotation.scene_flow import SceneFlow
@@ -82,3 +83,4 @@ class AnnotationTypes:
     Points2D: Type[Points2D] = Points2D  # noqa: F811
     Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
     Polylines2D: Type[Polylines2D] = Polylines2D  # noqa: F811
+    PointCaches: Type[PointCaches] = PointCaches  # noqa: F811
