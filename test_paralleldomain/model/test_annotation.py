@@ -45,8 +45,6 @@ class TestSensorFrame:
 
             for component in cache.components:
                 assert isinstance(component, PointCacheComponent)
-                assert isinstance(component.pose.translation, np.ndarray)
-                assert isinstance(component.pose.transformation_matrix, np.ndarray)
                 assert isinstance(component.points, np.ndarray)
                 assert isinstance(component.normals, np.ndarray)
 
