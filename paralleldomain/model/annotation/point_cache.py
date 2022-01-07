@@ -22,9 +22,8 @@ class PointCachePointsDecoderProtocol(Protocol):
 
 
 class PointCacheComponent:
-    def __init__(self, component_name: str, pose: Transformation, points_decoder: PointCachePointsDecoderProtocol):
+    def __init__(self, component_name: str, points_decoder: PointCachePointsDecoderProtocol):
         self._points_decoder = points_decoder
-        self.pose = pose
         self.component_name = component_name
         self._points = None
         self._normals = None

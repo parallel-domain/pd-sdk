@@ -8,13 +8,14 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-# DGP v0 dependency. Copy code in case this causes trouble!
-from paralleldomain.common.dgp.v0.dtos import PoseDTO
+from paralleldomain.common.dgp.v0.dtos import PoseDTO  # DGP v0 dependency. Copy code in case this causes trouble!
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, TransformType
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPPointCachePointsDecoder
+from paralleldomain.decoding.dgp.sensor_frame_decoder import (
+    DGPPointCachePointsDecoder,  # DGP v0 dependency. Copy code in case this causes trouble!
+)
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -50,9 +51,6 @@ from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, Sce
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image, read_json_message, read_json_str, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
-
-# --------------------------------------------------------
-
 
 T = TypeVar("T")
 
@@ -293,10 +291,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                     )
                     component = PointCacheComponent(
                         component_name=component_dict["component"],
-                        pose=pose,
                         points_decoder=DGPPointCachePointsDecoder(
                             sha=component_dict["sha"],
                             cache_folder=point_cache_folder,
+                            pose=pose,
                             size=component_dict["size"],
                         ),
                     )

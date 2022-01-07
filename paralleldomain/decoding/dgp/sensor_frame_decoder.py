@@ -286,10 +286,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                     )
                     component = PointCacheComponent(
                         component_name=component_dict["component"],
-                        pose=pose,
                         points_decoder=DGPPointCachePointsDecoder(
                             sha=component_dict["sha"],
                             cache_folder=point_cache_folder,
+                            pose=pose,
                             size=component_dict["size"],
                         ),
                     )
@@ -503,10 +503,11 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
 
 class DGPPointCachePointsDecoder:
-    def __init__(self, sha: str, size: float, cache_folder: AnyPath):
+    def __init__(self, sha: str, size: float, cache_folder: AnyPath, pose: Transformation):
         self._size = size
         self._cache_folder = cache_folder
         self._sha = sha
+        self._pose = pose
         self._file_path = cache_folder / (sha + ".npz")
 
     @lru_cache(maxsize=1)
@@ -517,11 +518,15 @@ class DGPPointCachePointsDecoder:
 
     def get_points_xyz(self) -> Optional[np.ndarray]:
         cache_points = self.get_point_data()
-        return np.column_stack([cache_points["X"], cache_points["Y"], cache_points["Z"]]) * self._size
+        point_data = np.column_stack([cache_points["X"], cache_points["Y"], cache_points["Z"]]) * self._size
+
+        points = np.column_stack([point_data, np.ones(point_data.shape[0])])
+        return (self._pose @ points.T).T[:, :3]
 
     def get_points_normals(self) -> Optional[np.ndarray]:
         cache_points = self.get_point_data()
-        return np.column_stack([cache_points["NX"], cache_points["NY"], cache_points["NZ"]]) * self._size
+        normals = np.column_stack([cache_points["NX"], cache_points["NY"], cache_points["NZ"]]) * self._size
+        return (self._pose.rotation @ normals.T).T
 
 
 def _pose_dto_to_transformation(dto: PoseDTO, transformation_type: Type[TransformType]) -> TransformType:
