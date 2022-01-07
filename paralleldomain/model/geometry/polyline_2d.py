@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import atan
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -31,6 +32,23 @@ class Line2DGeometry:
     start: Point2DGeometry
     end: Point2DGeometry
 
+    @property
+    def direction(self) -> Point2DGeometry:
+        """Returns the directional vector of the line."""
+        return self.end - self.start
+
+    @property
+    def magnitude(self) -> float:
+        """Returns the magnitude (length) of the line."""
+        return np.linalg.norm(self.direction.to_numpy().reshape(2))
+
+    @property
+    def slope(self) -> float:
+        """Returns the slope of the line. Returns `np.inf` for vertical lines."""
+        with np.errstate(divide="ignore"):  # allow div by zero on vertical lines
+            direction = self.direction.to_numpy().reshape(2)
+            return direction.y / direction.x
+
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
@@ -47,10 +65,10 @@ class Line2DGeometry:
         # this way the intersection point is q + u s
 
         p = self.start
-        r = self.end - self.start
+        r = self.direction
 
         q = other.start
-        s = other.end - other.start
+        s = other.direction
 
         rxs = float(np.cross(r.to_numpy(), s.to_numpy()))
         q_pxr = float(np.cross((q - p).to_numpy(), r.to_numpy()))
