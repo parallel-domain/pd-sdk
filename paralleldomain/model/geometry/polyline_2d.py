@@ -1,10 +1,10 @@
 from dataclasses import dataclass
+from math import atan
 from typing import List, Optional, Tuple
 
 import numpy as np
 
 from paralleldomain.model.geometry.point_2d import Point2DGeometry
-from paralleldomain.utilities.geometry import angle_between_lines_2d
 
 
 @dataclass
@@ -32,6 +32,23 @@ class Line2DGeometry:
     start: Point2DGeometry
     end: Point2DGeometry
 
+    @property
+    def direction(self) -> Point2DGeometry:
+        """Returns the directional vector of the line."""
+        return self.end - self.start
+
+    @property
+    def magnitude(self) -> float:
+        """Returns the magnitude (length) of the line."""
+        return np.linalg.norm(self.direction.to_numpy().reshape(2))
+
+    @property
+    def slope(self) -> float:
+        """Returns the slope of the line. Returns `np.inf` for vertical lines."""
+        with np.errstate(divide="ignore"):  # allow div by zero on vertical lines
+            direction = self.direction.to_numpy().reshape(2)
+            return direction[1] / direction[0]
+
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
@@ -44,7 +61,11 @@ class Line2DGeometry:
         Returns:
             Angle in `rad`.
         """
-        return angle_between_lines_2d(a=self.to_numpy(), b=other.to_numpy())
+        unit_self = np.array([self.direction.x / self.magnitude, self.direction.y / self.magnitude])
+        unit_other = np.array([other.direction.x / self.magnitude, other.direction.y / self.magnitude])
+
+        dot_product = np.dot(unit_self, unit_other)
+        return np.arccos(dot_product)
 
     def intersects_at(self, other: "Line2DGeometry") -> Tuple[Optional[Point2DGeometry], bool, bool]:
         """
@@ -58,10 +79,10 @@ class Line2DGeometry:
         # this way the intersection point is q + u s
 
         p = self.start
-        r = self.end - self.start
+        r = self.direction
 
         q = other.start
-        s = other.end - other.start
+        s = other.direction
 
         rxs = float(np.cross(r.to_numpy(), s.to_numpy()))
         q_pxr = float(np.cross((q - p).to_numpy(), r.to_numpy()))
