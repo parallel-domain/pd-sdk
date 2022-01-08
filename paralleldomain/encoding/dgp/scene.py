@@ -71,6 +71,7 @@ class DGPSceneEncoder(SceneEncoder):
         output_path: AnyPath,
         camera_names: Optional[Union[List[str], None]] = None,
         lidar_names: Optional[Union[List[str], None]] = None,
+        frame_ids: Optional[List[str]] = None,
         annotation_types: Optional[Union[List[AnnotationType], None]] = None,
     ):
         super().__init__(
@@ -79,6 +80,7 @@ class DGPSceneEncoder(SceneEncoder):
             output_path=output_path,
             camera_names=camera_names,
             lidar_names=lidar_names,
+            frame_ids=frame_ids,
             annotation_types=annotation_types,
         )
 
