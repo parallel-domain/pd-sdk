@@ -5,8 +5,10 @@ from typing import Any, Dict, List, Optional
 from paralleldomain.common.umd.v1.UMD_pb2 import RoadSegment as ProtoRoadSegment
 from paralleldomain.common.umd.v1.UMD_pb2 import SpeedLimit as ProtoSpeedLimit
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
 from paralleldomain.model.map.common import load_user_data
 from paralleldomain.model.map.edge import Edge
+from paralleldomain.model.type_aliases import JunctionId, LaneSegmentId, RoadSegmentId
 
 
 class RoadType(IntEnum):
@@ -50,23 +52,24 @@ class SpeedLimit:
 
 @dataclass
 class RoadSegment:
-    id: int
+    road_segment_id: RoadSegmentId
     name: str
-    predecessors: List[int] = field(default_factory=list)
-    successors: List[int] = field(default_factory=list)
-    lane_segments: List[int] = field(default_factory=list)
+    bounds: Optional[BoundingBox2DGeometry]
+    predecessors: List[RoadSegmentId] = field(default_factory=list)
+    successors: List[RoadSegmentId] = field(default_factory=list)
+    lane_segments: List[LaneSegmentId] = field(default_factory=list)
     reference_line: Optional[Edge] = None
     type: Optional[RoadType] = None
     ground_type: Optional[GroundType] = None
     speed_limit: Optional[SpeedLimit] = None
-    junction_id: Optional[int] = None
+    junction_id: Optional[JunctionId] = None
     user_data: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_proto(cls, id: int, umd_map: ProtoUniversalMap) -> "RoadSegment":
         road_segment: ProtoRoadSegment = umd_map.road_segments[id]
         return RoadSegment(
-            id=road_segment.id,
+            road_segment_id=road_segment.id,
             name=road_segment.name,
             predecessors=[ls_p for ls_p in road_segment.predecessors],
             successors=[ls_s for ls_s in road_segment.successors],

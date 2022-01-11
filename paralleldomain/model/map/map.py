@@ -2,8 +2,16 @@ import math
 from itertools import chain, groupby
 from typing import List, Optional, Tuple
 
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.type_aliases import JunctionId, LaneSegmentId, RoadSegmentId
+
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
+
 import numpy as np
-from igraph import Graph
+from igraph import Graph, Vertex
 from more_itertools import split_when, triplewise, unique_everseen
 
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
@@ -22,6 +30,402 @@ from paralleldomain.utilities.transformation import Transformation
 class Neighbor:
     LEFT: str = "left"
     RIGHT: str = "right"
+
+
+class MapDecoderProtocol(Protocol):
+    def get_road_segments(self) -> List[RoadSegment]:
+        pass
+
+    def get_lane_segments(self) -> List[LaneSegment]:
+        pass
+
+    def get_junctions(self) -> List[Junction]:
+        pass
+
+    def get_areas(self) -> List[Area]:
+        pass
+
+
+class Map2:
+    def __init__(self, map_decoder: MapDecoderProtocol):
+        self._map_graph = Graph(directed=True)
+        self._map_decoder = map_decoder
+        self._added_road_segments = False
+        self._added_lane_segments = False
+        self._added_junctions = False
+        self._added_areas = False
+        # self._build_graph()
+
+    @property
+    def road_segments(self) -> List[RoadSegment]:
+        return self._map_decoder.get_road_segments()
+
+    @property
+    def lane_segments(self) -> List[LaneSegment]:
+        return self._map_decoder.get_lane_segments()
+
+    @property
+    def junctions(self) -> List[Junction]:
+        return self._map_decoder.get_junctions()
+
+    @property
+    def areas(self) -> List[Area]:
+        return self._map_decoder.get_areas()
+
+    # to decoder
+    def get_junction(self, junction_id: JunctionId) -> Optional[Junction]:
+        query_results = self._map_graph.vs.select(name_eq=f"{NodePrefix.JUNCTION}_{junction_id}")
+        return query_results[0]["object"] if len(query_results) > 0 else None
+
+    def get_road_segment(self, road_segment_id: RoadSegmentId) -> Optional[RoadSegment]:
+        query_results = self._map_graph.vs.select(name_eq=f"{NodePrefix.ROAD_SEGMENT}_{road_segment_id}")
+        return query_results[0]["object"] if len(query_results) > 0 else None
+
+    def get_lane_segment(self, lane_segment_id: LaneSegmentId) -> Optional[LaneSegment]:
+        query_results = self._map_graph.vs.select(name_eq=f"{NodePrefix.LANE_SEGMENT}_{lane_segment_id}")
+        return query_results[0]["object"] if len(query_results) > 0 else None
+
+    def get_lane_segments(self, lane_segment_ids: List[LaneSegmentId]) -> List[Optional[LaneSegment]]:
+        return [self.get_lane_segment(lane_segment_id=lid) for lid in lane_segment_ids]
+
+    def get_area(self, id: int) -> Area:
+        query_results = self._map_graph.vs.select(name_eq=f"{NodePrefix.AREA}_{id}")
+        return query_results[0]["object"] if len(query_results) > 0 else None
+
+    # def _add_vertex(self, has_bounds: _MayBeHasBounds, vertex_id: str) -> Vertex:
+    #     if has_bounds.bounds is not None:
+    #         x_min = has_bounds.bounds.x
+    #         x_max = has_bounds.bounds.x + has_bounds.bounds.width
+    #         y_min = has_bounds.bounds.y
+    #         y_max = has_bounds.bounds.y + has_bounds.bounds.height
+    #     else:
+    #         x_min = x_max = y_min = y_max = None
+    #
+    #     vertex = self._map_graph.add_vertex(
+    #         name=vertex_id,
+    #         x_min=x_min,
+    #         x_max=x_max,
+    #         y_min=y_min,
+    #         y_max=y_max,
+    #         x_center=x_min + (x_max - x_min) / 2 if x_min is not None else None,
+    #         y_center=y_min + (y_max - y_min) / 2 if y_min is not None else None,
+    #         object=has_bounds,
+    #     )
+    #     return vertex
+
+    # def _build_graph(self):
+    #     self._add_road_segments_to_graph()
+    #     self._add_lane_segments_to_graph()
+    #     self._add_junctions_to_graph()
+    #     self._add_areas_to_graph()
+    #
+    # def _add_road_segments_to_graph(self):
+    #     if self._added_road_segments:
+    #         return
+    #
+    #     road_segment_nodes = {}
+    #     road_segment_edges_x_precedes_y = []  # RoadSegment -> RoadSegment
+    #     # for rs_key, rs_val in self._umd_map.road_segments.items():
+    #     for road_segment in self._map_decoder.decode_road_segments():
+    #         road_segment_node_id = f"{NodePrefix.ROAD_SEGMENT}_{road_segment.road_segment_id}"
+    #         road_segment_node = self._add_vertex(has_bounds=road_segment, vertex_id=road_segment_node_id)
+    #
+    #         road_segment_nodes[road_segment_node_id] = road_segment_node.index
+    #
+    #         road_segment_edges_x_precedes_y.extend(
+    #             [
+    #                 (road_segment_node_id, f"{NodePrefix.ROAD_SEGMENT}_{successor}")
+    #                 for successor in road_segment.successors
+    #                 if successor != 0
+    #             ]
+    #         )
+    #
+    #     for rs_source, rs_target in road_segment_edges_x_precedes_y:
+    #         rs_source_index = road_segment_nodes[rs_source]
+    #         rs_target_index = road_segment_nodes[rs_target]
+    #         self._map_graph.add_edge(
+    #             source=rs_source_index,
+    #             target=rs_target_index,
+    #             type=f"{NodePrefix.ROAD_SEGMENT}_preceeds_{NodePrefix.ROAD_SEGMENT}",
+    #         )
+    #     self._added_road_segments = True
+    #
+    # def _add_lane_segments_to_graph(self):
+    #     if self._added_lane_segments:
+    #         return
+    #
+    #     lane_segment_nodes = {}
+    #     lane_segment_edges_x_precedes_y = []  # LaneSegment -> LaneSegment
+    #     lane_segment_edges_x_contains_y = []  # RoadSegment -> LaneSegment
+    #     lane_segment_edges_x_to_the_left_of_y = []  # LaneSegment -> LaneSegment
+    #
+    #     for lane_segment in self._map_decoder.decode_lane_segments():
+    #         lane_segment_node_id = f"{NodePrefix.LANE_SEGMENT}_{lane_segment.lane_segment_id}"
+    #         lane_segment_node = self._add_vertex(has_bounds=lane_segment, vertex_id=lane_segment_node_id)
+    #
+    #         lane_segment_nodes[lane_segment_node_id] = lane_segment_node.index
+    #
+    #         lane_segment_edges_x_precedes_y.extend(
+    #             [
+    #                 (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{successor}")
+    #                 for successor in lane_segment.successors
+    #                 if successor != 0
+    #             ]
+    #         )
+    #         if lane_segment.right_neighbor != 0:
+    #             lane_segment_edges_x_to_the_left_of_y.append(
+    #                 (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.right_neighbor}")
+    #             )
+    #         if lane_segment.parent_road_segment_id is not None and lane_segment.parent_road_segment_id != 0:
+    #             lane_segment_edges_x_contains_y.append(
+    #                 (f"{NodePrefix.ROAD_SEGMENT}_{lane_segment.parent_road_segment_id}", lane_segment_node_id)
+    #             )
+    #
+    #     for ls_source, ls_target in lane_segment_edges_x_precedes_y:
+    #         ls_source_index = lane_segment_nodes[ls_source]
+    #         ls_target_index = lane_segment_nodes[ls_target]
+    #         self._map_graph.add_edge(
+    #             source=ls_source_index,
+    #             target=ls_target_index,
+    #             type=f"{NodePrefix.LANE_SEGMENT}_preceeds_{NodePrefix.LANE_SEGMENT}",
+    #         )
+    #
+    #     for ls_source, ls_target in lane_segment_edges_x_to_the_left_of_y:
+    #         ls_source_index = lane_segment_nodes[ls_source]
+    #         ls_target_index = lane_segment_nodes[ls_target]
+    #         self._map_graph.add_edge(
+    #             source=ls_source_index,
+    #             target=ls_target_index,
+    #             type=f"{NodePrefix.LANE_SEGMENT}_left_of_{NodePrefix.LANE_SEGMENT}",
+    #         )
+    #
+    #     road_segment_nodes = {
+    #         n["name"]: n.index for n in self._map_graph.vs if n["name"].startswith(NodePrefix.ROAD_SEGMENT)
+    #     }
+    #
+    #     for rs_source, ls_target in lane_segment_edges_x_contains_y:
+    #         rs_source_index = road_segment_nodes[rs_source]
+    #         ls_target_index = lane_segment_nodes[ls_target]
+    #         self._map_graph.add_edge(
+    #             source=rs_source_index,
+    #             target=ls_target_index,
+    #             type=f"{NodePrefix.ROAD_SEGMENT}_contains_{NodePrefix.LANE_SEGMENT}",
+    #         )
+    #     self._added_lane_segments = True
+    #
+    # def _add_junctions_to_graph(self):
+    #     if self._added_junctions:
+    #         return
+    #
+    #     junction_nodes = {}
+    #     junction_contains_road_segment = []  # Junction -> RoadSegment
+    #     junction_contains_lane_segment = []  # Junction -> LaneSegment
+    #
+    #     for junction in self._map_decoder.decode_junctions():
+    #         corner_points = np.empty(shape=(0, 2))
+    #         for corner in junction.corners:
+    #             corner_edge = self._umd_map.edges[corner]
+    #             corner_points = np.vstack(
+    #                 [
+    #                     corner_points,
+    #                     np.array([(p.x, p.y) for p in corner_edge.points]),
+    #                 ]
+    #             )
+    #
+    #         junction_node_id = f"{NodePrefix.JUNCTION}_{junction.junction_id}"
+    #         junction_node = self._add_vertex(has_bounds=junction, vertex_id=junction_node_id)
+    #
+    #         junction_nodes[junction_node_id] = junction_node.index
+    #
+    #         junction_contains_road_segment.extend(
+    #             [
+    #                 (junction_node_id, f"{NodePrefix.ROAD_SEGMENT}_{road_segment}")
+    #                 for road_segment in junction.road_segments
+    #             ]
+    #         )
+    #
+    #         junction_contains_lane_segment.extend(
+    #             [
+    #                 (junction_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment}")
+    #                 for lane_segment in junction.lane_segments
+    #             ]
+    #         )
+    #
+    #     road_segment_nodes = {
+    #         n["name"]: n.index for n in self._map_graph.vs if n["name"].startswith(NodePrefix.ROAD_SEGMENT)
+    #     }
+    #
+    #     for j_source, rs_target in junction_contains_road_segment:
+    #         j_source_index = junction_nodes[j_source]
+    #         rs_target_index = road_segment_nodes[rs_target]
+    #         self._map_graph.add_edge(
+    #             source=j_source_index,
+    #             target=rs_target_index,
+    #             type=f"{NodePrefix.JUNCTION}_contains_{NodePrefix.ROAD_SEGMENT}",
+    #         )
+    #
+    #     lane_segment_nodes = {
+    #         n["name"]: n.index for n in self._map_graph.vs if n["name"].startswith(NodePrefix.LANE_SEGMENT)
+    #     }
+    #
+    #     for j_source, ls_target in junction_contains_lane_segment:
+    #         j_source_index = junction_nodes[j_source]
+    #         ls_target_index = lane_segment_nodes[ls_target]
+    #         self._map_graph.add_edge(
+    #             source=j_source_index,
+    #             target=ls_target_index,
+    #             type=f"{NodePrefix.JUNCTION}_contains_{NodePrefix.LANE_SEGMENT}",
+    #         )
+    #     self._added_junctions = True
+    #
+    # def _add_areas_to_graph(self):
+    #     if self._added_areas:
+    #         return
+    #
+    #     for area in self._map_decoder.decode_areas():
+    #         area_node_id = f"{NodePrefix.AREA}_{area.area_id}"
+    #         self._add_vertex(has_bounds=area, vertex_id=area_node_id)
+    #
+    #     self._added_areas = True
+
+    # ----------to decoder
+    # keep
+    def get_lane_segments_from_poses(self, poses: List[Transformation]) -> List[LaneSegment]:
+        enu_points = [PointENU.from_transformation(tf=pose) for pose in poses]
+        lane_segments_candidates = [self.get_lane_segments_for_point(point=point) for point in enu_points]
+
+        # 2 Group all "single lane segment" matches and all "more than one lane segment" matches (ambiguous!)
+        lane_segments_candidates_length = [len(s) > 1 for s in lane_segments_candidates]
+        lane_segments_candidates_grouped = groupby(
+            range(len(lane_segments_candidates_length)), lambda x: lane_segments_candidates_length[x]
+        )
+        lane_segments_candidates_grouped = [(g[0], list(g[1])) for g in lane_segments_candidates_grouped]
+
+        # 2B Assert that the first and last pose in the vehicle path is of type "single lane segment"
+        assert lane_segments_candidates_grouped[0][0] is False  # for now until extrapolation logic is implemented
+        assert lane_segments_candidates_grouped[-1][0] is False  # for now until extrapolation logic is implemented
+
+        # 3 For each group, either do nothing ("single lane segment") or for "more than one lane segment":
+        #   Take the previous and next "single lane segment" and calculate their shortest lane segment path
+        #   In each "more than one lane segment" timestamp, then find which node from the shortest path is within
+        #   Return only that single node and convert this timestamp to "single lane segment"
+        for i, (a, seq) in enumerate(lane_segments_candidates_grouped):
+            if a is True:
+                _, prev_indices = lane_segments_candidates_grouped[i - 1]
+                _, next_indices = lane_segments_candidates_grouped[i + 1]
+                prev_node = lane_segments_candidates[prev_indices[-1]][0]
+                next_node = lane_segments_candidates[next_indices[0]][0]
+                shortest_path = self.get_lane_segments_successors_shortest_paths(
+                    source_id=prev_node.id, target_id=next_node.id
+                )
+                shortest_path = shortest_path[0]
+                for idx in seq:
+                    candidates = lane_segments_candidates[idx]
+                    for n in shortest_path[::-1]:  # reverse, greedy search
+                        if n in candidates:
+                            lane_segments_candidates[idx] = [n]
+                            break
+
+        # 4 Now that everything is an unambiguous "single lane segment", convert list of lists of nodes to list of nodes
+        lane_segments = [m[0] for m in lane_segments_candidates]
+        # 4B We do not want re-occurences, just interest in the unique segment path
+        # lane_segments = list(unique_everseen(lane_segments))
+
+        return lane_segments
+
+    def get_lane_segments_for_point(self, point: PointENU) -> List[LaneSegment]:
+        ls_candidates = self.get_lane_segments_within_bounds(
+            x_min=point.x - 0.1, x_max=point.x + 0.1, y_min=point.y - 0.1, y_max=point.y + 0.1, method="overlap"
+        )
+        if ls_candidates:
+            point_under_test = (point.x, point.y)
+            return [
+                ls_candidates[i]
+                for i, polygon in enumerate(ls_candidates)
+                if is_point_in_polygon_2d(polygon=polygon.to_numpy(closed=True)[:, :2], point=point_under_test)
+            ]
+        else:
+            return []
+
+    def get_road_segments_within_bounds(
+        self,
+        x_min: float = -math.inf,
+        x_max: float = math.inf,
+        y_min: float = -math.inf,
+        y_max: float = math.inf,
+        method: str = "inside",
+    ) -> List[LaneSegment]:
+        return self._get_nodes_within_bounds(
+            node_prefix=NodePrefix.ROAD_SEGMENT, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, method=method
+        )
+
+    def get_lane_segments_within_bounds(
+        self,
+        x_min: float = -math.inf,
+        x_max: float = math.inf,
+        y_min: float = -math.inf,
+        y_max: float = math.inf,
+        method: str = "inside",
+    ) -> List[LaneSegment]:
+        return self._get_nodes_within_bounds(
+            node_prefix=NodePrefix.LANE_SEGMENT, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, method=method
+        )
+
+    def get_areas_within_bounds(
+        self,
+        x_min: float = -math.inf,
+        x_max: float = math.inf,
+        y_min: float = -math.inf,
+        y_max: float = math.inf,
+        method: str = "inside",
+    ) -> List[int]:
+        return self._get_nodes_within_bounds(
+            node_prefix=NodePrefix.AREA, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max, method=method
+        )
+
+    def _get_nodes_within_bounds(
+        self,
+        node_prefix: str,
+        x_min: float = -math.inf,
+        x_max: float = math.inf,
+        y_min: float = -math.inf,
+        y_max: float = math.inf,
+        method: str = "inside",
+    ) -> List:
+        if method == "inside":
+            return [
+                vv["object"]
+                for vv in self._map_graph.vs.select(
+                    lambda v: v["name"].startswith(node_prefix)
+                    and v["x_max"] <= x_max
+                    and v["y_max"] <= y_max
+                    and v["x_min"] >= x_min
+                    and v["y_min"] >= y_min
+                )
+            ]
+        elif method == "overlap":
+            return [
+                vv["object"]
+                for vv in self._map_graph.vs.select(
+                    lambda v: v["name"].startswith(node_prefix)
+                    and (min(v["x_max"], x_max) - max(v["x_min"], x_min)) >= 0
+                    and (min(v["y_max"], y_max) - max(v["y_min"], y_min)) >= 0
+                )
+            ]
+
+        elif method == "center":
+            return [
+                vv["object"]
+                for vv in self._map_graph.vs.select(
+                    lambda v: v["name"].startswith(node_prefix)
+                    and v["x_center"] <= x_max
+                    and v["y_center"] <= y_max
+                    and v["x_center"] >= x_min
+                    and v["y_center"] >= y_min
+                )
+            ]
+
+    # ----
 
 
 class Map:

@@ -5,11 +5,13 @@ from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
 from paralleldomain import Scene
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
+from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
+from paralleldomain.model.map.map import Map2
 from paralleldomain.model.sensor import CameraSensor, LidarSensor
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
@@ -276,3 +278,23 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
             key=_unique_cache_key,
             loader=lambda: self._decode_frame_id_to_date_time_map(scene_name=scene_name),
         )
+
+    def _create_map_decoder(self, scene_name: SceneName, dataset_name: str) -> Optional[MapDecoder]:
+        return None
+
+    def get_map(self, scene_name: SceneName) -> Optional[Map2]:
+        map_decoder = self._create_map_decoder(
+            scene_name=scene_name,
+            dataset_name=self.dataset_name,
+        )
+        if map_decoder is not None:
+            _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="map")
+            map = self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_map(scene_name=scene_name, map_decoder=map_decoder),
+            )
+            return map
+        return None
+
+    def _decode_map(self, scene_name: SceneName, map_decoder: MapDecoder) -> Map2:
+        return Map2(map_decoder=map_decoder)

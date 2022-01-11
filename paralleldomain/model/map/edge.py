@@ -11,6 +11,7 @@ from paralleldomain.common.umd.v1.UMD_pb2 import RoadMarking as ProtoRoadMarking
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.geometry.polyline_3d import Line3DGeometry, Polyline3DGeometry
 from paralleldomain.model.map.common import load_user_data
+from paralleldomain.model.type_aliases import EdgeId, RoadMarkingId
 from paralleldomain.utilities.transformation import Transformation
 
 
@@ -46,7 +47,7 @@ class PointENU(Point3DGeometry):
 
 @dataclass
 class RoadMarking:
-    id: int
+    road_marking_id: RoadMarkingId
     edge_id: int
     width: float
     type: RoadMarkingType
@@ -55,7 +56,7 @@ class RoadMarking:
     @classmethod
     def from_proto(cls, road_marking: ProtoRoadMarking) -> "RoadMarking":
         return cls(
-            id=road_marking.id,
+            road_marking_id=road_marking.id,
             edge_id=road_marking.id,
             width=road_marking.width,
             type=RoadMarkingType(road_marking.type) if road_marking.HasField("type") else None,
@@ -65,14 +66,14 @@ class RoadMarking:
 
 @dataclass
 class Edge(Polyline3DGeometry):
-    id: int
+    edge_id: EdgeId
     closed: bool = False
     road_marking: Union[RoadMarking, List[RoadMarking]] = None
     user_data: Dict[str, Any] = field(default_factory=dict)
 
     def transform(self, tf: Transformation) -> "Edge":
         return Edge(
-            id=self.id,
+            edge_id=self.id,
             closed=self.closed,
             road_marking=self.road_marking,
             user_data=self.user_data,
@@ -93,7 +94,7 @@ class Edge(Polyline3DGeometry):
         points = points.reshape(-1, 3)
         point_pairs = np.hstack([points[:-1], points[1:]])
         return Edge(
-            id=id,
+            edge_id=id,
             closed=closed,
             road_marking=road_marking,
             user_data=user_data,
@@ -103,7 +104,7 @@ class Edge(Polyline3DGeometry):
     @classmethod
     def from_proto(cls, edge: ProtoEdge, road_marking: Optional[ProtoRoadMarking] = None):
         return cls(
-            id=edge.id,
+            edge_id=edge.id,
             closed=not (edge.open),
             lines=[
                 Line3DGeometry(

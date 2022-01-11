@@ -6,8 +6,10 @@ import numpy as np
 
 from paralleldomain.common.umd.v1.UMD_pb2 import LaneSegment as ProtoLaneSegment
 from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
 from paralleldomain.model.map.common import load_user_data
 from paralleldomain.model.map.edge import Edge
+from paralleldomain.model.type_aliases import LaneSegmentId, RoadSegmentId
 
 
 class LaneType(IntEnum):
@@ -41,16 +43,18 @@ class TurnType(IntEnum):
 
 @dataclass
 class LaneSegment:
-    id: int
+    lane_segment_id: LaneSegmentId
     type: LaneType
     direction: Direction
     left_edge: Edge
     right_edge: Edge
     reference_line: Edge
-    predecessors: List[int] = field(default_factory=list)
-    successors: List[int] = field(default_factory=list)
-    left_neighbor: Optional[int] = None
-    right_neighbor: Optional[int] = None
+    bounds: Optional[BoundingBox2DGeometry]
+    predecessors: List[LaneSegmentId] = field(default_factory=list)
+    successors: List[LaneSegmentId] = field(default_factory=list)
+    left_neighbor: Optional[LaneSegmentId] = None
+    right_neighbor: Optional[LaneSegmentId] = None
+    parent_road_segment_id: Optional[RoadSegmentId] = None
     compass_angle: Optional[float] = None
     turn_angle: Optional[float] = None
     turn_type: Optional[TurnType] = None
@@ -69,7 +73,7 @@ class LaneSegment:
         lane_segment: ProtoLaneSegment = umd_map.lane_segments[id]
         road_markings_by_edge_id = {rm.edge_id: rm for rm in umd_map.road_markings.values()}
         return LaneSegment(
-            id=lane_segment.id,
+            lane_segment_id=lane_segment.id,
             type=LaneType(lane_segment.type),
             direction=Direction(lane_segment.direction),
             left_edge=Edge.from_proto(
