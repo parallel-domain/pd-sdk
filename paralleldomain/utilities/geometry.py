@@ -1,4 +1,3 @@
-from math import atan
 from typing import List, Optional, Tuple, Union
 
 import cv2
@@ -85,3 +84,24 @@ def simplify_polyline_2d(
         polyline_simplified = np.vstack([polyline_simplified, polyline[-1, :]])
 
         return polyline_simplified
+
+
+def convex_hull_2d(points_2d: np.ndarray, closed: bool = False) -> np.ndarray:
+    convex_hull = cv2.convexHull(points=points_2d.reshape((1, -1, 2))).reshape(-1, 2)
+
+    if closed:
+        return np.vstack([convex_hull, convex_hull[0]])
+    else:
+        return convex_hull
+
+
+def convex_hull_2d_as_mask(points_image_2d: np.ndarray, width: int, height: int) -> np.ndarray:
+    convex_hull = convex_hull_2d(points_2d=points_image_2d, closed=True)
+    mask = np.zeros(shape=(height, width)).astype(np.uint8)
+    convex_hull_mask = cv2.fillPoly(
+        img=mask,
+        pts=convex_hull.reshape((1, -1, 2)).astype(int),
+        color=255,
+    ).astype(bool)
+
+    return convex_hull_mask

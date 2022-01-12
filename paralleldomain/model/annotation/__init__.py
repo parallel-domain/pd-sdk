@@ -9,6 +9,7 @@ from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSeg
 from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Point2D, Points2D
+from paralleldomain.model.annotation.point_cache import PointCache, PointCacheComponent, PointCaches
 from paralleldomain.model.annotation.polygon_2d import Polygon2D, Polygons2D
 from paralleldomain.model.annotation.polyline_2d import Line2D, Polyline2D, Polylines2D
 from paralleldomain.model.annotation.scene_flow import SceneFlow

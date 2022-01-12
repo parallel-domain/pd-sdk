@@ -46,6 +46,12 @@ def read_json(path: AnyPath) -> Union[Dict, List]:
     return json_data
 
 
+def read_json_str(json_str: str) -> Union[Dict, List]:
+    json_data = ujson.loads(json_str)
+
+    return json_data
+
+
 def write_png(obj: np.ndarray, path: AnyPath):
     with path.open("wb") as fp:
         fp.write(
