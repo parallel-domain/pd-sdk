@@ -44,7 +44,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
         self._lidar_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of frames, or empty list for no frames
-        self._frame_ids: Optional[List[str]] = ["90", "91", "92", "93"]
+        self._frame_ids: Optional[List[str]] = None
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations
         self._annotation_types: Union[List[AnnotationType], None] = None
 
