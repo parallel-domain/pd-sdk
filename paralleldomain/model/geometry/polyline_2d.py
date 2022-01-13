@@ -46,8 +46,7 @@ class Line2DGeometry:
     def slope(self) -> float:
         """Returns the slope of the line. Returns `np.inf` for vertical lines."""
         with np.errstate(divide="ignore"):  # allow div by zero on vertical lines
-            direction = self.direction.to_numpy().reshape(2)
-            return direction.y / direction.x
+            return self.direction.y / self.direction.x
 
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
