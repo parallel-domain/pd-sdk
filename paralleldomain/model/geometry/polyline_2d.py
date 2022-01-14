@@ -45,8 +45,10 @@ class Line2DGeometry:
     @property
     def slope(self) -> float:
         """Returns the slope of the line. Returns `np.inf` for vertical lines."""
-        with np.errstate(divide="ignore"):  # allow div by zero on vertical lines
+        try:
             return self.direction.y / self.direction.x
+        except ZeroDivisionError:
+            return np.inf
 
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
