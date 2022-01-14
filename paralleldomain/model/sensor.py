@@ -172,7 +172,7 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     def project_points_from_3d(
-        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable]
+        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
     ) -> np.ndarray:
         return project_points_3d_to_2d(
             k_matrix=self.intrinsic.camera_matrix,
