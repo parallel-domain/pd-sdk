@@ -4,7 +4,7 @@ from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, Typ
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.map.map import Map2
+from paralleldomain.model.map.map import Map
 
 try:
     from typing import Protocol
@@ -54,7 +54,7 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_lidar_sensor(self, scene_name: SceneName, lidar_name: SensorName) -> LidarSensor[TDateTime]:
         pass
 
-    def get_map(self, scene_name: SceneName) -> Optional[Map2]:
+    def get_map(self, scene_name: SceneName) -> Optional[Map]:
         pass
 
 
@@ -82,7 +82,7 @@ class UnorderedScene(Generic[TDateTime]):
         return self._name
 
     @property
-    def map(self) -> Optional[Map2]:
+    def map(self) -> Optional[Map]:
         return self._decoder.get_map(scene_name=self._name)
 
     @property

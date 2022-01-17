@@ -104,7 +104,7 @@ class MapDecoderProtocol(Protocol):
         pass
 
 
-class Map2:
+class Map:
     def __init__(self, map_decoder: MapDecoderProtocol):
         self.map_query = map_decoder.get_map_query()
         self._map_decoder = map_decoder

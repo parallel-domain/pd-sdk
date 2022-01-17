@@ -12,7 +12,7 @@ from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
-from paralleldomain.model.map.map import Map2
+from paralleldomain.model.map.map import Map
 from paralleldomain.model.sensor import CameraSensor, LidarSensor
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
@@ -283,7 +283,7 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
     def _create_map_decoder(self, scene_name: SceneName, dataset_name: str) -> Optional[MapDecoder]:
         return None
 
-    def get_map(self, scene_name: SceneName) -> Optional[Map2]:
+    def get_map(self, scene_name: SceneName) -> Optional[Map]:
         map_decoder = self._create_map_decoder(
             scene_name=scene_name,
             dataset_name=self.dataset_name,
@@ -297,5 +297,5 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
             return map
         return None
 
-    def _decode_map(self, scene_name: SceneName, map_decoder: MapDecoder) -> Map2:
-        return Map2(map_decoder=map_decoder)
+    def _decode_map(self, scene_name: SceneName, map_decoder: MapDecoder) -> Map:
+        return Map(map_decoder=map_decoder)
