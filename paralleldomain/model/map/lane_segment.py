@@ -1,15 +1,16 @@
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-import numpy as np
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.common.umd.v1.UMD_pb2 import LaneSegment as ProtoLaneSegment
-from paralleldomain.common.umd.v1.UMD_pb2 import UniversalMap as ProtoUniversalMap
+import paralleldomain.model.map as pd_map
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
-from paralleldomain.model.map.common import load_user_data
 from paralleldomain.model.map.edge import Edge
-from paralleldomain.model.type_aliases import LaneSegmentId, RoadSegmentId
+from paralleldomain.model.type_aliases import EdgeId, LaneSegmentId, RoadSegmentId
 
 
 class LaneType(IntEnum):
@@ -41,60 +42,160 @@ class TurnType(IntEnum):
     U_TURN = 5
 
 
-@dataclass
+class LaneSegmentMapQueryProtocol(Protocol):
+    def get_junctions_for_lane_segment(self, lane_segment_id: LaneSegmentId) -> List[pd_map.junction.Junction]:
+        pass
+
+    def get_relative_left_neighbor(self, lane_segment_id: LaneSegmentId, degree: int = 1) -> Optional["LaneSegment"]:
+        pass
+
+    def get_relative_right_neighbor(self, lane_segment_id: LaneSegmentId, degree: int = 1) -> Optional["LaneSegment"]:
+        pass
+
+    def get_edge(self, edge_id: EdgeId) -> Edge:
+        pass
+
+    def get_lane_segment(self, lane_segment_id: LaneSegmentId) -> "LaneSegment":
+        pass
+
+    def get_predecessors(self, depth: int = -1) -> List["LaneSegment"]:
+        pass
+
+    def get_successors(self, depth: int = -1) -> List["LaneSegment"]:
+        pass
+
+    def get_road_segment_for_lane_segment(
+        self, lane_segment_id: LaneSegmentId
+    ) -> Optional[pd_map.road_segment.RoadSegment]:
+        pass
+
+    def are_connected_lane_segments(self, id_1: LaneSegmentId, id_2: LaneSegmentId) -> bool:
+        pass
+
+    def are_opposite_direction_lane_segments(self, id_1: LaneSegmentId, id_2: LaneSegmentId) -> Optional[bool]:
+        pass
+
+    def are_succeeding_lane_segments(self, id_1: LaneSegmentId, id_2: LaneSegmentId) -> bool:
+        pass
+
+    def are_preceeding_lane_segments(self, id_1: LaneSegmentId, id_2: LaneSegmentId) -> bool:
+        pass
+
+
 class LaneSegment:
-    lane_segment_id: LaneSegmentId
-    type: LaneType
-    direction: Direction
-    left_edge: Edge
-    right_edge: Edge
-    reference_line: Edge
-    bounds: Optional[BoundingBox2DGeometry]
-    predecessors: List[LaneSegmentId] = field(default_factory=list)
-    successors: List[LaneSegmentId] = field(default_factory=list)
-    left_neighbor: Optional[LaneSegmentId] = None
-    right_neighbor: Optional[LaneSegmentId] = None
-    parent_road_segment_id: Optional[RoadSegmentId] = None
-    compass_angle: Optional[float] = None
-    turn_angle: Optional[float] = None
-    turn_type: Optional[TurnType] = None
-    user_data: Dict[str, Any] = field(default=dict)
+    def __init__(
+        self,
+        map_query: LaneSegmentMapQueryProtocol,
+        lane_segment_id: LaneSegmentId,
+        lane_type: LaneType,
+        direction: Direction,
+        left_edge_id: EdgeId,
+        right_edge_id: EdgeId,
+        reference_line_id: EdgeId,
+        bounds: Optional[BoundingBox2DGeometry],
+        left_neighbor_id: Optional[LaneSegmentId] = None,
+        right_neighbor_id: Optional[LaneSegmentId] = None,
+        parent_road_segment_id: Optional[RoadSegmentId] = None,
+        compass_angle: Optional[float] = None,
+        turn_angle: Optional[float] = None,
+        turn_type: Optional[TurnType] = None,
+        user_data: Dict[str, Any] = None,
+        predecessor_ids: List[LaneSegmentId] = None,
+        successor_ids: List[LaneSegmentId] = None,
+    ):
+        self.direction = direction
+        if user_data is None:
+            user_data = dict()
+        if predecessor_ids is None:
+            predecessor_ids = list()
+        if successor_ids is None:
+            successor_ids = list()
 
-    def to_numpy(self, closed: bool = False) -> np.ndarray:
-        if not closed:
-            return np.vstack([self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1]])
-        else:
-            return np.vstack(
-                [self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1], self.left_edge.to_numpy()[0]]
-            )
+        self.predecessor_ids = predecessor_ids
+        self.successor_ids = successor_ids
+        self.user_data = user_data
+        self.turn_type = turn_type
+        self.turn_angle = turn_angle
+        self.compass_angle = compass_angle
+        self.parent_road_segment_id = parent_road_segment_id
+        self.right_neighbor_id = right_neighbor_id
+        self.left_neighbor_id = left_neighbor_id
+        self.bounds = bounds
+        self.right_edge_id = right_edge_id
+        self.left_edge_id = left_edge_id
+        self.reference_line_id = reference_line_id
+        self.lane_type = lane_type
+        self.lane_segment_id = lane_segment_id
+        self.map_query = map_query
 
-    @classmethod
-    def from_proto(cls, id: int, umd_map: ProtoUniversalMap) -> "LaneSegment":
-        lane_segment: ProtoLaneSegment = umd_map.lane_segments[id]
-        road_markings_by_edge_id = {rm.edge_id: rm for rm in umd_map.road_markings.values()}
-        return LaneSegment(
-            lane_segment_id=lane_segment.id,
-            type=LaneType(lane_segment.type),
-            direction=Direction(lane_segment.direction),
-            left_edge=Edge.from_proto(
-                edge=umd_map.edges[lane_segment.left_edge],
-                road_marking=road_markings_by_edge_id[lane_segment.left_edge]
-                if lane_segment.left_edge in road_markings_by_edge_id
-                else None,
-            ),
-            right_edge=Edge.from_proto(
-                edge=umd_map.edges[lane_segment.right_edge],
-                road_marking=road_markings_by_edge_id[lane_segment.right_edge]
-                if lane_segment.right_edge in road_markings_by_edge_id
-                else None,
-            ),
-            reference_line=Edge.from_proto(edge=umd_map.edges[lane_segment.reference_line]),
-            predecessors=[ls_p for ls_p in lane_segment.predecessors],
-            successors=[ls_s for ls_s in lane_segment.successors],
-            left_neighbor=lane_segment.left_neighbor,
-            right_neighbor=lane_segment.right_neighbor,
-            compass_angle=lane_segment.compass_angle,
-            turn_angle=lane_segment.turn_angle,
-            turn_type=TurnType(lane_segment.turn_type),
-            user_data=load_user_data(lane_segment.user_data) if lane_segment.HasField("user_data") else {},
-        )
+    @property
+    def left_edge(self) -> Edge:
+        return self.map_query.get_edge(edge_id=self.left_edge_id)
+
+    @property
+    def right_edge(self) -> Edge:
+        return self.map_query.get_edge(edge_id=self.right_edge_id)
+
+    @property
+    def reference_line(self) -> Edge:
+        return self.map_query.get_edge(edge_id=self.reference_line_id)
+
+    @property
+    def left_neighbor(self) -> "LaneSegment":
+        return self.map_query.get_lane_segment(lane_segment_id=self.left_neighbor_id)
+
+    @property
+    def right_neighbor(self) -> "LaneSegment":
+        return self.map_query.get_lane_segment(lane_segment_id=self.right_neighbor_id)
+
+    @property
+    def junctions(self) -> List[pd_map.junction.Junction]:
+        return self.map_query.get_junctions_for_lane_segment(lane_segment_id=self.lane_segment_id)
+
+    @property
+    def parent_road_segment(self) -> Optional[pd_map.road_segment.RoadSegment]:
+        return self.map_query.get_road_segment_for_lane_segment(lane_segment_id=self.lane_segment_id)
+
+    def get_relative_left_neighbor(self, degree: int = 1) -> Optional["LaneSegment"]:
+        return self.map_query.get_relative_left_neighbor(lane_segment_id=self.lane_segment_id, degree=degree)
+
+    def get_relative_right_neighbor(self, degree: int = 1) -> Optional["LaneSegment"]:
+        return self.map_query.get_relative_right_neighbor(lane_segment_id=self.lane_segment_id, degree=degree)
+
+    def get_predecessors(self, depth: int = -1) -> List["LaneSegment"]:
+        return self.map_query.get_predecessors(depth=depth)
+
+    def get_successors(self, depth: int = -1) -> List["LaneSegment"]:
+        return self.map_query.get_successors(depth=depth)
+
+    @property
+    def has_lane_segment_split(self) -> bool:
+        return len(self.get_successors(depth=1)) > 2  # [start_node, one_successor, ...]
+
+    @property
+    def has_lane_segment_merge(self) -> bool:
+        return len(self.get_successors(depth=1)) > 2  # [start_node, one_predecessor, ...]
+
+    @property
+    def is_inside_junction(self) -> bool:
+        return True if len(self.junctions) > 0 else False
+
+    def are_connected(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
+        if isinstance(other, LaneSegment):
+            other = other.lane_segment_id
+        return self.map_query.are_connected_lane_segments(id_1=self.lane_segment_id, id_2=other)
+
+    def are_opposite_direction(self, other: Union[LaneSegmentId, "LaneSegment"]) -> Optional[bool]:
+        if isinstance(other, LaneSegment):
+            other = other.lane_segment_id
+        return self.map_query.are_opposite_direction_lane_segments(id_1=self.lane_segment_id, id_2=other)
+
+    def are_succeeding(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
+        if isinstance(other, LaneSegment):
+            other = other.lane_segment_id
+        return self.map_query.are_succeeding_lane_segments(id_1=self.lane_segment_id, id_2=other)
+
+    def are_preceeding(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
+        if isinstance(other, LaneSegment):
+            other = other.lane_segment_id
+        return self.map_query.are_preceeding_lane_segments(id_1=self.lane_segment_id, id_2=other)

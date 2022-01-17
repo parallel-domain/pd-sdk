@@ -1,1 +1,1 @@
-from paralleldomain.model.map.map import Map
+from . import junction, lane_segment, road_segment

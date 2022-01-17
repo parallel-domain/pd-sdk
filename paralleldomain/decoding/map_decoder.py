@@ -2,6 +2,7 @@ import abc
 from typing import Dict, List, Optional
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
+from paralleldomain.decoding.map_query.map_query import MapQuery
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.map.area import Area
@@ -26,6 +27,7 @@ class MapDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         self.scene_name = scene_name
         self.settings = settings
         self.dataset_name = dataset_name
+        self.map_query = self._create_map_query()
 
     def get_unique_id(
         self,
@@ -59,6 +61,10 @@ class MapDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def decode_edges(self) -> Dict[EdgeId, Edge]:
+        pass
+
+    @abc.abstractmethod
+    def _create_map_query(self) -> MapQuery:
         pass
 
     def get_road_segments(self) -> Dict[RoadSegmentId, RoadSegment]:
@@ -100,35 +106,3 @@ class MapDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
             loader=lambda: self.decode_edges(),
         )
         return edges
-
-    @abc.abstractmethod
-    def get_lane_segments_from_points(self, poses: List[Point3DGeometry]) -> List[LaneSegment]:
-        pass
-
-    @abc.abstractmethod
-    def get_lane_segments_near_point(self, point: Point3DGeometry) -> List[LaneSegment]:
-        pass
-
-    @abc.abstractmethod
-    def get_road_segments_within_bounds(
-        self,
-        bounds: BoundingBox2DGeometry,
-        method: str = "inside",
-    ) -> List[LaneSegment]:
-        pass
-
-    @abc.abstractmethod
-    def get_lane_segments_within_bounds(
-        self,
-        bounds: BoundingBox2DGeometry,
-        method: str = "inside",
-    ) -> List[LaneSegment]:
-        pass
-
-    @abc.abstractmethod
-    def get_areas_within_bounds(
-        self,
-        bounds: BoundingBox2DGeometry,
-        method: str = "inside",
-    ) -> List[Area]:
-        pass

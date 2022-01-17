@@ -31,15 +31,31 @@ class BoundingBox2DGeometry:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: int
-    y: int
-    width: int
-    height: int
+    x: float
+    y: float
+    width: float
+    height: float
 
     @property
     def area(self):
         """Returns area of 2D Bounding Box in square pixel."""
         return self.width * self.height
+
+    @property
+    def x_min(self) -> float:
+        return self.x
+
+    @property
+    def y_min(self) -> float:
+        return self.y
+
+    @property
+    def x_max(self) -> float:
+        return self.x + self.width
+
+    @property
+    def y_max(self) -> float:
+        return self.y + self.height
 
     @property
     def vertices(self) -> np.ndarray:

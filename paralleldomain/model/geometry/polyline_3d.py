@@ -64,7 +64,8 @@ class Polyline3DGeometry:
         return Polyline3DGeometry(lines=[ll.transform(tf=tf) for ll in self.lines])
 
     @classmethod
-    def from_numpy(cls, points: np.ndarray) -> "Polyline3DGeometry":
+    def from_numpy(cls, points: np.ndarray, **kwargs) -> "Polyline3DGeometry":
         points = points.reshape(-1, 3)
         point_pairs = np.hstack([points[:-1], points[1:]])
-        return Polyline3DGeometry(lines=np.apply_along_axis(Line3DGeometry.from_numpy, point_pairs))
+        kwargs["lines"] = np.apply_along_axis(Line3DGeometry.from_numpy, point_pairs)
+        return cls(**kwargs)

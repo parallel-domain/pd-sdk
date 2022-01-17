@@ -6,6 +6,7 @@ from paralleldomain import Scene
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.map_decoder import MapDecoder
+from paralleldomain.decoding.map_query.map_query import MapQuery
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
