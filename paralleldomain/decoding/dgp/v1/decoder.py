@@ -58,7 +58,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
-        umd_file_paths: Optional[Dict[SceneName, Union[str, AnyPath]]],
+        umd_file_paths: Optional[Dict[SceneName, Union[str, AnyPath]]] = None,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
         settings: Optional[DecoderSettings] = None,
         **kwargs,

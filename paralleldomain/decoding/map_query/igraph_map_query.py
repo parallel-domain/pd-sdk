@@ -1,4 +1,3 @@
-import abc
 from itertools import chain, groupby
 
 import numpy as np
@@ -9,9 +8,7 @@ from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.map.area import Area
 from paralleldomain.model.map.edge import Edge
-from paralleldomain.model.map.junction import Junction
-from paralleldomain.model.map.lane_segment import LaneSegment
-from paralleldomain.model.map.road_segment import RoadSegment
+from paralleldomain.model.map.map_components import Junction, LaneSegment, RoadSegment
 from paralleldomain.model.type_aliases import AreaId, EdgeId, JunctionId, LaneSegmentId, RoadSegmentId
 from paralleldomain.utilities.geometry import is_point_in_polygon_2d
 from paralleldomain.utilities.transformation import Transformation

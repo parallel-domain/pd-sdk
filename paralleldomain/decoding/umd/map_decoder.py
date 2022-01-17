@@ -17,9 +17,18 @@ from paralleldomain.model.geometry.polyline_3d import Line3DGeometry
 from paralleldomain.model.map.area import Area
 from paralleldomain.model.map.common import load_user_data
 from paralleldomain.model.map.edge import Edge, RoadMarking, RoadMarkingColor, RoadMarkingType
-from paralleldomain.model.map.junction import Junction
-from paralleldomain.model.map.lane_segment import Direction, LaneSegment, LaneType, TurnType
-from paralleldomain.model.map.road_segment import GroundType, RoadSegment, RoadType, SpeedLimit, SpeedUnits
+from paralleldomain.model.map.map_components import (
+    Direction,
+    GroundType,
+    Junction,
+    LaneSegment,
+    LaneType,
+    RoadSegment,
+    RoadType,
+    SpeedLimit,
+    SpeedUnits,
+    TurnType,
+)
 from paralleldomain.model.type_aliases import AreaId, EdgeId, JunctionId, LaneSegmentId, RoadSegmentId, SceneName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_binary_message

@@ -10,9 +10,7 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.model.map.area import Area
-from paralleldomain.model.map.junction import Junction
-from paralleldomain.model.map.lane_segment import LaneSegment
-from paralleldomain.model.map.road_segment import RoadSegment
+from paralleldomain.model.map.map_components import Junction, LaneSegment, RoadSegment
 from paralleldomain.utilities.transformation import Transformation
 
 

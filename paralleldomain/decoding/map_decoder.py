@@ -1,15 +1,11 @@
 import abc
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.map_query.map_query import MapQuery
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
-from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.map.area import Area
 from paralleldomain.model.map.edge import Edge
-from paralleldomain.model.map.junction import Junction
-from paralleldomain.model.map.lane_segment import LaneSegment
-from paralleldomain.model.map.road_segment import RoadSegment
+from paralleldomain.model.map.map_components import Junction, LaneSegment, RoadSegment
 from paralleldomain.model.type_aliases import (
     AreaId,
     EdgeId,
