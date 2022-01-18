@@ -1,4 +1,5 @@
 from itertools import chain, groupby
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from more_itertools import split_when, triplewise
@@ -14,7 +15,7 @@ from paralleldomain.utilities.geometry import is_point_in_polygon_2d
 from paralleldomain.utilities.transformation import Transformation
 
 try:
-    from typing import Dict, List, Optional, Protocol, Tuple
+    from typing import Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
