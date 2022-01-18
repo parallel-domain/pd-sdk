@@ -7,7 +7,7 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.map.edge import Edge
 from paralleldomain.model.type_aliases import EdgeId, JunctionId, LaneSegmentId, RoadSegmentId
 
@@ -67,7 +67,7 @@ class RoadSegment:
         map_query: RoadSegmentMapQueryProtocol,
         road_segment_id: RoadSegmentId,
         name: str,
-        bounds: Optional[BoundingBox2DGeometry],
+        bounds: Optional[BoundingBox2DBaseGeometry[float]],
         predecessor_ids: List[RoadSegmentId] = None,
         successor_ids: List[RoadSegmentId] = None,
         lane_segment_ids: List[LaneSegmentId] = None,
@@ -203,7 +203,7 @@ class LaneSegment:
         left_edge_id: EdgeId,
         right_edge_id: EdgeId,
         reference_line_id: EdgeId,
-        bounds: Optional[BoundingBox2DGeometry],
+        bounds: Optional[BoundingBox2DBaseGeometry[float]],
         left_neighbor_id: Optional[LaneSegmentId] = None,
         right_neighbor_id: Optional[LaneSegmentId] = None,
         parent_road_segment_id: Optional[RoadSegmentId] = None,
@@ -292,24 +292,26 @@ class LaneSegment:
         return True if len(self.junctions) > 0 else False
 
     def are_connected(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
-        if isinstance(other, LaneSegment):
-            other = other.lane_segment_id
+        other = self.ensure_lane_segment_id(item=other)
         return self.map_query.are_connected_lane_segments(id_1=self.lane_segment_id, id_2=other)
 
     def are_opposite_direction(self, other: Union[LaneSegmentId, "LaneSegment"]) -> Optional[bool]:
-        if isinstance(other, LaneSegment):
-            other = other.lane_segment_id
+        other = self.ensure_lane_segment_id(item=other)
         return self.map_query.are_opposite_direction_lane_segments(id_1=self.lane_segment_id, id_2=other)
 
     def are_succeeding(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
-        if isinstance(other, LaneSegment):
-            other = other.lane_segment_id
+        other = self.ensure_lane_segment_id(item=other)
         return self.map_query.are_succeeding_lane_segments(id_1=self.lane_segment_id, id_2=other)
 
     def are_preceeding(self, other: Union[LaneSegmentId, "LaneSegment"]) -> bool:
-        if isinstance(other, LaneSegment):
-            other = other.lane_segment_id
+        other = self.ensure_lane_segment_id(item=other)
         return self.map_query.are_preceeding_lane_segments(id_1=self.lane_segment_id, id_2=other)
+
+    @staticmethod
+    def ensure_lane_segment_id(item: Union[LaneSegmentId, "LaneSegment"]) -> LaneSegmentId:
+        if isinstance(item, LaneSegment):
+            item = item.lane_segment_id
+        return item
 
 
 class JunctionMapQueryProtocol(Protocol):
@@ -329,7 +331,7 @@ class Junction:
         self,
         map_query: JunctionMapQueryProtocol,
         junction_id: JunctionId,
-        bounds: Optional[BoundingBox2DGeometry],
+        bounds: Optional[BoundingBox2DBaseGeometry[float]],
         lane_segment_ids: List[LaneSegmentId] = None,
         road_segment_ids: List[RoadSegmentId] = None,
         signaled_intersection: Optional[int] = None,

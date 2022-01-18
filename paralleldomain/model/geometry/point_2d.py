@@ -1,10 +1,14 @@
+import typing
 from dataclasses import dataclass
+from typing import Generic, TypeVar, Union
 
 import numpy as np
 
+T = TypeVar("T", int, float)
+
 
 @dataclass
-class Point2DGeometry:
+class Point2DBaseGeometry(Generic[T]):
     """Represents a 2D Point.
 
     Args:
@@ -24,73 +28,81 @@ class Point2DGeometry:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: int
-    y: int
+    x: T
+    y: T
 
     def to_numpy(self):
         """Returns the coordinates as a numpy array with shape (1 x 2)."""
         return np.array([[self.x, self.y]])
 
+    def _ensure_type(self, value: Union[int, float]) -> T:
+        actual_type = typing.get_args(self.__orig_class__)[0]
+        return actual_type(value)
+
     def __add__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x + other.x, y=self.y + other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x + other.x), y=self._ensure_type(self.y + other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=self.x + int(other), y=self.y + int(other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x + other), y=self._ensure_type(self.y + other))
         else:
             raise ValueError(f"Unsupported value {other} of type {type(other)}!")
 
     def __radd__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x + other.x, y=self.y + other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x + other.x), y=self._ensure_type(self.y + other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=self.x + int(other), y=self.y + int(other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x + other), y=self._ensure_type(self.y + other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __sub__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x - other.x, y=self.y - other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x - other.x), y=self._ensure_type(self.y - other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=self.x - int(other), y=self.y - int(other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x - other), y=self._ensure_type(self.y - other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __rsub__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x - other.x, y=self.y - other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x - other.x), y=self._ensure_type(self.y - other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=self.x - int(other), y=self.y - int(other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x - other), y=self._ensure_type(self.y - other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __mul__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x * other.x, y=self.y * other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x * other.x), y=self._ensure_type(self.y * other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=int(self.x * other), y=int(self.y * other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x * other), y=self._ensure_type(self.y * other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __rmul__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=self.x * other.x, y=self.y * other.y)
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x * other.x), y=self._ensure_type(self.y * other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=int(self.x * other), y=int(self.y * other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x * other), y=self._ensure_type(self.y * other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __div__(self, other):
-        if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=int(self.x / other.x), y=int(self.y / other.y))
+        if isinstance(other, Point2DBaseGeometry):
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x / other.x), y=self._ensure_type(self.y / other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=int(self.x / other), y=int(self.y / other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x / other), y=self._ensure_type(self.y / other))
         else:
             raise ValueError(f"Unsupported value {other}!")
 
     def __rdiv__(self, other):
         if isinstance(other, Point2DGeometry):
-            return Point2DGeometry(x=int(self.x / other.x), y=int(self.y / other.y))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x / other.x), y=self._ensure_type(self.y / other.y))
         elif isinstance(other, int) or isinstance(other, float):
-            return Point2DGeometry(x=int(self.x / other), y=int(self.y / other))
+            return Point2DBaseGeometry[T](x=self._ensure_type(self.x / other), y=self._ensure_type(self.y / other))
         else:
             raise ValueError(f"Unsupported value {other}!")
+
+
+class Point2DGeometry(Point2DBaseGeometry[int]):
+    pass

@@ -1,6 +1,8 @@
-from typing import Dict, List, Optional
+from json import JSONDecodeError
+from typing import Any, Dict, Optional, TypeVar, Union
 
 import numpy as np
+import ujson
 from more_itertools import windowed
 
 from paralleldomain.common.umd.v1.UMD_pb2 import Edge as ProtoEdge
@@ -11,11 +13,10 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.map_query.igraph_map_query import IGraphMapQuery
 from paralleldomain.decoding.map_query.map_query import MapQuery
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.geometry.polyline_3d import Line3DGeometry
 from paralleldomain.model.map.area import Area
-from paralleldomain.model.map.common import load_user_data
 from paralleldomain.model.map.edge import Edge, RoadMarking, RoadMarkingColor, RoadMarkingType
 from paralleldomain.model.map.map_components import (
     Direction,
@@ -32,6 +33,15 @@ from paralleldomain.model.map.map_components import (
 from paralleldomain.model.type_aliases import AreaId, EdgeId, JunctionId, LaneSegmentId, RoadSegmentId, SceneName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_binary_message
+
+T = TypeVar("T")
+
+
+def load_user_data(user_data: T) -> Union[T, Dict[str, Any]]:
+    try:
+        return ujson.loads(user_data)
+    except (ValueError, JSONDecodeError):
+        return user_data
 
 
 class UMDDecoder(MapDecoder):
@@ -104,7 +114,7 @@ class UMDDecoder(MapDecoder):
             if len(reference_points) > 0:
                 x_min, y_min = np.min(reference_points, axis=0)
                 x_max, y_max = np.max(reference_points, axis=0)
-                bounds = BoundingBox2DGeometry(x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
+                bounds = BoundingBox2DBaseGeometry[float](x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
 
             speed_limit = road_segment.speed_limit
             segment = RoadSegment(
@@ -145,7 +155,7 @@ class UMDDecoder(MapDecoder):
             if len(all_points) > 0:
                 x_min, y_min = np.min(all_points, axis=0)
                 x_max, y_max = np.max(all_points, axis=0)
-                bounds = BoundingBox2DGeometry(x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
+                bounds = BoundingBox2DBaseGeometry[float](x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
 
             segment = LaneSegment(
                 lane_segment_id=lane_segment.id,
@@ -185,7 +195,7 @@ class UMDDecoder(MapDecoder):
             if len(corner_points) > 0:
                 x_min, y_min = np.min(corner_points, axis=0)
                 x_max, y_max = np.max(corner_points, axis=0)
-                bounds = BoundingBox2DGeometry(x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
+                bounds = BoundingBox2DBaseGeometry[float](x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
 
             junc = Junction(
                 junction_id=junction.id,
@@ -214,7 +224,7 @@ class UMDDecoder(MapDecoder):
             if len(edge_points) > 0:
                 x_min, y_min = np.min(edge_points, axis=0)
                 x_max, y_max = np.max(edge_points, axis=0)
-                bounds = BoundingBox2DGeometry(x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
+                bounds = BoundingBox2DBaseGeometry[float](x=x_min, y=y_min, width=x_max - x_min, height=y_max - y_min)
 
             areas[area_id] = Area(area_id=area_id, bounds=bounds)
         return areas

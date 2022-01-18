@@ -8,7 +8,7 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.map.area import Area
 from paralleldomain.model.map.map_components import Junction, LaneSegment, RoadSegment
@@ -57,7 +57,7 @@ class MapQuery:
     @abc.abstractmethod
     def get_road_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         pass
@@ -65,7 +65,7 @@ class MapQuery:
     @abc.abstractmethod
     def get_lane_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         pass
@@ -73,7 +73,7 @@ class MapQuery:
     @abc.abstractmethod
     def get_areas_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[Area]:
         pass

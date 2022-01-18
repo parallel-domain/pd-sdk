@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.type_aliases import JunctionId, LaneSegmentId, RoadSegmentId
 
@@ -40,21 +40,21 @@ class MapQueryProtocol(Protocol):
 
     def get_road_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         pass
 
     def get_lane_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         pass
 
     def get_areas_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[Area]:
         pass
@@ -138,21 +138,21 @@ class Map:
 
     def get_road_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         return self.map_query.get_road_segments_within_bounds(bounds=bounds, method=method)
 
     def get_lane_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         return self.map_query.get_lane_segments_within_bounds(bounds=bounds, method=method)
 
     def get_areas_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[Area]:
         return self.map_query.get_areas_within_bounds(bounds=bounds, method=method)
@@ -160,15 +160,13 @@ class Map:
     def get_lane_segment_successors_random_path(
         self, lane_segment: Union[LaneSegmentId, LaneSegment], steps: int = None
     ) -> List[LaneSegment]:
-        if isinstance(lane_segment, LaneSegment):
-            lane_segment = lane_segment.lane_segment_id
+        lane_segment = LaneSegment.ensure_lane_segment_id(item=lane_segment)
         return self.map_query.get_lane_segment_successors_random_path(lane_segment_id=lane_segment, steps=steps)
 
     def get_lane_segment_predecessors_random_path(
         self, lane_segment: Union[LaneSegmentId, LaneSegment], steps: int = None
     ) -> List[LaneSegment]:
-        if isinstance(lane_segment, LaneSegment):
-            lane_segment = lane_segment.lane_segment_id
+        lane_segment = LaneSegment.ensure_lane_segment_id(item=lane_segment)
         return self.map_query.get_lane_segment_predecessors_random_path(lane_segment_id=lane_segment, steps=steps)
 
     def bridge_lane_segments(
@@ -178,10 +176,8 @@ class Map:
         bridge_length: int = None,
         directed: bool = True,
     ) -> Optional[List[LaneSegment]]:
-        if isinstance(lane_segment_1, LaneSegment):
-            lane_segment_1 = lane_segment_1.lane_segment_id
-        if isinstance(lane_segment_2, LaneSegment):
-            lane_segment_2 = lane_segment_2.lane_segment_id
+        lane_segment_1 = LaneSegment.ensure_lane_segment_id(item=lane_segment_1)
+        lane_segment_2 = LaneSegment.ensure_lane_segment_id(item=lane_segment_2)
         return self.map_query.bridge_lane_segments(
             id_1=lane_segment_1, id_2=lane_segment_2, bridge_length=bridge_length, directed=directed
         )

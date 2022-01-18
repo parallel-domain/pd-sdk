@@ -5,7 +5,7 @@ import numpy as np
 from more_itertools import split_when, triplewise
 
 from paralleldomain.decoding.map_query.map_query import MapQuery
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.map.area import Area
 from paralleldomain.model.map.edge import Edge
@@ -31,7 +31,7 @@ class NodePrefix:
 
 class _MayBeHasBounds(Protocol):
     @property
-    def bounds(self) -> Optional[BoundingBox2DGeometry]:
+    def bounds(self) -> Optional[BoundingBox2DBaseGeometry[float]]:
         return
 
 
@@ -325,7 +325,7 @@ class IGraphMapQuery(MapQuery):
         return lane_segments
 
     def get_lane_segments_for_point(self, point: Point3DGeometry) -> List[LaneSegment]:
-        bounds = BoundingBox2DGeometry(x=point.x, y=point.y, width=0.1, height=0.1)
+        bounds = BoundingBox2DBaseGeometry[float](x=point.x, y=point.y, width=0.1, height=0.1)
         ls_candidates = self.get_lane_segments_within_bounds(bounds=bounds, method="overlap")
         if ls_candidates:
             point_under_test = (point.x, point.y)
@@ -338,20 +338,20 @@ class IGraphMapQuery(MapQuery):
             return []
 
     def get_road_segments_within_bounds(
-        self, bounds: BoundingBox2DGeometry, method: str = "inside"
+        self, bounds: BoundingBox2DBaseGeometry[float], method: str = "inside"
     ) -> List[LaneSegment]:
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.ROAD_SEGMENT, bounds=bounds, method=method)
 
     def get_lane_segments_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.LANE_SEGMENT, bounds=bounds, method=method)
 
     def get_areas_within_bounds(
         self,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[Area]:
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.AREA, bounds=bounds, method=method)
@@ -359,7 +359,7 @@ class IGraphMapQuery(MapQuery):
     def _get_nodes_within_bounds(
         self,
         node_prefix: str,
-        bounds: BoundingBox2DGeometry,
+        bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List:
         if method == "inside":
