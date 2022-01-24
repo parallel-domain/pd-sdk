@@ -36,8 +36,14 @@ class Point2DBaseGeometry(Generic[T]):
         return np.array([[self.x, self.y]])
 
     def _ensure_type(self, value: Union[int, float]) -> T:
-        actual_type = typing.get_args(self.__orig_class__)[0]
-        return actual_type(value)
+        try:
+            actual_type = typing.get_args(self.__orig_class__)[0]
+            if isinstance(actual_type, type):
+                return actual_type(value)
+            else:
+                return type(self.x)(value)
+        except AttributeError:
+            return type(self.x)(value)
 
     def __add__(self, other):
         if isinstance(other, Point2DBaseGeometry):

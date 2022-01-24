@@ -9,6 +9,10 @@ from paralleldomain.model.geometry.point_2d import Point2DBaseGeometry, Point2DG
 T = TypeVar("T", int, float)
 
 
+class CollinearLinesException(Exception):
+    pass
+
+
 @dataclass
 class Line2DBaseGeometry(Generic[T]):
     """Represents a 2D Line.
@@ -82,20 +86,7 @@ class Line2DBaseGeometry(Generic[T]):
             return None, False, False
         elif rxs == 0 and q_pxr == 0:
             # are on the same line
-            # TODO: figure out what to do here
-            raise NotImplementedError("Not sure yet what collinear lines should return")
-            # len_qp = float(np.linalg.norm((q - p).to_numpy()))
-            # len_r = float(np.linalg.norm(r.to_numpy()))
-            # r = r.to_numpy() / np.linalg.norm(r.to_numpy())
-            # s = s.to_numpy() / np.linalg.norm(s.to_numpy())
-            # if np.dot(r, s) == 1:
-            #     # point in the same direction. Return start point of line_b
-            #     start_copy = other.start * 1
-            #     return start_copy, len_r > len_qp
-            # else:
-            #     # point in the opposite direction. Return end point of line_b
-            #     end_copy = other.end * 1
-            #     return end_copy, len_r > len_qp
+            raise CollinearLinesException("The given lines are collinear!")
 
         else:
             u = q_pxr / rxs
