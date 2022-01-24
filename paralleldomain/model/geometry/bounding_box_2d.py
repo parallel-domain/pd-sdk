@@ -1,24 +1,26 @@
 import copy
 from dataclasses import dataclass
-from typing import Optional
+from typing import Generic, Optional, TypeVar
 
 import numpy as np
 
 from paralleldomain.model.geometry.point_2d import Point2DGeometry
 
+T = TypeVar("T", int, float)
+
 
 @dataclass
-class BoundingBox2DGeometry:
-    """Represents a 2D Bounding Box geometry.
+class BoundingBox2DBaseGeometry(Generic[T]):
+    """Represents a 2D Bounding Box geometry with a generic coordinate precision of either int or float.
 
     Args:
-        x: :attr:`~.BoundingBox2D.x`
-        y: :attr:`~.BoundingBox2D.y`
-        width: :attr:`~.BoundingBox2D.width`
-        height: :attr:`~.BoundingBox2D.height`
-        class_id: :attr:`~.BoundingBox2D.class_id`
-        instance_id: :attr:`~.BoundingBox2D.instance_id`
-        attributes: :attr:`~.BoundingBox2D.attributes`
+        x: :attr:`~.BoundingBox2DGeometryBase.x`
+        y: :attr:`~.BoundingBox2DGeometryBase.y`
+        width: :attr:`~.BoundingBox2DGeometryBase.width`
+        height: :attr:`~.BoundingBox2DGeometryBase.height`
+        class_id: :attr:`~.BoundingBox2DGeometryBase.class_id`
+        instance_id: :attr:`~.BoundingBox2DGeometryBase.instance_id`
+        attributes: :attr:`~.BoundingBox2DGeometryBase.attributes`
 
     Attributes:
         x: Top-Left corner in image pixels coordinates along x-axis
@@ -31,15 +33,31 @@ class BoundingBox2DGeometry:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: int
-    y: int
-    width: int
-    height: int
+    x: T
+    y: T
+    width: T
+    height: T
 
     @property
     def area(self):
         """Returns area of 2D Bounding Box in square pixel."""
         return self.width * self.height
+
+    @property
+    def x_min(self) -> T:
+        return self.x
+
+    @property
+    def y_min(self) -> T:
+        return self.y
+
+    @property
+    def x_max(self) -> T:
+        return self.x + self.width
+
+    @property
+    def y_max(self) -> T:
+        return self.y + self.height
 
     @property
     def vertices(self) -> np.ndarray:
@@ -102,7 +120,7 @@ class BoundingBox2DGeometry:
 
         return edges
 
-    def include_point(self, point: Point2DGeometry, inline: bool = False) -> Optional["BoundingBox2DGeometry"]:
+    def include_point(self, point: Point2DGeometry, inline: bool = False) -> Optional["BoundingBox2DBaseGeometry[T]"]:
         """Extends the dimensions of the box to include the specified point.
 
         Args:
@@ -138,10 +156,10 @@ class BoundingBox2DGeometry:
         rep = f"x: {self.x}, y: {self.y}, w: {self.width}, h: {self.height}"
         return rep
 
-    @staticmethod
+    @classmethod
     def merge_boxes(
-        target_box: "BoundingBox2DGeometry", source_box: "BoundingBox2DGeometry"
-    ) -> "BoundingBox2DGeometry":
+        cls, target_box: "BoundingBox2DBaseGeometry", source_box: "BoundingBox2DBaseGeometry"
+    ) -> "BoundingBox2DBaseGeometry[T]":
         """
         Takes two 2D box geometries as input and merges both into a new box geometry.
         The resulting box geometry has dimensions from `target_box` and `source_box`
@@ -160,9 +178,13 @@ class BoundingBox2DGeometry:
         y_ul_new = min(y_coords)
         y_height_new = max(y_coords) - y_ul_new
 
-        return BoundingBox2DGeometry(
+        return cls(
             x=x_ul_new,
             y=y_ul_new,
             width=x_width_new,
             height=y_height_new,
         )
+
+
+class BoundingBox2DGeometry(BoundingBox2DBaseGeometry[int]):
+    pass

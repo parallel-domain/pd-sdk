@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 import numpy as np
 
@@ -19,9 +20,12 @@ _UNIT_BOUNDING_BOX_3D = np.array(
 )  # CCW order of points for each face ( [0:4]: Front, [4:8]: Back )
 
 
+T = TypeVar("T", int, float)
+
+
 @dataclass
-class BoundingBox3DGeometry:
-    """Represents a 3D Bounding Box geometry.
+class BoundingBox3DBaseGeometry(Generic[T]):
+    """Represents a 3D Bounding Box geometry with a generic coordinate precision of either int or float.
 
     Args:
         pose: :attr:`~.BoundingBox3D.pose`
@@ -46,16 +50,16 @@ class BoundingBox3DGeometry:
     """
 
     pose: Transformation
-    width: float
-    height: float
-    length: float
+    width: T
+    height: T
+    length: T
 
     def __repr__(self):
         rep = f"Width: {self.width}, Length: {self.length}, Height: {self.height}, Pose: {self.pose}"
         return rep
 
     @property
-    def volume(self) -> float:
+    def volume(self) -> T:
         """Returns volume of 3D Bounding Box in cubic meter."""
         return self.length * self.width * self.height
 
@@ -182,10 +186,10 @@ class BoundingBox3DGeometry:
 
         return faces
 
-    @staticmethod
+    @classmethod
     def merge_boxes(
-        target_box: "BoundingBox3DGeometry", source_box: "BoundingBox3DGeometry"
-    ) -> "BoundingBox3DGeometry":
+        cls, target_box: "BoundingBox3DBaseGeometry", source_box: "BoundingBox3DBaseGeometry"
+    ) -> "BoundingBox3DBaseGeometry[T]":
         """
         Takes two 3D box geometries as input and merges both into a new box geometry.
         The resulting box geometry has dimensions from `target_box` and `source_box`
@@ -224,9 +228,13 @@ class BoundingBox3DGeometry:
         translation = target_box.pose @ center
         fused_pose = Transformation(quaternion=target_box.pose.quaternion, translation=translation[:3])
 
-        return BoundingBox3DGeometry(
+        return cls(
             pose=fused_pose,
             length=length,
             width=width,
             height=height,
         )
+
+
+class BoundingBox3DGeometry(BoundingBox3DBaseGeometry[float]):
+    pass

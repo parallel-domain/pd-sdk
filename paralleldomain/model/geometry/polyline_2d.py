@@ -1,14 +1,16 @@
 from dataclasses import dataclass
 from math import atan
-from typing import List, Optional, Tuple
+from typing import Generic, List, Optional, Tuple, TypeVar
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_2d import Point2DGeometry
+from paralleldomain.model.geometry.point_2d import Point2DBaseGeometry, Point2DGeometry
+
+T = TypeVar("T", int, float)
 
 
 @dataclass
-class Line2DGeometry:
+class Line2DBaseGeometry(Generic[T]):
     """Represents a 2D Line.
 
     Args:
@@ -29,11 +31,11 @@ class Line2DGeometry:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    start: Point2DGeometry
-    end: Point2DGeometry
+    start: Point2DBaseGeometry[T]
+    end: Point2DBaseGeometry[T]
 
     @property
-    def direction(self) -> Point2DGeometry:
+    def direction(self) -> Point2DBaseGeometry[T]:
         """Returns the directional vector of the line."""
         return self.end - self.start
 
@@ -54,7 +56,7 @@ class Line2DGeometry:
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
 
-    def intersects_at(self, other: "Line2DGeometry") -> Tuple[Optional[Point2DGeometry], bool, bool]:
+    def intersects_at(self, other: "Line2DBaseGeometry[T]") -> Tuple[Optional[Point2DBaseGeometry[T]], bool, bool]:
         """
         Returns the point at which the two lines intersect and a bool value that indicated if the intersection point is
         within the line segments. Returns None if the lines are parallel.
@@ -102,8 +104,12 @@ class Line2DGeometry:
             return intersection, 0 <= t <= 1, 0 <= u <= 1
 
 
+class Line2DGeometry(Line2DBaseGeometry[int]):
+    pass
+
+
 @dataclass
-class Polyline2DGeometry:
+class Polyline2DBaseGeometry(Generic[T]):
     """A polyline made of a collection of 2D Lines
 
     Args:
@@ -113,7 +119,7 @@ class Polyline2DGeometry:
         lines: Ordered list of :obj:`Line2D` instances
     """
 
-    lines: List[Line2DGeometry]
+    lines: List[Line2DBaseGeometry[T]]
 
     def to_numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 2)."""
@@ -124,3 +130,7 @@ class Polyline2DGeometry:
             return self.lines[0].to_numpy()
         else:
             return np.vstack([ll.to_numpy()[0] for ll in self.lines[:-1]] + [self.lines[-1].to_numpy()[1]])
+
+
+class Polyline2DGeometry(Polyline2DBaseGeometry[int]):
+    pass

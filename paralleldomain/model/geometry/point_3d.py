@@ -1,21 +1,25 @@
+import typing
 from dataclasses import dataclass
+from typing import Generic, TypeVar, Union
 
 import numpy as np
 
 from paralleldomain.utilities.transformation import Transformation
 
+T = TypeVar("T", int, float)
+
 
 @dataclass
-class Point3DGeometry:
+class Point3DBaseGeometry(Generic[T]):
     """Represents a 3D Point.
 
     Args:
-        x: :attr:`~.Point3D.x`
-        y: :attr:`~.Point3D.y`
-        z: :attr:`~.Point3D.z`
-        class_id: :attr:`~.Point3D.class_id`
-        instance_id: :attr:`~.Point3D.instance_id`
-        attributes: :attr:`~.Point3D.attributes`
+        x: :attr:`~.Point3DBaseGeometry.x`
+        y: :attr:`~.Point3DBaseGeometry.y`
+        z: :attr:`~.Point3DBaseGeometry.z`
+        class_id: :attr:`~.Point3DBaseGeometry.class_id`
+        instance_id: :attr:`~.Point3DBaseGeometry.instance_id`
+        attributes: :attr:`~.Point3DBaseGeometry.attributes`
 
     Attributes:
         x: coordinate along x-axis in sensor coordinates
@@ -28,9 +32,9 @@ class Point3DGeometry:
         attributes: Dictionary of arbitrary object attributes.
     """
 
-    x: float
-    y: float
-    z: float
+    x: T
+    y: T
+    z: T
 
     def to_numpy(self):
         """Returns the coordinates as a numpy array with shape (1 x 3)."""
@@ -38,9 +42,19 @@ class Point3DGeometry:
 
     def transform(self, tf: Transformation) -> "Point3DGeometry":
         tf_point = (tf @ np.array([self.x, self.y, self.z, 1]))[:3]
-        return Point3DGeometry(x=tf_point[0], y=tf_point[1], z=tf_point[2])
+        return Point3DBaseGeometry[T](
+            x=self._ensure_type(tf_point[0]), y=self._ensure_type(tf_point[1]), z=self._ensure_type(tf_point[2])
+        )
+
+    def _ensure_type(self, value: Union[int, float]) -> T:
+        actual_type = typing.get_args(self.__orig_class__)[0]
+        return actual_type(value)
 
     @classmethod
     def from_numpy(cls, point: np.ndarray):
         pt = point.reshape(-3)
         return cls(x=pt[0], y=pt[1], z=pt[2])
+
+
+class Point3DGeometry(Point3DBaseGeometry[float]):
+    pass
