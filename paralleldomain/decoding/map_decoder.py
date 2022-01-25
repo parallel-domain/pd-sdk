@@ -24,6 +24,13 @@ class MapDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         self.settings = settings
         self.dataset_name = dataset_name
         self.map_query = self._create_map_query()
+        self.map_query.add_map_data(
+            road_segments=self.get_road_segments(),
+            lane_segments=self.get_lane_segments(),
+            junctions=self.get_junctions(),
+            areas=self.get_areas(),
+            edges=self.get_edges(),
+        )
 
     def get_unique_id(
         self,
@@ -38,6 +45,9 @@ class MapDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
             frame_id=frame_id,
             extra=extra,
         )
+
+    def get_map_query(self) -> MapQuery:
+        return self.map_query
 
     @abc.abstractmethod
     def decode_road_segments(self) -> Dict[RoadSegmentId, RoadSegment]:

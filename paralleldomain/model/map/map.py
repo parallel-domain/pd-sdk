@@ -1,8 +1,8 @@
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
-from paralleldomain.model.type_aliases import JunctionId, LaneSegmentId, RoadSegmentId
+from paralleldomain.model.type_aliases import AreaId, JunctionId, LaneSegmentId, RoadSegmentId
 
 try:
     from typing import Protocol
@@ -86,16 +86,16 @@ class MapQueryProtocol(Protocol):
 
 
 class MapDecoderProtocol(Protocol):
-    def get_road_segments(self) -> List[RoadSegment]:
+    def get_road_segments(self) -> Dict[RoadSegmentId, RoadSegment]:
         pass
 
-    def get_lane_segments(self) -> List[LaneSegment]:
+    def get_lane_segments(self) -> Dict[LaneSegmentId, LaneSegment]:
         pass
 
-    def get_junctions(self) -> List[Junction]:
+    def get_junctions(self) -> Dict[JunctionId, Junction]:
         pass
 
-    def get_areas(self) -> List[Area]:
+    def get_areas(self) -> Dict[AreaId, Area]:
         pass
 
     def get_map_query(self) -> MapQueryProtocol:
@@ -108,19 +108,19 @@ class Map:
         self._map_decoder = map_decoder
 
     @property
-    def road_segments(self) -> List[RoadSegment]:
+    def road_segments(self) -> Dict[RoadSegmentId, RoadSegment]:
         return self._map_decoder.get_road_segments()
 
     @property
-    def lane_segments(self) -> List[LaneSegment]:
+    def lane_segments(self) -> Dict[LaneSegmentId, LaneSegment]:
         return self._map_decoder.get_lane_segments()
 
     @property
-    def junctions(self) -> List[Junction]:
+    def junctions(self) -> Dict[JunctionId, Junction]:
         return self._map_decoder.get_junctions()
 
     @property
-    def areas(self) -> List[Area]:
+    def areas(self) -> Dict[AreaId, Area]:
         return self._map_decoder.get_areas()
 
     def get_lane_segments_from_poses(self, poses: List[Transformation]) -> List[LaneSegment]:

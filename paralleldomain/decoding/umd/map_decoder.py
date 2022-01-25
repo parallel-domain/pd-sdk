@@ -46,18 +46,12 @@ def load_user_data(user_data: T) -> Union[T, Dict[str, Any]]:
 
 class UMDDecoder(MapDecoder):
     def __init__(self, umd_file_path: AnyPath, dataset_name: str, scene_name: SceneName, settings: DecoderSettings):
-        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.umd_file_path = umd_file_path
         self._map_umd: Optional[ProtoUniversalMap] = None
+        super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
 
     def _create_map_query(self) -> MapQuery:
-        return IGraphMapQuery(
-            road_segments=self.get_road_segments(),
-            lane_segments=self.get_lane_segments(),
-            junctions=self.get_junctions(),
-            areas=self.get_areas(),
-            edges=self.get_edges(),
-        )
+        return IGraphMapQuery()
 
     @property
     def map_umd(self) -> ProtoUniversalMap:
@@ -85,7 +79,9 @@ class UMDDecoder(MapDecoder):
                         end=Point3DGeometry(x=point_pair[1].x, y=point_pair[1].y, z=point_pair[1].z),
                     )
                     for point_pair in windowed(edge.points, 2)
-                ],
+                ]
+                if len(edge.points) > 0
+                else list(),
                 road_marking=road_marking,
                 user_data=load_user_data(edge.user_data) if edge.HasField("user_data") else {},
             )

@@ -36,7 +36,16 @@ class _MayBeHasBounds(Protocol):
 
 
 class IGraphMapQuery(MapQuery):
-    def __init__(
+    def __init__(self):
+        super().__init__()
+        self.edges = dict()
+        self.__map_graph = Graph(directed=True)
+        self._added_road_segments = False
+        self._added_lane_segments = False
+        self._added_junctions = False
+        self._added_areas = False
+
+    def add_map_data(
         self,
         road_segments: Dict[RoadSegmentId, RoadSegment],
         lane_segments: Dict[LaneSegmentId, LaneSegment],
@@ -44,16 +53,11 @@ class IGraphMapQuery(MapQuery):
         areas: Dict[AreaId, Area],
         edges: Dict[EdgeId, Edge],
     ):
-        super().__init__()
-        self._build_graph(
-            road_segments=road_segments, lane_segments=lane_segments, junctions=junctions, areas=areas, edges=edges
-        )
-        self.edges = edges
-        self.__map_graph = Graph(directed=True)
-        self._added_road_segments = False
-        self._added_lane_segments = False
-        self._added_junctions = False
-        self._added_areas = False
+        self.edges.update(edges)
+        self._add_road_segments_to_graph(road_segments=road_segments)
+        self._add_lane_segments_to_graph(lane_segments=lane_segments)
+        self._add_junctions_to_graph(junctions=junctions)
+        self._add_areas_to_graph(areas=areas)
 
     @property
     def map_graph(self) -> Graph:
@@ -454,7 +458,7 @@ class IGraphMapQuery(MapQuery):
         road_segment_nodes = {}
         road_segment_edges_x_precedes_y = []  # RoadSegment -> RoadSegment
         # for rs_key, rs_val in self._umd_map.road_segments.items():
-        for road_segment_id, road_segment in road_segments.values():
+        for road_segment_id, road_segment in road_segments.items():
             road_segment_node_id = f"{NodePrefix.ROAD_SEGMENT}_{road_segment.road_segment_id}"
             road_segment_node = self._add_vertex(has_bounds=road_segment, vertex_id=road_segment_node_id)
 
@@ -463,7 +467,7 @@ class IGraphMapQuery(MapQuery):
             road_segment_edges_x_precedes_y.extend(
                 [
                     (road_segment_node_id, f"{NodePrefix.ROAD_SEGMENT}_{successor}")
-                    for successor in road_segment.successors
+                    for successor in road_segment.successor_ids
                     if successor != 0
                 ]
             )
@@ -487,7 +491,7 @@ class IGraphMapQuery(MapQuery):
         lane_segment_edges_x_contains_y = []  # RoadSegment -> LaneSegment
         lane_segment_edges_x_to_the_left_of_y = []  # LaneSegment -> LaneSegment
 
-        for lane_segment_id, lane_segment in lane_segments.values():
+        for lane_segment_id, lane_segment in lane_segments.items():
             lane_segment_node_id = f"{NodePrefix.LANE_SEGMENT}_{lane_segment.lane_segment_id}"
             lane_segment_node = self._add_vertex(has_bounds=lane_segment, vertex_id=lane_segment_node_id)
 
@@ -496,13 +500,13 @@ class IGraphMapQuery(MapQuery):
             lane_segment_edges_x_precedes_y.extend(
                 [
                     (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{successor}")
-                    for successor in lane_segment.successors
+                    for successor in lane_segment.successor_ids
                     if successor != 0
                 ]
             )
-            if lane_segment.right_neighbor != 0:
+            if lane_segment.right_neighbor is not None:
                 lane_segment_edges_x_to_the_left_of_y.append(
-                    (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.right_neighbor}")
+                    (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.right_neighbor.lane_segment_id}")
                 )
             if lane_segment.parent_road_segment_id is not None and lane_segment.parent_road_segment_id != 0:
                 lane_segment_edges_x_contains_y.append(
@@ -551,7 +555,7 @@ class IGraphMapQuery(MapQuery):
 
         # edges = self.get_edges()
 
-        for junction_id, junction in junctions.values():
+        for junction_id, junction in junctions.items():
             junction_node_id = f"{NodePrefix.JUNCTION}_{junction.junction_id}"
             junction_node = self._add_vertex(has_bounds=junction, vertex_id=junction_node_id)
 
@@ -559,14 +563,14 @@ class IGraphMapQuery(MapQuery):
 
             junction_contains_road_segment.extend(
                 [
-                    (junction_node_id, f"{NodePrefix.ROAD_SEGMENT}_{road_segment}")
+                    (junction_node_id, f"{NodePrefix.ROAD_SEGMENT}_{road_segment.road_segment_id}")
                     for road_segment in junction.road_segments
                 ]
             )
 
             junction_contains_lane_segment.extend(
                 [
-                    (junction_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment}")
+                    (junction_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.lane_segment_id}")
                     for lane_segment in junction.lane_segments
                 ]
             )
@@ -602,7 +606,7 @@ class IGraphMapQuery(MapQuery):
         if self._added_areas:
             return
 
-        for area_id, area in areas.values():
+        for area_id, area in areas.items():
             area_node_id = f"{NodePrefix.AREA}_{area.area_id}"
             self._add_vertex(has_bounds=area, vertex_id=area_node_id)
 

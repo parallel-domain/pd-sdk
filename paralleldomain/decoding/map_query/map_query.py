@@ -1,5 +1,5 @@
 import abc
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from paralleldomain.model.map.edge import Edge
 
@@ -17,6 +17,17 @@ from paralleldomain.utilities.transformation import Transformation
 
 
 class MapQuery:
+    @abc.abstractmethod
+    def add_map_data(
+        self,
+        road_segments: Dict[RoadSegmentId, RoadSegment],
+        lane_segments: Dict[LaneSegmentId, LaneSegment],
+        junctions: Dict[JunctionId, Junction],
+        areas: Dict[AreaId, Area],
+        edges: Dict[EdgeId, Edge],
+    ):
+        pass
+
     @abc.abstractmethod
     def get_junction(self, junction_id: JunctionId) -> Optional[Junction]:
         pass

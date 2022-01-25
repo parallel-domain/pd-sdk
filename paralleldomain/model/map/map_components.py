@@ -252,11 +252,11 @@ class LaneSegment:
         return self.map_query.get_edge(edge_id=self.reference_line_id)
 
     @property
-    def left_neighbor(self) -> "LaneSegment":
+    def left_neighbor(self) -> Optional["LaneSegment"]:
         return self.map_query.get_lane_segment(lane_segment_id=self.left_neighbor_id)
 
     @property
-    def right_neighbor(self) -> "LaneSegment":
+    def right_neighbor(self) -> Optional["LaneSegment"]:
         return self.map_query.get_lane_segment(lane_segment_id=self.right_neighbor_id)
 
     @property
@@ -370,7 +370,7 @@ class Junction:
         return [self.map_query.get_lane_segment(lane_segment_id=lsid) for lsid in self.crosswalk_lane_ids]
 
     @property
-    def road_segment(self) -> List[RoadSegment]:
+    def road_segments(self) -> List[RoadSegment]:
         return [self.map_query.get_road_segment(road_segment_id=rsid) for rsid in self.road_segment_ids]
 
     @property
