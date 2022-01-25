@@ -1,10 +1,11 @@
 import copy
+import typing
 from dataclasses import dataclass
-from typing import Generic, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar, Union
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_2d import Point2DGeometry
+from paralleldomain.model.geometry.point_2d import Point2DBaseGeometry
 
 T = TypeVar("T", int, float)
 
@@ -37,6 +38,16 @@ class BoundingBox2DBaseGeometry(Generic[T]):
     y: T
     width: T
     height: T
+
+    def _ensure_type(self, value: Union[int, float]) -> T:
+        try:
+            actual_type = typing.get_args(self.__orig_class__)[0]
+            if isinstance(actual_type, type):
+                return actual_type(value)
+            else:
+                return type(self.x)(value)
+        except AttributeError:
+            return type(self.x)(value)
 
     @property
     def area(self):
@@ -120,7 +131,52 @@ class BoundingBox2DBaseGeometry(Generic[T]):
 
         return edges
 
-    def include_point(self, point: Point2DGeometry, inline: bool = False) -> Optional["BoundingBox2DBaseGeometry[T]"]:
+    def include_points(
+        self, points: List[Point2DBaseGeometry[T]], inline: bool = False
+    ) -> Optional["BoundingBox2DBaseGeometry[T]"]:
+        """Extends the dimensions of the box to include the specified point.
+
+        Args:
+            points: List of :obj:`Point2DGeometry` which need to be included in updated bounding box.
+            inline: When set, do not return a copy of the object but update the current object. Default: `False`.
+
+        Returns:
+            A copy of the current object with extended dimensions, if `inline` is set. Otherwise, returns None.
+
+        """
+
+        np_points = np.array([[p.x, p.y] for p in points])
+        np_points = np.vstack(
+            [
+                np_points,
+                np.array([self.x_min, self.y_min]),
+                np.array([self.x_max, self.y_max]),
+            ]
+        )
+        mins = np.amin(np_points, axis=0)
+        maxs = np.amax(np_points, axis=0)
+
+        box = copy.deepcopy(self)
+        min_x = self._ensure_type(mins[0])
+        max_x = self._ensure_type(maxs[0])
+        min_y = self._ensure_type(mins[1])
+        max_y = self._ensure_type(maxs[1])
+        width = max_x - min_x
+        height = max_y - min_y
+        box.x = min_x
+        box.y = min_y
+        box.width = width
+        box.height = height
+
+        if inline:
+            self.x, self.y, self.width, self.height = box.x, box.y, box.width, box.height
+            return self
+        else:
+            return box
+
+    def include_point(
+        self, point: Point2DBaseGeometry[T], inline: bool = False
+    ) -> Optional["BoundingBox2DBaseGeometry[T]"]:
         """Extends the dimensions of the box to include the specified point.
 
         Args:
@@ -131,26 +187,7 @@ class BoundingBox2DBaseGeometry(Generic[T]):
             A copy of the current object with extended dimensions, if `inline` is set. Otherwise, returns None.
 
         """
-        width_from_ul = point.x - self.x
-        height_from_ul = point.y - self.y
-
-        x_new, y_new, width_new, height_new = self.x, self.y, self.width, self.height
-        if width_from_ul > self.width:
-            width_new = width_from_ul
-        elif width_from_ul < 0:
-            x_new = self.x + width_from_ul
-
-        if height_from_ul > self.height:
-            height_new = height_from_ul
-        elif height_from_ul < 0:
-            y_new = self.y + height_from_ul
-
-        if inline:
-            self.x, self.y, self.width, self.height = x_new, y_new, width_new, height_new
-        else:
-            box_new = copy.deepcopy(self)
-            box_new.x, box_new.y, box_new.width, box_new.height = x_new, y_new, width_new, height_new
-            return box_new
+        return self.include_points(points=[point], inline=inline)
 
     def __repr__(self):
         rep = f"x: {self.x}, y: {self.y}, w: {self.width}, h: {self.height}"
@@ -165,24 +202,8 @@ class BoundingBox2DBaseGeometry(Generic[T]):
         The resulting box geometry has dimensions from `target_box` and `source_box`
         merged into it.
         """
-        x_coords = []
-        y_coords = []
-        for b in [target_box, source_box]:
-            x_coords.append(b.x)
-            x_coords.append(b.x + b.width)
-            y_coords.append(b.y)
-            y_coords.append(b.y + b.height)
-
-        x_ul_new = min(x_coords)
-        x_width_new = max(x_coords) - x_ul_new
-        y_ul_new = min(y_coords)
-        y_height_new = max(y_coords) - y_ul_new
-
-        return cls(
-            x=x_ul_new,
-            y=y_ul_new,
-            width=x_width_new,
-            height=y_height_new,
+        return target_box.include_points(
+            points=[Point2DBaseGeometry[T](x=p[0], y=p[1]) for p in source_box.vertices.tolist()]
         )
 
 

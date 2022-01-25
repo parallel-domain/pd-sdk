@@ -1,10 +1,11 @@
+import copy
 from contextlib import suppress
 from dataclasses import dataclass, field
 from sys import getsizeof
 from typing import Any, Dict, List, Optional
 
 from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DGeometry
+from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry, BoundingBox2DGeometry
 
 
 @dataclass
@@ -41,6 +42,23 @@ class BoundingBox2D(BoundingBox2DGeometry):
 
     def __sizeof__(self):
         return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
+
+    # @classmethod
+    # def merge_boxes(
+    #     cls,
+    #     target_box: BoundingBox2DBaseGeometry,
+    #     source_box: BoundingBox2DBaseGeometry,
+    #     class_id: int,
+    #     instance_id: int,
+    #     attributes: Dict[str, Any],
+    # ) -> "BoundingBox2D":
+    #     return BoundingBox2DGeometry.merge_boxes(
+    #         target_box=target_box,
+    #         source_box=source_box,
+    #         class_id=class_id,
+    #         instance_id=instance_id,
+    #         attributes=attributes,
+    #     )
 
 
 @dataclass
@@ -143,8 +161,8 @@ class BoundingBoxes2D(Annotation):
             x=merged_box_geometry.x,
             y=merged_box_geometry.y,
             width=merged_box_geometry.width,
-            height=merged_box_geometry.width,
+            height=merged_box_geometry.height,
             class_id=target_box.class_id,
             instance_id=target_box.instance_id,
-            attributes=target_box.attributes,
+            attributes=copy.deepcopy(target_box.attributes),
         )
