@@ -428,8 +428,11 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_key_point_2d(self, point: Point2D) -> annotations_pb2.KeyPoint2DAnnotation:
         keypoint_proto = annotations_pb2.KeyPoint2DAnnotation(
             class_id=point.class_id,
-            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in point.attributes.items()},
-            points=annotations_pb2.KeyPoint2D(x=point.x, y=point.y),
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in point.attributes.items() if k != "key"
+            },
+            point=annotations_pb2.KeyPoint2D(x=point.x, y=point.y),
+            key=point.attributes["key"] if "key" in point.attributes else "",
         )
 
         return keypoint_proto
