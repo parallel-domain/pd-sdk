@@ -85,7 +85,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
         self._scene: Scene = self._unordered_scene
-        self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
+        self._reference_timestamp: datetime = self._scene.get_frame(self._frame_ids[0]).date_time
         self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
 
     def _offset_timestamp(self, compare_datetime: datetime) -> float:
@@ -573,7 +573,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_camera(self, camera_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
         futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_camera_frame(
@@ -593,7 +593,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar(self, lidar_name: str) -> Future:
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
@@ -632,7 +632,7 @@ class DGPSceneEncoder(SceneEncoder):
     def _encode_calibrations(self) -> Future:
         camera_frames = []
         lidar_frames = []
-        frame_ids = self._scene.frame_ids
+        frame_ids = self._frame_ids
 
         for sn in self._camera_names:
             camera_frames.append(self._scene.get_sensor(sn).get_frame(frame_ids[0]))
@@ -724,7 +724,7 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> AnyPath:
         scene_data = []
         scene_samples = []
-        for fid in self._scene.frame_ids:
+        for fid in self._frame_ids:
             frame = self._scene.get_frame(fid)
             frame_data = [
                 scene_sensor_data[sn][fid] for sn in sorted(scene_sensor_data.keys()) if fid in scene_sensor_data[sn]
