@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.5.6",
+    version="0.5.7",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -19,7 +19,7 @@ setup(
     package_data={
         "paralleldomain": ["py.typed"],
     },
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     long_description="Python SDK for ParallelDomain Datasets",
     install_requires=requirements,
     include_package_data=True,
