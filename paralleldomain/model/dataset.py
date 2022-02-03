@@ -61,6 +61,9 @@ class DatasetDecoderProtocol(Protocol):
     def get_scene(self, scene_name: SceneName) -> Scene:
         pass
 
+    def get_format(self) -> str:
+        pass
+
 
 class Dataset:
     """The :obj:`Dataset` object is the entry point for loading any data.
@@ -81,6 +84,11 @@ class Dataset:
     def metadata(self) -> DatasetMeta:
         """Returns a list of scene names within the dataset."""
         return self._decoder.get_dataset_metadata()
+
+    @property
+    def format(self) -> str:
+        """Returns a str with the name of the dataset storage format (e.g. dgp, cityscapes, nuscenes)."""
+        return self._decoder.get_format()
 
     @property
     def unordered_scenes(self) -> Dict[SceneName, UnorderedScene[Union[datetime, None]]]:

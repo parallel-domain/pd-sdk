@@ -99,6 +99,10 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
             custom_attributes=MessageToDict(dto.metadata, preserving_proto_field_name=True),
         )
 
+    @staticmethod
+    def get_format() -> str:
+        return "dgpv1"
+
 
 class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(

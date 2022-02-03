@@ -1,9 +1,10 @@
 import abc
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
 from paralleldomain.model.type_aliases import FrameId, SensorName
+from paralleldomain.utilities.any_path import AnyPath
 
 try:
     from typing import Protocol

@@ -21,27 +21,27 @@ def decode_dataset(
     **decoder_kwargs,
 ) -> Dataset:
 
-    if dataset_format == "dgp":
+    if dataset_format == DGPDatasetDecoder.get_format():
         return DGPDatasetDecoder(
             dataset_path=dataset_path,
             custom_reference_to_box_bottom=custom_reference_to_box_bottom,
             settings=settings,
             **decoder_kwargs,
         ).get_dataset()
-    if dataset_format == "dgpv1":
+    if dataset_format == DGPV1DatasetDecoder.get_format():
         return DGPV1DatasetDecoder(
             dataset_path=dataset_path,
             custom_reference_to_box_bottom=custom_reference_to_box_bottom,
             settings=settings,
             **decoder_kwargs,
         ).get_dataset()
-    elif dataset_format == "cityscapes":
+    elif dataset_format == CityscapesDatasetDecoder.get_format():
         return CityscapesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
 
-    elif dataset_format == "nuimages":
+    elif dataset_format == NuImagesDatasetDecoder.get_format():
         return NuImagesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
 
-    elif dataset_format == "nuscenes":
+    elif dataset_format == NuScenesDatasetDecoder.get_format():
         return NuScenesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
 
     else:

@@ -75,6 +75,10 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             custom_attributes=dict(split_name=self.split_name),
         )
 
+    @staticmethod
+    def get_format() -> str:
+        return "nuimages"
+
 
 class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
     def __init__(

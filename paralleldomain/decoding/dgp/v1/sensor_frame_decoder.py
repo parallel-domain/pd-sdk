@@ -19,6 +19,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
 )
 from paralleldomain.model.annotation import (
+    Annotation,
     AnnotationType,
     BoundingBox2D,
     BoundingBox3D,
@@ -44,6 +45,8 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
+from paralleldomain.model.image import Image
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -51,6 +54,7 @@ from paralleldomain.utilities.fsio import read_image, read_json_message, read_js
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
 
 
 def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
@@ -461,6 +465,20 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             points.append(point)
         return points
+
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
+        if data_type in annotation_identifiers:
+            annotation_identifier = annotation_identifiers[data_type]
+            return self._dataset_path / self.scene_name / annotation_identifier
+        elif issubclass(data_type, Image):
+            datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+            return self._dataset_path / self.scene_name / datum.image.filename
+        elif issubclass(data_type, PointCloud):
+            datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+            return self._dataset_path / self.scene_name / datum.point_cloud.filename
+
+        return None
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):

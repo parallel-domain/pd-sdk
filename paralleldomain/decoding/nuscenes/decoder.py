@@ -89,6 +89,10 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
             custom_attributes=dict(split_name=self.split_name, nu_split_name=self.nu_split_name),
         )
 
+    @staticmethod
+    def get_format() -> str:
+        return "nuscenes"
+
 
 class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(

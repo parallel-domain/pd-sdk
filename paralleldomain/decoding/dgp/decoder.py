@@ -93,6 +93,10 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
         return DatasetMeta(name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
 
+    @staticmethod
+    def get_format() -> str:
+        return "dgp"
+
 
 class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(

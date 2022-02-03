@@ -55,6 +55,10 @@ class CityscapesDatasetDecoder(DatasetDecoder):
             custom_attributes=dict(splits=self.splits),
         )
 
+    @staticmethod
+    def get_format() -> str:
+        return "cityscapes"
+
 
 class CityscapesSceneDecoder(SceneDecoder[None]):
     def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, settings: DecoderSettings):

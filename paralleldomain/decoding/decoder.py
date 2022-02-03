@@ -113,6 +113,11 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
     def get_dataset(self) -> Dataset:
         return Dataset(decoder=self)
 
+    @staticmethod
+    @abc.abstractmethod
+    def get_format() -> str:
+        pass
+
 
 class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
     def __init__(self, dataset_name: str, settings: DecoderSettings):
