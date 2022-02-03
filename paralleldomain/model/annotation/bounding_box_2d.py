@@ -43,23 +43,6 @@ class BoundingBox2D(BoundingBox2DGeometry):
     def __sizeof__(self):
         return getsizeof(self.attributes) + 2 * 8 + super().__sizeof__()  # 2 * 8 bytes ints or floats
 
-    # @classmethod
-    # def merge_boxes(
-    #     cls,
-    #     target_box: BoundingBox2DBaseGeometry,
-    #     source_box: BoundingBox2DBaseGeometry,
-    #     class_id: int,
-    #     instance_id: int,
-    #     attributes: Dict[str, Any],
-    # ) -> "BoundingBox2D":
-    #     return BoundingBox2DGeometry.merge_boxes(
-    #         target_box=target_box,
-    #         source_box=source_box,
-    #         class_id=class_id,
-    #         instance_id=instance_id,
-    #         attributes=attributes,
-    #     )
-
 
 @dataclass
 class BoundingBoxes2D(Annotation):
