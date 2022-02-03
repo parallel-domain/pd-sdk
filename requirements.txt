@@ -1,8 +1,7 @@
-awscli>=1.20.58,<2.0.0
+awscli>=1.0.0,<2.0.0
 coloredlogs>=15.0.1,<16.0.0
 cachetools>=4.2.2,<5.0.0
 cgroupspy>=0.2.1,<1.0.0
-dataclasses>=0.8,<1.0.0; python_version == "3.6"
 dataclasses_json>=0.5.3,<1.0.0
 humanize>=3.10.0,<4.0.0
 iso8601>=0.1.16,<1.0.0
@@ -18,4 +17,4 @@ transforms3d>=0.3.1,<1.0.0
 typing-extensions>=3.10.0.0,<4.0.0.0
 smart_open>=5.1.0,<6.0.0
 s3path>=0.3.2,<1.0.0
-ujson>=4.0.2,<5.0.0
+ujson>=5.1.0,<6.0.0
