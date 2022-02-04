@@ -41,6 +41,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         stages_max_out_queue_size: int = 3,
         workers_per_step: int = 2,
         max_queue_size_per_step: int = 4,
+        max_queue_size_final_step: int = 20,
         allowed_frames: Optional[List[FrameId]] = None,
         target_dataset_name: Optional[str] = None,
     ):
@@ -54,7 +55,9 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 max_queue_size_per_step=max_queue_size_per_step,
             )
         if final_encoder_step_builder is None:
-            final_encoder_step_builder = partial(DGPV1PipelineBuilder.get_default_final_step, max_queue_size=4)
+            final_encoder_step_builder = partial(
+                DGPV1PipelineBuilder.get_default_final_step, max_queue_size=max_queue_size_final_step
+            )
 
         self.final_encoder_step_builder = final_encoder_step_builder
         self.stages_max_out_queue_size = stages_max_out_queue_size
@@ -209,7 +212,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
 
     @staticmethod
     def get_default_final_step(
-        max_queue_size: int = 4,
+        max_queue_size: int = 20,
     ) -> FinalStep:
         return SceneEncoderStep(
             in_queue_size=max_queue_size,

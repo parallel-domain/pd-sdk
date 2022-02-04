@@ -127,12 +127,10 @@ class DatasetPipelineEncoder(Generic[S, T]):
 
         stage = final_encoder_step.aggregate(scene=scene, input_stage=stage)
 
-        result_pipeline = pypeln.sync.to_iterable(stage, maxsize=5, return_index=False)
         if self.use_tqdm:
-            result_pipeline = tqdm(result_pipeline)
+            stage = tqdm(stage)
 
-        for item in result_pipeline:
-            logger.info(f"Finished: {item}")
+        pypeln.process.run(stage)
 
         return final_encoder_step.finalize()
 
