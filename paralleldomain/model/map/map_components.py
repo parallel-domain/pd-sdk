@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
+import numpy as np
+
 try:
     from typing import Protocol
 except ImportError:
@@ -238,6 +240,14 @@ class LaneSegment:
         self.lane_type = lane_type
         self.lane_segment_id = lane_segment_id
         self.map_query = map_query
+
+    def to_numpy(self, closed: bool = False) -> np.ndarray:
+        if not closed:
+            return np.vstack([self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1]])
+        else:
+            return np.vstack(
+                [self.left_edge.to_numpy(), self.right_edge.to_numpy()[::-1], self.left_edge.to_numpy()[0]]
+            )
 
     @property
     def left_edge(self) -> Edge:
