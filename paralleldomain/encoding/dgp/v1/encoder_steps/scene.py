@@ -48,18 +48,13 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
 
     def __init__(
         self,
+        target_scene_name: SceneName,
+        target_scene_description: str,
         in_queue_size: int = 4,
-        target_scene_name_mapping: Dict[SceneName, str] = None,
-        target_scene_description_mapping: Dict[SceneName, str] = None,
     ):
-        if target_scene_description_mapping is None:
-            target_scene_description_mapping = dict()
-        if target_scene_name_mapping is None:
-            target_scene_name_mapping = dict()
-        self.target_scene_description_mapping = target_scene_description_mapping
-        self.target_scene_name_mapping = target_scene_name_mapping
-        self.target_scene_description = target_scene_description_mapping
-        self.target_scene_name = target_scene_name_mapping
+        self.target_scene_name = target_scene_name
+        self.target_scene_description = target_scene_description
+
         self.in_queue_size = in_queue_size
         self.scene_data_dtos: Dict[SensorName, List[sample_pb2.Datum]] = dict()
         self.ontologie_paths: Dict[int, AnyPath] = dict()
@@ -323,14 +318,7 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
         self.aggregate_frame_map(input_dict=input_dict)
         return input_dict
 
-    def aggregate(self, scene: Scene, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
-        if scene.name not in self.target_scene_name_mapping:
-            self.target_scene_name_mapping[scene.name] = scene.name
-        self.target_scene_name = self.target_scene_name_mapping[scene.name]
-        if scene.name not in self.target_scene_description_mapping:
-            self.target_scene_description_mapping[scene.name] = scene.description
-        self.target_scene_description = self.target_scene_description_mapping[scene.name]
-
+    def aggregate(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
         stage = pypeln.thread.map(f=self.encode_scene, stage=input_stage, workers=1, maxsize=self.in_queue_size)
         return stage
 

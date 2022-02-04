@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import partial
-from typing import Any, Dict, Generator, Iterable
+from typing import Any, Dict, Generator, Iterable, List, Optional
 
 import pypeln
 
@@ -10,7 +10,7 @@ from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, Dire
 from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
 from paralleldomain.encoding.pipeline_encoder import EncoderStep
-from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, Point2D
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox2D, Point2D
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
@@ -21,9 +21,15 @@ class Points2DEncoderStep(EncoderStepHelper, EncoderStep):
         self,
         workers: int = 1,
         in_queue_size: int = 4,
+        output_annotation_types: Optional[List[AnnotationType]] = None,
     ):
         self.in_queue_size = in_queue_size
         self.workers = workers
+        self.output_annotation_types = output_annotation_types
+
+    @property
+    def apply_stages(self) -> bool:
+        return self.output_annotation_types is None or AnnotationTypes.Points2D in self.output_annotation_types
 
     @staticmethod
     def _encode_key_point_2d(point: Point2D) -> annotations_pb2.KeyPoint2DAnnotation:
@@ -58,10 +64,11 @@ class Points2DEncoderStep(EncoderStepHelper, EncoderStep):
             input_dict["annotations"][str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Points2D])] = output_path
         return input_dict
 
-    def apply(self, scene: Scene, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
+    def apply(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
         stage = input_stage
-        stage = pypeln.thread.map(
-            f=self.encode_points_2d, stage=stage, workers=self.workers, maxsize=self.in_queue_size
-        )
+        if self.apply_stages:
+            stage = pypeln.thread.map(
+                f=self.encode_points_2d, stage=stage, workers=self.workers, maxsize=self.in_queue_size
+            )
 
         return stage

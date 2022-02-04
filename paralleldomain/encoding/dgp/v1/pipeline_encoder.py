@@ -3,6 +3,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from paralleldomain.encoding.dgp.v1.encoder_steps.pipeline_builder import DGPV1PipelineBuilder
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.type_aliases import FrameId
 
 try:
@@ -37,6 +38,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
         use_tqdm: bool = True,
+        output_annotation_types: Optional[List[AnnotationType]] = None,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
         pipeline_builder = DGPV1PipelineBuilder(
@@ -49,6 +51,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
             allowed_frames=allowed_frames,
             workers_per_step=workers_per_step,
             max_queue_size_per_step=max_queue_size_per_step,
+            output_annotation_types=output_annotation_types,
         )
         return DatasetPipelineEncoder.from_path_and_builder(
             dataset_path=dataset_path,

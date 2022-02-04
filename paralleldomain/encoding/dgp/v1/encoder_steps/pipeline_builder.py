@@ -23,8 +23,9 @@ from paralleldomain.encoding.dgp.v1.encoder_steps.semantic_segmentation_3d impor
 from paralleldomain.encoding.dgp.v1.encoder_steps.surface_normals_2d import SurfaceNormals2DEncoderStep
 from paralleldomain.encoding.dgp.v1.encoder_steps.surface_normals_3d import SurfaceNormals3DEncoderStep
 from paralleldomain.encoding.pipeline_encoder import EncoderStep, FinalStep, PipelineBuilder, S, SceneAggregator, T
+from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import CameraSensor, LidarSensor
-from paralleldomain.model.type_aliases import FrameId
+from paralleldomain.model.type_aliases import FrameId, SceneName
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         self,
         output_path: AnyPath,
         encoder_steps_builder: Optional[Callable[[], List[EncoderStep]]] = None,
-        final_encoder_step_builder: Optional[Callable[[], FinalStep]] = None,
+        final_encoder_step_builder: Optional[Callable[[Tuple[SceneName, str]], FinalStep]] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         sim_offset: float = 0.01 * 5,
         stages_max_out_queue_size: int = 3,
@@ -43,9 +44,11 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         max_queue_size_per_step: int = 4,
         max_queue_size_final_step: int = 20,
         allowed_frames: Optional[List[FrameId]] = None,
+        output_annotation_types: Optional[List[AnnotationType]] = None,
         target_dataset_name: Optional[str] = None,
     ):
 
+        self.output_annotation_types = output_annotation_types
         self.target_dataset_name = target_dataset_name
         self.allowed_frames = allowed_frames
         if encoder_steps_builder is None:
@@ -53,6 +56,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 DGPV1PipelineBuilder.get_default_encoder_steps,
                 workers_per_step=workers_per_step,
                 max_queue_size_per_step=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             )
         if final_encoder_step_builder is None:
             final_encoder_step_builder = partial(
@@ -74,7 +78,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         return self.encoder_steps_builder()
 
     def build_scene_final_encoder_step(self, dataset: Dataset, scene: Scene) -> FinalStep[Dict[str, Any]]:
-        return self.final_encoder_step_builder()
+        return self.final_encoder_step_builder(scene.name, scene.description)
 
     def build_pipeline_source_generator(self, dataset: Dataset, scene: Scene) -> Generator[Dict[str, Any], None, None]:
         if self.sensor_names is None:
@@ -130,15 +134,13 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
     def get_default_encoder_steps(
         workers_per_step: int = 2,
         max_queue_size_per_step: int = 4,
+        output_annotation_types: Optional[List[AnnotationType]] = None,
     ) -> List[EncoderStep]:
         encoders = [
             BoundingBoxes2DEncoderStep(
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
-            ),
-            BoundingBoxes3DEncoderStep(
-                workers=workers_per_step,
-                in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             CameraImageEncoderStep(
                 fs_copy=True,
@@ -154,66 +156,87 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             InstanceSegmentation2DEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             SemanticSegmentation3DEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             InstanceSegmentation3DEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             DepthEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             OpticalFlowEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
-            # Points2DEncoderStep(
-            #     workers=workers_per_step,
-            #     in_queue_size=max_queue_size_per_step,
-            # ),
+            Points2DEncoderStep(
+                workers=workers_per_step,
+                in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
+            ),
             Polygons2DEncoderStep(
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             Polylines2DEncoderStep(
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             SceneFlowEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             SurfaceNormals2DEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
             SurfaceNormals3DEncoderStep(
                 fs_copy=True,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
+            ),
+            BoundingBoxes3DEncoderStep(
+                workers=workers_per_step,
+                in_queue_size=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
             ),
         ]
         return encoders
 
     @staticmethod
     def get_default_final_step(
+        target_scene_name: SceneName,
+        target_scene_description: str,
         max_queue_size: int = 20,
     ) -> FinalStep:
         return SceneEncoderStep(
             in_queue_size=max_queue_size,
+            target_scene_name=target_scene_name,
+            target_scene_description=target_scene_description,
         )

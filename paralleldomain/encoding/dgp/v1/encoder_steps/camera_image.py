@@ -49,7 +49,7 @@ class CameraImageEncoderStep(EncoderStepHelper, EncoderStep):
             input_dict["sensor_data"]["rgb"] = save_path
         return input_dict
 
-    def apply(self, scene: Scene, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
+    def apply(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
         stage = pypeln.thread.map(
             f=self.encode_camera_image_frame, stage=input_stage, workers=self.workers, maxsize=self.in_queue_size
         )

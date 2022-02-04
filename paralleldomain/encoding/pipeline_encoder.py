@@ -54,13 +54,13 @@ class SceneAggregator(Generic[T]):
 
 class EncoderStep:
     @abstractmethod
-    def apply(self, scene: Scene, input_stage: Iterable[Any]) -> Iterable[Any]:
+    def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
         pass
 
 
 class FinalStep(Generic[T]):
     @abstractmethod
-    def aggregate(self, scene: Scene, input_stage: Iterable[Any]) -> Iterable[Any]:
+    def aggregate(self, input_stage: Iterable[Any]) -> Iterable[Any]:
         pass
 
     @abstractmethod
@@ -123,9 +123,9 @@ class DatasetPipelineEncoder(Generic[S, T]):
         encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=self._dataset, scene=scene)
         final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(dataset=self._dataset, scene=scene)
         for encoder in encoder_steps:
-            stage = encoder.apply(scene=scene, input_stage=stage)
+            stage = encoder.apply(input_stage=stage)
 
-        stage = final_encoder_step.aggregate(scene=scene, input_stage=stage)
+        stage = final_encoder_step.aggregate(input_stage=stage)
 
         if self.use_tqdm:
             stage = tqdm(stage)
