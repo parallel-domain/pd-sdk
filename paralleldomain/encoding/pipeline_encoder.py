@@ -85,6 +85,11 @@ class PipelineBuilder(Generic[S, T]):
     def build_pipeline_source_generator(self, dataset: Dataset, scene: S) -> Generator[Dict[str, Any], None, None]:
         pass
 
+    @property
+    @abstractmethod
+    def pipeline_item_unit_name(self):
+        pass
+
 
 class DatasetPipelineEncoder(Generic[S, T]):
     def __init__(
@@ -128,7 +133,9 @@ class DatasetPipelineEncoder(Generic[S, T]):
         stage = final_encoder_step.aggregate(input_stage=stage)
 
         if self.use_tqdm:
-            stage = tqdm(stage)
+            stage = tqdm(
+                stage, desc=f"{scene.name}", unit=f" {self.pipeline_builder.pipeline_item_unit_name}", smoothing=0.0
+            )
 
         pypeln.process.run(stage)
 
@@ -149,6 +156,8 @@ class DatasetPipelineEncoder(Generic[S, T]):
     ) -> "DatasetPipelineEncoder":
         if decoder_kwargs is None:
             decoder_kwargs = dict()
+        if "dataset_path" in decoder_kwargs:
+            decoder_kwargs.pop("dataset_path")
         dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
         return cls(
             dataset=dataset,

@@ -46,6 +46,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         allowed_frames: Optional[List[FrameId]] = None,
         output_annotation_types: Optional[List[AnnotationType]] = None,
         target_dataset_name: Optional[str] = None,
+        fs_copy: bool = True,
     ):
 
         self.output_annotation_types = output_annotation_types
@@ -57,6 +58,7 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 workers_per_step=workers_per_step,
                 max_queue_size_per_step=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
+                fs_copy=fs_copy,
             )
         if final_encoder_step_builder is None:
             final_encoder_step_builder = partial(
@@ -130,11 +132,16 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                                 sim_offset=self.sim_offset,
                             )
 
+    @property
+    def pipeline_item_unit_name(self):
+        return "sensor frames"
+
     @staticmethod
     def get_default_encoder_steps(
         workers_per_step: int = 2,
         max_queue_size_per_step: int = 4,
         output_annotation_types: Optional[List[AnnotationType]] = None,
+        fs_copy: bool = True,
     ) -> List[EncoderStep]:
         encoders = [
             BoundingBoxes2DEncoderStep(
@@ -143,47 +150,47 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 output_annotation_types=output_annotation_types,
             ),
             CameraImageEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
             ),
             PointCloudEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
             ),
             SemanticSegmentation2DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             InstanceSegmentation2DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             SemanticSegmentation3DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             InstanceSegmentation3DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             DepthEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             OpticalFlowEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
@@ -204,19 +211,19 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 output_annotation_types=output_annotation_types,
             ),
             SceneFlowEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             SurfaceNormals2DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
             SurfaceNormals3DEncoderStep(
-                fs_copy=True,
+                fs_copy=fs_copy,
                 workers=workers_per_step,
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,

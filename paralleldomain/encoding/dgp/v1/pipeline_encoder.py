@@ -38,6 +38,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
         use_tqdm: bool = True,
+        fs_copy: bool = True,
         output_annotation_types: Optional[List[AnnotationType]] = None,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
@@ -52,6 +53,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
             workers_per_step=workers_per_step,
             max_queue_size_per_step=max_queue_size_per_step,
             output_annotation_types=output_annotation_types,
+            fs_copy=fs_copy,
         )
         return DatasetPipelineEncoder.from_path_and_builder(
             dataset_path=dataset_path,
