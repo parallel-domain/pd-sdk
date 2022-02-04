@@ -76,7 +76,9 @@ class UMDDecoder(MapDecoder):
                 lines=[
                     Line3DGeometry(
                         start=Point3DGeometry(x=point_pair[0].x, y=point_pair[0].y, z=point_pair[0].z),
-                        end=Point3DGeometry(x=point_pair[1].x, y=point_pair[1].y, z=point_pair[1].z),
+                        end=Point3DGeometry(x=point_pair[1].x, y=point_pair[1].y, z=point_pair[1].z)
+                        if point_pair[1] is not None
+                        else Point3DGeometry(x=point_pair[0].x, y=point_pair[0].y, z=point_pair[0].z),
                     )
                     for point_pair in windowed(edge.points, 2)
                 ]
