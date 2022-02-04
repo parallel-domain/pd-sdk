@@ -7,15 +7,16 @@ import pypeln
 from paralleldomain import Scene
 from paralleldomain.common.dgp.v1 import annotations_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
-from paralleldomain.encoding.dgp.v1.encoder_steps.encoder_step import EncoderStep
+from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
+from paralleldomain.encoding.pipeline_encoder import EncoderStep
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, Point2D
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class Points2DEncoderStep(EncoderStep):
+class Points2DEncoderStep(EncoderStepHelper, EncoderStep):
     def __init__(
         self,
         workers: int = 1,

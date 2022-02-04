@@ -8,8 +8,9 @@ import pypeln
 from paralleldomain import Scene
 from paralleldomain.common.dgp.v1 import annotations_pb2
 from paralleldomain.common.dgp.v1.constants import DirectoryName
-from paralleldomain.encoding.dgp.v1.encoder_steps.encoder_step import EncoderStep
+from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
+from paralleldomain.encoding.pipeline_encoder import EncoderStep
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import CameraSensorFrame, FilePathedDataType, LidarSensorFrame
@@ -17,7 +18,7 @@ from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class PointCloudEncoderStep(EncoderStep):
+class PointCloudEncoderStep(EncoderStepHelper, EncoderStep):
     def __init__(
         self,
         fs_copy: bool,

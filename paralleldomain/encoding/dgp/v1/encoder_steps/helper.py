@@ -8,16 +8,7 @@ from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, Sen
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class EncoderStep:
-    # def __init__(self, output_path: AnyPath, reference_timestamp: datetime, sim_offset: float = 0.01 * 5):
-    #     self.reference_timestamp = reference_timestamp
-    #     self._sim_offset: float = sim_offset  # sim timestep * offset count ; unit: seconds
-    #     self._output_path: AnyPath = output_path
-
-    @abc.abstractmethod
-    def apply(self, scene: Scene, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
-        pass
-
+class EncoderStepHelper:
     @staticmethod
     def _offset_timestamp(compare_datetime: datetime, reference_timestamp: datetime) -> float:
         diff = compare_datetime - reference_timestamp
@@ -27,7 +18,7 @@ class EncoderStep:
     def _get_offset_timestamp_file_name(sensor_frame: SensorFrame[datetime], input_dict: Dict[str, Any]) -> str:
         scene_reference_timestamp = input_dict["scene_reference_timestamp"]
         sim_offset = input_dict["sim_offset"]
-        offset = EncoderStep._offset_timestamp(
+        offset = EncoderStepHelper._offset_timestamp(
             compare_datetime=sensor_frame.date_time, reference_timestamp=scene_reference_timestamp
         )
         return f"{round((offset + sim_offset) * 100):018d}"
@@ -38,7 +29,7 @@ class EncoderStep:
     ) -> AnyPath:
         scene_output_path = input_dict["scene_output_path"]
         target_sensor_name = input_dict["target_sensor_name"]
-        file_name = EncoderStep._get_offset_timestamp_file_name(sensor_frame=sensor_frame, input_dict=input_dict)
+        file_name = EncoderStepHelper._get_offset_timestamp_file_name(sensor_frame=sensor_frame, input_dict=input_dict)
         if file_suffix.startswith("."):
             file_suffix = file_suffix[1:]
         output_path = (
@@ -50,12 +41,16 @@ class EncoderStep:
         )
         return output_path
 
+    def _scene_from_input_dict(self, input_dict: Dict[str, Any]) -> Scene:
+        info_dict = input_dict.get("camera_frame_info", input_dict.get("lidar_frame_info"))
+        return self._scene_from_info_dict(info_dict=info_dict)
+
     def _scene_from_info_dict(self, info_dict: Dict[str, Any]) -> Scene:
         scene_name = info_dict["scene_name"]
-        dataset_path = info_dict["dataset_path"]
+        # dataset_path = info_dict["dataset_path"]
         dataset_format = info_dict["dataset_format"]
         decoder_kwargs = info_dict["decoder_kwargs"]
-        dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
+        dataset = decode_dataset(dataset_format=dataset_format, **decoder_kwargs)
         return dataset.get_scene(scene_name=scene_name)
 
     def _get_camera_frame_from_input_dict(self, input_dict: Dict[str, Any]) -> Optional[CameraSensorFrame[datetime]]:
@@ -76,7 +71,7 @@ class EncoderStep:
             if isinstance(sensor_frame, LidarSensorFrame):
                 return sensor_frame
         elif "lidar_frame_info" in input_dict:
-            scene = self._scene_from_info_dict(info_dict=input_dict["camera_frame_info"])
+            scene = self._scene_from_info_dict(info_dict=input_dict["lidar_frame_info"])
             sensor_name = input_dict["lidar_frame_info"]["sensor_name"]
             frame_id = input_dict["lidar_frame_info"]["frame_id"]
             return scene.get_lidar_sensor(lidar_name=sensor_name).get_frame(frame_id=frame_id)

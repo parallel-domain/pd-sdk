@@ -32,6 +32,7 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             split: Split to use within this dataset. Defaults to v1.0-train.
             Options are [v1.0-mini, v1.0-test, v1.0-train, v1.0-val].
         """
+        self._init_kwargs = dict(dataset_path=dataset_path, settings=settings, split_name=split_name)
         self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if split_name is None:
@@ -78,6 +79,12 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
     @staticmethod
     def get_format() -> str:
         return "nuimages"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):

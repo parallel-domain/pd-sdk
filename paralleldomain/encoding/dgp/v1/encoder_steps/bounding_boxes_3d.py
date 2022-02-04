@@ -7,15 +7,16 @@ import pypeln
 from paralleldomain import Scene
 from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
-from paralleldomain.encoding.dgp.v1.encoder_steps.encoder_step import EncoderStep
+from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
+from paralleldomain.encoding.pipeline_encoder import EncoderStep
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class BoundingBoxes3DEncoderStep(EncoderStep):
+class BoundingBoxes3DEncoderStep(EncoderStepHelper, EncoderStep):
     def __init__(
         self,
         workers: int = 1,
@@ -100,8 +101,7 @@ class BoundingBoxes3DEncoderStep(EncoderStep):
             directory_name=DirectoryName.BOUNDING_BOX_3D,
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        fsio.write_json_message(obj=boxes3d_dto, path=output_path, append_sha1=True)
-        return str(output_path)
+        return str(fsio.write_json_message(obj=boxes3d_dto, path=output_path, append_sha1=True))
 
     def apply(self, scene: Scene, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
         stage = input_stage
