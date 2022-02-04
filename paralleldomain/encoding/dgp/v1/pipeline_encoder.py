@@ -60,20 +60,3 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
             decoder_kwargs=decoder_kwargs,
             pipeline_builder=pipeline_builder,
         )
-
-
-if __name__ == "__main__":
-    with TemporaryDirectory() as temp_dir:
-        encoder = DGPV1DatasetPipelineEncoder.from_path(
-            dataset_path=AnyPath("/home/phillip/data/d00e377f-f69d-48a3-a208-620a00fecfd3"),
-            dataset_format="dgpv1",
-            output_path=AnyPath(temp_dir),
-            set_start=0,
-            set_stop=2,
-            sensor_names={"FCM_front": "FCM_front", "FCM_front2": "FCM_front"},
-            workers_per_step=2,
-            max_queue_size_per_step=8,
-            # allowed_frames=[str(i) for i in range(3)]
-        )
-        encoder.encode_dataset()
-        pass
