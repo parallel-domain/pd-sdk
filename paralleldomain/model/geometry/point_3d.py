@@ -47,8 +47,142 @@ class Point3DBaseGeometry(Generic[T]):
         )
 
     def _ensure_type(self, value: Union[int, float]) -> T:
-        actual_type = typing.get_args(self.__orig_class__)[0]
-        return actual_type(value)
+        try:
+            actual_type = typing.get_args(self.__orig_class__)[0]
+            if isinstance(actual_type, type):
+                return actual_type(value)
+            else:
+                return type(self.x)(value)
+        except AttributeError:
+            return type(self.x)(value)
+
+    def __add__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x + other.x),
+                y=self._ensure_type(self.y + other.y),
+                z=self._ensure_type(self.z + other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x + other),
+                y=self._ensure_type(self.y + other),
+                z=self._ensure_type(self.z + other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other} of type {type(other)}!")
+
+    def __radd__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x + other.x),
+                y=self._ensure_type(self.y + other.y),
+                z=self._ensure_type(self.z + other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x + other),
+                y=self._ensure_type(self.y + other),
+                z=self._ensure_type(self.z + other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __sub__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x - other.x),
+                y=self._ensure_type(self.y - other.y),
+                z=self._ensure_type(self.z - other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x - other),
+                y=self._ensure_type(self.y - other),
+                zy=self._ensure_type(self.z - other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rsub__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x - other.x),
+                y=self._ensure_type(self.y - other.y),
+                z=self._ensure_type(self.z - other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x - other),
+                y=self._ensure_type(self.y - other),
+                z=self._ensure_type(self.z - other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __mul__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x * other.x),
+                y=self._ensure_type(self.y * other.y),
+                z=self._ensure_type(self.z * other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x * other),
+                y=self._ensure_type(self.y * other),
+                z=self._ensure_type(self.z * other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rmul__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x * other.x),
+                y=self._ensure_type(self.y * other.y),
+                z=self._ensure_type(self.z * other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x * other),
+                y=self._ensure_type(self.y * other),
+                z=self._ensure_type(self.z * other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __div__(self, other):
+        if isinstance(other, Point3DBaseGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x / other.x),
+                y=self._ensure_type(self.y / other.y),
+                z=self._ensure_type(self.z / other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x / other),
+                y=self._ensure_type(self.y / other),
+                z=self._ensure_type(self.z / other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
+
+    def __rdiv__(self, other):
+        if isinstance(other, Point3DGeometry):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x / other.x),
+                y=self._ensure_type(self.y / other.y),
+                z=self._ensure_type(self.z / other.z),
+            )
+        elif isinstance(other, int) or isinstance(other, float):
+            return Point3DBaseGeometry[T](
+                x=self._ensure_type(self.x / other),
+                y=self._ensure_type(self.y / other),
+                z=self._ensure_type(self.z / other),
+            )
+        else:
+            raise ValueError(f"Unsupported value {other}!")
 
     @classmethod
     def from_numpy(cls, point: np.ndarray):
