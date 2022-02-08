@@ -43,6 +43,12 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
         pipeline_builder = DGPV1PipelineBuilder(
+            dataset_path=dataset_path,
+            dataset_format=dataset_format,
+            set_stop=set_stop,
+            set_start=set_start,
+            scene_names=scene_names,
+            decoder_kwargs=decoder_kwargs,
             output_path=output_path,
             sim_offset=sim_offset,
             sensor_names=sensor_names,
@@ -55,13 +61,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder[Scene, Dict[str, Any]])
             output_annotation_types=output_annotation_types,
             fs_copy=fs_copy,
         )
-        return DatasetPipelineEncoder.from_path_and_builder(
-            dataset_path=dataset_path,
+        return DatasetPipelineEncoder.from_builder(
             use_tqdm=use_tqdm,
-            dataset_format=dataset_format,
-            set_stop=set_stop,
-            set_start=set_start,
-            scene_names=scene_names,
-            decoder_kwargs=decoder_kwargs,
             pipeline_builder=pipeline_builder,
         )

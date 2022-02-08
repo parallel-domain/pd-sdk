@@ -4,6 +4,7 @@ from functools import partial
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 from paralleldomain import Dataset, Scene
+from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.encoding.dgp.v1.encoder_steps.bounding_boxes_2d import BoundingBoxes2DEncoderStep
 from paralleldomain.encoding.dgp.v1.encoder_steps.bounding_boxes_3d import BoundingBoxes3DEncoderStep
 from paralleldomain.encoding.dgp.v1.encoder_steps.camera_image import CameraImageEncoderStep
@@ -34,6 +35,8 @@ logger = logging.getLogger(__name__)
 class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
     def __init__(
         self,
+        dataset_path: Union[str, AnyPath],
+        dataset_format: str,
         output_path: AnyPath,
         encoder_steps_builder: Optional[Callable[[], List[EncoderStep]]] = None,
         final_encoder_step_builder: Optional[Callable[[Tuple[SceneName, str]], FinalStep]] = None,
@@ -46,7 +49,11 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         allowed_frames: Optional[List[FrameId]] = None,
         output_annotation_types: Optional[List[AnnotationType]] = None,
         target_dataset_name: Optional[str] = None,
+        scene_names: Optional[List[str]] = None,
+        set_start: Optional[int] = None,
+        set_stop: Optional[int] = None,
         fs_copy: bool = True,
+        decoder_kwargs: Optional[Dict[str, Any]] = None,
     ):
 
         self.output_annotation_types = output_annotation_types
@@ -65,6 +72,22 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 DGPV1PipelineBuilder.get_default_final_step, max_queue_size=max_queue_size_final_step
             )
 
+        if decoder_kwargs is None:
+            decoder_kwargs = dict()
+        if "dataset_path" in decoder_kwargs:
+            decoder_kwargs.pop("dataset_path")
+        dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
+
+        self._dataset = dataset
+        if scene_names is not None:
+            for sn in scene_names:
+                if sn not in self._dataset.unordered_scene_names:
+                    raise KeyError(f"{sn} could not be found in dataset {self._dataset.name}")
+            self._scene_names = scene_names
+        else:
+            set_slice = slice(set_start, set_stop)
+            self._scene_names = self._dataset.unordered_scene_names[set_slice]
+
         self.final_encoder_step_builder = final_encoder_step_builder
         self.stages_max_out_queue_size = stages_max_out_queue_size
         self.encoder_steps_builder = encoder_steps_builder
@@ -72,8 +95,13 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         self.sim_offset = sim_offset
         self.output_path = output_path
 
-    def build_scene_aggregator(self, dataset: Dataset) -> SceneAggregator[Dict[str, Any]]:
-        name = dataset.name if self.target_dataset_name is None else self.target_dataset_name
+    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S], None, None]:
+        for scene_name in self._scene_names:
+            scene = self._dataset.get_unordered_scene(scene_name=scene_name)
+            yield self._dataset, scene
+
+    def build_scene_aggregator(self) -> SceneAggregator[Dict[str, Any]]:
+        name = self._dataset.name if self.target_dataset_name is None else self.target_dataset_name
         return DGPV1SceneAggregator(output_path=self.output_path, dataset_name=name)
 
     def build_scene_encoder_steps(self, dataset: Dataset, scene: Scene) -> List[EncoderStep]:

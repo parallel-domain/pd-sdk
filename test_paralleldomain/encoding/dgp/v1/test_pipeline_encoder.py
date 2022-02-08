@@ -30,7 +30,7 @@ def test_encoding_of_modified_scene(dataset: Dataset):
                     AnnotationTypes.SemanticSegmentation2D,
                     AnnotationTypes.Depth,
                     AnnotationTypes.OpticalFlow,
-                    # AnnotationTypes.BoundingBoxes3D,
+                    AnnotationTypes.BoundingBoxes3D,
                     AnnotationTypes.InstanceSegmentation2D,
                 ],
             )
@@ -52,7 +52,7 @@ def test_encoding_of_modified_scene(dataset: Dataset):
                 assert len(list((scene_folder / DirectoryName.CALIBRATION).iterdir())) == 1
                 assert (scene_folder / DirectoryName.ONTOLOGY).exists()
                 assert len(list((scene_folder / DirectoryName.ONTOLOGY).iterdir())) == 1
-                for sensor_name in scene.sensor_names:
+                for sensor_name in scene.camera_names:
                     assert (scene_folder / DirectoryName.BOUNDING_BOX_2D / sensor_name).exists()
                     assert (
                         len(list((scene_folder / DirectoryName.BOUNDING_BOX_2D / sensor_name).iterdir())) == num_frames
@@ -75,4 +75,14 @@ def test_encoding_of_modified_scene(dataset: Dataset):
                     assert (
                         len(list((scene_folder / DirectoryName.MOTION_VECTORS_2D / sensor_name).iterdir()))
                         == num_frames
+                    )
+                    assert (scene_folder / DirectoryName.BOUNDING_BOX_3D / sensor_name).exists()
+                    assert (
+                        len(list((scene_folder / DirectoryName.BOUNDING_BOX_3D / sensor_name).iterdir())) == num_frames
+                    )
+
+                for sensor_name in scene.lidar_names:
+                    assert (scene_folder / DirectoryName.BOUNDING_BOX_3D / sensor_name).exists()
+                    assert (
+                        len(list((scene_folder / DirectoryName.BOUNDING_BOX_3D / sensor_name).iterdir())) == num_frames
                     )

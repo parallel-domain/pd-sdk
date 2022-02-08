@@ -70,7 +70,7 @@ class FinalStep(Generic[T]):
 
 class PipelineBuilder(Generic[S, T]):
     @abstractmethod
-    def build_scene_aggregator(self, dataset: Dataset) -> SceneAggregator[T]:
+    def build_scene_aggregator(self) -> SceneAggregator[T]:
         pass
 
     @abstractmethod
@@ -85,6 +85,10 @@ class PipelineBuilder(Generic[S, T]):
     def build_pipeline_source_generator(self, dataset: Dataset, scene: S) -> Generator[Dict[str, Any], None, None]:
         pass
 
+    @abstractmethod
+    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S], None, None]:
+        pass
+
     @property
     @abstractmethod
     def pipeline_item_unit_name(self):
@@ -94,39 +98,23 @@ class PipelineBuilder(Generic[S, T]):
 class DatasetPipelineEncoder(Generic[S, T]):
     def __init__(
         self,
-        dataset: Dataset,
         pipeline_builder: PipelineBuilder,
-        scene_names: Optional[List[str]] = None,
-        set_start: Optional[int] = None,
-        set_stop: Optional[int] = None,
         use_tqdm: bool = True,
     ):
         self.pipeline_builder = pipeline_builder
         self.use_tqdm = use_tqdm
-        self._dataset = dataset
-
-        if scene_names is not None:
-            for sn in scene_names:
-                if sn not in self._dataset.unordered_scene_names:
-                    raise KeyError(f"{sn} could not be found in dataset {self._dataset.name}")
-            self._scene_names = scene_names
-        else:
-            set_slice = slice(set_start, set_stop)
-            self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
     def encode_dataset(self):
-        scene_aggregator = self.pipeline_builder.build_scene_aggregator(dataset=self._dataset)
-        for scene_name in self._scene_names:
-            scene = self._dataset.get_unordered_scene(scene_name=scene_name)
-            scene_info = self._encode_scene(scene=scene)
-
+        scene_aggregator = self.pipeline_builder.build_scene_aggregator()
+        for dataset, scene in self.pipeline_builder.build_pipeline_scene_generator():
+            scene_info = self._encode_scene(scene=scene, dataset=dataset)
             scene_aggregator.aggregate(scene_info=scene_info)
         scene_aggregator.finalize()
 
-    def _encode_scene(self, scene: S):
-        stage = self.pipeline_builder.build_pipeline_source_generator(dataset=self._dataset, scene=scene)
-        encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=self._dataset, scene=scene)
-        final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(dataset=self._dataset, scene=scene)
+    def _encode_scene(self, dataset: Dataset, scene: S):
+        stage = self.pipeline_builder.build_pipeline_source_generator(dataset=dataset, scene=scene)
+        encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=dataset, scene=scene)
+        final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(dataset=dataset, scene=scene)
         for encoder in encoder_steps:
             stage = encoder.apply(input_stage=stage)
 
@@ -142,28 +130,13 @@ class DatasetPipelineEncoder(Generic[S, T]):
         return final_encoder_step.finalize()
 
     @classmethod
-    def from_path_and_builder(
+    def from_builder(
         cls,
-        dataset_path: Union[str, AnyPath],
-        dataset_format: str,
         pipeline_builder: PipelineBuilder,
-        scene_names: Optional[List[str]] = None,
-        set_start: Optional[int] = None,
-        set_stop: Optional[int] = None,
         use_tqdm: bool = True,
-        decoder_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> "DatasetPipelineEncoder":
-        if decoder_kwargs is None:
-            decoder_kwargs = dict()
-        if "dataset_path" in decoder_kwargs:
-            decoder_kwargs.pop("dataset_path")
-        dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
         return cls(
-            dataset=dataset,
-            scene_names=scene_names,
-            set_start=set_start,
-            set_stop=set_stop,
             use_tqdm=use_tqdm,
             pipeline_builder=pipeline_builder,
         )

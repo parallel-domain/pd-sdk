@@ -71,7 +71,7 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             image_width = sensor_frame.image.width
             rotation = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
             sensor_data = input_dict["sensor_data"]
-            annotations = input_dict["annotations"]
+            annotations = input_dict.get("annotations", dict())
             frame_id = input_dict["camera_frame_info"]["frame_id"]
             target_frame_id = input_dict.get("target_frame_id", frame_id)
             metadata = input_dict.get("metadata", dict())
@@ -126,8 +126,8 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
         sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is not None:
             sensor_data = input_dict["sensor_data"]
-            annotations = input_dict["annotations"]
-            frame_id = input_dict["camera_frame_info"]["frame_id"]
+            annotations = input_dict.get("annotations", dict())
+            frame_id = input_dict["lidar_frame_info"]["frame_id"]
             target_frame_id = input_dict.get("target_frame_id", frame_id)
             metadata = input_dict.get("metadata", dict())
             scene_output_path = input_dict["scene_output_path"]
@@ -290,8 +290,10 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
         sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is None:
             sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
-        if sensor_frame is not None:
             frame_id = input_dict["camera_frame_info"]["frame_id"]
+        else:
+            frame_id = input_dict["lidar_frame_info"]["frame_id"]
+        if sensor_frame is not None:
             target_frame_id = input_dict.get("target_frame_id", frame_id)
             self._frames[target_frame_id] = sensor_frame.date_time
 
