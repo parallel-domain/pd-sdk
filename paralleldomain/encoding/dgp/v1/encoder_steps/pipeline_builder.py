@@ -98,19 +98,21 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
     def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S], None, None]:
         for scene_name in self._scene_names:
             scene = self._dataset.get_unordered_scene(scene_name=scene_name)
-            yield self._dataset, scene
+            yield self._dataset, scene, dict()
 
     def build_scene_aggregator(self) -> SceneAggregator[Dict[str, Any]]:
         name = self._dataset.name if self.target_dataset_name is None else self.target_dataset_name
         return DGPV1SceneAggregator(output_path=self.output_path, dataset_name=name)
 
-    def build_scene_encoder_steps(self, dataset: Dataset, scene: Scene) -> List[EncoderStep]:
+    def build_scene_encoder_steps(self, dataset: Dataset, scene: Scene, **kwargs) -> List[EncoderStep]:
         return self.encoder_steps_builder()
 
-    def build_scene_final_encoder_step(self, dataset: Dataset, scene: Scene) -> FinalStep[Dict[str, Any]]:
+    def build_scene_final_encoder_step(self, dataset: Dataset, scene: Scene, **kwargs) -> FinalStep[Dict[str, Any]]:
         return self.final_encoder_step_builder(scene.name, scene.description)
 
-    def build_pipeline_source_generator(self, dataset: Dataset, scene: Scene) -> Generator[Dict[str, Any], None, None]:
+    def build_pipeline_source_generator(
+        self, dataset: Dataset, scene: Scene, **kwargs
+    ) -> Generator[Dict[str, Any], None, None]:
         if self.sensor_names is None:
             sensor_name_mapping = {s: s for s in scene.sensor_names}
         elif isinstance(self.sensor_names, list):

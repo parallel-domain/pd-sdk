@@ -74,19 +74,21 @@ class PipelineBuilder(Generic[S, T]):
         pass
 
     @abstractmethod
-    def build_scene_encoder_steps(self, dataset: Dataset, scene: S) -> List[EncoderStep]:
+    def build_scene_encoder_steps(self, dataset: Dataset, scene: S, **kwargs) -> List[EncoderStep]:
         pass
 
     @abstractmethod
-    def build_scene_final_encoder_step(self, dataset: Dataset, scene: S) -> FinalStep[T]:
+    def build_scene_final_encoder_step(self, dataset: Dataset, scene: S, **kwargs) -> FinalStep[T]:
         pass
 
     @abstractmethod
-    def build_pipeline_source_generator(self, dataset: Dataset, scene: S) -> Generator[Dict[str, Any], None, None]:
+    def build_pipeline_source_generator(
+        self, dataset: Dataset, scene: S, **kwargs
+    ) -> Generator[Dict[str, Any], None, None]:
         pass
 
     @abstractmethod
-    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S], None, None]:
+    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S, Dict[str, Any]], None, None]:
         pass
 
     @property
@@ -106,15 +108,17 @@ class DatasetPipelineEncoder(Generic[S, T]):
 
     def encode_dataset(self):
         scene_aggregator = self.pipeline_builder.build_scene_aggregator()
-        for dataset, scene in self.pipeline_builder.build_pipeline_scene_generator():
-            scene_info = self._encode_scene(scene=scene, dataset=dataset)
+        for dataset, scene, kwargs in self.pipeline_builder.build_pipeline_scene_generator():
+            scene_info = self._encode_scene(scene=scene, dataset=dataset, **kwargs)
             scene_aggregator.aggregate(scene_info=scene_info)
         scene_aggregator.finalize()
 
-    def _encode_scene(self, dataset: Dataset, scene: S):
-        stage = self.pipeline_builder.build_pipeline_source_generator(dataset=dataset, scene=scene)
-        encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=dataset, scene=scene)
-        final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(dataset=dataset, scene=scene)
+    def _encode_scene(self, dataset: Dataset, scene: S, **kwargs):
+        stage = self.pipeline_builder.build_pipeline_source_generator(dataset=dataset, scene=scene, **kwargs)
+        encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=dataset, scene=scene, **kwargs)
+        final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(
+            dataset=dataset, scene=scene, **kwargs
+        )
         for encoder in encoder_steps:
             stage = encoder.apply(input_stage=stage)
 
