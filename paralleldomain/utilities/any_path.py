@@ -241,7 +241,7 @@ class AnyPath:
         """
         return self._backend.rmdir()
 
-    def rm(self, missing_ok=False):
+    def rm(self, missing_ok: bool =False):
         """
         Removes either a Bucket / key prefix or a key, depending on the path.
         """
