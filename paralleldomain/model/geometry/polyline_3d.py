@@ -32,8 +32,8 @@ class Line3DBaseGeometry(Generic[T]):
         return self.end - self.start
 
     @property
-    def magnitude(self) -> float:
-        """Returns the magnitude (length) of the line."""
+    def length(self) -> float:
+        """Returns the length of the line."""
         return np.linalg.norm(self.direction.to_numpy().reshape(3))
 
     def to_numpy(self):
@@ -70,7 +70,8 @@ class Polyline3DBaseGeometry(Generic[T]):
 
     @property
     def length(self):
-        return sum([ll.magnitude for ll in self.lines])
+        """Returns the length of the line."""
+        return sum([ll.length for ll in self.lines])
 
     def to_numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 3)."""
