@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+from tempfile import NamedTemporaryFile
 from typing import Dict, Iterable, List, Optional, TypeVar, Union
 
 import cv2
@@ -105,12 +106,21 @@ def read_npz(
     if isinstance(files, str):
         files = [files]
 
-    result = {}
-    with path.open(mode="rb") as fp:
-        npz_data = np.load(fp)
-        for f in files if files else npz_data.files:
-            result[f] = npz_data[f]
+    def read_npz_results(local_path: AnyPath) -> Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]]:
+        result = {}
+        with local_path.open(mode="rb") as fp:
+            npz_data = np.load(fp)
+            for f in files if files else npz_data.files:
+                result[f] = npz_data[f]
+        return result
 
+    if path.is_cloud_path:
+        with NamedTemporaryFile(suffix=path.suffix) as local_file:
+            local_path = AnyPath(local_file)
+            path.copy(target=local_path)
+            result = read_npz_results(local_path=local_path)
+    else:
+        result = read_npz_results(local_path=path)
     return result if len(result) != 1 else list(result.values())[0]
 
 
