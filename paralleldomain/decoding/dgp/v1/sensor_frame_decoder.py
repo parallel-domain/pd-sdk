@@ -19,6 +19,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
 )
 from paralleldomain.model.annotation import (
+    Albedo2D,
     Annotation,
     AnnotationType,
     BoundingBox2D,
@@ -29,6 +30,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     Line2D,
+    MaterialProperties2D,
     OpticalFlow,
     Point2D,
     PointCache,
@@ -242,6 +244,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
+        elif issubclass(annotation_type, Albedo2D):
+            color = self._decode_albedo_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            return Albedo2D(color=color)
+        elif issubclass(annotation_type, MaterialProperties2D):
+            roughness = self._decode_material_properties_2d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return MaterialProperties2D(roughness=roughness)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -359,6 +369,16 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
 
         return vectors
+
+    def _decode_albedo_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        color = read_image(path=annotation_path)[..., :3]
+        return color
+
+    def _decode_material_properties_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        roughness = read_png(path=annotation_path)[..., :3]
+        return roughness
 
     def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

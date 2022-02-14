@@ -169,6 +169,42 @@ class TestSensorFrame:
 
         assert np.allclose(np.linalg.norm(normals.normals, axis=-1), 1.0)
 
+    def test_albedo_2d_loading(self, scene: Scene, dataset: Dataset):
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+
+        camera_sensor = next(
+            (x for x in frame.camera_frames if AnnotationTypes.OpticalFlow in x.available_annotation_types), None
+        )
+        assert camera_sensor is not None
+        assert AnnotationTypes.Albedo2D in camera_sensor.available_annotation_types
+
+        color = camera_sensor.get_annotations(annotation_type=AnnotationTypes.Albedo2D)
+        assert color is not None
+        image = camera_sensor.image.rgb
+        assert color.color.shape[:2] == image.shape[:2]
+        assert color.color.shape[2] == 3
+        assert len(np.unique(color.color)) > 10
+
+    def test_material_properties_2d_loading(self, scene: Scene, dataset: Dataset):
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+
+        camera_sensor = next(
+            (x for x in frame.camera_frames if AnnotationTypes.OpticalFlow in x.available_annotation_types), None
+        )
+        assert camera_sensor is not None
+        assert AnnotationTypes.MaterialProperties2D in camera_sensor.available_annotation_types
+
+        props = camera_sensor.get_annotations(annotation_type=AnnotationTypes.MaterialProperties2D)
+        assert props is not None
+        image = camera_sensor.image.rgb
+        assert props.roughness.shape[:2] == image.shape[:2]
+        assert props.roughness.shape[2] == 3
+        assert len(np.unique(props.roughness)) > 10
+
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
