@@ -1,6 +1,9 @@
 import hashlib
 import logging
 import os
+import zipfile
+from tempfile import NamedTemporaryFile
+from time import sleep
 from typing import Dict, Iterable, List, Optional, TypeVar, Union
 
 import cv2
@@ -97,7 +100,7 @@ def write_npz(obj: Dict[str, np.ndarray], path: AnyPath):
 
 
 def read_npz(
-    path: AnyPath, files: Optional[Union[str, List[str]]] = None
+    path: AnyPath, files: Optional[Union[str, List[str]]] = None, max_retries: int = 3
 ) -> Union[
     Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]],
     Union[np.ndarray, Iterable, int, float, tuple, dict],
@@ -105,12 +108,37 @@ def read_npz(
     if isinstance(files, str):
         files = [files]
 
-    result = {}
-    with path.open(mode="rb") as fp:
-        npz_data = np.load(fp)
-        for f in files if files else npz_data.files:
-            result[f] = npz_data[f]
+    def read_npz_results(local_path: AnyPath) -> Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]]:
+        result = {}
+        with local_path.open(mode="rb") as fp:
+            npz_data = np.load(fp)
+            for f in files if files else npz_data.files:
+                result[f] = npz_data[f]
+        return result
 
+    if path.is_cloud_path:
+        tries = 0
+        success = False
+        while not success and tries < max_retries:
+            with NamedTemporaryFile(suffix=path.suffix) as local_file:
+                local_path = AnyPath(local_file)
+                tries += 1
+                path.copy(target=local_path)
+                try:
+                    result = read_npz_results(local_path=local_path)
+                    success = True
+                except zipfile.BadZipFile as e:
+                    if tries >= max_retries:
+                        raise e
+                    else:
+                        secs = 2.0 ** (tries - 1)
+                        logger.info(
+                            f"Caught BadZipFile exception. This might be due to connection problems. "
+                            f"{tries}. retry in {secs}s"
+                        )
+                        sleep(secs)
+    else:
+        result = read_npz_results(local_path=path)
     return result if len(result) != 1 else list(result.values())[0]
 
 
