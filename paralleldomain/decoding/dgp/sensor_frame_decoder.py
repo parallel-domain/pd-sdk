@@ -335,7 +335,8 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
-        vectors = (image_data[..., [0, 2]] << 8) + image_data[..., [1, 3]]
+        vectors = image_data[..., [0, 2]] + (image_data[..., [1, 3]] << 8)
+        vectors = (2 * vectors / 65535 - 1) * [image_data.shape[1], image_data.shape[0]]
 
         return vectors
 
