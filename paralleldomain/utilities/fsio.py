@@ -2,7 +2,7 @@ import hashlib
 import logging
 import os
 import zipfile
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from time import sleep
 from typing import Dict, Iterable, List, Optional, TypeVar, Union
 
@@ -119,24 +119,27 @@ def read_npz(
     if path.is_cloud_path:
         tries = 0
         success = False
+        temp_dir = TemporaryDirectory()
         while not success and tries < max_retries:
-            with NamedTemporaryFile(suffix=path.suffix) as local_file:
-                local_path = AnyPath(local_file)
-                tries += 1
-                path.copy(target=local_path)
-                try:
-                    result = read_npz_results(local_path=local_path)
-                    success = True
-                except zipfile.BadZipFile as e:
-                    if tries >= max_retries:
-                        raise e
-                    else:
-                        secs = 2.0 ** (tries - 1)
-                        logger.info(
-                            f"Caught BadZipFile exception. This might be due to connection problems. "
-                            f"{tries}. retry in {secs}s"
-                        )
-                        sleep(secs)
+            local_path = AnyPath(temp_dir.name) / path.name
+            tries += 1
+            path.copy(target=local_path)
+            try:
+                result = read_npz_results(local_path=local_path)
+                success = True
+            except zipfile.BadZipFile as e:
+                local_path.unlink(missing_ok=True)
+                if tries >= max_retries:
+                    temp_dir.cleanup()
+                    raise e
+                else:
+                    secs = 2.0 ** (tries - 1)
+                    logger.info(
+                        f"Caught BadZipFile exception. This might be due to connection problems. "
+                        f"{tries}. retry in {secs}s"
+                    )
+                    sleep(secs)
+        temp_dir.cleanup()
     else:
         result = read_npz_results(local_path=path)
     return result if len(result) != 1 else list(result.values())[0]
