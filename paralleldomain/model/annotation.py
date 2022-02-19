@@ -620,7 +620,7 @@ class OpticalFlow(Annotation):
             rgb = camera_frame.image.rgb
             next_image = np.zeros_like(rgb)
             coordinates = camera_frame.image.coordinates
-            next_frame_coords = coordinates + flow.vectors
+            next_frame_coords = coordinates + np.round(flow.vectors).astype(int)[...,[1,0]]
 
             for y in range(rgb.shape[0]):
                 for x in range(rgb.shape[1]):
