@@ -42,10 +42,6 @@ class DGPV1PipelineBuilder(PipelineBuilder):
         encoder_steps: List[EncoderStep] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         sim_offset: float = 0.01 * 5,
-        stages_max_out_queue_size: int = 3,
-        workers_per_step: int = 2,
-        max_queue_size_per_step: int = 4,
-        max_queue_size_final_step: int = 20,
         allowed_frames: Optional[List[FrameId]] = None,
         output_annotation_types: Optional[List[AnnotationType]] = None,
         target_dataset_name: Optional[str] = None,
@@ -57,14 +53,12 @@ class DGPV1PipelineBuilder(PipelineBuilder):
     ):
 
         self.inplace = inplace
-        self.max_queue_size_final_step = max_queue_size_final_step
         self.output_annotation_types = output_annotation_types
         self.target_dataset_name = target_dataset_name
         self.allowed_frames = allowed_frames
         self.sim_offset = sim_offset
         self.output_path = output_path
         self.sensor_names = sensor_names
-        self.stages_max_out_queue_size = stages_max_out_queue_size
 
         if decoder_kwargs is None:
             decoder_kwargs = dict()
@@ -84,8 +78,8 @@ class DGPV1PipelineBuilder(PipelineBuilder):
 
         if encoder_steps is None:
             encoder_steps = self.get_default_encoder_steps(
-                workers_per_step=workers_per_step,
-                max_queue_size_per_step=max_queue_size_per_step,
+                workers_per_step=1,
+                max_queue_size_per_step=1,
                 output_annotation_types=output_annotation_types,
                 fs_copy=fs_copy,
             )
@@ -170,8 +164,8 @@ class DGPV1PipelineBuilder(PipelineBuilder):
 
     def get_default_encoder_steps(
         self,
-        workers_per_step: int = 2,
-        max_queue_size_per_step: int = 4,
+        workers_per_step: int = 1,
+        max_queue_size_per_step: int = 1,
         output_annotation_types: Optional[List[AnnotationType]] = None,
         fs_copy: bool = True,
     ) -> List[EncoderStep]:
@@ -265,7 +259,7 @@ class DGPV1PipelineBuilder(PipelineBuilder):
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
-            SceneEncoderStep(in_queue_size=self.max_queue_size_final_step, inplace=self.inplace),
+            SceneEncoderStep(in_queue_size=1, inplace=self.inplace),
             DGPV1SceneAggregator(
                 output_path=self.output_path,
                 dataset_name=self._dataset.name if self.target_dataset_name is None else self.target_dataset_name,

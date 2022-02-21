@@ -48,7 +48,7 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
 
     def __init__(
         self,
-        in_queue_size: int = 4,
+        in_queue_size: int = 1,
         inplace: bool = False,
     ):
         self.inplace = inplace
@@ -366,7 +366,7 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
             return scene_info
 
     def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
-        stage = pypeln.thread.ordered(stage=input_stage)
+        stage = input_stage
         stage = pypeln.thread.map(f=self.encode_scene, stage=stage, workers=1, maxsize=self.in_queue_size)
         return stage
 

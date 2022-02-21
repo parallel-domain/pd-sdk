@@ -22,7 +22,7 @@ class SemanticSegmentation2DEncoderStep(EncoderStepHelper, EncoderStep):
         self,
         fs_copy: bool,
         workers: int = 1,
-        in_queue_size: int = 4,
+        in_queue_size: int = 1,
         output_annotation_types: Optional[List[AnnotationType]] = None,
     ):
         self.fs_copy = fs_copy

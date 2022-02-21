@@ -22,7 +22,7 @@ class CameraImageEncoderStep(EncoderStepHelper, EncoderStep):
         self,
         fs_copy: bool,
         workers: int = 1,
-        in_queue_size: int = 4,
+        in_queue_size: int = 1,
     ):
         self.in_queue_size = in_queue_size
         self.workers = workers

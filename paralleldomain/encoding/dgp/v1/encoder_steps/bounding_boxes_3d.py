@@ -20,7 +20,7 @@ class BoundingBoxes3DEncoderStep(EncoderStepHelper, EncoderStep):
     def __init__(
         self,
         workers: int = 1,
-        in_queue_size: int = 4,
+        in_queue_size: int = 1,
         output_annotation_types: Optional[List[AnnotationType]] = None,
     ):
         self.in_queue_size = in_queue_size
