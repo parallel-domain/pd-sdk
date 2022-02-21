@@ -23,7 +23,7 @@ from paralleldomain.encoding.dgp.v1.encoder_steps.semantic_segmentation_2d impor
 from paralleldomain.encoding.dgp.v1.encoder_steps.semantic_segmentation_3d import SemanticSegmentation3DEncoderStep
 from paralleldomain.encoding.dgp.v1.encoder_steps.surface_normals_2d import SurfaceNormals2DEncoderStep
 from paralleldomain.encoding.dgp.v1.encoder_steps.surface_normals_3d import SurfaceNormals3DEncoderStep
-from paralleldomain.encoding.pipeline_encoder import EncoderStep, FinalStep, PipelineBuilder, S, SceneAggregator, T
+from paralleldomain.encoding.pipeline_encoder import EncoderStep, PipelineBuilder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.sensor import CameraSensor, LidarSensor
 from paralleldomain.model.type_aliases import FrameId, SceneName
@@ -32,14 +32,14 @@ from paralleldomain.utilities.any_path import AnyPath
 logger = logging.getLogger(__name__)
 
 
-class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
+class DGPV1PipelineBuilder(PipelineBuilder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
         dataset_format: str,
         output_path: AnyPath,
-        encoder_steps_builder: Optional[Callable[[], List[EncoderStep]]] = None,
-        final_encoder_step_builder: Optional[Callable[[Tuple[SceneName, str]], FinalStep]] = None,
+        inplace: bool = False,
+        encoder_steps: List[EncoderStep] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         sim_offset: float = 0.01 * 5,
         stages_max_out_queue_size: int = 3,
@@ -56,21 +56,15 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ):
 
+        self.inplace = inplace
+        self.max_queue_size_final_step = max_queue_size_final_step
         self.output_annotation_types = output_annotation_types
         self.target_dataset_name = target_dataset_name
         self.allowed_frames = allowed_frames
-        if encoder_steps_builder is None:
-            encoder_steps_builder = partial(
-                DGPV1PipelineBuilder.get_default_encoder_steps,
-                workers_per_step=workers_per_step,
-                max_queue_size_per_step=max_queue_size_per_step,
-                output_annotation_types=output_annotation_types,
-                fs_copy=fs_copy,
-            )
-        if final_encoder_step_builder is None:
-            final_encoder_step_builder = partial(
-                DGPV1PipelineBuilder.get_default_final_step, max_queue_size=max_queue_size_final_step
-            )
+        self.sim_offset = sim_offset
+        self.output_path = output_path
+        self.sensor_names = sensor_names
+        self.stages_max_out_queue_size = stages_max_out_queue_size
 
         if decoder_kwargs is None:
             decoder_kwargs = dict()
@@ -88,86 +82,94 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
             set_slice = slice(set_start, set_stop)
             self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
-        self.final_encoder_step_builder = final_encoder_step_builder
-        self.stages_max_out_queue_size = stages_max_out_queue_size
-        self.encoder_steps_builder = encoder_steps_builder
-        self.sensor_names = sensor_names
-        self.sim_offset = sim_offset
-        self.output_path = output_path
+        if encoder_steps is None:
+            encoder_steps = self.get_default_encoder_steps(
+                workers_per_step=workers_per_step,
+                max_queue_size_per_step=max_queue_size_per_step,
+                output_annotation_types=output_annotation_types,
+                fs_copy=fs_copy,
+            )
+        self.encoder_steps = encoder_steps
 
-    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S], None, None]:
+    def build_encoder_steps(self) -> List[EncoderStep]:
+        return self.encoder_steps
+
+    def build_pipeline_source_generator(self) -> Generator[Dict[str, Any], None, None]:
+        dataset = self._dataset
         for scene_name in self._scene_names:
             scene = self._dataset.get_unordered_scene(scene_name=scene_name)
-            yield self._dataset, scene, dict()
+            # yield self._dataset, scene, dict()
 
-    def build_scene_aggregator(self) -> SceneAggregator[Dict[str, Any]]:
-        name = self._dataset.name if self.target_dataset_name is None else self.target_dataset_name
-        return DGPV1SceneAggregator(output_path=self.output_path, dataset_name=name)
+            if self.sensor_names is None:
+                sensor_name_mapping = {s: s for s in scene.sensor_names}
+            elif isinstance(self.sensor_names, list):
+                sensor_name_mapping = {s: s for s in self.sensor_names if s in scene.sensor_names}
+            elif isinstance(self.sensor_names, dict):
+                sensor_name_mapping = {t: s for t, s in self.sensor_names.items() if s in scene.sensor_names}
+            else:
+                raise ValueError(f"sensor_names is neither a list nor a dict but {type(self.sensor_names)}!")
 
-    def build_scene_encoder_steps(self, dataset: Dataset, scene: Scene, **kwargs) -> List[EncoderStep]:
-        return self.encoder_steps_builder()
+            reference_timestamp: datetime = scene.get_frame(scene.frame_ids[0]).date_time
+            output_path = self.output_path / scene.name
 
-    def build_scene_final_encoder_step(self, dataset: Dataset, scene: Scene, **kwargs) -> FinalStep[Dict[str, Any]]:
-        return self.final_encoder_step_builder(scene.name, scene.description)
+            logger.info(f"Encoding Scene {scene.name} with sensor mapping: {sensor_name_mapping}")
+            for target_sensor_name, source_sensor_name in sensor_name_mapping.items():
+                sensor = scene.get_sensor(sensor_name=source_sensor_name)
+                if sensor.name in sensor_name_mapping.values():
+                    for sensor_frame in sensor.sensor_frames:
+                        if self.allowed_frames is None or sensor_frame.frame_id in self.allowed_frames:
+                            if isinstance(sensor, CameraSensor):
+                                yield dict(
+                                    camera_frame_info=dict(
+                                        sensor_name=sensor.name,
+                                        frame_id=sensor_frame.frame_id,
+                                        scene_name=scene.name,
+                                        dataset_path=dataset.path,
+                                        dataset_format=dataset.format,
+                                        decoder_kwargs=dataset.decoder_init_kwargs,
+                                    ),
+                                    target_sensor_name=target_sensor_name,
+                                    scene_output_path=output_path,
+                                    scene_reference_timestamp=reference_timestamp,
+                                    sim_offset=self.sim_offset,
+                                )
+                            elif isinstance(sensor, LidarSensor):
+                                yield dict(
+                                    lidar_frame_info=dict(
+                                        sensor_name=sensor.name,
+                                        frame_id=sensor_frame.frame_id,
+                                        scene_name=scene.name,
+                                        dataset_path=dataset.path,
+                                        dataset_format=dataset.format,
+                                        decoder_kwargs=dataset.decoder_init_kwargs,
+                                    ),
+                                    target_sensor_name=target_sensor_name,
+                                    scene_output_path=output_path,
+                                    scene_reference_timestamp=reference_timestamp,
+                                    sim_offset=self.sim_offset,
+                                )
 
-    def build_pipeline_source_generator(
-        self, dataset: Dataset, scene: Scene, **kwargs
-    ) -> Generator[Dict[str, Any], None, None]:
-        if self.sensor_names is None:
-            sensor_name_mapping = {s: s for s in scene.sensor_names}
-        elif isinstance(self.sensor_names, list):
-            sensor_name_mapping = {s: s for s in self.sensor_names if s in scene.sensor_names}
-        elif isinstance(self.sensor_names, dict):
-            sensor_name_mapping = {t: s for t, s in self.sensor_names.items() if s in scene.sensor_names}
-        else:
-            raise ValueError(f"sensor_names is neither a list nor a dict but {type(self.sensor_names)}!")
-
-        reference_timestamp: datetime = scene.get_frame(scene.frame_ids[0]).date_time
-        output_path = self.output_path / scene.name
-
-        logger.info(f"Encoding Scene {scene.name} with sensor mapping: {sensor_name_mapping}")
-        for target_sensor_name, source_sensor_name in sensor_name_mapping.items():
-            sensor = scene.get_sensor(sensor_name=source_sensor_name)
-            if sensor.name in sensor_name_mapping:
-                for sensor_frame in sensor.sensor_frames:
-                    if self.allowed_frames is None or sensor_frame.frame_id in self.allowed_frames:
-                        if isinstance(sensor, CameraSensor):
-                            yield dict(
-                                camera_frame_info=dict(
-                                    sensor_name=sensor.name,
-                                    frame_id=sensor_frame.frame_id,
-                                    scene_name=scene.name,
-                                    dataset_path=dataset.path,
-                                    dataset_format=dataset.format,
-                                    decoder_kwargs=dataset.decoder_init_kwargs,
-                                ),
-                                target_sensor_name=target_sensor_name,
-                                scene_output_path=output_path,
-                                scene_reference_timestamp=reference_timestamp,
-                                sim_offset=self.sim_offset,
-                            )
-                        elif isinstance(sensor, LidarSensor):
-                            yield dict(
-                                lidar_frame_info=dict(
-                                    sensor_name=sensor.name,
-                                    frame_id=sensor_frame.frame_id,
-                                    scene_name=scene.name,
-                                    dataset_path=dataset.path,
-                                    dataset_format=dataset.format,
-                                    decoder_kwargs=dataset.decoder_init_kwargs,
-                                ),
-                                target_sensor_name=target_sensor_name,
-                                scene_output_path=output_path,
-                                scene_reference_timestamp=reference_timestamp,
-                                sim_offset=self.sim_offset,
-                            )
+            yield dict(
+                scene_info=dict(
+                    scene_name=scene.name,
+                    dataset_path=dataset.path,
+                    dataset_format=dataset.format,
+                    decoder_kwargs=dataset.decoder_init_kwargs,
+                ),
+                scene_output_path=output_path,
+                scene_reference_timestamp=reference_timestamp,
+                sim_offset=self.sim_offset,
+                end_of_scene=True,
+                target_scene_name=scene.name,
+                target_scene_description=scene.description,
+            )
 
     @property
     def pipeline_item_unit_name(self):
         return "sensor frames"
 
-    @staticmethod
     def get_default_encoder_steps(
+        self,
         workers_per_step: int = 2,
         max_queue_size_per_step: int = 4,
         output_annotation_types: Optional[List[AnnotationType]] = None,
@@ -263,17 +265,10 @@ class DGPV1PipelineBuilder(PipelineBuilder[Scene, Dict[str, Any]]):
                 in_queue_size=max_queue_size_per_step,
                 output_annotation_types=output_annotation_types,
             ),
+            SceneEncoderStep(in_queue_size=self.max_queue_size_final_step, inplace=self.inplace),
+            DGPV1SceneAggregator(
+                output_path=self.output_path,
+                dataset_name=self._dataset.name if self.target_dataset_name is None else self.target_dataset_name,
+            ),
         ]
         return encoders
-
-    @staticmethod
-    def get_default_final_step(
-        target_scene_name: SceneName,
-        target_scene_description: str,
-        max_queue_size: int = 20,
-    ) -> FinalStep:
-        return SceneEncoderStep(
-            in_queue_size=max_queue_size,
-            target_scene_name=target_scene_name,
-            target_scene_description=target_scene_description,
-        )

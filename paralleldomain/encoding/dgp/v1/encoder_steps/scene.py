@@ -27,17 +27,17 @@ from paralleldomain.common.dgp.v1.constants import (
 from paralleldomain.common.dgp.v1.utils import datetime_to_timestamp
 from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump, class_map_to_ontology_proto
-from paralleldomain.encoding.pipeline_encoder import FinalStep
+from paralleldomain.encoding.pipeline_encoder import EncoderStep
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D
 from paralleldomain.model.image import Image
-from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, FilePathedDataType
+from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, FilePathedDataType, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import relative_path
+from paralleldomain.utilities.fsio import read_json_message, relative_path
 
 
-class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
+class SceneEncoderStep(EncoderStep, EncoderStepHelper):
     _fisheye_camera_model_map: Dict[str, int] = defaultdict(
         lambda: 2,
         {
@@ -48,28 +48,28 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
 
     def __init__(
         self,
-        target_scene_name: SceneName,
-        target_scene_description: str,
         in_queue_size: int = 4,
+        inplace: bool = False,
     ):
-        self.target_scene_name = target_scene_name
-        self.target_scene_description = target_scene_description
+        self.inplace = inplace
+        # self.target_scene_name = target_scene_name
+        # self.target_scene_description = target_scene_description
 
         self.in_queue_size = in_queue_size
         self.scene_data_dtos: Dict[SensorName, List[sample_pb2.Datum]] = dict()
         self.ontologie_paths: Dict[int, AnyPath] = dict()
         self._frames: Dict[FrameId, datetime] = dict()
-        self._scene_output_path: Optional[AnyPath] = None
+        self._sensor_calibrations: Dict[SensorName, Tuple[geometry_pb2.Pose, geometry_pb2.CameraIntrinsics]] = dict()
+
+    def reset_state(self):
+        self.scene_data_dtos: Dict[SensorName, List[sample_pb2.Datum]] = dict()
+        self.ontologie_paths: Dict[int, AnyPath] = dict()
+        self._frames: Dict[FrameId, datetime] = dict()
         self._sensor_calibrations: Dict[SensorName, Tuple[geometry_pb2.Pose, geometry_pb2.CameraIntrinsics]] = dict()
 
     def encode_camera_sensor(self, input_dict: Dict[str, Any]):
         sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is not None:
-            quaternion = sensor_frame.pose.quaternion
-            date_time = sensor_frame.date_time
-            image_height = sensor_frame.image.height
-            image_width = sensor_frame.image.width
-            rotation = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
             sensor_data = input_dict["sensor_data"]
             annotations = input_dict.get("annotations", dict())
             frame_id = input_dict["camera_frame_info"]["frame_id"]
@@ -78,49 +78,76 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             scene_output_path = input_dict["scene_output_path"]
             target_sensor_name = input_dict["target_sensor_name"]
 
-            if target_sensor_name not in self.scene_data_dtos:
-                self.scene_data_dtos[target_sensor_name] = list()
+            self.aggregate_camera_sensor(
+                target_sensor_name=target_sensor_name,
+                scene_output_path=scene_output_path,
+                camera_image_path=AnyPath(sensor_data[DirectoryName.RGB]),
+                annotations=annotations,
+                metadata=metadata,
+                target_frame_id=target_frame_id,
+                sensor_frame=sensor_frame,
+            )
 
-            scene_datum_dto = image_pb2.Image(
-                filename=relative_path(start=scene_output_path, path=sensor_data[DirectoryName.RGB]).as_posix(),
-                height=image_height,
-                width=image_width,
-                channels=4,
-                annotations={
-                    int(k): relative_path(start=scene_output_path, path=v).as_posix()
-                    for k, v in annotations.items()
-                    if v is not None
-                },
-                pose=geometry_pb2.Pose(
-                    translation=geometry_pb2.Vector3(
-                        x=sensor_frame.pose.translation[0],
-                        y=sensor_frame.pose.translation[1],
-                        z=sensor_frame.pose.translation[2],
-                    ),
-                    rotation=geometry_pb2.Quaternion(
-                        qw=rotation[0],
-                        qx=rotation[1],
-                        qy=rotation[2],
-                        qz=rotation[3],
-                    ),
+    def aggregate_camera_sensor(
+        self,
+        target_sensor_name: str,
+        scene_output_path: AnyPath,
+        camera_image_path: AnyPath,
+        annotations: Dict[int, AnyPath],
+        metadata: Dict[str, Any],
+        target_frame_id: FrameId,
+        sensor_frame: CameraSensorFrame,
+    ):
+        quaternion = sensor_frame.pose.quaternion
+        date_time = sensor_frame.date_time
+        image_height = sensor_frame.image.height
+        image_width = sensor_frame.image.width
+        rotation = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
+
+        if target_sensor_name not in self.scene_data_dtos:
+            self.scene_data_dtos[target_sensor_name] = list()
+
+        scene_datum_dto = image_pb2.Image(
+            filename=relative_path(start=scene_output_path, path=camera_image_path).as_posix(),
+            height=image_height,
+            width=image_width,
+            channels=4,
+            annotations={
+                int(k): relative_path(start=scene_output_path, path=v).as_posix()
+                for k, v in annotations.items()
+                if v is not None
+            },
+            pose=geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(
+                    x=sensor_frame.pose.translation[0],
+                    y=sensor_frame.pose.translation[1],
+                    z=sensor_frame.pose.translation[2],
                 ),
-                metadata={str(k): v for k, v in metadata.items()},
+                rotation=geometry_pb2.Quaternion(
+                    qw=rotation[0],
+                    qx=rotation[1],
+                    qy=rotation[2],
+                    qz=rotation[3],
+                ),
+            ),
+            metadata={str(k): v for k, v in metadata.items()},
+        )
+        # noinspection PyTypeChecker
+        self.scene_data_dtos[target_sensor_name].append(
+            sample_pb2.Datum(
+                id=identifiers_pb2.DatumId(
+                    log="",
+                    name=target_sensor_name,
+                    timestamp=datetime_to_timestamp(dt=date_time),
+                    index=int(target_frame_id),
+                ),
+                key="",
+                datum=sample_pb2.DatumValue(image=scene_datum_dto),
+                next_key="",
+                prev_key="",
             )
-            # noinspection PyTypeChecker
-            self.scene_data_dtos[target_sensor_name].append(
-                sample_pb2.Datum(
-                    id=identifiers_pb2.DatumId(
-                        log="",
-                        name=target_sensor_name,
-                        timestamp=datetime_to_timestamp(dt=date_time),
-                        index=int(target_frame_id),
-                    ),
-                    key="",
-                    datum=sample_pb2.DatumValue(image=scene_datum_dto),
-                    next_key="",
-                    prev_key="",
-                )
-            )
+        )
+        self.aggegate_camera_calibration(target_sensor_name=target_sensor_name, sensor_frame=sensor_frame)
 
     def encode_lidar_sensor(self, input_dict: Dict[str, Any]):
         sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
@@ -132,120 +159,131 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             metadata = input_dict.get("metadata", dict())
             scene_output_path = input_dict["scene_output_path"]
             target_sensor_name = input_dict["target_sensor_name"]
+            self.aggregate_lidar_sensor(
+                target_sensor_name=target_sensor_name,
+                scene_output_path=scene_output_path,
+                lidar_cloud_path=AnyPath(sensor_data[DirectoryName.POINT_CLOUD]),
+                annotations=annotations,
+                metadata=metadata,
+                target_frame_id=target_frame_id,
+                sensor_frame=sensor_frame,
+            )
 
-            if target_sensor_name not in self.scene_data_dtos:
-                self.scene_data_dtos[target_sensor_name] = list()
+    def aggregate_lidar_sensor(
+        self,
+        target_sensor_name: str,
+        scene_output_path: AnyPath,
+        lidar_cloud_path: AnyPath,
+        annotations: Dict[int, AnyPath],
+        metadata: Dict[str, Any],
+        target_frame_id: FrameId,
+        sensor_frame: LidarSensorFrame,
+    ):
 
-            scene_datum_dto = point_cloud_pb2.PointCloud(
-                filename=relative_path(start=scene_output_path, path=sensor_data[DirectoryName.POINT_CLOUD]).as_posix(),
-                point_format=[getattr(point_cloud_pb2.PointCloud.ChannelType, pf) for pf in PointFormat.to_list()],
-                annotations={
-                    int(k): relative_path(start=scene_output_path, path=v).as_posix()
-                    for k, v in annotations.items()
-                    if v is not None
-                },
-                pose=geometry_pb2.Pose(
-                    translation=geometry_pb2.Vector3(
-                        x=sensor_frame.pose.translation[0],
-                        y=sensor_frame.pose.translation[1],
-                        z=sensor_frame.pose.translation[2],
-                    ),
-                    rotation=geometry_pb2.Quaternion(
-                        qw=sensor_frame.pose.quaternion.w,
-                        qx=sensor_frame.pose.quaternion.x,
-                        qy=sensor_frame.pose.quaternion.y,
-                        qz=sensor_frame.pose.quaternion.z,
-                    ),
+        if target_sensor_name not in self.scene_data_dtos:
+            self.scene_data_dtos[target_sensor_name] = list()
+
+        scene_datum_dto = point_cloud_pb2.PointCloud(
+            filename=relative_path(start=scene_output_path, path=lidar_cloud_path).as_posix(),
+            point_format=[getattr(point_cloud_pb2.PointCloud.ChannelType, pf) for pf in PointFormat.to_list()],
+            annotations={
+                int(k): relative_path(start=scene_output_path, path=v).as_posix()
+                for k, v in annotations.items()
+                if v is not None
+            },
+            pose=geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(
+                    x=sensor_frame.pose.translation[0],
+                    y=sensor_frame.pose.translation[1],
+                    z=sensor_frame.pose.translation[2],
                 ),
-                point_fields=[],
-                metadata={str(k): v for k, v in metadata.items()},
+                rotation=geometry_pb2.Quaternion(
+                    qw=sensor_frame.pose.quaternion.w,
+                    qx=sensor_frame.pose.quaternion.x,
+                    qy=sensor_frame.pose.quaternion.y,
+                    qz=sensor_frame.pose.quaternion.z,
+                ),
+            ),
+            point_fields=[],
+            metadata={str(k): v for k, v in metadata.items()},
+        )
+        # noinspection PyTypeChecker
+        self.scene_data_dtos[target_sensor_name].append(
+            sample_pb2.Datum(
+                id=identifiers_pb2.DatumId(
+                    log="",
+                    name=target_sensor_name,
+                    timestamp=datetime_to_timestamp(dt=sensor_frame.date_time),
+                    index=int(target_frame_id),
+                ),
+                key="",
+                datum=sample_pb2.DatumValue(point_cloud=scene_datum_dto),
+                next_key="",
+                prev_key="",
             )
-            # noinspection PyTypeChecker
-            self.scene_data_dtos[target_sensor_name].append(
-                sample_pb2.Datum(
-                    id=identifiers_pb2.DatumId(
-                        log="",
-                        name=target_sensor_name,
-                        timestamp=datetime_to_timestamp(dt=sensor_frame.date_time),
-                        index=int(target_frame_id),
-                    ),
-                    key="",
-                    datum=sample_pb2.DatumValue(point_cloud=scene_datum_dto),
-                    next_key="",
-                    prev_key="",
-                )
+        )
+        self.encode_lidar_calibration(target_sensor_name=target_sensor_name, sensor_frame=sensor_frame)
+
+    def encode_lidar_calibration(self, target_sensor_name: str, sensor_frame: LidarSensorFrame):
+        if target_sensor_name not in self._sensor_calibrations:
+            extr = sensor_frame.extrinsic
+
+            calib_dto_extrinsic = geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=geometry_pb2.Quaternion(
+                    qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
+                ),
             )
 
-    def encode_lidar_calibration(self, input_dict: Dict[str, Any]):
-        sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
-        if sensor_frame is not None:
-            target_sensor_name = input_dict["target_sensor_name"]
-            if target_sensor_name not in self._sensor_calibrations:
-                extr = sensor_frame.extrinsic
+            calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
+                fx=0.0,
+                fy=0.0,
+                cx=0.0,
+                cy=0.0,
+                skew=0.0,
+                fov=0.0,
+                k1=0.0,
+                k2=0.0,
+                k3=0.0,
+                k4=0.0,
+                k5=0.0,
+                k6=0.0,
+                p1=0.0,
+                p2=0.0,
+                fisheye=0,
+            )
+            self._sensor_calibrations[target_sensor_name] = (calib_dto_extrinsic, calib_dto_intrinsic)
 
-                calib_dto_extrinsic = geometry_pb2.Pose(
-                    translation=geometry_pb2.Vector3(
-                        x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]
-                    ),
-                    rotation=geometry_pb2.Quaternion(
-                        qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
-                    ),
-                )
+    def aggegate_camera_calibration(self, target_sensor_name: str, sensor_frame: CameraSensorFrame):
+        if target_sensor_name not in self._sensor_calibrations:
+            extr = sensor_frame.extrinsic
 
-                calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
-                    fx=0.0,
-                    fy=0.0,
-                    cx=0.0,
-                    cy=0.0,
-                    skew=0.0,
-                    fov=0.0,
-                    k1=0.0,
-                    k2=0.0,
-                    k3=0.0,
-                    k4=0.0,
-                    k5=0.0,
-                    k6=0.0,
-                    p1=0.0,
-                    p2=0.0,
-                    fisheye=0,
-                )
-                self._sensor_calibrations[target_sensor_name] = (calib_dto_extrinsic, calib_dto_intrinsic)
+            calib_dto_extrinsic = geometry_pb2.Pose(
+                translation=geometry_pb2.Vector3(x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]),
+                rotation=geometry_pb2.Quaternion(
+                    qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
+                ),
+            )
 
-    def encode_camera_calibration(self, input_dict: Dict[str, Any]):
-        sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
-        if sensor_frame is not None:
-            target_sensor_name = input_dict["target_sensor_name"]
-            if target_sensor_name not in self._sensor_calibrations:
-                extr = sensor_frame.extrinsic
-
-                calib_dto_extrinsic = geometry_pb2.Pose(
-                    translation=geometry_pb2.Vector3(
-                        x=extr.translation[0], y=extr.translation[1], z=extr.translation[2]
-                    ),
-                    rotation=geometry_pb2.Quaternion(
-                        qw=extr.quaternion.w, qx=extr.quaternion.x, qy=extr.quaternion.y, qz=extr.quaternion.z
-                    ),
-                )
-
-                intr = sensor_frame.intrinsic
-                calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
-                    fx=intr.fx,
-                    fy=intr.fy,
-                    cx=intr.cx,
-                    cy=intr.cy,
-                    skew=intr.skew,
-                    fov=intr.fov,
-                    k1=intr.k1,
-                    k2=intr.k2,
-                    k3=intr.k3,
-                    k4=intr.k4,
-                    k5=intr.k5,
-                    k6=intr.k6,
-                    p1=intr.p1,
-                    p2=intr.p2,
-                    fisheye=self._fisheye_camera_model_map[intr.camera_model],
-                )
-                self._sensor_calibrations[target_sensor_name] = (calib_dto_extrinsic, calib_dto_intrinsic)
+            intr = sensor_frame.intrinsic
+            calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
+                fx=intr.fx,
+                fy=intr.fy,
+                cx=intr.cx,
+                cy=intr.cy,
+                skew=intr.skew,
+                fov=intr.fov,
+                k1=intr.k1,
+                k2=intr.k2,
+                k3=intr.k3,
+                k4=intr.k4,
+                k5=intr.k5,
+                k6=intr.k6,
+                p1=intr.p1,
+                p2=intr.p2,
+                fisheye=self._fisheye_camera_model_map[intr.camera_model],
+            )
+            self._sensor_calibrations[target_sensor_name] = (calib_dto_extrinsic, calib_dto_intrinsic)
 
     def encode_ontologies(self, input_dict: Dict[str, Any]):
         sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
@@ -254,18 +292,21 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
         if sensor_frame is not None:
             annotations = input_dict["annotations"]
             scene_output_path = input_dict["scene_output_path"]
+            scene = self._scene_from_input_dict(input_dict=input_dict)
 
-            for annotation_id in annotations.keys():
-                if annotation_id not in self.ontologie_paths:
-                    annotation_id = int(annotation_id)
-                    a_type = ANNOTATION_TYPE_MAP[annotation_id]
-                    scene = self._scene_from_input_dict(input_dict=input_dict)
-                    ontology_proto = class_map_to_ontology_proto(class_map=scene.get_class_map(a_type))
+            self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
 
-                    output_path = scene_output_path / DirectoryName.ONTOLOGY / ".json"
-                    output_path.parent.mkdir(parents=True, exist_ok=True)
-                    path = fsio.write_json_message(obj=ontology_proto, path=output_path, append_sha1=True)
-                    self.ontologie_paths[annotation_id] = relative_path(start=scene_output_path, path=path)
+    def aggegate_ontologies(self, annotations: Dict[int, AnyPath], scene_output_path: AnyPath, scene: Scene):
+        for annotation_id in annotations.keys():
+            if annotation_id not in self.ontologie_paths:
+                annotation_id = int(annotation_id)
+                a_type = ANNOTATION_TYPE_MAP[annotation_id]
+                ontology_proto = class_map_to_ontology_proto(class_map=scene.get_class_map(a_type))
+
+                output_path = scene_output_path / DirectoryName.ONTOLOGY / ".json"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                path = fsio.write_json_message(obj=ontology_proto, path=output_path, append_sha1=True)
+                self.ontologie_paths[annotation_id] = relative_path(start=scene_output_path, path=path)
 
     def get_scene_sensor_data(self) -> Dict[SensorName, Dict[FrameId, sample_pb2.Datum]]:
         scene_sensor_data = dict()
@@ -286,7 +327,7 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             scene_sensor_data[sensor_name] = {str(sd.id.index): sd for sd in scene_data_dtos}
         return scene_sensor_data
 
-    def aggregate_frame_map(self, input_dict: Dict[str, Any]):
+    def encode_frame_map(self, input_dict: Dict[str, Any]):
         sensor_frame = self._get_lidar_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is None:
             sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
@@ -295,9 +336,12 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             frame_id = input_dict["lidar_frame_info"]["frame_id"]
         if sensor_frame is not None:
             target_frame_id = input_dict.get("target_frame_id", frame_id)
-            self._frames[target_frame_id] = sensor_frame.date_time
+            self.aggregate_frame_map(target_frame_id=target_frame_id, date_time=sensor_frame.date_time)
 
-    def save_calibration_file(self) -> AnyPath:
+    def aggregate_frame_map(self, target_frame_id: FrameId, date_time: datetime):
+        self._frames[target_frame_id] = date_time
+
+    def save_calibration_file(self, scene_output_path: AnyPath) -> AnyPath:
         names, extrinsics, intrinsics = list(), list(), list()
         for name, (extrinsic, intrinsic) in self._sensor_calibrations.items():
             names.append(name)
@@ -305,32 +349,40 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             intrinsics.append(intrinsic)
         calib_dto = sample_pb2.SampleCalibration(names=names, extrinsics=extrinsics, intrinsics=intrinsics)
 
-        output_path = self._scene_output_path / DirectoryName.CALIBRATION / ".json"
+        output_path = scene_output_path / DirectoryName.CALIBRATION / ".json"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         return fsio.write_json_message(obj=calib_dto, path=output_path, append_sha1=True)
 
     def encode_scene(self, input_dict: Dict[str, Any]):
-        if self._scene_output_path is None:
-            self._scene_output_path = input_dict["scene_output_path"]
-        self.encode_camera_sensor(input_dict=input_dict)
-        self.encode_lidar_sensor(input_dict=input_dict)
-        self.encode_lidar_calibration(input_dict=input_dict)
-        self.encode_camera_calibration(input_dict=input_dict)
-        self.encode_ontologies(input_dict=input_dict)
-        self.aggregate_frame_map(input_dict=input_dict)
-        return input_dict
+        if "end_of_scene" not in input_dict:
+            self.encode_camera_sensor(input_dict=input_dict)
+            self.encode_lidar_sensor(input_dict=input_dict)
+            self.encode_ontologies(input_dict=input_dict)
+            self.encode_frame_map(input_dict=input_dict)
+            return dict()
+        else:
+            scene_info = self.write_scene_data(input_dict=input_dict)
+            self.reset_state()
+            return scene_info
 
-    def aggregate(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
-        stage = pypeln.thread.map(f=self.encode_scene, stage=input_stage, workers=1, maxsize=self.in_queue_size)
+    def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
+        stage = pypeln.thread.ordered(stage=input_stage)
+        stage = pypeln.thread.map(f=self.encode_scene, stage=stage, workers=1, maxsize=self.in_queue_size)
         return stage
 
-    def finalize(self) -> Dict[str, Any]:
-        if self._scene_output_path is None:
-            raise ValueError("No scene output path could be extracted during aggregation! Is the scene empty?")
+    def write_scene_data(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
+        scene_output_path = input_dict["scene_output_path"]
+        target_scene_name = input_dict["target_scene_name"]
+        target_scene_description = input_dict["target_scene_description"]
+
+        if self.inplace:
+            scene = self._scene_from_input_dict(input_dict=input_dict)
+            self.aggregate_inplace_data(scene=scene, scene_output_path=scene_output_path)
+
         scene_data = []
         scene_samples = []
         scene_sensor_data = self.get_scene_sensor_data()
-        calibration_file = self.save_calibration_file()
+        calibration_file = self.save_calibration_file(scene_output_path=scene_output_path)
         ontologies = {k: v.stem for k, v in self.ontologie_paths.items()}
         available_annotation_types = [int(k) for k in ontologies.keys()]
         for frame_id, date_time in self._frames.items():
@@ -355,8 +407,8 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             )
 
         scene_dto = scene_pb2.Scene(
-            name=self.target_scene_name,
-            description=self.target_scene_description,
+            name=target_scene_name,
+            description=target_scene_description,
             log="",
             ontologies=ontologies,
             metadata={
@@ -372,7 +424,68 @@ class SceneEncoderStep(FinalStep[Dict[str, Any]], EncoderStepHelper):
             statistics=None,
         )
 
-        output_path = self._scene_output_path / "scene.json"
+        output_path = scene_output_path / "scene.json"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         scene_storage_path = fsio.write_json_message(obj=scene_dto, path=output_path, append_sha1=True)
         return dict(scene_storage_path=scene_storage_path, available_annotation_types=available_annotation_types)
+
+    def aggregate_inplace_data(self, scene: Scene, scene_output_path: AnyPath) -> Optional[scene_pb2.Scene]:
+        for camera in scene.cameras:
+            for cam_frame in camera.sensor_frames:
+                camera_image_path = cam_frame.get_file_path(data_type=FilePathedDataType.Image)
+                if camera_image_path is None:
+                    raise ValueError(
+                        "The given dataset is not compatible to be inplace encoded since file paths cant be accessed!"
+                    )
+
+                annotations = {
+                    ANNOTATION_TYPE_MAP_INV[an_type]: cam_frame.get_file_path(data_type=an_type)
+                    for an_type in cam_frame.available_annotation_types
+                }
+                for path in annotations.values():
+                    if path is None:
+                        raise ValueError(
+                            "The given dataset is not compatible to be inplace encoded since file "
+                            "paths cant be accessed!"
+                        )
+                self.aggregate_camera_sensor(
+                    target_sensor_name=camera.name,
+                    scene_output_path=scene_output_path,
+                    camera_image_path=camera_image_path,
+                    annotations=annotations,
+                    metadata=cam_frame.metadata,
+                    target_frame_id=cam_frame.frame_id,
+                    sensor_frame=cam_frame,
+                )
+                self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
+                self.aggregate_frame_map(target_frame_id=cam_frame.frame_id, date_time=cam_frame.date_time)
+
+        for lidar in scene.lidars:
+            for lidar_frame in lidar.sensor_frames:
+                cloud_path = lidar_frame.get_file_path(data_type=FilePathedDataType.PointCloud)
+                if cloud_path is None:
+                    raise ValueError(
+                        "The given dataset is not compatible to be inplace encoded since file paths cant be accessed!"
+                    )
+
+                annotations = {
+                    ANNOTATION_TYPE_MAP_INV[an_type]: lidar_frame.get_file_path(data_type=an_type)
+                    for an_type in lidar_frame.available_annotation_types
+                }
+                for path in annotations.values():
+                    if path is None:
+                        raise ValueError(
+                            "The given dataset is not compatible to be inplace encoded since file "
+                            "paths cant be accessed!"
+                        )
+                self.aggregate_lidar_sensor(
+                    target_sensor_name=lidar.name,
+                    scene_output_path=scene_output_path,
+                    lidar_cloud_path=cloud_path,
+                    annotations=annotations,
+                    metadata=lidar_frame.metadata,
+                    target_frame_id=lidar_frame.frame_id,
+                    sensor_frame=lidar_frame,
+                )
+                self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
+                self.aggregate_frame_map(target_frame_id=lidar_frame.frame_id, date_time=lidar_frame.date_time)

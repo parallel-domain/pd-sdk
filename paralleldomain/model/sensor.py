@@ -312,10 +312,18 @@ class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> CameraSensorFrame[TDateTime]:
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
+    @property
+    def sensor_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
+        return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
+
 
 class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> LidarSensorFrame[TDateTime]:
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+
+    @property
+    def sensor_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
+        return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
 
 
 class SensorPose(Transformation):

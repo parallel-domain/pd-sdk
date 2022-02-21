@@ -256,7 +256,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return datum["metadata"]
+        if datum.image:
+            return datum.image.metadata
+        else:
+            return datum.point_cloud.metadata
 
     # ---------------------------------
 

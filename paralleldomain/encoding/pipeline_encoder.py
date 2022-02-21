@@ -16,9 +16,6 @@ except ImportError:
     pypeln = None
 
 
-S = TypeVar("S", UnorderedScene, Scene)
-T = TypeVar("T")
-
 logger = logging.getLogger(__name__)
 
 
@@ -42,53 +39,19 @@ SaveDataStage = Iterable[Any]
 StepResultStages = Tuple[ProcessDataStage, SaveDataStage]
 
 
-class SceneAggregator(Generic[T]):
-    @abstractmethod
-    def aggregate(self, scene_info: T):
-        pass
-
-    @abstractmethod
-    def finalize(self):
-        pass
-
-
 class EncoderStep:
     @abstractmethod
     def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
         pass
 
 
-class FinalStep(Generic[T]):
+class PipelineBuilder:
     @abstractmethod
-    def aggregate(self, input_stage: Iterable[Any]) -> Iterable[Any]:
+    def build_encoder_steps(self) -> List[EncoderStep]:
         pass
 
     @abstractmethod
-    def finalize(self) -> T:
-        pass
-
-
-class PipelineBuilder(Generic[S, T]):
-    @abstractmethod
-    def build_scene_aggregator(self) -> SceneAggregator[T]:
-        pass
-
-    @abstractmethod
-    def build_scene_encoder_steps(self, dataset: Dataset, scene: S, **kwargs) -> List[EncoderStep]:
-        pass
-
-    @abstractmethod
-    def build_scene_final_encoder_step(self, dataset: Dataset, scene: S, **kwargs) -> FinalStep[T]:
-        pass
-
-    @abstractmethod
-    def build_pipeline_source_generator(
-        self, dataset: Dataset, scene: S, **kwargs
-    ) -> Generator[Dict[str, Any], None, None]:
-        pass
-
-    @abstractmethod
-    def build_pipeline_scene_generator(self) -> Generator[Tuple[Dataset, S, Dict[str, Any]], None, None]:
+    def build_pipeline_source_generator(self) -> Generator[Dict[str, Any], None, None]:
         pass
 
     @property
@@ -97,7 +60,7 @@ class PipelineBuilder(Generic[S, T]):
         pass
 
 
-class DatasetPipelineEncoder(Generic[S, T]):
+class DatasetPipelineEncoder:
     def __init__(
         self,
         pipeline_builder: PipelineBuilder,
@@ -107,31 +70,20 @@ class DatasetPipelineEncoder(Generic[S, T]):
         self.use_tqdm = use_tqdm
 
     def encode_dataset(self):
-        scene_aggregator = self.pipeline_builder.build_scene_aggregator()
-        for dataset, scene, kwargs in self.pipeline_builder.build_pipeline_scene_generator():
-            scene_info = self._encode_scene(scene=scene, dataset=dataset, **kwargs)
-            scene_aggregator.aggregate(scene_info=scene_info)
-        scene_aggregator.finalize()
-
-    def _encode_scene(self, dataset: Dataset, scene: S, **kwargs):
-        stage = self.pipeline_builder.build_pipeline_source_generator(dataset=dataset, scene=scene, **kwargs)
-        encoder_steps = self.pipeline_builder.build_scene_encoder_steps(dataset=dataset, scene=scene, **kwargs)
-        final_encoder_step = self.pipeline_builder.build_scene_final_encoder_step(
-            dataset=dataset, scene=scene, **kwargs
-        )
+        stage = self.pipeline_builder.build_pipeline_source_generator()
+        encoder_steps = self.pipeline_builder.build_encoder_steps()
         for encoder in encoder_steps:
             stage = encoder.apply(input_stage=stage)
 
-        stage = final_encoder_step.aggregate(input_stage=stage)
-
         if self.use_tqdm:
             stage = tqdm(
-                stage, desc=f"{scene.name}", unit=f" {self.pipeline_builder.pipeline_item_unit_name}", smoothing=0.0
+                stage,
+                desc="Encoding Progress",
+                unit=f" {self.pipeline_builder.pipeline_item_unit_name}",
+                smoothing=0.0,
             )
 
         pypeln.process.run(stage)
-
-        return final_encoder_step.finalize()
 
     @classmethod
     def from_builder(

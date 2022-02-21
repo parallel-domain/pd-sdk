@@ -42,7 +42,9 @@ class EncoderStepHelper:
         return output_path
 
     def _scene_from_input_dict(self, input_dict: Dict[str, Any]) -> Scene:
-        info_dict = input_dict.get("camera_frame_info", input_dict.get("lidar_frame_info"))
+        info_dict = input_dict.get(
+            "camera_frame_info", input_dict.get("lidar_frame_info", input_dict.get("scene_info"))
+        )
         return self._scene_from_info_dict(info_dict=info_dict)
 
     def _scene_from_info_dict(self, info_dict: Dict[str, Any]) -> Scene:
