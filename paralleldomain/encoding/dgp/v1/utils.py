@@ -6,7 +6,7 @@ from paralleldomain.common.dgp.v1 import ontology_pb2
 from paralleldomain.model.class_mapping import ClassMap
 
 
-def class_map_to_ontology_proto(class_map: ClassMap):
+def class_map_to_ontology_proto(class_map: ClassMap) -> ontology_pb2.Ontology:
     return ontology_pb2.Ontology(
         items=[
             ontology_pb2.OntologyItem(

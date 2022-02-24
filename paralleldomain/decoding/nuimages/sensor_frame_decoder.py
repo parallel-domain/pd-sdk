@@ -1,6 +1,6 @@
 import base64
 from datetime import datetime
-from typing import Any, ByteString, Dict, List, Tuple, TypeVar, Union
+from typing import Any, ByteString, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import cv2
 import numpy as np
@@ -9,6 +9,7 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, TDateTime
 from paralleldomain.model.annotation import (
+    Annotation,
     AnnotationType,
     AnnotationTypes,
     BoundingBox2D,
@@ -16,6 +17,8 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     SemanticSegmentation2D,
 )
+from paralleldomain.model.image import Image
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -23,6 +26,7 @@ from paralleldomain.utilities.fsio import read_image
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
 
 
 class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuImagesDataAccessMixin):
@@ -125,6 +129,18 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         ego_to_world = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
         sensor_to_world = ego_to_world @ sensor_to_ego
         return SensorPose.from_transformation_matrix(sensor_to_world)
+
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        if issubclass(data_type, Image):
+            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            )
+            if sample_data_id is not None:
+                data = self.nu_samples_data[sample_data_id]
+
+                img_path = AnyPath(self._dataset_path) / data["filename"]
+                return img_path
+        return None
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T

@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 from paralleldomain.model.unordered_scene import UnorderedScene
+from paralleldomain.utilities.any_path import AnyPath
 
 try:
     from typing import Protocol
@@ -61,6 +62,15 @@ class DatasetDecoderProtocol(Protocol):
     def get_scene(self, scene_name: SceneName) -> Scene:
         pass
 
+    def get_format(self) -> str:
+        pass
+
+    def get_path(self) -> Optional[AnyPath]:
+        pass
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        pass
+
 
 class Dataset:
     """The :obj:`Dataset` object is the entry point for loading any data.
@@ -81,6 +91,21 @@ class Dataset:
     def metadata(self) -> DatasetMeta:
         """Returns a list of scene names within the dataset."""
         return self._decoder.get_dataset_metadata()
+
+    @property
+    def format(self) -> str:
+        """Returns a str with the name of the dataset storage format (e.g. dgp, cityscapes, nuscenes)."""
+        return self._decoder.get_format()
+
+    @property
+    def path(self) -> AnyPath:
+        """Returns an optional path to a file or a folder where the dataset is stored."""
+        return self._decoder.get_path()
+
+    @property
+    def decoder_init_kwargs(self) -> Dict[str, Any]:
+        """Returns an optional path to a file or a folder where the dataset is stored."""
+        return self._decoder.get_decoder_init_kwargs()
 
     @property
     def unordered_scenes(self) -> Dict[SceneName, UnorderedScene[Union[datetime, None]]]:
