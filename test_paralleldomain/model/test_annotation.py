@@ -170,7 +170,7 @@ class TestSensorFrame:
 
         assert np.allclose(np.linalg.norm(normals.normals, axis=-1), 1.0)
 
-    @pytest.skip
+    @pytest.mark.skip
     def test_albedo_2d_loading(self, scene: Scene, dataset: Dataset):
 
         frame_ids = scene.frame_ids
@@ -189,7 +189,7 @@ class TestSensorFrame:
         assert color.color.shape[2] == 3
         assert len(np.unique(color.color)) > 10
 
-    @pytest.skip
+    @pytest.mark.skip
     def test_material_properties_2d_loading(self, scene: Scene, dataset: Dataset):
 
         frame_ids = scene.frame_ids
