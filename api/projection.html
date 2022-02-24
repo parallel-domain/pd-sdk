@@ -285,7 +285,7 @@ extrapolate for maximum valid angle value of Pi.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>k_matrix</strong> (<em>numpy.ndarray</em>) – Camera intrinsic matrix. Definition can be found in
 <a class="reference external" href="https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html">OpenCV documentation</a>.</p></li>
-<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite> or <cite>opencv_fisheye</cite>.
+<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite>, <cite>opencv_fisheye</cite>, <cite>pd_fisheye</cite>.
 More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
 <li><p><strong>points_3d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx3) containing the points.
 Points must be already in the camera’s coordinate system.</p></li>
@@ -297,7 +297,65 @@ distortion models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A matrix with dimensions (nx2) containing the point projections. <code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code> is <code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> and values need
 to be rounded to integers by the user to receive actual pixel coordinates. Includes all points, independent
-if they are on the image plane or outside.</p>
+if they are on the image plane or outside. Points behind the image plane will be projected, too. If values are
+not valid (e.g., for undistorted pinhole cameras), filtering needs to be applied by the calling function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.projection.project_points_2d_to_3d">
+<span class="sig-name descname"><span class="pre">project_points_2d_to_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distortion_lookup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.project_points_2d_to_3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Projects an array of 3D points in Cartesian coordinates onto an image plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k_matrix</strong> (<em>numpy.ndarray</em>) – <p>Camera intrinsic matrix. Definition can be found in
+<a class="reference external" href="https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html">OpenCV documentation</a>.</p>
+</p></li>
+<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite>, <cite>opencv_fisheye</cite>, <cite>pd_fisheye</cite>.
+More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
+<li><p><strong>points_2d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx2) containing the points.
+Points must be in image coordinate system (x,y).</p></li>
+<li><p><strong>depth</strong> (<em>numpy.ndarray</em>) – Depth mask with the same dimensions as the image canvas.</p></li>
+<li><p><strong>distortion_parameters</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Array of applicable distortion parameters for
+distortion models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</p></li>
+<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><em>paralleldomain.utilities.projection.DistortionLookupTable</em></a><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
+<li><p><strong>interpolate</strong> (<em>bool</em>) – When points are not exactly on an image pixel, apply bi-linear interpolation to estimate
+the corresponding depth value. Default: True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A matrix with dimensions (nx3) containing the point projections in 3D using the provided depth mask.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.projection.points_2d_inside_image">
+<span class="sig-name descname"><span class="pre">points_2d_inside_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_3d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.projection.points_2d_inside_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the indices for an array of 2D image points that are inside the image canvas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> (<em>int</em>) – Pixel width of the image canvas.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – Pixel height of the image canvas.</p></li>
+<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite>, <cite>opencv_fisheye</cite>, <cite>pd_fisheye</cite>.
+More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
+<li><p><strong>points_2d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx2) containing the points that should be tested
+if inside the image canvas. Points must be in image coordinate system (x,y).</p></li>
+<li><p><strong>points_3d</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Optional array of size (nx3) which provides the 3D camera coordinates for each point. Required for
+camera models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array with dimensions (n,).</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>

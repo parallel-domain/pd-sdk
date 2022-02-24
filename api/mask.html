@@ -251,8 +251,8 @@
 <div class="section" id="module-paralleldomain.utilities.mask">
 <span id="paralleldomain-utilities-mask"></span><h1>paralleldomain.utilities.mask<a class="headerlink" href="#module-paralleldomain.utilities.mask" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.mask.bilinear_interpolate">
-<span class="sig-name descname"><span class="pre">bilinear_interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.mask.bilinear_interpolate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="paralleldomain.utilities.mask.lookup_values">
+<span class="sig-name descname"><span class="pre">lookup_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.mask.lookup_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes bilinear interpolation on a 2D plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -263,6 +263,7 @@ bilinear interpolation is performed on each 2D plane in the first two dimensions
 Indices &lt; 0 and &gt; (M-1, N-1) will be clipped to 0 or (M-1, N-1), respectively.</p></li>
 <li><p><strong>y</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>List</em><em>]</em>) – List of indices to interpolate on along the y-axis (rows).
 Indices &lt; 0 and &gt; (M-1, N-1) will be clipped to 0 or (M-1, N-1), respectively.</p></li>
+<li><p><strong>interpolate</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
