@@ -4,12 +4,6 @@ from typing import Any, Callable, Dict, Generator, Generic, Iterable, List, Opti
 
 from tqdm import tqdm
 
-from paralleldomain import Dataset, Scene
-from paralleldomain.decoding.helper import decode_dataset
-from paralleldomain.model.type_aliases import SceneName
-from paralleldomain.model.unordered_scene import UnorderedScene
-from paralleldomain.utilities.any_path import AnyPath
-
 try:
     import pypeln
 except ImportError:
@@ -33,10 +27,6 @@ class _TqdmLoggingHandler(logging.Handler):
 
 
 logger.addHandler(_TqdmLoggingHandler())
-
-ProcessDataStage = Iterable[Any]
-SaveDataStage = Iterable[Any]
-StepResultStages = Tuple[ProcessDataStage, SaveDataStage]
 
 
 class EncoderStep:
@@ -75,6 +65,7 @@ class DatasetPipelineEncoder:
         for encoder in encoder_steps:
             stage = encoder.apply(input_stage=stage)
 
+        stage = pypeln.process.to_iterable(stage)
         if self.use_tqdm:
             stage = tqdm(
                 stage,
@@ -82,8 +73,8 @@ class DatasetPipelineEncoder:
                 unit=f" {self.pipeline_builder.pipeline_item_unit_name}",
                 smoothing=0.0,
             )
-
-        pypeln.process.run(stage)
+        for _ in stage:
+            pass
 
     @classmethod
     def from_builder(

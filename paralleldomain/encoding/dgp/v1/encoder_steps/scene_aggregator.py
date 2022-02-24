@@ -18,7 +18,7 @@ class DGPV1SceneAggregator(EncoderStep):
         self.all_annotation_types: Set[int] = set()
 
     def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
-        stage = pypeln.thread.ordered(stage=input_stage)
+        stage = input_stage
         stage = pypeln.thread.map(
             f=self.aggregate_scene, stage=stage, workers=1, maxsize=4, on_done=self.finalize_dataset
         )

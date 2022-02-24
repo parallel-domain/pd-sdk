@@ -10,8 +10,15 @@ from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, Dire
 from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
 from paralleldomain.encoding.pipeline_encoder import EncoderStep
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox2D, Point2D, Polyline2D
-from paralleldomain.model.sensor import CameraSensorFrame
+from paralleldomain.model.annotation import (
+    AnnotationType,
+    AnnotationTypes,
+    BoundingBox2D,
+    Point2D,
+    Polyline2D,
+    Polylines2D,
+)
+from paralleldomain.model.sensor import CameraSensorFrame, SensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -45,21 +52,27 @@ class Polylines2DEncoderStep(EncoderStepHelper, EncoderStep):
 
         return keyline_proto
 
+    def save_polylines(
+        self, polylines2d: Polylines2D, sensor_frame: SensorFrame[datetime], input_dict: Dict[str, Any]
+    ) -> AnyPath:
+        keyline2d_dto = [self.encode_key_line_2d(p) for p in polylines2d.polylines]
+        keylines2d_dto = annotations_pb2.KeyLine2DAnnotations(annotations=keyline2d_dto)
+
+        output_path = self._get_dgpv1_file_output_path(
+            sensor_frame=sensor_frame,
+            input_dict=input_dict,
+            file_suffix="json",
+            directory_name=DirectoryName.KEY_LINE_2D,
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path = fsio.write_json_message(obj=keylines2d_dto, path=output_path, append_sha1=True)
+        return output_path
+
     def encode_polylines_2d(self, input_dict: Dict[str, Any]) -> Dict[str, Any]:
         sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is not None and AnnotationTypes.Polylines2D in sensor_frame.available_annotation_types:
             polylines2d = sensor_frame.get_annotations(AnnotationTypes.Polylines2D)
-            keyline2d_dto = [self.encode_key_line_2d(p) for p in polylines2d.polylines]
-            keylines2d_dto = annotations_pb2.KeyLine2DAnnotations(annotations=keyline2d_dto)
-
-            output_path = self._get_dgpv1_file_output_path(
-                sensor_frame=sensor_frame,
-                input_dict=input_dict,
-                file_suffix="json",
-                directory_name=DirectoryName.KEY_LINE_2D,
-            )
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-            output_path = fsio.write_json_message(obj=keylines2d_dto, path=output_path, append_sha1=True)
+            output_path = self.save_polylines(polylines2d=polylines2d, sensor_frame=sensor_frame, input_dict=input_dict)
 
             if "annotations" not in input_dict:
                 input_dict["annotations"] = dict()

@@ -10,7 +10,7 @@ from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, Dire
 from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelper
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
 from paralleldomain.encoding.pipeline_encoder import EncoderStep
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox2D
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox2D, BoundingBoxes2D
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
@@ -55,10 +55,8 @@ class BoundingBoxes2DEncoderStep(EncoderStepHelper, EncoderStep):
 
         if sensor_frame is not None and AnnotationTypes.BoundingBoxes2D in sensor_frame.available_annotation_types:
             boxes2d = sensor_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D)
-            annotations = [BoundingBoxes2DEncoderStep.encode_bounding_box_2d(b) for b in boxes2d.boxes]
-            boxes2d_dto = annotations_pb2.BoundingBox2DAnnotations(annotations=annotations)
-            output_path = self.save_boxes_2d_to_file(
-                boxes2d_dto=boxes2d_dto,
+            output_path = self.save_boxes_2d(
+                boxes2d=boxes2d,
                 sensor_frame=sensor_frame,
                 input_dict=input_dict,
             )
@@ -68,12 +66,14 @@ class BoundingBoxes2DEncoderStep(EncoderStepHelper, EncoderStep):
             input_dict["annotations"][str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.BoundingBoxes2D])] = output_path
         return input_dict
 
-    def save_boxes_2d_to_file(
+    def save_boxes_2d(
         self,
         sensor_frame: CameraSensorFrame[datetime],
         input_dict: Dict[str, Any],
-        boxes2d_dto: annotations_pb2.BoundingBox2DAnnotations,
+        boxes2d: BoundingBoxes2D,
     ) -> str:
+        annotations = [BoundingBoxes2DEncoderStep.encode_bounding_box_2d(b) for b in boxes2d.boxes]
+        boxes2d_dto = annotations_pb2.BoundingBox2DAnnotations(annotations=annotations)
         output_path = self._get_dgpv1_file_output_path(
             sensor_frame=sensor_frame,
             input_dict=input_dict,

@@ -29,6 +29,7 @@ from paralleldomain.encoding.dgp.v1.encoder_steps.helper import EncoderStepHelpe
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump, class_map_to_ontology_proto
 from paralleldomain.encoding.pipeline_encoder import EncoderStep
 from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, FilePathedDataType, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -291,22 +292,30 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
             sensor_frame = self._get_camera_frame_from_input_dict(input_dict=input_dict)
         if sensor_frame is not None:
             annotations = input_dict["annotations"]
+            class_maps = input_dict.get("class_maps", dict())
             scene_output_path = input_dict["scene_output_path"]
             scene = self._scene_from_input_dict(input_dict=input_dict)
 
-            self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
+            self.aggegate_ontologies(
+                annotations=annotations, scene_output_path=scene_output_path, scene=scene, class_maps=class_maps
+            )
 
-    def aggegate_ontologies(self, annotations: Dict[int, AnyPath], scene_output_path: AnyPath, scene: Scene):
+    def aggegate_ontologies(
+        self, annotations: Dict[str, AnyPath], class_maps: Dict[str, ClassMap], scene_output_path: AnyPath, scene: Scene
+    ):
         for annotation_id in annotations.keys():
             if annotation_id not in self.ontologie_paths:
-                annotation_id = int(annotation_id)
-                a_type = ANNOTATION_TYPE_MAP[annotation_id]
-                ontology_proto = class_map_to_ontology_proto(class_map=scene.get_class_map(a_type))
+                iannotation_id = int(annotation_id)
+                a_type = ANNOTATION_TYPE_MAP[iannotation_id]
+                class_map = class_maps.get(annotation_id, None)
+                if class_map is None:
+                    class_map = scene.get_class_map(a_type)
+                ontology_proto = class_map_to_ontology_proto(class_map=class_map)
 
                 output_path = scene_output_path / DirectoryName.ONTOLOGY / ".json"
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 path = fsio.write_json_message(obj=ontology_proto, path=output_path, append_sha1=True)
-                self.ontologie_paths[annotation_id] = relative_path(start=scene_output_path, path=path)
+                self.ontologie_paths[iannotation_id] = relative_path(start=scene_output_path, path=path)
 
     def get_scene_sensor_data(self) -> Dict[SensorName, Dict[FrameId, sample_pb2.Datum]]:
         scene_sensor_data = dict()
@@ -385,7 +394,7 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
         calibration_file = self.save_calibration_file(scene_output_path=scene_output_path)
         ontologies = {k: v.stem for k, v in self.ontologie_paths.items()}
         available_annotation_types = [int(k) for k in ontologies.keys()]
-        for frame_id, date_time in self._frames.items():
+        for frame_id, date_time in list(sorted(self._frames.items(), key=lambda item: item[1])):
             frame_data = [
                 scene_sensor_data[sn][frame_id]
                 for sn in sorted(scene_sensor_data.keys())
@@ -457,7 +466,9 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
                     target_frame_id=cam_frame.frame_id,
                     sensor_frame=cam_frame,
                 )
-                self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
+                self.aggegate_ontologies(
+                    annotations=annotations, scene_output_path=scene_output_path, scene=scene, class_maps=dict()
+                )
                 self.aggregate_frame_map(target_frame_id=cam_frame.frame_id, date_time=cam_frame.date_time)
 
         for lidar in scene.lidars:
@@ -487,5 +498,7 @@ class SceneEncoderStep(EncoderStep, EncoderStepHelper):
                     target_frame_id=lidar_frame.frame_id,
                     sensor_frame=lidar_frame,
                 )
-                self.aggegate_ontologies(annotations=annotations, scene_output_path=scene_output_path, scene=scene)
+                self.aggegate_ontologies(
+                    annotations=annotations, scene_output_path=scene_output_path, scene=scene, class_maps=dict()
+                )
                 self.aggregate_frame_map(target_frame_id=lidar_frame.frame_id, date_time=lidar_frame.date_time)
