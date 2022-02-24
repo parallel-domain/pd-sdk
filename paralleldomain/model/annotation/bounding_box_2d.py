@@ -140,6 +140,14 @@ class BoundingBoxes2D(Annotation):
 
         merged_box_geometry = BoundingBox2DGeometry.merge_boxes(target_box=target_box, source_box=source_box)
 
+        source_merged_ids = source_box.attributes.get("merged_instance_ids", set())
+        source_merged_ids.add(source_box.instance_id)
+        target_box_merged_ids = source_box.attributes.get("merged_instance_ids", set())
+        target_box_merged_ids.update(source_merged_ids)
+
+        attributes = copy.deepcopy(target_box.attributes)
+        attributes["merged_instance_ids"] = target_box_merged_ids
+
         return BoundingBox2D(
             x=merged_box_geometry.x,
             y=merged_box_geometry.y,
@@ -147,5 +155,5 @@ class BoundingBoxes2D(Annotation):
             height=merged_box_geometry.height,
             class_id=target_box.class_id,
             instance_id=target_box.instance_id,
-            attributes=copy.deepcopy(target_box.attributes),
+            attributes=attributes,
         )
