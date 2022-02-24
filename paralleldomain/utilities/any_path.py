@@ -241,6 +241,15 @@ class AnyPath:
         """
         return self._backend.rmdir()
 
+    def rm(self, missing_ok: bool = False):
+        """
+        Removes either a Bucket / key prefix or a key, depending on the path.
+        """
+        if self.is_dir():
+            self.rmdir()
+        else:
+            self.unlink(missing_ok=missing_ok)
+
     def samefile(self, other_path: Union["AnyPath", Path, str]) -> bool:
         """
         Returns whether this path points to the same Bucket key as other_path,
@@ -302,3 +311,9 @@ class AnyPath:
     def absolute(self) -> "AnyPath":
         pth = self._backend.absolute()
         return self._create_valid_any_path(new_path=pth)
+
+    def __lt__(self, other):
+        return str(self) < str(other)
+
+    def __gt__(self, other):
+        return str(self) > str(other)

@@ -6,14 +6,16 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from google.protobuf.json_format import MessageToDict
 
-from paralleldomain.common.dgp.v1 import dataset_pb2, ontology_pb2, sample_pb2, scene_pb2
+from paralleldomain.common.dgp.v1 import dataset_pb2, metadata_pd_pb2, ontology_pb2, sample_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.v1.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
+from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.umd.map_decoder import UMDDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -23,6 +25,8 @@ from paralleldomain.utilities.fsio import read_json_message
 from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
+
+assert metadata_pd_pb2, "Required for PD Dataset Metadata Parsing using Proto."
 
 
 class _DatasetDecoderMixin:
@@ -56,12 +60,14 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
+        umd_file_paths: Optional[Dict[SceneName, Union[str, AnyPath]]] = None,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
         settings: Optional[DecoderSettings] = None,
         **kwargs,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
         DatasetDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
+        self._umd_file_paths = umd_file_paths
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -69,8 +75,13 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
+        umd_map_path = None
+        if self._umd_file_paths is not None and scene_name in self._umd_file_paths:
+            umd_map_path = self._umd_file_paths[scene_name]
+
         return DGPSceneDecoder(
             dataset_path=self._dataset_path,
+            umd_map_path=umd_map_path,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -93,12 +104,16 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
+        umd_map_path: Optional[Union[str, AnyPath]],
         settings: DecoderSettings,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
         SceneDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
 
+        if umd_map_path is not None:
+            umd_map_path = AnyPath(path=umd_map_path)
+        self._umd_map_path = umd_map_path
         self.custom_reference_to_box_bottom = (
             Transformation() if custom_reference_to_box_bottom is None else custom_reference_to_box_bottom
         )
@@ -193,8 +208,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> scene_pb2.Scene:
-        import paralleldomain.common.dgp.v1.metadata_pd_pb2  # noqa: F401
-
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
 
@@ -216,3 +229,13 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _sample_by_index(self, scene_name: str) -> Dict[str, sample_pb2.Sample]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {str(s.id.index): s for s in dto.samples}
+
+    def _create_map_decoder(self, scene_name: SceneName, dataset_name: str) -> Optional[MapDecoder]:
+        if self._umd_map_path is not None:
+            return UMDDecoder(
+                umd_file_path=self._umd_map_path,
+                dataset_name=dataset_name,
+                scene_name=scene_name,
+                settings=self.settings,
+            )
+        return None

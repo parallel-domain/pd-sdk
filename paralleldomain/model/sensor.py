@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
+
+import numpy as np
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
+from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
 try:
     from typing import Protocol
@@ -168,6 +171,17 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
     def intrinsic(self) -> "SensorIntrinsic":
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
+    def project_points_from_3d(
+        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
+    ) -> np.ndarray:
+        return project_points_3d_to_2d(
+            k_matrix=self.intrinsic.camera_matrix,
+            camera_model=self.intrinsic.camera_model,
+            distortion_parameters=self.intrinsic.distortion_parameters,
+            distortion_lookup=distortion_lookup,
+            points_3d=points_3d,
+        )
+
 
 TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
 
@@ -253,3 +267,42 @@ class SensorIntrinsic:
         self.skew = skew
         self.fov = fov
         self.camera_model = camera_model
+
+    @property
+    def camera_matrix(self) -> np.ndarray:
+        return np.array(
+            [
+                [self.fx, self.skew, self.cx],
+                [0, self.fy, self.cy],
+                [0, 0, 1],
+            ]
+        )
+
+    @property
+    def distortion_parameters(self) -> Optional[np.ndarray]:
+        if self.camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
+            return np.array(
+                [
+                    self.k1,
+                    self.k2,
+                    self.p1,
+                    self.p2,
+                    self.k3,
+                    self.k4,
+                    self.k5,
+                    self.k6,
+                ]
+            )
+        elif self.camera_model == CAMERA_MODEL_OPENCV_FISHEYE:
+            return np.array(
+                [
+                    self.k1,
+                    self.k2,
+                    self.k3,
+                    self.k4,
+                ]
+            )
+        elif self.camera_model == CAMERA_MODEL_PD_FISHEYE:
+            return None
+        else:
+            raise NotImplementedError(f"No distortion parameters implemented for camera model {self.camera_model}")

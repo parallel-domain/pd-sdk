@@ -1,5 +1,6 @@
 import argparse
 import logging
+from contextlib import suppress
 from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
@@ -42,6 +43,8 @@ class DGPDatasetEncoder(DatasetEncoder):
         self._camera_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
         self._lidar_names: Union[List[str], None] = None
+        # Adapt if should be limited to a set of frames, or empty list for no frames
+        self._frame_ids: Optional[List[str]] = None
         # Adapt if should be limited to a set of annotation types, or empty list for no annotations
         self._annotation_types: Union[List[AnnotationType], None] = None
 
@@ -94,7 +97,12 @@ class DGPDatasetEncoder(DatasetEncoder):
         return write_json_message(obj=dataset_proto, path=output_path)
 
     def encode_dataset(self) -> AnyPath:
-        scene_files = {scene_name: self._call_scene_encoder(scene_name=scene_name) for scene_name in self._scene_names}
+        scene_files = {}
+        for scene_name in self._scene_names:
+            # try:
+            scene_files[scene_name] = self._call_scene_encoder(scene_name=scene_name)
+            # except Exception:
+            #     continue
 
         return self._encode_dataset_json(scene_files=scene_files)
 

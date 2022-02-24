@@ -3,7 +3,13 @@ from typing import Dict
 import numpy as np
 
 from paralleldomain import Dataset, Scene
-from paralleldomain.model.annotation import AnnotationTypes, BoundingBox2D, BoundingBox3D
+from paralleldomain.model.annotation import (
+    AnnotationTypes,
+    BoundingBox2D,
+    BoundingBox3D,
+    PointCache,
+    PointCacheComponent,
+)
 
 
 class TestSensorFrame:
@@ -21,6 +27,26 @@ class TestSensorFrame:
             assert isinstance(box.pose.translation, np.ndarray)
             assert isinstance(box.pose.transformation_matrix, np.ndarray)
             assert isinstance(box.class_id, int)
+
+    def test_point_cache_loading(self, scene: Scene):
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[0])
+        lidar_sensor = next(iter(frame.lidar_frames))
+        assert AnnotationTypes.PointCaches in lidar_sensor.available_annotation_types
+        point_caches = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.PointCaches)
+
+        assert isinstance(point_caches.caches, list)
+        assert len(point_caches.caches) > 0
+
+        for cache in point_caches.caches:
+            assert isinstance(cache, PointCache)
+            assert len(cache.components) > 0
+            assert isinstance(cache.instance_id, int)
+
+            for component in cache.components:
+                assert isinstance(component, PointCacheComponent)
+                assert isinstance(component.points, np.ndarray)
+                assert isinstance(component.normals, np.ndarray)
 
     def test_box_2d_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.BoundingBoxes2D in dataset.available_annotation_types

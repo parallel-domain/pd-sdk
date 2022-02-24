@@ -202,6 +202,9 @@ class Transformation:
         else:
             return angles
 
+    def apply_to(self, points_3d: np.ndarray) -> np.ndarray:
+        return apply_transform_3d(tf=self, points_3d=points_3d)
+
     @classmethod
     def from_euler_angles(
         cls,
@@ -236,3 +239,13 @@ class Transformation:
         quat = Quaternion(matrix=mat)
 
         return Transformation(quaternion=quat, translation=translation)
+
+
+def apply_transform_3d(tf: Transformation, points_3d: np.ndarray) -> np.ndarray:
+    if points_3d.ndim != 2 or points_3d.shape[1] != 3:
+        raise ValueError(
+            f"""Expected np.ndarray of shape (N X 3) for `points_3d`, where N is
+                   number of points. Received {points_3d.shape}."""
+        )
+
+    return (tf @ (np.hstack([points_3d, np.ones(shape=(len(points_3d), 1))])).T).T[:, :3]
