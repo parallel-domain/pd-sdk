@@ -44,8 +44,8 @@ class Line2DBaseGeometry(Generic[T]):
         return self.end - self.start
 
     @property
-    def magnitude(self) -> float:
-        """Returns the magnitude (length) of the line."""
+    def length(self) -> float:
+        """Returns the length of the line."""
         return np.linalg.norm(self.direction.to_numpy().reshape(2))
 
     @property
@@ -111,6 +111,11 @@ class Polyline2DBaseGeometry(Generic[T]):
     """
 
     lines: List[Line2DBaseGeometry[T]]
+
+    @property
+    def length(self):
+        """Returns the length of the line."""
+        return sum([ll.length for ll in self.lines])
 
     def to_numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 2)."""

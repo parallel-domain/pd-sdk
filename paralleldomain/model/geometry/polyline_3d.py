@@ -26,6 +26,16 @@ class Line3DBaseGeometry(Generic[T]):
     start: Point3DBaseGeometry[T]
     end: Point3DBaseGeometry[T]
 
+    @property
+    def direction(self) -> Point3DBaseGeometry[T]:
+        """Returns the directional vector of the line."""
+        return self.end - self.start
+
+    @property
+    def length(self) -> float:
+        """Returns the length of the line."""
+        return np.linalg.norm(self.direction.to_numpy().reshape(3))
+
     def to_numpy(self):
         """Returns the start and end coordinates as a numpy array with shape (2 x 3)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
@@ -57,6 +67,11 @@ class Polyline3DBaseGeometry(Generic[T]):
     """
 
     lines: List[Line3DBaseGeometry[T]]
+
+    @property
+    def length(self):
+        """Returns the length of the line."""
+        return sum([ll.length for ll in self.lines])
 
     def to_numpy(self):
         """Returns all ordered vertices as a numpy array of shape (N x 3)."""
