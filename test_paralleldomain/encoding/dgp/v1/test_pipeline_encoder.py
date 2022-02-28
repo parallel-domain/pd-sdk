@@ -6,8 +6,8 @@ from paralleldomain.common.dgp.v1.constants import DirectoryName
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.dataset import DGPDatasetEncoder
 from paralleldomain.encoding.dgp.v1.pipeline_encoder import DGPV1DatasetPipelineEncoder
-from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.dataset import Dataset
+from paralleldomain.model.sensor import FilePathedDataType
 from paralleldomain.utilities.any_path import AnyPath
 
 
@@ -70,18 +70,19 @@ def test_encoding_of_modified_scene(dataset: Dataset):
                 dataset_format=dataset.format,
                 decoder_kwargs=dataset.decoder_init_kwargs,
                 output_path=output_path,
-                workers_per_step=3,
-                max_queue_size_per_step=12,
                 set_stop=2,
-                fs_copy=True,
+                workers=1,
+                max_in_queue_size=10,
+                fs_copy=False,
                 allowed_frames=[str(i) for i in range(num_frames)],
-                output_annotation_types=[
-                    AnnotationTypes.BoundingBoxes2D,
-                    AnnotationTypes.SemanticSegmentation2D,
-                    AnnotationTypes.Depth,
-                    AnnotationTypes.OpticalFlow,
-                    AnnotationTypes.BoundingBoxes3D,
-                    AnnotationTypes.InstanceSegmentation2D,
+                copy_data_types=[
+                    FilePathedDataType.BoundingBoxes2D,
+                    FilePathedDataType.Image,
+                    FilePathedDataType.SemanticSegmentation2D,
+                    FilePathedDataType.Depth,
+                    FilePathedDataType.OpticalFlow,
+                    FilePathedDataType.BoundingBoxes3D,
+                    FilePathedDataType.InstanceSegmentation2D,
                 ],
             )
             encoder.encode_dataset()
@@ -89,7 +90,7 @@ def test_encoding_of_modified_scene(dataset: Dataset):
             check_if_files_exist(
                 output_path=output_path,
                 dataset=dataset,
-                scene_names=dataset.scene_names,
+                scene_names=dataset.scene_names[:2],
                 camera_names=scene.camera_names,
                 num_frames=num_frames,
             )
@@ -105,18 +106,16 @@ def test_encoding_of_inplace_scene(dataset: Dataset):
                 dataset_format=dataset.format,
                 decoder_kwargs=dataset.decoder_init_kwargs,
                 output_path=output_path,
-                workers_per_step=1,
-                max_queue_size_per_step=1,
                 set_stop=2,
                 fs_copy=True,
                 allowed_frames=[str(i) for i in range(num_frames)],
-                output_annotation_types=[
-                    AnnotationTypes.BoundingBoxes2D,
-                    AnnotationTypes.SemanticSegmentation2D,
-                    AnnotationTypes.Depth,
-                    AnnotationTypes.OpticalFlow,
-                    AnnotationTypes.BoundingBoxes3D,
-                    AnnotationTypes.InstanceSegmentation2D,
+                copy_data_types=[
+                    FilePathedDataType.BoundingBoxes2D,
+                    FilePathedDataType.SemanticSegmentation2D,
+                    FilePathedDataType.Depth,
+                    FilePathedDataType.OpticalFlow,
+                    FilePathedDataType.BoundingBoxes3D,
+                    FilePathedDataType.InstanceSegmentation2D,
                 ],
             )
             encoder.encode_dataset()
@@ -136,18 +135,16 @@ def test_encoding_of_inplace_scene(dataset: Dataset):
                 decoder_kwargs=dataset.decoder_init_kwargs,
                 output_path=output_path,
                 sensor_names={"virtual_cam": "camera_front"},
-                workers_per_step=1,
-                max_queue_size_per_step=1,
                 set_stop=2,
                 fs_copy=True,
                 allowed_frames=[str(i) for i in range(num_frames)],
-                output_annotation_types=[
-                    AnnotationTypes.BoundingBoxes2D,
-                    AnnotationTypes.SemanticSegmentation2D,
-                    AnnotationTypes.Depth,
-                    AnnotationTypes.OpticalFlow,
-                    AnnotationTypes.BoundingBoxes3D,
-                    AnnotationTypes.InstanceSegmentation2D,
+                copy_data_types=[
+                    FilePathedDataType.BoundingBoxes2D,
+                    FilePathedDataType.SemanticSegmentation2D,
+                    FilePathedDataType.Depth,
+                    FilePathedDataType.OpticalFlow,
+                    FilePathedDataType.BoundingBoxes3D,
+                    FilePathedDataType.InstanceSegmentation2D,
                 ],
             )
             encoder.encode_dataset()
