@@ -38,9 +38,11 @@ Parallel Domain SDK
     api/sensor
     api/annotation
     api/geometry
+    api/any_path
     api/transformation
     api/projection
     api/mask
+    api/os
 
 
 Indices and tables
