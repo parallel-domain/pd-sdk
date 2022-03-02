@@ -37,6 +37,7 @@ Parallel Domain SDK
     api/scene
     api/sensor
     api/annotation
+    api/geometry
     api/transformation
     api/projection
     api/mask
