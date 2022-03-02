@@ -40,7 +40,10 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
-            dataset_output_path=output_path, sim_offset=sim_offset, target_dataset_name=target_dataset_name
+            dataset_output_path=output_path,
+            sim_offset=sim_offset,
+            target_dataset_name=target_dataset_name,
+            inplace=inplace,
         )
         pipeline_builder = GenericPipelineBuilder(
             pipeline_item_type=ScenePipelineItem,

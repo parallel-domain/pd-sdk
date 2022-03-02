@@ -53,9 +53,11 @@ class DGPV1EncodingFormat(
         self,
         dataset_output_path: AnyPath,
         target_dataset_name: Optional[str],
+        inplace: bool,
         sim_offset: float = 0.01 * 5,
     ):
         super().__init__()
+        self.inplace = inplace
         self.target_dataset_name = target_dataset_name
         self.sim_offset = sim_offset
         self.dataset_output_path = dataset_output_path

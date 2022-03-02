@@ -10,6 +10,7 @@ from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.encoding.pipeline_encoder import EncoderStep, EncodingFormat, PipelineBuilder, TPipelineItem
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.image import Image
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorDataTypes
 from paralleldomain.model.type_aliases import FrameId
 from paralleldomain.utilities.any_path import AnyPath
@@ -107,7 +108,7 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
                         data_or_path = sensor_frame.get_annotations(annotation_type=data_type)
                 elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
                     data_or_path = pipeline_item.camera_frame.image.rgba
-                elif issubclass(data_type, Image) and pipeline_item.lidar_frame is not None:
+                elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
                     data_or_path = pipeline_item.lidar_frame.point_cloud
 
             if data_or_path is not None:

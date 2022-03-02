@@ -49,9 +49,6 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         },
     )
 
-    def __init__(self):
-        super().__init__()
-
     def aggregate_sensor_frame(self, pipeline_item: ScenePipelineItem):
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
         self.store_data_for_aggregation(pipeline_item=pipeline_item)
