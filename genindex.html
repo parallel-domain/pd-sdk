@@ -153,9 +153,12 @@
 <li class="toctree-l1"><a class="reference internal" href="api/scene.html">paralleldomain.model.scene</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/sensor.html">paralleldomain.model.sensor</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/annotation.html">paralleldomain.model.annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/geometry.html">paralleldomain.model.geometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/any_path.html">paralleldomain.utilities.any_path</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/transformation.html">paralleldomain.utilities.transformation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/projection.html">paralleldomain.utilities.projection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/mask.html">paralleldomain.utilities.mask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/os.html">paralleldomain.utilities.os</a></li>
 </ul>
 
             
@@ -229,8 +232,10 @@
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -242,6 +247,11 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -251,12 +261,58 @@
 </li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes">AnnotationTypes (class in paralleldomain.model.annotation)</a>
 </li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath">AnyPath (class in paralleldomain.utilities.any_path)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.area">area (BoundingBox2D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.area">(BoundingBox2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.area">(BoundingBox2DGeometry property)</a>
+</li>
+      </ul></li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.as_euler_angles">as_euler_angles() (SensorExtrinsic method)</a>
 
       <ul>
         <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorPose.as_euler_angles">(SensorPose method)</a>
 </li>
         <li><a href="api/transformation.html#paralleldomain.utilities.transformation.Transformation.as_euler_angles">(Transformation method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes">attributes (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.attributes">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes">(BoundingBox3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.attributes">(Line2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.attributes">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.attributes">(Line3D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.attributes">(Point2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.attributes">(Point2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.attributes">(Point3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.attributes">(Point3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes">(Polygon2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.attributes">(Polygon2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes">(Polygon3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.attributes">(Polygon3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes">(Polyline2D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes">(Polyline3D attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -273,12 +329,38 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes2D">BoundingBoxes2D (AnnotationTypes attribute)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D">BoundingBox2D (class in paralleldomain.model.annotation.bounding_box_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry">BoundingBox2DBaseGeometry (class in paralleldomain.model.geometry.bounding_box_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry">BoundingBox2DGeometry (class in paralleldomain.model.geometry.bounding_box_2d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D">BoundingBox3D (class in paralleldomain.model.annotation.bounding_box_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry">BoundingBox3DBaseGeometry (class in paralleldomain.model.geometry.bounding_box_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry">BoundingBox3DGeometry (class in paralleldomain.model.geometry.bounding_box_3d)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes3D">BoundingBoxes3D (AnnotationTypes attribute)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes2D">BoundingBoxes2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D">(class in paralleldomain.model.annotation.bounding_box_2d)</a>
 </li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes3D">BoundingBoxes3D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D">(class in paralleldomain.model.annotation.bounding_box_3d)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.boxes">boxes (BoundingBoxes2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.boxes">(BoundingBoxes3D attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -289,9 +371,61 @@
 </li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraSensor">CameraSensor (class in paralleldomain.model.sensor)</a>
 </li>
+      <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame">CameraSensorFrame (class in paralleldomain.model.sensor)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id">class_id (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.class_id">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id">(BoundingBox3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.class_id">(Line2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.class_id">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.class_id">(Line3D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.class_id">(Point2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.class_id">(Point2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.class_id">(Point3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.class_id">(Point3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id">(Polygon2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.class_id">(Polygon2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id">(Polygon3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.class_id">(Polygon3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id">(Polyline2D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id">(Polyline3D attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame">CameraSensorFrame (class in paralleldomain.model.sensor)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.class_ids">class_ids (SemanticSegmentation2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D.class_ids">(SemanticSegmentation3D attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.CollinearLinesException">CollinearLinesException</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache.components">components (PointCache attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches.components">(PointCaches attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/os.html#paralleldomain.utilities.os.cpu_count">cpu_count() (in module paralleldomain.utilities.os)</a>
 </li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.DatasetMeta.custom_attributes">custom_attributes (DatasetMeta attribute)</a>
 </li>
@@ -305,11 +439,73 @@
 </li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.DatasetMeta">DatasetMeta (class in paralleldomain.model.dataset)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Depth">Depth (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.depth.Depth">(class in paralleldomain.model.annotation.depth)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.depth.Depth.depth">depth (Depth attribute)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.directed">directed (Line2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.directed">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.directed">(Line3D attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Depth">Depth (AnnotationTypes attribute)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.direction">direction (Line2D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.direction">(Line2DBaseGeometry property)</a>
 </li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.direction">(Line2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.direction">(Line3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.direction">(Line3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.direction">(Line3DGeometry property)</a>
+</li>
+      </ul></li>
       <li><a href="api/projection.html#paralleldomain.utilities.projection.DistortionLookupTable">DistortionLookupTable (class in paralleldomain.utilities.projection)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.edges">edges (BoundingBox2D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.edges">(BoundingBox2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.edges">(BoundingBox2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.edges">(BoundingBox3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges">(BoundingBox3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges">(BoundingBox3DGeometry property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.end">end (Line2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.end">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.end">(Line3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.end">(Line3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.exists">exists() (AnyPath method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -317,6 +513,14 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.faces">faces (BoundingBox3D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces">(BoundingBox3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces">(BoundingBox3DGeometry property)</a>
+</li>
+      </ul></li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles">from_euler_angles() (SensorExtrinsic class method)</a>
 
       <ul>
@@ -343,24 +547,164 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.get_scene">get_scene() (Dataset method)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_box_by_instance_id">get_box_by_instance_id() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_box_by_instance_id">(BoundingBoxes3D method)</a>
 </li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_key">get_boxes_by_attribute_key() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_key">(BoundingBoxes3D method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_value">get_boxes_by_attribute_value() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_value">(BoundingBoxes3D method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_values">get_boxes_by_attribute_values() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_values">(BoundingBoxes3D method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_class_id">get_boxes_by_class_id() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_class_id">(BoundingBoxes3D method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_class_ids">get_boxes_by_class_ids() (BoundingBoxes2D method)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_class_ids">(BoundingBoxes3D method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.get_class_mask">get_class_mask() (SemanticSegmentation2D method)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.get_classes_mask">get_classes_mask() (SemanticSegmentation2D method)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.get_instance">get_instance() (InstanceSegmentation2D method)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.get_instances">get_instances() (InstanceSegmentation2D method)</a>
+</li>
+      <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.get_scene">get_scene() (Dataset method)</a>
+</li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene">get_unordered_scene() (Dataset method)</a>
 </li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.glob">glob() (AnyPath method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height">height (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.height">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height">(BoundingBox3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation2D">InstanceSegmentation2D (AnnotationTypes attribute)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.include_point">include_point() (BoundingBox2D method)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.include_point">(BoundingBox2DBaseGeometry method)</a>
 </li>
-      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation3D">InstanceSegmentation3D (AnnotationTypes attribute)</a>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.include_point">(BoundingBox2DGeometry method)</a>
 </li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.include_points">include_points() (BoundingBox2D method)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.include_points">(BoundingBox2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.include_points">(BoundingBox2DGeometry method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id">instance_id (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.instance_id">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id">(BoundingBox3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.instance_id">(Line2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.instance_id">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.instance_id">(Line3D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.instance_id">(Point2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.instance_id">(Point2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.instance_id">(Point3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.instance_id">(Point3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache.instance_id">(PointCache attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches.instance_id">(PointCaches attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id">(Polygon2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.instance_id">(Polygon2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id">(Polygon3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.instance_id">(Polygon3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id">(Polyline2D attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id">(Polyline3D attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.instance_ids">instance_ids (InstanceSegmentation2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D.instance_ids">(InstanceSegmentation3D attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation2D">InstanceSegmentation2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D">(class in paralleldomain.model.annotation.instance_segmentation_2d)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation3D">InstanceSegmentation3D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D">(class in paralleldomain.model.annotation.instance_segmentation_3d)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.intersects_at">intersects_at() (Line2D method)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.intersects_at">(Line2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.intersects_at">(Line2DGeometry method)</a>
+</li>
+      </ul></li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.inverse">inverse (SensorExtrinsic property)</a>
 
       <ul>
@@ -369,18 +713,108 @@
         <li><a href="api/transformation.html#paralleldomain.utilities.transformation.Transformation.inverse">(Transformation property)</a>
 </li>
       </ul></li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_absolute">is_absolute() (AnyPath method)</a>
+</li>
+      <li><a href="api/os.html#paralleldomain.utilities.os.is_container">is_container() (in module paralleldomain.utilities.os)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_dir">is_dir() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_fifo">is_fifo() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_file">is_file() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_mount">is_mount() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_socket">is_socket() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_symlink">is_symlink() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.iterdir">iterdir() (AnyPath method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/sensor.html#paralleldomain.model.sensor.LidarSensor">LidarSensor (class in paralleldomain.model.sensor)</a>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length">length (BoundingBox3D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length">(BoundingBox3DBaseGeometry attribute)</a>
 </li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.length">(Line2D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.length">(Line2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.length">(Line2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.length">(Line3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.length">(Line3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.length">(Line3DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.length">(Polygon2D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.length">(Polygon2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry.length">(Polygon2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.length">(Polygon3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.length">(Polygon3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry.length">(Polygon3DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.length">(Polyline2D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.length">(Polyline2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry.length">(Polyline2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.length">(Polyline3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.length">(Polyline3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry.length">(Polyline3DGeometry property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/sensor.html#paralleldomain.model.sensor.LidarSensor">LidarSensor (class in paralleldomain.model.sensor)</a>
+</li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame">LidarSensorFrame (class in paralleldomain.model.sensor)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D">Line2D (class in paralleldomain.model.annotation.polyline_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry">Line2DBaseGeometry (class in paralleldomain.model.geometry.polyline_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry">Line2DGeometry (class in paralleldomain.model.geometry.polyline_2d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D">Line3D (class in paralleldomain.model.annotation.polyline_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry">Line3DBaseGeometry (class in paralleldomain.model.geometry.polyline_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry">Line3DGeometry (class in paralleldomain.model.geometry.polyline_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.lines">lines (Polygon2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.lines">(Polygon2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.lines">(Polygon3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.lines">(Polygon3DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.lines">(Polyline2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.lines">(Polyline2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.lines">(Polyline3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.lines">(Polyline3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/mask.html#paralleldomain.utilities.mask.lookup_values">lookup_values() (in module paralleldomain.utilities.mask)</a>
 </li>
   </ul></td>
@@ -391,21 +825,95 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties2D">MaterialProperties2D (AnnotationTypes attribute)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.merge_boxes">merge_boxes() (BoundingBox2D class method)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.merge_boxes">(BoundingBox2DBaseGeometry class method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.merge_boxes">(BoundingBox2DGeometry class method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.merge_boxes">(BoundingBox3D class method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes">(BoundingBox3DBaseGeometry class method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes">(BoundingBox3DGeometry class method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.merge_boxes">(BoundingBoxes2D static method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.merge_boxes">(BoundingBoxes3D static method)</a>
+</li>
+      </ul></li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.metadata">metadata (Dataset property)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.mkdir">mkdir() (AnyPath method)</a>
 </li>
       <li>
     module
 
       <ul>
-        <li><a href="api/annotation.html#module-paralleldomain.model.annotation">paralleldomain.model.annotation</a>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.bounding_box_2d">paralleldomain.model.annotation.bounding_box_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.bounding_box_3d">paralleldomain.model.annotation.bounding_box_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.depth">paralleldomain.model.annotation.depth</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.instance_segmentation_2d">paralleldomain.model.annotation.instance_segmentation_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.instance_segmentation_3d">paralleldomain.model.annotation.instance_segmentation_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.optical_flow">paralleldomain.model.annotation.optical_flow</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_2d">paralleldomain.model.annotation.point_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_3d">paralleldomain.model.annotation.point_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_cache">paralleldomain.model.annotation.point_cache</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polygon_2d">paralleldomain.model.annotation.polygon_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polygon_3d">paralleldomain.model.annotation.polygon_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polyline_2d">paralleldomain.model.annotation.polyline_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polyline_3d">paralleldomain.model.annotation.polyline_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.scene_flow">paralleldomain.model.annotation.scene_flow</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.semantic_segmentation_2d">paralleldomain.model.annotation.semantic_segmentation_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.semantic_segmentation_3d">paralleldomain.model.annotation.semantic_segmentation_3d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.surface_normals_2d">paralleldomain.model.annotation.surface_normals_2d</a>
+</li>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.surface_normals_3d">paralleldomain.model.annotation.surface_normals_3d</a>
 </li>
         <li><a href="api/dataset.html#module-paralleldomain.model.dataset">paralleldomain.model.dataset</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.bounding_box_2d">paralleldomain.model.geometry.bounding_box_2d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.bounding_box_3d">paralleldomain.model.geometry.bounding_box_3d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.point_2d">paralleldomain.model.geometry.point_2d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.point_3d">paralleldomain.model.geometry.point_3d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polygon_2d">paralleldomain.model.geometry.polygon_2d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polygon_3d">paralleldomain.model.geometry.polygon_3d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polyline_2d">paralleldomain.model.geometry.polyline_2d</a>
+</li>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polyline_3d">paralleldomain.model.geometry.polyline_3d</a>
 </li>
         <li><a href="api/scene.html#module-paralleldomain.model.scene">paralleldomain.model.scene</a>
 </li>
         <li><a href="api/sensor.html#module-paralleldomain.model.sensor">paralleldomain.model.sensor</a>
 </li>
+        <li><a href="api/any_path.html#module-paralleldomain.utilities.any_path">paralleldomain.utilities.any_path</a>
+</li>
         <li><a href="api/mask.html#module-paralleldomain.utilities.mask">paralleldomain.utilities.mask</a>
+</li>
+        <li><a href="api/os.html#module-paralleldomain.utilities.os">paralleldomain.utilities.os</a>
 </li>
         <li><a href="api/projection.html#module-paralleldomain.utilities.projection">paralleldomain.utilities.projection</a>
 </li>
@@ -424,19 +932,41 @@
         <li><a href="api/dataset.html#paralleldomain.model.dataset.DatasetMeta.name">(DatasetMeta attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D.normals">normals (SurfaceNormals2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D.normals">(SurfaceNormals3D attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points">num_points (BoundingBox3D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.open">open() (AnyPath method)</a>
+</li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraModel.OPENCV_FISHEYE">OPENCV_FISHEYE (CameraModel attribute)</a>
+</li>
+      <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraModel.OPENCV_PINHOLE">OPENCV_PINHOLE (CameraModel attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraModel.OPENCV_PINHOLE">OPENCV_PINHOLE (CameraModel attribute)</a>
-</li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.OpticalFlow">OpticalFlow (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow">(class in paralleldomain.model.annotation.optical_flow)</a>
+</li>
+      </ul></li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.owner">owner() (AnyPath method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -445,10 +975,129 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    paralleldomain.model.annotation
+    paralleldomain.model.annotation.bounding_box_2d
 
       <ul>
-        <li><a href="api/annotation.html#module-paralleldomain.model.annotation">module</a>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.bounding_box_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.bounding_box_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.bounding_box_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.depth
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.depth">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.instance_segmentation_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.instance_segmentation_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.instance_segmentation_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.instance_segmentation_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.optical_flow
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.optical_flow">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.point_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.point_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.point_cache
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.point_cache">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.polygon_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polygon_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.polygon_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polygon_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.polyline_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polyline_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.polyline_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.polyline_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.scene_flow
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.scene_flow">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.semantic_segmentation_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.semantic_segmentation_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.semantic_segmentation_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.semantic_segmentation_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.surface_normals_2d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.surface_normals_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.annotation.surface_normals_3d
+
+      <ul>
+        <li><a href="api/annotation.html#module-paralleldomain.model.annotation.surface_normals_3d">module</a>
 </li>
       </ul></li>
       <li>
@@ -459,17 +1108,82 @@
 </li>
       </ul></li>
       <li>
+    paralleldomain.model.geometry.bounding_box_2d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.bounding_box_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.bounding_box_3d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.bounding_box_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.point_2d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.point_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.point_3d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.point_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.polygon_2d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polygon_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.polygon_3d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polygon_3d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.polyline_2d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polyline_2d">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.model.geometry.polyline_3d
+
+      <ul>
+        <li><a href="api/geometry.html#module-paralleldomain.model.geometry.polyline_3d">module</a>
+</li>
+      </ul></li>
+      <li>
     paralleldomain.model.scene
 
       <ul>
         <li><a href="api/scene.html#module-paralleldomain.model.scene">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     paralleldomain.model.sensor
 
       <ul>
         <li><a href="api/sensor.html#module-paralleldomain.model.sensor">module</a>
+</li>
+      </ul></li>
+      <li>
+    paralleldomain.utilities.any_path
+
+      <ul>
+        <li><a href="api/any_path.html#module-paralleldomain.utilities.any_path">module</a>
 </li>
       </ul></li>
       <li>
@@ -479,8 +1193,13 @@
         <li><a href="api/mask.html#module-paralleldomain.utilities.mask">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    paralleldomain.utilities.os
+
+      <ul>
+        <li><a href="api/os.html#module-paralleldomain.utilities.os">module</a>
+</li>
+      </ul></li>
       <li>
     paralleldomain.utilities.projection
 
@@ -497,14 +1216,98 @@
       </ul></li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.CameraModel.PD_FISHEYE">PD_FISHEYE (CameraModel attribute)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D">Point2D (class in paralleldomain.model.annotation.point_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry">Point2DBaseGeometry (class in paralleldomain.model.geometry.point_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DGeometry">Point2DGeometry (class in paralleldomain.model.geometry.point_2d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D">Point3D (class in paralleldomain.model.annotation.point_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry">Point3DBaseGeometry (class in paralleldomain.model.geometry.point_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DGeometry">Point3DGeometry (class in paralleldomain.model.geometry.point_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache">PointCache (class in paralleldomain.model.annotation.point_cache)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCachePointsDecoderProtocol">PointCachePointsDecoderProtocol (class in paralleldomain.model.annotation.point_cache)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches">PointCaches (class in paralleldomain.model.annotation.point_cache)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Points2D.points">points (Points2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Points3D.points">(Points3D attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Points2D">Points2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Points2D">(class in paralleldomain.model.annotation.point_2d)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Points3D">Points3D (class in paralleldomain.model.annotation.point_3d)</a>
 </li>
       <li><a href="api/projection.html#paralleldomain.utilities.projection.points_2d_inside_image">points_2d_inside_image() (in module paralleldomain.utilities.projection)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D">Polygon2D (class in paralleldomain.model.annotation.polygon_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry">Polygon2DBaseGeometry (class in paralleldomain.model.geometry.polygon_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry">Polygon2DGeometry (class in paralleldomain.model.geometry.polygon_2d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D">Polygon3D (class in paralleldomain.model.annotation.polygon_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry">Polygon3DBaseGeometry (class in paralleldomain.model.geometry.polygon_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry">Polygon3DGeometry (class in paralleldomain.model.geometry.polygon_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygons2D.polygons">polygons (Polygons2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygons3D.polygons">(Polygons3D attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Polygons2D">Polygons2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygons2D">(class in paralleldomain.model.annotation.polygon_2d)</a>
 </li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygons3D">Polygons3D (class in paralleldomain.model.annotation.polygon_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D">Polyline2D (class in paralleldomain.model.annotation.polyline_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry">Polyline2DBaseGeometry (class in paralleldomain.model.geometry.polyline_2d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry">Polyline2DGeometry (class in paralleldomain.model.geometry.polyline_2d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D">Polyline3D (class in paralleldomain.model.annotation.polyline_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry">Polyline3DBaseGeometry (class in paralleldomain.model.geometry.polyline_3d)</a>
+</li>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry">Polyline3DGeometry (class in paralleldomain.model.geometry.polyline_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polylines2D.polylines">polylines (Polylines2D attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polylines3D.polylines">(Polylines3D attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Polylines2D">Polylines2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polylines2D">(class in paralleldomain.model.annotation.polyline_2d)</a>
 </li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polylines3D">Polylines3D (class in paralleldomain.model.annotation.polyline_3d)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose">pose (BoundingBox3D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
       <li><a href="api/projection.html#paralleldomain.utilities.projection.project_points_2d_to_3d">project_points_2d_to_3d() (in module paralleldomain.utilities.projection)</a>
 </li>
       <li><a href="api/projection.html#paralleldomain.utilities.projection.project_points_3d_to_2d">project_points_3d_to_2d() (in module paralleldomain.utilities.projection)</a>
@@ -529,6 +1332,24 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.rename">rename() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.replace">replace() (AnyPath method)</a>
+</li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.rgb_encoded">rgb_encoded (InstanceSegmentation2D property)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.rgb_encoded">(SemanticSegmentation2D property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.rglob">rglob() (AnyPath method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.rm">rm() (AnyPath method)</a>
+</li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.rmdir">rmdir() (AnyPath method)</a>
+</li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.rotation">rotation (SensorExtrinsic property)</a>
 
       <ul>
@@ -543,38 +1364,134 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.samefile">samefile() (AnyPath method)</a>
+</li>
       <li><a href="api/scene.html#paralleldomain.model.scene.Scene">Scene (class in paralleldomain.model.scene)</a>
 </li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.scene_names">scene_names (Dataset property)</a>
 </li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SceneFlow">SceneFlow (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow">(class in paralleldomain.model.annotation.scene_flow)</a>
 </li>
+      </ul></li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.scenes">scenes (Dataset property)</a>
 </li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation2D">SemanticSegmentation2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D">(class in paralleldomain.model.annotation.semantic_segmentation_2d)</a>
 </li>
+      </ul></li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation3D">SemanticSegmentation3D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D">(class in paralleldomain.model.annotation.semantic_segmentation_3d)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      </ul></li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.Sensor">Sensor (class in paralleldomain.model.sensor)</a>
 </li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic">SensorExtrinsic (class in paralleldomain.model.sensor)</a>
 </li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorFrame">SensorFrame (class in paralleldomain.model.sensor)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorPose">SensorPose (class in paralleldomain.model.sensor)</a>
 </li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.slope">slope (Line2D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.slope">(Line2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.slope">(Line2DGeometry property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.start">start (Line2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.start">(Line2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.start">(Line3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.start">(Line3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.stat">stat() (AnyPath method)</a>
+</li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals2D">SurfaceNormals2D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D">(class in paralleldomain.model.annotation.surface_normals_2d)</a>
 </li>
+      </ul></li>
       <li><a href="api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals3D">SurfaceNormals3D (AnnotationTypes attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D">(class in paralleldomain.model.annotation.surface_normals_3d)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.to_numpy">to_numpy() (Line2D method)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.to_numpy">(Line2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.to_numpy">(Line2DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.to_numpy">(Line3D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.to_numpy">(Line3DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.to_numpy">(Line3DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.to_numpy">(Point2D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.to_numpy">(Point2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DGeometry.to_numpy">(Point2DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.to_numpy">(Point3D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.to_numpy">(Point3DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DGeometry.to_numpy">(Point3DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.to_numpy">(Polygon2D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.to_numpy">(Polygon2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry.to_numpy">(Polygon2DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.to_numpy">(Polygon3D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.to_numpy">(Polygon3DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry.to_numpy">(Polygon3DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.to_numpy">(Polyline2D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.to_numpy">(Polyline2DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry.to_numpy">(Polyline2DGeometry method)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.to_numpy">(Polyline3D method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.to_numpy">(Polyline3DBaseGeometry method)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry.to_numpy">(Polyline3DGeometry method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.touch">touch() (AnyPath method)</a>
+</li>
       <li><a href="api/transformation.html#paralleldomain.utilities.transformation.Transformation">Transformation (class in paralleldomain.utilities.transformation)</a>
 </li>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.transformation_matrix">transformation_matrix (SensorExtrinsic property)</a>
@@ -585,8 +1502,6 @@
         <li><a href="api/transformation.html#paralleldomain.utilities.transformation.Transformation.transformation_matrix">(Transformation property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.translation">translation (SensorExtrinsic property)</a>
 
       <ul>
@@ -601,11 +1516,117 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.unordered_scene_names">unordered_scene_names (Dataset property)</a>
+      <li><a href="api/any_path.html#paralleldomain.utilities.any_path.AnyPath.unlink">unlink() (AnyPath method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.unordered_scene_names">unordered_scene_names (Dataset property)</a>
+</li>
       <li><a href="api/dataset.html#paralleldomain.model.dataset.Dataset.unordered_scenes">unordered_scenes (Dataset property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors">vectors (OpticalFlow attribute)</a>
+
+      <ul>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow.vectors">(SceneFlow attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.vertices">vertices (BoundingBox2D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.vertices">(BoundingBox2DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.vertices">(BoundingBox2DGeometry property)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.vertices">(BoundingBox3D property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices">(BoundingBox3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices">(BoundingBox3DGeometry property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.volume">volume (BoundingBox3D property)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume">(BoundingBox3DBaseGeometry property)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume">(BoundingBox3DGeometry property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width">width (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.width">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width">(BoundingBox3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width">(BoundingBox3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.polyline_2d.CollinearLinesException.with_traceback">with_traceback() (CollinearLinesException method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x">x (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.x">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.x">(Point2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.x">(Point2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.x">(Point3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.x">(Point3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y">y (BoundingBox2D attribute)</a>
+
+      <ul>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.y">(BoundingBox2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.y">(Point2D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.y">(Point2DBaseGeometry attribute)</a>
+</li>
+        <li><a href="api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.y">(Point3D attribute)</a>
+</li>
+        <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.y">(Point3DBaseGeometry attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.z">z (Point3DBaseGeometry attribute)</a>
 </li>
   </ul></td>
 </tr></table>
