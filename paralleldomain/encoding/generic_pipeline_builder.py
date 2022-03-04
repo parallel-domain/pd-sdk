@@ -45,9 +45,15 @@ class GenericSceneAggregator(Generic[TPipelineItem], EncoderStep):
         total_frames = self.total_frames_per_scene[pipeline_item.scene_name]
         total_seen_frames = self.seen_frames_per_scene[pipeline_item.scene_name]
         if total_frames != -1 and total_seen_frames != -1 and total_seen_frames >= total_frames:
-            self.encoding_format.save_scene(pipeline_item=pipeline_item)
+            self.on_end_of_scene(pipeline_item=pipeline_item)
 
         return pipeline_item
+
+    def on_end_of_dataset(self, pipeline_item: TPipelineItem):
+        self.encoding_format.save_dataset(pipeline_item=pipeline_item)
+
+    def on_end_of_scene(self, pipeline_item: TPipelineItem):
+        self.encoding_format.save_scene(pipeline_item=pipeline_item)
 
     def encode_dataset(self, pipeline_item: TPipelineItem) -> TPipelineItem:
         if pipeline_item.is_end_of_dataset:
@@ -67,7 +73,7 @@ class GenericSceneAggregator(Generic[TPipelineItem], EncoderStep):
             self.total_scenes != -1 and self.total_seen_scenes != -1 and self.total_seen_scenes >= self.total_scenes
         )
         if seen_all_frames and seen_all_scenes:
-            self.encoding_format.save_dataset(pipeline_item=pipeline_item)
+            self.on_end_of_dataset(pipeline_item=pipeline_item)
 
         return pipeline_item
 

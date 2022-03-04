@@ -114,7 +114,7 @@ class UnorderedScenePipelineItem(PipelineItem[UnorderedScene]):
         return None
 
 
-TPipelineItem = TypeVar("TPipelineItem", PipelineItem, Dict)
+TPipelineItem = TypeVar("TPipelineItem", bound=PipelineItem)
 DataType = Union[SensorDataTypes, Type[ClassMap]]
 
 
