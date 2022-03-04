@@ -65,12 +65,16 @@ class OnLabelNotDefined(Enum):
     RAISE_ERROR = 0
     KEEP_LABEL = 1
     DISCARD_LABEL = 2
+    MAP_TO_DEFAULT = 3
 
 
 class LabelMapping:
-    def __init__(self, label_mapping: Dict[str, str], on_not_defined: OnLabelNotDefined):
+    def __init__(self, label_mapping: Dict[str, str], on_not_defined: OnLabelNotDefined, default_name: str = None):
         self.on_not_defined = on_not_defined
         self._label_mapping = label_mapping
+        self.default_name = default_name
+        if on_not_defined == OnLabelNotDefined.MAP_TO_DEFAULT and default_name is None:
+            raise ValueError("When using MAP_TO_DEFAULT you also need to provide a default name!")
 
     def items(self) -> ItemsView[str, str]:
         return self._label_mapping.items()
@@ -81,6 +85,8 @@ class LabelMapping:
                 raise KeyError(f"Missing Mapping for {key}!")
             elif self.on_not_defined == OnLabelNotDefined.KEEP_LABEL:
                 return key
+            elif self.on_not_defined == OnLabelNotDefined.MAP_TO_DEFAULT:
+                return self.default_name
             else:
                 return None
         return self._label_mapping[key]
