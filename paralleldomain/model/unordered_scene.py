@@ -1,6 +1,6 @@
 from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Type, TypeVar, Union
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -12,7 +12,7 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.model.frame import Frame
-from paralleldomain.model.sensor import CameraSensor, LidarSensor
+from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame, LidarSensor, LidarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 T = TypeVar("T")
@@ -76,6 +76,8 @@ class UnorderedScene(Generic[TDateTime]):
         self._name = name
         self._available_annotation_types = available_annotation_types
         self._decoder = decoder
+        self._number_of_camera_frames = None
+        self._number_of_lidar_frames = None
 
     @property
     def name(self) -> str:
@@ -152,3 +154,52 @@ class UnorderedScene(Generic[TDateTime]):
         if annotation_type not in self._available_annotation_types:
             raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
         return self.class_maps[annotation_type]
+
+    def get_sensor_frames(
+        self, sensor_names: Optional[Iterable[SensorName]] = None, frame_ids: Optional[Iterable[FrameId]] = None
+    ) -> Generator[SensorFrame[TDateTime], None, None]:
+        if sensor_names is None:
+            sensor_names = self.sensor_names
+        for sensor_name in sensor_names:
+            sensor = self.get_sensor(sensor_name=sensor_name)
+            if frame_ids is None:
+                sensor_frame_ids = sensor.frame_ids
+            else:
+                sensor_frame_ids = frame_ids
+            for frame_id in sensor_frame_ids:
+                yield sensor.get_frame(frame_id=frame_id)
+
+    @property
+    def camera_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
+        for camera in self.cameras:
+            yield from camera.sensor_frames
+
+    @property
+    def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
+        for lidar in self.lidars:
+            yield from lidar.sensor_frames
+
+    @property
+    def sensor_frames(self) -> Generator[SensorFrame[TDateTime], None, None]:
+        yield from self.camera_frames
+        yield from self.lidar_frames
+
+    @property
+    def number_of_camera_frames(self) -> int:
+        if self._number_of_camera_frames is None:
+            self._number_of_camera_frames = 0
+            for camera in self.cameras:
+                self._number_of_camera_frames += len(camera.frame_ids)
+        return self._number_of_camera_frames
+
+    @property
+    def number_of_lidar_frames(self) -> int:
+        if self._number_of_lidar_frames is None:
+            self._number_of_lidar_frames = 0
+            for lidar in self.lidars:
+                self._number_of_lidar_frames += len(lidar.frame_ids)
+        return self._number_of_lidar_frames
+
+    @property
+    def number_of_sensor_frames(self) -> int:
+        return self.number_of_lidar_frames + self.number_of_camera_frames
