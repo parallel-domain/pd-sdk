@@ -32,7 +32,7 @@ from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSeg
 from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
 from paralleldomain.model.annotation.surface_normals_2d import SurfaceNormals2D
 from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -146,6 +146,14 @@ class CameraModel:
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):
+    @property
+    def dataset_name(self) -> str:
+        pass
+
+    @property
+    def scene_name(self) -> SceneName:
+        pass
+
     def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
 
@@ -182,6 +190,14 @@ class SensorFrame(Generic[TDateTime]):
         self._frame_id = frame_id
         self._decoder = decoder
         self._sensor_name = sensor_name
+
+    @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
+
+    @property
+    def scene_name(self) -> SceneName:
+        return self._decoder.scene_name
 
     @property
     def extrinsic(self) -> "SensorExtrinsic":
