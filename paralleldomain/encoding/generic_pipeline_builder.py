@@ -95,17 +95,24 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
 
             load_data = True
             if self.fs_copy:
-                file_path = sensor_frame.get_file_path(data_type=data_type)
-                if self.encoding_format.supports_copy(
+                if issubclass(data_type, Annotation) and data_type in sensor_frame.available_annotation_types:
+                    file_path = sensor_frame.get_file_path(data_type=data_type)
+                elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
+                    file_path = sensor_frame.get_file_path(data_type=data_type)
+                elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
+                    file_path = sensor_frame.get_file_path(data_type=data_type)
+                else:
+                    file_path = None
+
+                if file_path and self.encoding_format.supports_copy(
                     pipeline_item=pipeline_item, data_type=data_type, data_path=file_path
                 ):
                     data_or_path = file_path
                     load_data = False
 
             if load_data:
-                if issubclass(data_type, Annotation):
-                    if data_type in sensor_frame.available_annotation_types:
-                        data_or_path = sensor_frame.get_annotations(annotation_type=data_type)
+                if issubclass(data_type, Annotation) and data_type in sensor_frame.available_annotation_types:
+                    data_or_path = sensor_frame.get_annotations(annotation_type=data_type)
                 elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
                     data_or_path = pipeline_item.camera_frame.image.rgba
                 elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
