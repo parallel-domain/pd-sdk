@@ -33,19 +33,6 @@ class ClassIdMap:
         return self[other]
 
 
-class ClassNameToIdMap:
-    def __init__(self, name_to_class_id: Dict[str, int]):
-        self.name_to_class_id = name_to_class_id
-
-    def __matmul__(self, other: "ClassMap") -> ClassIdMap:
-        if isinstance(other, ClassMap):
-            mapping: Dict[int, int] = dict()
-            for source_id, class_detail in other.items():
-                if class_detail.name in self.name_to_class_id:
-                    mapping[source_id] = self.name_to_class_id[class_detail.name]
-            return ClassIdMap(class_id_to_class_id=mapping)
-
-
 @dataclass
 class ClassDetail:
     name: str
@@ -132,3 +119,44 @@ class LabelMapping:
             )
         else:
             raise ValueError(f"Unsupported type {type(other)}")
+
+
+TClassNameToIdMappable = TypeVar("TClassNameToIdMappable", ClassMap, LabelMapping)
+
+
+class ClassNameToIdMap:
+    def __init__(self, name_to_class_id: Dict[str, int], on_not_defined: OnLabelNotDefined, default_id: int = None):
+        self.default_id = default_id
+        self.on_not_defined = on_not_defined
+        self.name_to_class_id = name_to_class_id
+        assert on_not_defined != OnLabelNotDefined.KEEP_LABEL, "KEEP_LABEL is not supported!"
+
+    def __getitem__(self, key: str) -> Optional[int]:
+        if key not in self.name_to_class_id:
+            if self.on_not_defined == OnLabelNotDefined.RAISE_ERROR:
+                raise KeyError(f"Missing Mapping for {key}!")
+            elif self.on_not_defined == OnLabelNotDefined.MAP_TO_DEFAULT:
+                return self.default_id
+            else:
+                return None
+        return self.name_to_class_id[key]
+
+    def __matmul__(self, other: TClassNameToIdMappable) -> Union[ClassIdMap, "ClassNameToIdMap"]:
+        if isinstance(other, ClassMap):
+            mapping: Dict[int, int] = dict()
+            for source_id, class_detail in other.items():
+                mapped = self[class_detail.name]
+                if mapped is not None:
+                    mapping[source_id] = mapped
+            return ClassIdMap(class_id_to_class_id=mapping)
+        if isinstance(other, LabelMapping):
+            adjusted_name_to_class_id: Dict[str, int] = dict()
+            for class_name, to_class_name in other.items():
+                mapped = self[to_class_name]
+                if mapped is not None:
+                    adjusted_name_to_class_id[class_name] = mapped
+            return ClassNameToIdMap(
+                name_to_class_id=adjusted_name_to_class_id,
+                on_not_defined=self.on_not_defined,
+                default_id=self.default_id,
+            )
