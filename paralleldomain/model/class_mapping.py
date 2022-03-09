@@ -29,6 +29,22 @@ class ClassIdMap:
         else:
             return np.vectorize(self.class_id_to_class_id.get)(key)
 
+    def __matmul__(self, other: TClassId) -> TClassId:
+        return self[other]
+
+
+class ClassNameToIdMap:
+    def __init__(self, name_to_class_id: Dict[str, int]):
+        self.name_to_class_id = name_to_class_id
+
+    def __matmul__(self, other: "ClassMap") -> ClassIdMap:
+        if isinstance(other, ClassMap):
+            mapping: Dict[int, int] = dict()
+            for source_id, class_detail in other.items():
+                if class_detail.name in self.name_to_class_id:
+                    mapping[source_id] = self.name_to_class_id[class_detail.name]
+            return ClassIdMap(class_id_to_class_id=mapping)
+
 
 @dataclass
 class ClassDetail:

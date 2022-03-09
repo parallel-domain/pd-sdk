@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from paralleldomain.model.class_mapping import ClassIdMap, ClassMap, LabelMapping, OnLabelNotDefined
+from paralleldomain.model.class_mapping import ClassIdMap, ClassMap, ClassNameToIdMap, LabelMapping, OnLabelNotDefined
 
 
 class TestClassMap:
@@ -81,3 +81,27 @@ class TestClassIdMap:
         target = np.arange(2, 11).reshape((3, 3, 1))
         mapped = custom_id_map[source]
         assert np.all(target == mapped)
+
+
+class TestEndToEndMapping:
+    def test_np_class_ids_mapping(self):
+        label_mapping = {"Car": "vehicle", "Pedestrian": "ped", "Pickup": "vehicle", "Truck": "vehicle"}
+        label_map = LabelMapping(label_mapping=label_mapping, on_not_defined=OnLabelNotDefined.RAISE_ERROR)
+        class_map = ClassMap.from_id_label_dict({0: "Car", 1: "Pickup", 2: "Truck", 3: "Pedestrian"})
+        name_to_id_map = ClassNameToIdMap(name_to_class_id={"vehicle": 1, "ped": 0})
+        class_ids = np.array([1, 2, 3, 0, 1, 0, 3, 2, 3])
+        target_class_ids = np.array([1, 1, 0, 1, 1, 1, 0, 1, 0])
+
+        mapped_labels = label_map @ class_map
+        assert isinstance(mapped_labels, ClassMap)
+
+        class_mapping = name_to_id_map @ mapped_labels
+        assert isinstance(class_mapping, ClassIdMap)
+
+        mapped_class_ids = class_mapping @ class_ids
+        assert isinstance(mapped_class_ids, np.ndarray)
+        assert np.all(mapped_class_ids == target_class_ids)
+
+        mapped_class_ids = class_mapping @ class_ids.reshape((3, 3))
+        assert isinstance(mapped_class_ids, np.ndarray)
+        assert np.all(mapped_class_ids.flatten() == target_class_ids)
