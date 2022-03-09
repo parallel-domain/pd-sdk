@@ -137,8 +137,10 @@ class UnorderedScene(Generic[TDateTime]):
     def get_sensor(self, sensor_name: SensorName) -> Union[CameraSensor[TDateTime], LidarSensor[TDateTime]]:
         if sensor_name in self.camera_names:
             return self.get_camera_sensor(camera_name=sensor_name)
-        else:
+        elif sensor_name in self.lidar_names:
             return self.get_lidar_sensor(lidar_name=sensor_name)
+        else:
+            raise ValueError(f"Unknown sensor: {sensor_name}!")
 
     def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[TDateTime]:
         return self._decoder.get_camera_sensor(scene_name=self.name, camera_name=camera_name)
