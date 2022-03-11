@@ -162,6 +162,8 @@ class UnorderedScene(Generic[TDateTime]):
     ) -> Generator[SensorFrame[TDateTime], None, None]:
         if sensor_names is None:
             sensor_names = self.sensor_names
+        else:
+            sensor_names = set(sensor_names).intersection(set(self.sensor_names))
         for sensor_name in sensor_names:
             sensor = self.get_sensor(sensor_name=sensor_name)
             if frame_ids is None:
