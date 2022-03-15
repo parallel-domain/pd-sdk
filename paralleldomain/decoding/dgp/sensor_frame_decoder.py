@@ -282,14 +282,25 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
 
-    def _decode_point_caches(self, scene_name: str, annotation_identifier: str) -> List[PointCache]:
-        bbox_annotation_identifier, sensor_name, frame_id = annotation_identifier.split("$")
-        point_cache_folder = self._dataset_path / scene_name / "point_cache"
+    @lru_cache(5)
+    def _get_3d_boxes_for_point_cache(
+        self, bbox_annotation_identifier: str, sensor_name: SensorName, frame_id: FrameId
+    ):
         boxes = self.get_annotations(
             sensor_name=sensor_name,
             frame_id=frame_id,
             identifier=bbox_annotation_identifier,
             annotation_type=BoundingBoxes3D,
+        )
+        return boxes
+
+    def _decode_point_caches(self, scene_name: str, annotation_identifier: str) -> List[PointCache]:
+        bbox_annotation_identifier, sensor_name, frame_id = annotation_identifier.split("$")
+        point_cache_folder = self._dataset_path / scene_name / "point_cache"
+        boxes = self._get_3d_boxes_for_point_cache(
+            sensor_name=sensor_name,
+            frame_id=frame_id,
+            bbox_annotation_identifier=bbox_annotation_identifier,
         )
         caches = []
 
