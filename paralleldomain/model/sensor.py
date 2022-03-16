@@ -32,12 +32,33 @@ from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSeg
 from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
 from paralleldomain.model.annotation.surface_normals_2d import SurfaceNormals2D
 from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 F = TypeVar("F", Image, PointCloud, Annotation)
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
+SensorDataTypes = Union[
+    Type[Image],
+    Type[PointCloud],
+    Type[BoundingBoxes2D],
+    Type[BoundingBoxes3D],
+    Type[SemanticSegmentation2D],
+    Type[InstanceSegmentation2D],
+    Type[SemanticSegmentation3D],
+    Type[InstanceSegmentation3D],
+    Type[OpticalFlow],
+    Type[Depth],
+    Type[SurfaceNormals3D],
+    Type[SurfaceNormals2D],
+    Type[SceneFlow],
+    Type[MaterialProperties2D],
+    Type[Albedo2D],
+    Type[Points2D],
+    Type[Polygons2D],
+    Type[Polylines2D],
+    Type[PointCaches],
+]
 
 
 class FilePathedDataType:
@@ -125,6 +146,14 @@ class CameraModel:
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):
+    @property
+    def dataset_name(self) -> str:
+        pass
+
+    @property
+    def scene_name(self) -> SceneName:
+        pass
+
     def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
 
@@ -163,12 +192,40 @@ class SensorFrame(Generic[TDateTime]):
         self._sensor_name = sensor_name
 
     @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
+
+    @property
+    def scene_name(self) -> SceneName:
+        return self._decoder.scene_name
+
+    @property
     def extrinsic(self) -> "SensorExtrinsic":
+        """
+        Local Sensor coordinate system to vehicle coordinate system
+        """
         return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def pose(self) -> "SensorPose":
+        """
+        Local Vehicle coordinate system at the current time step to world coordinate system
+        """
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def vehicle_to_world(self) -> Transformation:
+        """
+        Alias for the pose property.
+        """
+        return self.pose
+
+    @property
+    def vehicle_to_sensor(self) -> Transformation:
+        """
+        Alias for the extrinsic property.
+        """
+        return self.extrinsic
 
     @property
     def sensor_name(self) -> str:
