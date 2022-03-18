@@ -1,4 +1,5 @@
 import base64
+import logging
 from datetime import datetime
 from typing import Any, ByteString, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
@@ -27,6 +28,7 @@ from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 F = TypeVar("F", Image, PointCloud, Annotation)
+logger = logging.getLogger(__name__)
 
 
 class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuImagesDataAccessMixin):
@@ -122,7 +124,11 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        trans = Transformation(quaternion=calib_sensor["rotation"], translation=calib_sensor["translation"])
+        translation = np.asarray(calib_sensor["translation"]).reshape(-1)
+        if len(translation) != 3:
+            logger.warning(f"Got a translation with invalid shape {translation.shape}!")
+            translation = translation[:3]
+        trans = Transformation(quaternion=calib_sensor["rotation"], translation=translation)
         trans = NUIMAGES_IMU_TO_INTERNAL_CS @ trans
 
         return trans
