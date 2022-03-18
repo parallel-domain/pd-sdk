@@ -186,7 +186,7 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         encoder_steps = self.pipeline_builder.build_encoder_steps(encoding_format=self.encoding_format)
         stage = self.build_pipeline(source_generator=stage, encoder_steps=encoder_steps)
 
-        stage = pypeln.process.to_iterable(stage)
+        stage = pypeln.thread.to_iterable(stage)
         if self.use_tqdm:
             stage = tqdm(
                 stage,
