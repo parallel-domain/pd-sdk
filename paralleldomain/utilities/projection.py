@@ -124,7 +124,7 @@ def project_points_2d_to_3d(
     distortion_lookup: Optional[DistortionLookupTable] = None,
     interpolate: bool = True,
 ) -> np.ndarray:
-    """Projects an array of 3D points in Cartesian coordinates onto an image plane.
+    """Maps image plane coordinates to 3D points in Cartesian coordinates.
 
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
