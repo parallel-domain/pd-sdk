@@ -1,0 +1,2 @@
+IMAGE_FOLDER_NAME = "image"
+SEMANTIC_SEGMENTATION_FOLDER_NAME = "semantic_segmentation"
