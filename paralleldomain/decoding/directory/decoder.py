@@ -29,6 +29,15 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         camera_name: Optional[str] = "default",
         **kwargs,
     ):
+        self._init_kwargs = dict(
+            dataset_path=dataset_path,
+            class_map=class_map,
+            splits=splits,
+            settings=settings,
+            image_folder=image_folder,
+            semantic_segmentation_folder=semantic_segmentation_folder,
+            camera_name=camera_name,
+        )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if splits is None:
             splits = ["test", "train", "val"]
@@ -63,6 +72,16 @@ class DirectoryDatasetDecoder(DatasetDecoder):
             available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
             custom_attributes=dict(splits=self.splits),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "directory"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class DirectorySceneDecoder(SceneDecoder[None]):
