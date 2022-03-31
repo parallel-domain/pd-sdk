@@ -19,18 +19,24 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         scene_name: SceneName,
         dataset_path: AnyPath,
         settings: DecoderSettings,
+        image_folder: str,
+        semantic_segmentation_folder: str,
+        camera_name: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
+        self.image_folder = image_folder
+        self.semantic_segmentation_folder = semantic_segmentation_folder
+        self.camera_name = camera_name
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         raise ValueError("Loading from directoy does not support ego pose!")
 
     def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
-        return ["default"]
+        return [self.camera_name]
 
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
-        return ["default"]
+        return [self.camera_name]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("Loading from directoy does not support lidar data!")
@@ -44,6 +50,8 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
             scene_name=self.scene_name,
             dataset_path=self.dataset_path,
             settings=self.settings,
+            image_folder=self.image_folder,
+            semantic_segmentation_folder=self.semantic_segmentation_folder,
         )
 
     def _decode_camera_sensor_frame(

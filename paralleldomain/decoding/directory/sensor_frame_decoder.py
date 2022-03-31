@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Tuple, TypeVar
 import numpy as np
 import imagesize
 
-from paralleldomain.decoding.directory.common import IMAGE_FOLDER_NAME, SEMANTIC_SEGMENTATION_FOLDER_NAME
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.annotation import (
@@ -20,20 +19,30 @@ T = TypeVar("T")
 
 
 class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
-    def __init__(self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings):
+    def __init__(
+        self,
+        dataset_name: str,
+        scene_name: SceneName,
+        dataset_path: AnyPath,
+        settings: DecoderSettings,
+        image_folder: str,
+        semantic_segmentation_folder: str,
+    ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
+        self._image_folder = image_folder
+        self._semantic_segmentation_folder = semantic_segmentation_folder
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         return None
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        width, height = imagesize.get(f"{frame_id}.png")
+        width, height = imagesize.get(f"{frame_id}")
         return width, height, 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        scene_images_folder = self._dataset_path / IMAGE_FOLDER_NAME
-        img_path = scene_images_folder / f"{frame_id}.png"
+        scene_images_folder = self._dataset_path / self._image_folder
+        img_path = scene_images_folder / f"{frame_id}"
         image_data = read_image(path=img_path, convert_to_rgb=True)
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
@@ -43,7 +52,7 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        semseg_file_name = f"{frame_id}.png"
+        semseg_file_name = f"{frame_id}"
 
         return {
             AnnotationTypes.SemanticSegmentation2D: semseg_file_name,
@@ -75,7 +84,7 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_semantic_segmentation_2d(
         self, scene_name: str, frame_id: FrameId, annotation_identifier: str
     ) -> np.ndarray:
-        annotation_path = self._dataset_path / SEMANTIC_SEGMENTATION_FOLDER_NAME / f"{frame_id}.png"
+        annotation_path = self._dataset_path / self._semantic_segmentation_folder / f"{frame_id}"
         class_ids = read_image(path=annotation_path, convert_to_rgb=False)
         class_ids = class_ids.astype(int)
         return np.expand_dims(class_ids, axis=-1)

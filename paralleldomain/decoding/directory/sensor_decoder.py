@@ -2,7 +2,6 @@ from datetime import datetime
 from functools import lru_cache
 from typing import Set
 
-from paralleldomain.decoding.directory.common import IMAGE_FOLDER_NAME
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
@@ -12,16 +11,21 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
-    def __init__(self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings):
+    def __init__(
+        self,
+        dataset_name: str,
+        scene_name: SceneName,
+        dataset_path: AnyPath,
+        settings: DecoderSettings,
+        image_folder: str,
+    ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
+        self.image_folder = image_folder
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        frame_ids = set()
-        scene_images_folder = self.dataset_path / IMAGE_FOLDER_NAME
-        file_names = [path.stem for path in scene_images_folder.iterdir()]
-        frame_ids.update(file_names)
-        return frame_ids
+        scene_images_folder = self.dataset_path / self.image_folder
+        return {path.name for path in scene_images_folder.iterdir()}
 
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
@@ -35,4 +39,5 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
             scene_name=self.scene_name,
             dataset_path=self.dataset_path,
             settings=self.settings,
+            image_folder=self.image_folder,
         )
