@@ -44,7 +44,8 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
             sample = self.scene_samples[frame_id]
             for key in sample.datum_keys:
                 if sensor_data[key].id.name == sensor_name:
-                    sensor_frame_ids.update(frame_id)
+                    sensor_frame_ids.add(frame_id)
+                    break
 
         return sensor_frame_ids
 

@@ -65,6 +65,12 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         settings: Optional[DecoderSettings] = None,
         **kwargs,
     ):
+        self._init_kwargs = dict(
+            dataset_path=dataset_path,
+            settings=settings,
+            umd_file_paths=umd_file_paths,
+            custom_reference_to_box_bottom=custom_reference_to_box_bottom,
+        )
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
         DatasetDecoder.__init__(self, dataset_name=str(dataset_path), settings=settings)
         self._umd_file_paths = umd_file_paths
@@ -98,6 +104,16 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
             available_annotation_types=anno_types,
             custom_attributes=MessageToDict(dto.metadata, preserving_proto_field_name=True),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "dgpv1"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):

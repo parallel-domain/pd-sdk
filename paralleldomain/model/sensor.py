@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, TypeVar, Union
 
 import numpy as np
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
+from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
 try:
@@ -13,12 +14,111 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
-from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SensorName
+from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.annotation.albedo_2d import Albedo2D
+from paralleldomain.model.annotation.bounding_box_2d import BoundingBoxes2D
+from paralleldomain.model.annotation.bounding_box_3d import BoundingBoxes3D
+from paralleldomain.model.annotation.depth import Depth
+from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
+from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D
+from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
+from paralleldomain.model.annotation.optical_flow import OpticalFlow
+from paralleldomain.model.annotation.point_2d import Points2D
+from paralleldomain.model.annotation.point_cache import PointCaches
+from paralleldomain.model.annotation.polygon_2d import Polygons2D
+from paralleldomain.model.annotation.polyline_2d import Polylines2D
+from paralleldomain.model.annotation.scene_flow import SceneFlow
+from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSegmentation2D
+from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
+from paralleldomain.model.annotation.surface_normals_2d import SurfaceNormals2D
+from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
+SensorDataTypes = Union[
+    Type[Image],
+    Type[PointCloud],
+    Type[BoundingBoxes2D],
+    Type[BoundingBoxes3D],
+    Type[SemanticSegmentation2D],
+    Type[InstanceSegmentation2D],
+    Type[SemanticSegmentation3D],
+    Type[InstanceSegmentation3D],
+    Type[OpticalFlow],
+    Type[Depth],
+    Type[SurfaceNormals3D],
+    Type[SurfaceNormals2D],
+    Type[SceneFlow],
+    Type[MaterialProperties2D],
+    Type[Albedo2D],
+    Type[Points2D],
+    Type[Polygons2D],
+    Type[Polylines2D],
+    Type[PointCaches],
+]
+
+
+class FilePathedDataType:
+    """Allows to get type-safe access to data types that may have a file lnked to them,
+     e.g., annotation data, images and point clouds.
+
+    Attributes:
+        BoundingBoxes2D
+        BoundingBoxes3D
+        SemanticSegmentation2D
+        InstanceSegmentation2D
+        SemanticSegmentation3D
+        InstanceSegmentation3D
+        OpticalFlow
+        Depth
+        SurfaceNormals3D
+        SurfaceNormals2D
+        SceneFlow
+        MaterialProperties2D
+        Albedo2D
+        Points2D
+        Polygons2D
+        Polylines2D
+        Image
+        PointCloud
+
+    Examples:
+        Access 2D Bounding Box annotation file path for a camera frame:
+        ::
+
+            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+
+            from paralleldomain.model.sensor import FilePathedDataType
+
+            image_file_path = camera_frame.get_file_path(FilePathedDataType.Image)
+            if image_file_path is not None:
+                with image_file_path.open("r"):
+                    # do something
+
+    """
+
+    Image: Type[Image] = Image  # noqa: F811
+    PointCloud: Type[PointCloud] = PointCloud  # noqa: F811
+    BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D  # noqa: F811
+    BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D  # noqa: F811
+    SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D  # noqa: F811
+    InstanceSegmentation2D: Type[InstanceSegmentation2D] = InstanceSegmentation2D  # noqa: F811
+    SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D  # noqa: F811
+    InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D  # noqa: F811
+    OpticalFlow: Type[OpticalFlow] = OpticalFlow  # noqa: F811
+    Depth: Type[Depth] = Depth  # noqa: F811
+    SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D  # noqa: F811
+    SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D  # noqa: F811
+    SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
+    MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
+    Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
+    Points2D: Type[Points2D] = Points2D  # noqa: F811
+    Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
+    Polylines2D: Type[Polylines2D] = Polylines2D  # noqa: F811
+    PointCaches: Type[PointCaches] = PointCaches  # noqa: F811
 
 
 class CameraModel:
@@ -46,6 +146,14 @@ class CameraModel:
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):
+    @property
+    def dataset_name(self) -> str:
+        pass
+
+    @property
+    def scene_name(self) -> SceneName:
+        pass
+
     def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
         pass
 
@@ -55,6 +163,9 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def get_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> List[T]:
+        pass
+
+    def get_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         pass
 
     def get_available_annotation_types(
@@ -81,12 +192,40 @@ class SensorFrame(Generic[TDateTime]):
         self._sensor_name = sensor_name
 
     @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
+
+    @property
+    def scene_name(self) -> SceneName:
+        return self._decoder.scene_name
+
+    @property
     def extrinsic(self) -> "SensorExtrinsic":
+        """
+        Local Sensor coordinate system to vehicle coordinate system
+        """
         return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def pose(self) -> "SensorPose":
+        """
+        Local Vehicle coordinate system at the current time step to world coordinate system
+        """
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def vehicle_to_world(self) -> Transformation:
+        """
+        Alias for the pose property.
+        """
+        return self.pose
+
+    @property
+    def vehicle_to_sensor(self) -> Transformation:
+        """
+        Alias for the extrinsic property.
+        """
+        return self.extrinsic
 
     @property
     def sensor_name(self) -> str:
@@ -116,6 +255,13 @@ class SensorFrame(Generic[TDateTime]):
             frame_id=self.frame_id,
             identifier=self._annotation_type_identifiers[annotation_type],
             annotation_type=annotation_type,
+        )
+
+    def get_file_path(self, data_type: Type[F]) -> Optional[AnyPath]:
+        return self._decoder.get_file_path(
+            sensor_name=self.sensor_name,
+            frame_id=self.frame_id,
+            data_type=data_type,
         )
 
     @property
@@ -214,15 +360,27 @@ class Sensor(Generic[TSensorFrameType]):
     def get_frame(self, frame_id: FrameId) -> TSensorFrameType:
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
+    @property
+    def sensor_frames(self) -> Generator[TSensorFrameType, None, None]:
+        return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
+
 
 class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> CameraSensorFrame[TDateTime]:
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
+    @property
+    def sensor_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
+        return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
+
 
 class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> LidarSensorFrame[TDateTime]:
         return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+
+    @property
+    def sensor_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
+        return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
 
 
 class SensorPose(Transformation):

@@ -28,7 +28,7 @@ class InstanceSegmentation2D(Annotation):
             instance_id: ID of instance to be masked
 
         Returns:
-            Mask of same shape as :py:attr:`~class_ids` and `bool` values.
+            Mask of same shape as :py:attr:`~instance_ids` and `bool` values.
             `True` where pixel matches instance, `False` where it doesn't.
         """
         return boolean_mask_by_value(mask=self.instance_ids, value=instance_id)

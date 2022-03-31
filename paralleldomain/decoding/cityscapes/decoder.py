@@ -24,6 +24,7 @@ class CityscapesDatasetDecoder(DatasetDecoder):
         settings: Optional[DecoderSettings] = None,
         **kwargs,
     ):
+        self._init_kwargs = dict(dataset_path=dataset_path, settings=settings, splits=splits)
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if splits is None:
             splits = ["test", "train", "val"]
@@ -54,6 +55,16 @@ class CityscapesDatasetDecoder(DatasetDecoder):
             available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
             custom_attributes=dict(splits=self.splits),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "cityscapes"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class CityscapesSceneDecoder(SceneDecoder[None]):
