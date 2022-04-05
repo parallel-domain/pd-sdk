@@ -22,7 +22,6 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self,
         dataset_path: Union[str, AnyPath],
         class_map: ClassMap,
-        splits: Optional[List[str]] = None,
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
         semantic_segmentation_folder: Optional[str] = SEMANTIC_SEGMENTATION_FOLDER_NAME,
@@ -32,21 +31,18 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self._init_kwargs = dict(
             dataset_path=dataset_path,
             class_map=class_map,
-            splits=splits,
             settings=settings,
             image_folder=image_folder,
             semantic_segmentation_folder=semantic_segmentation_folder,
             camera_name=camera_name,
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        if splits is None:
-            splits = ["test", "train", "val"]
-        self.splits = splits
+
         self.class_map = class_map
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.camera_name = camera_name
-        dataset_name = "-".join(list([dataset_path] + splits))
+        dataset_name = "-".join(list([dataset_path]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
@@ -70,7 +66,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         return DatasetMeta(
             name=self.dataset_name,
             available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
-            custom_attributes=dict(splits=self.splits),
+            custom_attributes=dict(),
         )
 
     @staticmethod
@@ -133,6 +129,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
             scene_name=scene_name,
             settings=self.settings,
             image_folder=self._image_folder,
+            semantic_segmentation_folder=self._semantic_segmentation_folder,
         )
 
     def _create_lidar_sensor_decoder(
