@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 class AnyPath:
+    """
+    Implementation of a Path-like object which handles both local and s3 bucket paths.
+    """
+
     def __init__(self, path: Union[str, "AnyPath"]):
         path = str(path)
         self._full_path = path
@@ -197,7 +201,7 @@ class AnyPath:
 
     def rglob(self, pattern: str):
         """
-        This is like calling S3Path.glob with "**/" added in front of the given relative pattern
+        This is like calling S3Path.glob with `'**/'` added in front of the given relative pattern
         """
         for path in self._backend.rglob(pattern=pattern):
             yield self._create_valid_any_path(new_path=path)

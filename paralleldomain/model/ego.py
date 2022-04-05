@@ -12,7 +12,7 @@ class EgoPose(Transformation):
 
 class EgoFrame:
     """
-    This Objects contains informations of a frame of the Ego vehicle/drone/person the sensor rig was attached to.
+    This Objects contains information about the ego-object's world pose within a given frame.
     """
 
     def __init__(self, pose_loader: Callable[[], EgoPose]):
