@@ -11,7 +11,7 @@ from paralleldomain.encoding.pipeline_encoder import EncoderStep, EncodingFormat
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import SensorDataTypes, SensorFrame
+from paralleldomain.model.sensor import FilePathedDataType, SensorDataTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -179,6 +179,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
         fs_copy: bool = True,
+        copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ):
 
@@ -188,7 +189,6 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         self.fs_copy = fs_copy
         self.inplace = inplace
         self.should_copy_callbacks = should_copy_callbacks
-        self.copy_data_types = copy_data_types
         self.target_dataset_name = target_dataset_name
         self.allowed_frames = allowed_frames
         self.output_path = output_path
@@ -199,6 +199,14 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         if "dataset_path" in decoder_kwargs:
             decoder_kwargs.pop("dataset_path")
         dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
+
+        if copy_data_types is None and copy_all_available_sensors_and_annotations:
+            copy_data_types: List[SensorDataTypes] = dataset.available_annotation_types
+            if len(dataset.camera_names) > 0:
+                copy_data_types.append(FilePathedDataType.Image)
+            if len(dataset.lidar_names) > 0:
+                copy_data_types.append(FilePathedDataType.PointCloud)
+        self.copy_data_types = copy_data_types
 
         self._dataset = dataset
         if scene_names is not None:

@@ -38,6 +38,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         fs_copy: bool = True,
         copy_data_types: Optional[List[SensorDataTypes]] = None,
         should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
@@ -60,6 +61,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
             allowed_frames=allowed_frames,
             copy_data_types=copy_data_types,
             should_copy_callbacks=should_copy_callbacks,
+            copy_all_available_sensors_and_annotations=copy_all_available_sensors_and_annotations,
             fs_copy=fs_copy,
             workers=workers,
             max_in_queue_size=max_in_queue_size,
