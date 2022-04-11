@@ -1,9 +1,9 @@
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from paralleldomain.encoding.dgp.v1.encoding_format import DGPV1EncodingFormat
 from paralleldomain.encoding.generic_pipeline_builder import GenericPipelineBuilder
-from paralleldomain.model.sensor import SensorDataTypes
+from paralleldomain.model.sensor import SensorDataTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 
 try:
@@ -37,6 +37,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         use_tqdm: bool = True,
         fs_copy: bool = True,
         copy_data_types: Optional[List[SensorDataTypes]] = None,
+        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
@@ -58,6 +59,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
             sensor_names=sensor_names,
             allowed_frames=allowed_frames,
             copy_data_types=copy_data_types,
+            should_copy_callbacks=should_copy_callbacks,
             fs_copy=fs_copy,
             workers=workers,
             max_in_queue_size=max_in_queue_size,

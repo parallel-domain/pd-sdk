@@ -2,7 +2,7 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 from functools import partial
-from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, Generator, Generic, Iterable, List, Optional, Type, Union
 
 import pypeln
 
@@ -11,7 +11,7 @@ from paralleldomain.encoding.pipeline_encoder import EncoderStep, EncodingFormat
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import SensorDataTypes
+from paralleldomain.model.sensor import SensorDataTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -87,19 +87,26 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
         encoding_format: EncodingFormat[TPipelineItem],
         copy_data_types: List[SensorDataTypes],
         fs_copy: bool,
+        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         workers: int = 1,
         in_queue_size: int = 1,
     ):
         self.copy_data_types = copy_data_types
+        self.should_copy_callbacks = should_copy_callbacks
         self.encoding_format = encoding_format
         self.in_queue_size = in_queue_size
         self.workers = workers
         self.fs_copy = fs_copy
 
-    def encode_frame_data(self, pipeline_item: TPipelineItem, data_type: SensorDataTypes) -> TPipelineItem:
+    def encode_frame_data(
+        self,
+        pipeline_item: TPipelineItem,
+        data_type: SensorDataTypes,
+        should_copy: Callable[[SensorDataTypes, SensorFrame], bool],
+    ) -> TPipelineItem:
         sensor_frame = pipeline_item.sensor_frame
 
-        if sensor_frame is not None:
+        if sensor_frame is not None and should_copy(data_type, sensor_frame):
             data_or_path = None
 
             load_data = True
@@ -135,8 +142,15 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
     def apply(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
         stage = input_stage
         for data_type in self.copy_data_types:
+
+            def should_copy(d, f) -> bool:
+                return True
+
+            callback = should_copy
+            if self.should_copy_callbacks is not None and data_type in self.should_copy_callbacks:
+                callback = self.should_copy_callbacks[data_type]
             stage = pypeln.thread.map(
-                f=partial(self.encode_frame_data, data_type=data_type),
+                f=partial(self.encode_frame_data, data_type=data_type, should_copy=callback),
                 stage=stage,
                 workers=self.workers,
                 maxsize=self.in_queue_size,
@@ -159,6 +173,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         allowed_frames: Optional[List[FrameId]] = None,
         copy_data_types: Optional[List[SensorDataTypes]] = None,
+        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         target_dataset_name: Optional[str] = None,
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
@@ -172,6 +187,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         self.max_in_queue_size = max_in_queue_size
         self.fs_copy = fs_copy
         self.inplace = inplace
+        self.should_copy_callbacks = should_copy_callbacks
         self.copy_data_types = copy_data_types
         self.target_dataset_name = target_dataset_name
         self.allowed_frames = allowed_frames
@@ -204,6 +220,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
                 GenericEncoderStep(
                     encoding_format=encoding_format,
                     copy_data_types=self.copy_data_types,
+                    should_copy_callbacks=self.should_copy_callbacks,
                     fs_copy=self.fs_copy,
                     workers=self.workers,
                     in_queue_size=self.max_in_queue_size,
