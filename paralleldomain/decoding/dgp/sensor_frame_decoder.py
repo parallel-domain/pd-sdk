@@ -163,7 +163,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = ujson.loads(v)
-                    except (ValueError, JSONDecodeError):
+                    except (ValueError, JSONDecodeError, TypeError):
                         attr_parsed[k] = v
 
                 class_id = box_dto.class_id
