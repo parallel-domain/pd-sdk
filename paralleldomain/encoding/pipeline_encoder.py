@@ -51,7 +51,6 @@ class PipelineItem(Generic[TSceneType]):
     frame_id: Optional[str]
     scene_name: Optional[str]
     dataset_path: Union[str, AnyPath]
-    dataset_path: Union[str, AnyPath]
     dataset_format: str
     decoder_kwargs: Dict[str, Any]
     target_sensor_name: Optional[str]
