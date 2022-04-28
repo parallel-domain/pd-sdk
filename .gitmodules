@@ -1,0 +1,3 @@
+[submodule "paralleldomain/common/dgp/v1/dgp"]
+	path = paralleldomain/common/dgp/v1/dgp
+	url = https://github.com/TRI-ML/dgp.git

@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.6.1",
+    version="0.6.2",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -25,6 +25,7 @@ setup(
     include_package_data=True,
     extras_require={
         "dev": [
+            "git-filter-repo>=2.34.0,<3.0.0",
             "pytest>=5.3.1,<6.0.0",
             "pytest-cov>=2.8.1,<3.0.0",
             "types-ujson",
