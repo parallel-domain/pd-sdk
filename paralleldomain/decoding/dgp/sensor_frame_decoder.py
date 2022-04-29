@@ -39,6 +39,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
+    PointAttributes3D,
     PointCache,
     PointCacheComponent,
     PointCaches,
@@ -218,6 +219,11 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
+        elif issubclass(annotation_type, PointAttributes3D):
+            attributes, names = self._decode_point_attributes_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return PointAttributes3D(attributes=attributes, channel_names=names)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -237,6 +243,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             available_annotation_types[PointCaches] = "$".join(
                 [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
             )
+
+        # TODO: check if point attributes are present in folder
+        # if point_attributes_exist():
+        #     available_annotation_types[PointAttributes3D] = relative_path_to_file
 
         return available_annotation_types
 
@@ -316,6 +326,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         segmentation_data = read_npz(path=annotation_path, files="segmentation")
 
         return segmentation_data
+
+    def _decode_point_attributes_3d(self, scene_name: str, annotation_identifier: str) -> Tuple[np.ndarray, List[str]]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        point_attributes_data = read_npz(path=annotation_path, files="point_attributes")
+        names = list()
+        # TODO load channel names from some file
+        # names = load_namesfromjson()
+        return point_attributes_data, names
 
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
