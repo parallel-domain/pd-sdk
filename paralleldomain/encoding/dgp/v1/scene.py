@@ -1,8 +1,6 @@
 import concurrent
 import hashlib
 import logging
-import random
-import time
 import uuid
 from collections import defaultdict
 from concurrent.futures import Future
@@ -63,6 +61,7 @@ class DGPSceneEncoder(SceneEncoder):
         {
             CameraModel.OPENCV_PINHOLE: 0,
             CameraModel.OPENCV_FISHEYE: 1,
+            CameraModel.PD_FISHEYE: 3,
         },
     )
 
