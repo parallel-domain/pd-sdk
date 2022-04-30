@@ -1,3 +1,5 @@
+from paralleldomain.common.dgp.v1.src.dgp.contribs.pd import metadata_pb2 as metadata_pd_pb2
+
 from paralleldomain.common.dgp.v1.src.dgp.proto import (
     agent_pb2,
     annotations_pb2,
@@ -17,4 +19,3 @@ from paralleldomain.common.dgp.v1.src.dgp.proto import (
     scene_pb2,
     statistics_pb2,
 )
-from paralleldomain.common.dgp.v1.src.dgp.contribs.pd import metadata_pb2 as metadata_pd_pb2
