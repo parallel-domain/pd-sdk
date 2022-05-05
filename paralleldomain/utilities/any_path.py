@@ -14,6 +14,15 @@ from paralleldomain.utilities.os import cpu_count
 logger = logging.getLogger(__name__)
 
 
+class S3UnspecifiedException(Exception):
+    MSG_TEMPLATE = 'An unspecified error occured when executing "{command}". Please see log for more details.'
+
+    def __init__(self, command: Optional[List[str]] = None):
+        msg = self.MSG_TEMPLATE.format(command=" ".join(command))
+        super(Exception, self).__init__(msg)
+        self.command = command
+
+
 class AnyPath:
     """
     Implementation of a Path-like object which handles both local and s3 bucket paths.
@@ -91,7 +100,9 @@ class AnyPath:
             command = ["s3", "sync", str(self), str(target), "--no-progress"]
             if delete:
                 command += ["--delete"]
-            aws_driver.main(command)
+            result_code = aws_driver.main(command)
+            if result_code > 0:
+                raise S3UnspecifiedException(command=command)
         else:
             raise TypeError("Sync is only supported for cloud paths.")
 
@@ -108,7 +119,9 @@ class AnyPath:
             command = ["s3", "cp", str(self), str(target), "--no-progress"]
             if self.is_dir():
                 command += ["--recursive"]
-            aws_driver.main(command)
+            result_code = aws_driver.main(command)
+            if result_code > 0:
+                raise S3UnspecifiedException(command=command)
         else:
             with self.open("rb") as source_file, target.open("wb") as to_file:
                 shutil.copyfileobj(source_file, to_file)
