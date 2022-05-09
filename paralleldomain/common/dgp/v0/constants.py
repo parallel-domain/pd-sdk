@@ -21,6 +21,7 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "10": AnnotationTypes.SurfaceNormals2D,
     "12": AnnotationTypes.Albedo2D,
     "13": AnnotationTypes.MaterialProperties2D,
+    "15": None,
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
