@@ -85,7 +85,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
         self._scene: Scene = self._unordered_scene
-        self._reference_timestamp: datetime = self._scene.get_frame(self._frame_ids[0]).date_time
+        self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
         self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
 
     def _offset_timestamp(self, compare_datetime: datetime) -> float:
