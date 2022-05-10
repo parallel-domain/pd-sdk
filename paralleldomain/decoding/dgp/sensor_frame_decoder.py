@@ -48,6 +48,7 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
+from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -218,6 +219,19 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
+        elif issubclass(annotation_type, MaterialProperties3D):
+            material_ids, roughness, metallic, specular, emissive, opacity, flags = self._decode_material_properties_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return MaterialProperties3D(
+                material_ids=material_ids,
+                roughness=roughness,
+                metallic=metallic,
+                specular=specular,
+                emissive=emissive,
+                opacity=opacity,
+                flags=flags,
+            )
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -374,6 +388,27 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 
         return decoded_norms
+
+    def _decode_material_properties_3d(
+        self, scene_name: str, annotation_identifier: str
+    ) -> (np.ndarray, Dict[str, np.ndarray]):
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        try:
+            material_data = read_npz(path=annotation_path, files="material_properties")
+        except KeyError:  # Temporary solution
+            material_data = read_npz(
+                path=annotation_path, files="surface_properties"
+            )  # TODO: Replace with `material_properties`
+
+        material_ids = np.round(material_data[:, 6].reshape(-1, 1) * 255).astype(int)
+        roughness = material_data[:, 0].reshape(-1, 1)
+        metallic = material_data[:, 1].reshape(-1, 1)
+        specular = material_data[:, 2].reshape(-1, 1)
+        emissive = material_data[:, 3].reshape(-1, 1)
+        opacity = material_data[:, 4].reshape(-1, 1)
+        flags = material_data[:, 5].reshape(-1, 1)
+
+        return material_ids, roughness, metallic, specular, emissive, opacity, flags
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
