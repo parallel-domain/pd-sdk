@@ -21,6 +21,7 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "10": AnnotationTypes.SurfaceNormals2D,
     "12": AnnotationTypes.Albedo2D,
     "13": AnnotationTypes.MaterialProperties2D,
+    "15": AnnotationTypes.MaterialProperties3D,
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
@@ -43,4 +44,9 @@ class DirectoryName:
     SEMANTIC_SEGMENTATION_3D: str = "semantic_segmentation_3d"
     INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
+    MOTION_VECTORS_3D: str = "motion_vectors_3d"
+    SURFACE_NORMALS_2D: str = "surface_normals_2d"
+    SURFACE_NORMALS_3D: str = "surface_normals_3d"
     DEPTH: str = "depth"
+    MATERIAL_PROPERTIES_2D: str = "material_properties_2d"
+    MATERIAL_PROPERTIES_3D: str = "material_properties_3d"
