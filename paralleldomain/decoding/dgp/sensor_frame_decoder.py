@@ -393,9 +393,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self, scene_name: str, annotation_identifier: str
     ) -> (np.ndarray, Dict[str, np.ndarray]):
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        material_data = read_npz(
-            path=annotation_path, files="surface_properties"
-        )  # TODO: Replace with `material_properties`
+        try:
+            material_data = read_npz(path=annotation_path, files="material_properties")
+        except KeyError:  # Temporary solution
+            material_data = read_npz(
+                path=annotation_path, files="surface_properties"
+            )  # TODO: Replace with `material_properties`
 
         material_ids = np.round(material_data[:, 6].reshape(-1, 1) * 255).astype(int)
         roughness = material_data[:, 0].reshape(-1, 1)

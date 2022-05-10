@@ -380,7 +380,8 @@ class DGPSceneEncoder(SceneEncoder):
             input_path = (
                 self._dataset._decoder._dataset_path
                 / self._scene.name
-                / DirectoryName.MATERIAL_PROPERTIES_3D
+                # / DirectoryName.MATERIAL_PROPERTIES_3D
+                / "surface_properties_3d/"  # replace with line above later
                 / sensor_frame.sensor_name
                 / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
             )
@@ -893,5 +894,13 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.InstanceSegmentation3D in self._annotation_types:
                     (self._output_path / DirectoryName.INSTANCE_SEGMENTATION_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.MaterialProperties3D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
