@@ -340,6 +340,32 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
 
+    def _process_surface_normals_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.SURFACE_NORMALS_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.SURFACE_NORMALS_3D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_surface_normals_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_surface_normals_3d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        surface_normals = sensor_frame.get_annotations(AnnotationTypes.SurfaceNormals3D)
+        return self._run_async(func=fsio.write_npz, obj=dict(surface_normals=surface_normals.normals), path=output_path)
+
     def _process_instance_segmentation_3d(
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
@@ -564,7 +590,10 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.Depth in lidar_frame.available_annotation_types
                 and AnnotationTypes.Depth in self._annotation_types
                 else None,
-                "7": None,  # surface_normals_3d
+                "7": self._process_surface_normals_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.SurfaceNormals3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.SurfaceNormals3D in self._annotation_types
+                else None,
                 "9": None,  # motion_vectors_3d
             },
             sensor_data={
