@@ -396,8 +396,8 @@ class DGPSceneEncoder(SceneEncoder):
 
         material_ids = material_properties.material_ids
 
-        material_properties_out = np.zeroes(shape=(len(material_ids), 7))
-        material_properties_out[6] = material_ids.astype(float) / 255
+        material_properties_out = np.zeroes(shape=(len(material_ids), 7)).astype(np.float32)
+        material_properties_out[6] = material_ids.astype(np.float32) / 255
         if material_properties.roughness is not None:
             material_properties_out[0] = material_properties.roughness
         if material_properties.metallic is not None:
