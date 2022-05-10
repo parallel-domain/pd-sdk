@@ -9,12 +9,7 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.constants import (
-    ANNOTATION_TYPE_MAP,
-    DGP_TO_INTERNAL_CS,
-    CustomMaterialProperties3DNames,
-    TransformType,
-)
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -44,7 +39,6 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     InstanceSegmentation3D,
     OpticalFlow,
-    PointAttributes3D,
     PointCache,
     PointCacheComponent,
     PointCaches,
@@ -54,7 +48,7 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
-from paralleldomain.model.annotation.material_properties_3d import CustomAnnotation3D, MaterialProperties3D
+from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -225,17 +219,18 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
-        elif issubclass(annotation_type, PointAttributes3D):
-            attributes, names = self._decode_point_attributes_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
-            return PointAttributes3D(attributes=attributes, channel_names=names)
         elif issubclass(annotation_type, MaterialProperties3D):
-            material_ids, custom_data = self._decode_material_properties_3d(
+            material_ids, roughness, metallic, specular, emissive, opacity, flags = self._decode_material_properties_3d(
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return MaterialProperties3D(
-                material_ids=material_ids, custom_data=CustomAnnotation3D.from_dict(data=custom_data)
+                material_ids=material_ids,
+                roughness=roughness,
+                metallic=metallic,
+                specular=specular,
+                emissive=emissive,
+                opacity=opacity,
+                flags=flags,
             )
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
@@ -256,10 +251,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             available_annotation_types[PointCaches] = "$".join(
                 [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
             )
-
-        # TODO: check if point attributes are present in folder
-        # if point_attributes_exist():
-        #     available_annotation_types[PointAttributes3D] = relative_path_to_file
 
         return available_annotation_types
 
@@ -340,14 +331,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return segmentation_data
 
-    def _decode_point_attributes_3d(self, scene_name: str, annotation_identifier: str) -> Tuple[np.ndarray, List[str]]:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
-        point_attributes_data = read_npz(path=annotation_path, files="point_attributes")
-        names = list()
-        # TODO load channel names from some file
-        # names = load_namesfromjson()
-        return point_attributes_data, names
-
     def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         instance_data = read_npz(path=annotation_path, files="instance")
@@ -414,21 +397,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             path=annotation_path, files="surface_properties"
         )  # TODO: Replace with `material_properties`
 
-        custom_data_name_mapping = {
-            0: CustomMaterialProperties3DNames.ROUGHNESS,
-            1: CustomMaterialProperties3DNames.METALLIC,
-            2: CustomMaterialProperties3DNames.SPECULAR,
-            3: CustomMaterialProperties3DNames.EMISSIVE,
-            4: CustomMaterialProperties3DNames.OPACITY,
-            5: CustomMaterialProperties3DNames.FLAGS,
-        }
-
         material_ids = np.round(material_data[:, 6].reshape(-1, 1) * 255).astype(int)
-        custom_data = {
-            custom_data_name_mapping.get(i, str(i)): v.reshape(-1, 1) for i, v in enumerate(material_data[:, :6].T)
-        }
+        roughness = material_data[:, 0].reshape(-1, 1)
+        metallic = material_data[:, 1].reshape(-1, 1)
+        specular = material_data[:, 2].reshape(-1, 1)
+        emissive = material_data[:, 3].reshape(-1, 1)
+        opacity = material_data[:, 4].reshape(-1, 1)
+        flags = material_data[:, 5].reshape(-1, 1)
 
-        return material_ids, custom_data
+        return material_ids, roughness, metallic, specular, emissive, opacity, flags
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):

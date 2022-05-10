@@ -1,6 +1,5 @@
-from collections import UserDict
 from dataclasses import dataclass
-from typing import Dict, Mapping, Type, TypeVar
+from typing import Optional, TypeVar
 
 import numpy as np
 
@@ -9,47 +8,52 @@ from paralleldomain.model.annotation.common import Annotation
 T = TypeVar("T")
 
 
-class CustomAnnotation3D(UserDict, Annotation):  # TODO: Move into separate file
-    def __init__(self, __dict: Mapping[str, np.ndarray]):
-        super().__init__()
-        for key, item in __dict.items():
-            if isinstance(key, str) and isinstance(item, np.ndarray):
-                super().__setitem__(key=key, item=item)
-            else:
-                raise TypeError("`key` must be of type `str` and `item` of type `np.ndarray`")
-
-    def __getitem__(self, key: str) -> np.ndarray:
-        return super().__getitem__(key=key)
-
-    def __setitem__(self, key: str, item: np.ndarray) -> None:
-        if isinstance(key, str) and isinstance(item, np.ndarray):
-            super().__setitem__(key=key, item=item)
-        else:
-            raise TypeError("`key` must be of type `str` and `item` of type `np.ndarray`")
-
-    @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, np.ndarray]) -> T:
-        return CustomAnnotation3D(data)
-
-
-class CustomMaterialProperties3D(CustomAnnotation3D):
-    ...
-
-
 @dataclass
 class MaterialProperties3D(Annotation):
     """Represents a 3D Material Segmentation mask for a point cloud.
 
     Args:
         material_ids: :attr:`~.MaterialProperties3D.material_ids`
+        metallic: :attr:`~.MaterialProperties3D.metallic`
+        specular: :attr:`~.MaterialProperties3D.specular`
+        emissive: :attr:`~.MaterialProperties3D.emissive`
+        opacity: :attr:`~.MaterialProperties3D.opacity`
+        flags: :attr:`~.MaterialProperties3D.flags`
 
     Attributes:
         material_ids: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material ID for each point as `int`.
+        roughness: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the material's roughess value for each point as `float`.
+        specular: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the material's specular value for each point as `float`.
+        emissive: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the material's emissive value for each point as `float`.
+        opacity: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the material's opacity value for each point as `float`.
+        flag: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains special flags for each point encoded as `float`.
+
+
+
     """
 
     material_ids: np.ndarray
-    custom_data: CustomMaterialProperties3D
+
+    roughness: Optional[np.ndarray] = None
+    metallic: Optional[np.ndarray] = None
+    specular: Optional[np.ndarray] = None
+    emissive: Optional[np.ndarray] = None
+    opacity: Optional[np.ndarray] = None
+    flags: Optional[np.ndarray] = None
 
     def __sizeof__(self):
-        return self.material_ids.nbytes + sum([v.nbytes for _, v in self.custom_data.items()])
+        return (
+            self.material_ids.nbytes
+            + (self.roughness.nbytes if self.roughness is not None else 0)
+            + (self.metallic.nbytes if self.metallic is not None else 0)
+            + (self.specular.nbytes if self.specular is not None else 0)
+            + (self.emissive.nbytes if self.emissive is not None else 0)
+            + (self.opacity.nbytes if self.opacity is not None else 0)
+            + (self.flags.nbytes if self.flags is not None else 0)
+        )

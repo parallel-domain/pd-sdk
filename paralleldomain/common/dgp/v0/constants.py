@@ -20,7 +20,6 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "9": AnnotationTypes.SceneFlow,
     "10": AnnotationTypes.SurfaceNormals2D,
     "12": AnnotationTypes.Albedo2D,
-    "14": AnnotationTypes.PointAttributes3D,
     "15": AnnotationTypes.MaterialProperties3D,  # TODO: To Be Replaced with "17"
     "16": AnnotationTypes.MaterialProperties2D,
     # "17": AnnotationTypes.MaterialProperties3D,
@@ -49,12 +48,3 @@ class DirectoryName:
     DEPTH: str = "depth"
     MATERIAL_PROPERTIES_2D: str = "material_properties_2d"
     MATERIAL_PROPERTIES_3D: str = "material_properties_3d"
-
-
-class CustomMaterialProperties3DNames:
-    ROUGHNESS: str = "roughness"
-    METALLIC: str = "metallic"
-    SPECULAR: str = "specular"
-    EMISSIVE: str = "emissive"
-    OPACITY: str = "opacity"
-    FLAGS: str = "flags"

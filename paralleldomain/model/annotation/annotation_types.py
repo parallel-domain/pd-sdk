@@ -11,7 +11,6 @@ from paralleldomain.model.annotation.material_properties_2d import MaterialPrope
 from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Points2D
-from paralleldomain.model.annotation.point_attributes_3d import PointAttributes3D
 from paralleldomain.model.annotation.point_cache import PointCaches
 from paralleldomain.model.annotation.polygon_2d import Polygons2D
 from paralleldomain.model.annotation.polyline_2d import Polylines2D
@@ -83,7 +82,6 @@ class AnnotationTypes:
     SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
     MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
-    PointAttributes3D: Type[PointAttributes3D] = PointAttributes3D  # noqa: F811
     Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
     Points2D: Type[Points2D] = Points2D  # noqa: F811
     Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
