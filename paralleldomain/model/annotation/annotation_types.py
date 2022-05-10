@@ -8,6 +8,7 @@ from paralleldomain.model.annotation.depth import Depth
 from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
 from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D
 from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
+from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Points2D
 from paralleldomain.model.annotation.point_attributes_3d import PointAttributes3D
@@ -39,6 +40,7 @@ class AnnotationTypes:
         SurfaceNormals2D
         SceneFlow
         MaterialProperties2D
+        MaterialProperties3D
         Albedo2D
         Points2D
         Polygons2D
@@ -80,6 +82,7 @@ class AnnotationTypes:
     SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D  # noqa: F811
     SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
+    MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
     PointAttributes3D: Type[PointAttributes3D] = PointAttributes3D  # noqa: F811
     Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
     Points2D: Type[Points2D] = Points2D  # noqa: F811

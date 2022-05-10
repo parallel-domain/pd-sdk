@@ -9,7 +9,12 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v0.constants import (
+    ANNOTATION_TYPE_MAP,
+    DGP_TO_INTERNAL_CS,
+    CustomMaterialProperties3DNames,
+    TransformType,
+)
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -49,6 +54,7 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
+from paralleldomain.model.annotation.material_properties_3d import CustomAnnotation3D, MaterialProperties3D
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -224,6 +230,13 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 scene_name=self.scene_name, annotation_identifier=identifier
             )
             return PointAttributes3D(attributes=attributes, channel_names=names)
+        elif issubclass(annotation_type, MaterialProperties3D):
+            material_ids, custom_data = self._decode_material_properties_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return MaterialProperties3D(
+                material_ids=material_ids, custom_data=CustomAnnotation3D.from_dict(data=custom_data)
+            )
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
@@ -392,6 +405,30 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 
         return decoded_norms
+
+    def _decode_material_properties_3d(
+        self, scene_name: str, annotation_identifier: str
+    ) -> (np.ndarray, Dict[str, np.ndarray]):
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        material_data = read_npz(
+            path=annotation_path, files="surface_properties"
+        )  # TODO: Replace with `material_properties`
+
+        custom_data_name_mapping = {
+            0: CustomMaterialProperties3DNames.ROUGHNESS,
+            1: CustomMaterialProperties3DNames.METALLIC,
+            2: CustomMaterialProperties3DNames.SPECULAR,
+            3: CustomMaterialProperties3DNames.EMISSIVE,
+            4: CustomMaterialProperties3DNames.OPACITY,
+            5: CustomMaterialProperties3DNames.FLAGS,
+        }
+
+        material_ids = np.round(material_data[:, 6].reshape(-1, 1) * 255).astype(int)
+        custom_data = {
+            custom_data_name_mapping.get(i, str(i)): v.reshape(-1, 1) for i, v in enumerate(material_data[:, :6].T)
+        }
+
+        return material_ids, custom_data
 
 
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
