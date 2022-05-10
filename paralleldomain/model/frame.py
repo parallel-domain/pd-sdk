@@ -7,7 +7,7 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 from paralleldomain.model.ego import EgoFrame
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SensorName
 
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
@@ -18,6 +18,9 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_lidar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
+        pass
+
+    def get_radar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
         pass
 
     def get_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
@@ -65,6 +68,10 @@ class Frame(Generic[TDateTime]):
 
     def get_lidar(self, lidar_name: SensorName) -> LidarSensorFrame[TDateTime]:
         return self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=lidar_name)
+
+    # TODO: Radar work
+    def get_radar(self, radar_name: SensorName) -> RadarSensorFrame[TDateTime]:
+        return self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=radar_name)
 
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame[TDateTime]:
         if sensor_name in self.camera_names:

@@ -5,7 +5,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
 from paralleldomain.model.ego import EgoFrame, EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 T = TypeVar("T")
@@ -133,6 +133,17 @@ class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             key=_unique_cache_key,
             loader=lambda: self._decode_lidar_sensor_frame(
                 decoder=self._create_lidar_sensor_frame_decoder(),
+                frame_id=frame_id,
+                sensor_name=sensor_name,
+            ),
+        )
+
+    def get_radar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
+        _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, sensor_name=sensor_name, extra="SensorFrame")
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_radar_sensor_frame(
+                decoder=self._create_radar_sensor_frame_decoder(),
                 frame_id=frame_id,
                 sensor_name=sensor_name,
             ),

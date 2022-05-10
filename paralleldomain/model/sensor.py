@@ -4,7 +4,14 @@ from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
 import numpy as np
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
-from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
+from paralleldomain.model.point_cloud import (
+    DecoderPointCloud,
+    DecoderRadarPointCloud,
+    PointCloud,
+    PointCloudDecoderProtocol,
+    RadarPointCloud,
+    RadarPointCloudDecoderProtocol,
+)
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
 try:
@@ -133,7 +140,27 @@ class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Poi
     ...
 
 
+class RadarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], RadarPointCloudDecoderProtocol):
+    ...
+
+
 class LidarSensorFrame(SensorFrame[TDateTime]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: RadarSensorFrameDecoderProtocol[TDateTime],
+    ):
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self._decoder = decoder
+
+    @property
+    def point_cloud(self) -> PointCloud:
+        return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+
+# TODO: Radar work
+class RadarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
         sensor_name: SensorName,
@@ -144,8 +171,8 @@ class LidarSensorFrame(SensorFrame[TDateTime]):
         self._decoder = decoder
 
     @property
-    def point_cloud(self) -> PointCloud:
-        return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+    def point_cloud(self) -> RadarPointCloud:
+        return DecoderRadarPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
 
 
 class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):
