@@ -396,20 +396,20 @@ class DGPSceneEncoder(SceneEncoder):
 
         material_ids = material_properties.material_ids
 
-        material_properties_out = np.zeroes(shape=(len(material_ids), 7)).astype(np.float32)
-        material_properties_out[6] = material_ids.astype(np.float32) / 255
+        material_properties_out = np.zeros(shape=(len(material_ids), 7)).astype(np.float32)
+        material_properties_out[:, 6] = (material_ids.astype(np.float32) / 255).reshape(-1)
         if material_properties.roughness is not None:
-            material_properties_out[0] = material_properties.roughness
+            material_properties_out[:, 0] = material_properties.roughness.reshape(-1)
         if material_properties.metallic is not None:
-            material_properties_out[0] = material_properties.metallic
+            material_properties_out[:, 1] = material_properties.metallic.reshape(-1)
         if material_properties.specular is not None:
-            material_properties_out[0] = material_properties.specular
+            material_properties_out[:, 2] = material_properties.specular.reshape(-1)
         if material_properties.emissive is not None:
-            material_properties_out[0] = material_properties.emissive
+            material_properties_out[:, 3] = material_properties.emissive.reshape(-1)
         if material_properties.opacity is not None:
-            material_properties_out[0] = material_properties.opacity
+            material_properties_out[:, 4] = material_properties.opacity.reshape(-1)
         if material_properties.flags is not None:
-            material_properties_out[0] = material_properties.flags
+            material_properties_out[:, 5] = material_properties.flags.reshape(-1)
 
         return self._run_async(
             func=fsio.write_npz, obj=dict(surface_properties=material_properties_out), path=output_path
