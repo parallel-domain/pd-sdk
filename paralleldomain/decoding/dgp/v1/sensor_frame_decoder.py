@@ -62,6 +62,7 @@ from paralleldomain.model.annotation import (
 )
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
+from paralleldomain.model.radar_point_cloud import RadarPointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -69,7 +70,7 @@ from paralleldomain.utilities.fsio import read_image, read_json_message, read_np
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
-F = TypeVar("F", Image, PointCloud, Annotation)
+F = TypeVar("F", Image, PointCloud, RadarPointCloud, Annotation)
 
 
 def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
@@ -143,8 +144,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
-        else:
+        elif datum.point_cloud:
             return _pose_dto_to_transformation(dto=datum.point_cloud.pose, transformation_type=SensorPose)
+        elif datum.radar_point_cloud:
+            return _pose_dto_to_transformation(dto=datum.radar_point_cloud.pose, transformation_type=SensorPose)
+        else:
+            raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
@@ -274,8 +279,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             type_to_path = datum.image.annotations
-        else:
+        elif datum.point_cloud:
             type_to_path = datum.point_cloud.annotations
+        elif datum.radar_point_cloud:
+            type_to_path = datum.radar_point_cloud.annotations
+        else:
+            raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
 
         available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
 
@@ -512,6 +521,9 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(data_type, PointCloud):
             datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
             return self._dataset_path / self.scene_name / datum.point_cloud.filename
+        elif issubclass(data_type, RadarPointCloud):
+            datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+            return self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
 
         return None
 
@@ -519,7 +531,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return (datum.image.height, datum.image.width, datum.image.channels)
+        return datum.image.height, datum.image.width, datum.image.channels
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
@@ -544,6 +556,8 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model = CameraModel.PD_FISHEYE
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
+        else:
+            raise ValueError(f"Camera Model with value {dto.fisheye} can not be decoded.")
 
         return SensorIntrinsic(
             cx=dto.cx,
@@ -705,6 +719,9 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
             ).astype(np.float32)
         else:
             return None
+
+    def _decode_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
 
     def _decode_radar_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.I]
