@@ -20,7 +20,7 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
     def get_lidar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
         pass
 
-    def get_radar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
+    def get_radar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
         pass
 
     def get_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
@@ -30,6 +30,9 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
+        pass
+
+    def get_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         pass
 
     def get_ego_frame(self, frame_id: FrameId) -> EgoFrame:
@@ -69,7 +72,6 @@ class Frame(Generic[TDateTime]):
     def get_lidar(self, lidar_name: SensorName) -> LidarSensorFrame[TDateTime]:
         return self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=lidar_name)
 
-    # TODO: Radar work
     def get_radar(self, radar_name: SensorName) -> RadarSensorFrame[TDateTime]:
         return self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=radar_name)
 
@@ -92,6 +94,10 @@ class Frame(Generic[TDateTime]):
         return self._decoder.get_lidar_names(frame_id=self.frame_id)
 
     @property
+    def radar_names(self) -> List[SensorName]:
+        return self._decoder.get_radar_names(frame_id=self.frame_id)
+
+    @property
     def sensor_frames(self) -> Generator[SensorFrame[TDateTime], None, None]:
         return (self.get_sensor(sensor_name=name) for name in self.sensor_names)
 
@@ -106,6 +112,12 @@ class Frame(Generic[TDateTime]):
     def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
         return (
             self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=name) for name in self.lidar_names
+        )
+
+    @property
+    def radar_frames(self) -> Generator[RadarSensorFrame[TDateTime], None, None]:
+        return (
+            self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=name) for name in self.radar_names
         )
 
     @property

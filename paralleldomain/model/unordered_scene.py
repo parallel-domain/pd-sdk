@@ -42,6 +42,9 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_lidar_names(self, scene_name: SceneName) -> List[str]:
         pass
 
+    def get_radar_names(self, scene_name: SceneName) -> List[str]:
+        pass
+
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         pass
 
@@ -117,12 +120,16 @@ class UnorderedScene(Generic[TDateTime]):
     def lidar_names(self) -> List[str]:
         return self._decoder.get_lidar_names(scene_name=self.name)
 
+    @property
+    def radar_names(self) -> List[str]:
+        return self._decoder.get_radar_names(scene_name=self.name)
+
     def get_frame(self, frame_id: FrameId) -> Frame[TDateTime]:
         return self._decoder.get_frame(scene_name=self.name, frame_id=frame_id)
 
     @property
     def sensors(self) -> Generator[Union[CameraSensor[TDateTime], LidarSensor[TDateTime]], None, None]:
-        return (a for a in chain(self.cameras, self.lidars))
+        return (a for a in chain(self.cameras, self.lidars, self.radars))
 
     @property
     def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
@@ -131,6 +138,10 @@ class UnorderedScene(Generic[TDateTime]):
     @property
     def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
         return (self.get_lidar_sensor(lidar_name=lidar_name) for lidar_name in self.lidar_names)
+
+    @property
+    def radars(self) -> Generator[LidarSensor[TDateTime], None, None]:
+        return (self.get_radar_sensor(lidar_name=radar_name) for radar_name in self.radar_names)
 
     def get_sensor(self, sensor_name: SensorName) -> Union[CameraSensor[TDateTime], LidarSensor[TDateTime]]:
         if sensor_name in self.camera_names:

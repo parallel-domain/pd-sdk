@@ -70,6 +70,11 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         sensor_data = self._data_by_key()
         return [sensor_data[key].id.name for key in sample.datum_keys if sensor_data[key].datum.point_cloud]
 
+    def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+        sample = self.scene_samples[frame_id]
+        sensor_data = self._data_by_key()
+        return [sensor_data[key].id.name for key in sample.datum_keys if sensor_data[key].datum.radar_point_cloud]
+
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         sample = self.scene_samples[frame_id]
         return sample.metadata

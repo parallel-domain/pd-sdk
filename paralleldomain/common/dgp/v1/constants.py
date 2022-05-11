@@ -61,6 +61,27 @@ class PointFormat:
         ]
 
 
+# TODO: Fix after changing the radar output
+class RadarPointFormat:
+    X: str = "X"
+    Y: str = "Y"
+    Z: str = "Z"
+    I: str = "REFLECTED_POWER_DB"
+    DOP: str = "VELOCITY_XS"
+    TS: str = "TIMESTAMP"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.I,
+            cls.DOP,
+            cls.TS,
+        ]
+
+
 class PointFormatDtype:
     X: str = "<f4"
     Y: str = "<f4"
@@ -85,6 +106,26 @@ class PointFormatDtype:
             cls.B,
             cls.RING,
             # cls.RAYTYPE,  # deactivated until in official DGP v1.0 proto schema
+            cls.TS,
+        ]
+
+
+class RadarPointFormatDtype:
+    X: str = "<f4"
+    Y: str = "<f4"
+    Z: str = "<f4"
+    I: str = "<f4"
+    DOP: str = "<f4"
+    TS: str = "<u8"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.I,
+            cls.DOP,
             cls.TS,
         ]
 

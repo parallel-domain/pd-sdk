@@ -1,4 +1,5 @@
 import abc
+from abc import ABC
 from datetime import datetime
 from functools import lru_cache
 from json import JSONDecodeError
@@ -9,13 +10,16 @@ import ujson
 from google.protobuf.json_format import ParseDict
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v1 import annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, TransformType
+from paralleldomain.common.dgp.v1 import \
+    annotations_pb2, geometry_pb2, point_cloud_pb2, sample_pb2, radar_point_cloud_pb2
+from paralleldomain.common.dgp.v1.constants import \
+    ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, PointFormat, RadarPointFormat, TransformType
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
     SensorFrameDecoder,
 )
 from paralleldomain.model.annotation import (
@@ -618,6 +622,84 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.point_cloud.metadata
+
+
+# TODO: might this be an issue (abstract class)
+class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[datetime]):
+    @lru_cache(maxsize=1)
+    def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return [radar_point_cloud_pb2.RadarPointCloud.ChannelType.Name(pf) for pf in datum.radar_point_cloud.point_format]
+
+    @lru_cache(maxsize=1)
+    def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
+        pc_data = read_npz(path=cloud_path, files="data")
+        return pc_data
+
+    def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return datum.HasField("radar_point_cloud")
+
+    def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return len(data)
+
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.X, RadarPointFormat.Y, RadarPointFormat.Z]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.I]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.TS]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.uint64)
+        else:
+            return None
+
+    def _decode_point_cloud_doppler(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.DOP]
+        point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        point_cloud_data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.uint32)
+        else:
+            return None
+
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        return datum.radar_point_cloud.metadata
 
 
 class DGPPointCachePointsDecoder:

@@ -7,7 +7,7 @@ from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixi
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.map_query.map_query import MapQuery
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
@@ -250,6 +250,12 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
         pass
+
+    # @abc.abstractmethod
+    # def _create_radar_sensor_decoder(
+    #     self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    # ) -> RadarSensorDecoder[TDateTime]:
+    #     pass
 
     @abc.abstractmethod
     def _create_frame_decoder(
