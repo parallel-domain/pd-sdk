@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
@@ -12,8 +12,11 @@ from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
-from paralleldomain.decoding.dgp.v1.sensor_decoder import \
-    DGPCameraSensorDecoder, DGPLidarSensorDecoder, DGPRadarSensorDecoder
+from paralleldomain.decoding.dgp.v1.sensor_decoder import (
+    DGPCameraSensorDecoder,
+    DGPLidarSensorDecoder,
+    DGPRadarSensorDecoder,
+)
 from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.umd.map_decoder import UMDDecoder

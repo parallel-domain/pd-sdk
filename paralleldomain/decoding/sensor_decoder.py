@@ -3,8 +3,11 @@ from datetime import datetime
 from typing import Generic, Optional, Set, TypeVar, Union
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
-from paralleldomain.decoding.sensor_frame_decoder import \
-    CameraSensorFrameDecoder, LidarSensorFrameDecoder, RadarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
@@ -86,6 +89,7 @@ class LidarSensorDecoder(SensorDecoder[TDateTime]):
             ),
         )
 
+
 class RadarSensorDecoder(SensorDecoder[TDateTime]):
     @abc.abstractmethod
     def _decode_radar_sensor_frame(
@@ -104,6 +108,6 @@ class RadarSensorDecoder(SensorDecoder[TDateTime]):
             loader=lambda: self._decode_radar_sensor_frame(
                 decoder=self._create_radar_sensor_frame_decoder(),
                 frame_id=frame_id,
-                lidar_name=sensor_name,
+                radar_name=sensor_name,
             ),
         )

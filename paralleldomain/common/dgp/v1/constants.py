@@ -61,13 +61,12 @@ class PointFormat:
         ]
 
 
-# TODO: Fix after changing the radar output
 class RadarPointFormat:
     X: str = "X"
     Y: str = "Y"
     Z: str = "Z"
     I: str = "REFLECTED_POWER_DB"
-    DOP: str = "VELOCITY_XS"
+    DOPPLER: str = "VELOCITY_XS"
     TS: str = "TIMESTAMP"
 
     @classmethod
@@ -77,7 +76,7 @@ class RadarPointFormat:
             cls.Y,
             cls.Z,
             cls.I,
-            cls.DOP,
+            cls.DOPPLER,
             cls.TS,
         ]
 
@@ -115,7 +114,7 @@ class RadarPointFormatDtype:
     Y: str = "<f4"
     Z: str = "<f4"
     I: str = "<f4"
-    DOP: str = "<f4"
+    DOPPLER: str = "<f4"
     TS: str = "<u8"
 
     @classmethod
@@ -125,7 +124,7 @@ class RadarPointFormatDtype:
             cls.Y,
             cls.Z,
             cls.I,
-            cls.DOP,
+            cls.DOPPLER,
             cls.TS,
         ]
 
@@ -135,6 +134,7 @@ class DirectoryName:
     ONTOLOGY: str = "ontology"
     RGB: str = "rgb"
     POINT_CLOUD: str = "point_cloud"
+    RADAR_POINT_CLOUD: str = "radar_point_cloud"
     BOUNDING_BOX_2D: str = "bounding_box_2d"
     BOUNDING_BOX_3D: str = "bounding_box_3d"
     SEMANTIC_SEGMENTATION_2D: str = "semantic_segmentation_2d"

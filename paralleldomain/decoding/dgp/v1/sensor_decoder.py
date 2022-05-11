@@ -5,12 +5,22 @@ from typing import Dict, List, Set
 
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import \
-    DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder, DGPRadarSensorFrameDecoder
-from paralleldomain.decoding.sensor_decoder import \
-    CameraSensorDecoder, LidarSensorDecoder, SensorDecoder, RadarSensorDecoder
-from paralleldomain.decoding.sensor_frame_decoder import \
-    CameraSensorFrameDecoder, LidarSensorFrameDecoder, RadarSensorFrameDecoder
+from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import (
+    DGPCameraSensorFrameDecoder,
+    DGPLidarSensorFrameDecoder,
+    DGPRadarSensorFrameDecoder,
+)
+from paralleldomain.decoding.sensor_decoder import (
+    CameraSensorDecoder,
+    LidarSensorDecoder,
+    RadarSensorDecoder,
+    SensorDecoder,
+)
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -88,6 +98,7 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
     ) -> LidarSensorFrame[datetime]:
         return LidarSensorFrame[datetime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
+
 
 class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
     @lru_cache(maxsize=1)

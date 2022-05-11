@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import lru_cache
 from json import JSONDecodeError
 from typing import Any, Dict, List
@@ -8,10 +8,17 @@ import ujson
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
+from paralleldomain.decoding.dgp.v1.sensor_frame_decoder import (
+    DGPCameraSensorFrameDecoder,
+    DGPLidarSensorFrameDecoder,
+    DGPRadarSensorFrameDecoder,
+)
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_frame_decoder import \
-    CameraSensorFrameDecoder, LidarSensorFrameDecoder, RadarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -47,7 +54,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
 
-    def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:  #TODO : do we need radars here ? how ?
+    def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         sensor_name = next(iter(self._decode_available_camera_names(frame_id=frame_id)), None)
         if sensor_name is None:
             sensor_name = next(iter(self._decode_available_lidar_names(frame_id=frame_id)))
@@ -88,7 +95,11 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         sample = self.scene_samples[frame_id]
         sensor_data = self._data_by_key()
-        return [sensor_data[key].id.name for key in sample.datum_keys if sensor_data[key].datum.HasField("radar_point_cloud")]
+        return [
+            sensor_data[key].id.name
+            for key in sample.datum_keys
+            if sensor_data[key].datum.HasField("radar_point_cloud")
+        ]
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         sample = self.scene_samples[frame_id]
@@ -125,6 +136,17 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[datetime]:
         return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+
+    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[datetime]:
+        return DGPRadarSensorFrameDecoder(
+            dataset_name=self.dataset_name,
+            scene_name=self.scene_name,
+            dataset_path=self.dataset_path,
+            scene_samples=self.scene_samples,
+            scene_data=self.scene_data,
+            custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
+            settings=self.settings,
+        )
 
     def _decode_radar_sensor_frame(
         self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName

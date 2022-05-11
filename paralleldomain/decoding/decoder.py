@@ -1,20 +1,19 @@
 import abc
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Set, TypeVar, Union
 
 from paralleldomain import Scene
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.map_decoder import MapDecoder
-from paralleldomain.decoding.map_query.map_query import MapQuery
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.map.map import Map
-from paralleldomain.model.sensor import CameraSensor, LidarSensor
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.sensor import CameraSensor, LidarSensor, RadarSensor
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
 
 T = TypeVar("T")
@@ -168,6 +167,10 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         pass
 
     @abc.abstractmethod
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        pass
+
+    @abc.abstractmethod
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         pass
 
@@ -192,6 +195,13 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
             loader=lambda: sorted(self._decode_lidar_names(scene_name=scene_name)),
         )
 
+    def get_radar_names(self, scene_name: SceneName) -> List[str]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="radar_names")
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: sorted(self._decode_radar_names(scene_name=scene_name)),
+        )
+
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="frame_ids")
         return self.lazy_load_cache.get_item(
@@ -207,6 +217,14 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         )
         return class_maps
 
+    def _decode_camera_sensor(
+        self,
+        scene_name: SceneName,
+        sensor_name: SensorName,
+        sensor_decoder: CameraSensorDecoder[TDateTime],
+    ) -> CameraSensor[TDateTime]:
+        return CameraSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
+
     def _decode_lidar_sensor(
         self,
         scene_name: SceneName,
@@ -215,13 +233,13 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
     ) -> LidarSensor[TDateTime]:
         return LidarSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
 
-    def _decode_camera_sensor(
+    def _decode_radar_sensor(
         self,
         scene_name: SceneName,
         sensor_name: SensorName,
-        sensor_decoder: CameraSensorDecoder[TDateTime],
-    ) -> CameraSensor[TDateTime]:
-        return CameraSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
+        sensor_decoder: RadarSensorDecoder[TDateTime],
+    ) -> RadarSensor[TDateTime]:
+        return RadarSensor[TDateTime](sensor_name=sensor_name, decoder=sensor_decoder)
 
     def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
         sensor_decoder = self._create_camera_sensor_decoder(
@@ -239,6 +257,14 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         )
         return self._decode_lidar_sensor(scene_name=scene_name, sensor_name=lidar_name, sensor_decoder=sensor_decoder)
 
+    def get_radar_sensor(self, scene_name: SceneName, radar_name: SensorName) -> RadarSensor[TDateTime]:
+        sensor_decoder = self._create_radar_sensor_decoder(
+            scene_name=scene_name,
+            radar_name=radar_name,
+            dataset_name=self.dataset_name,
+        )
+        return self._decode_radar_sensor(scene_name=scene_name, sensor_name=radar_name, sensor_decoder=sensor_decoder)
+
     @abc.abstractmethod
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -251,11 +277,11 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
     ) -> LidarSensorDecoder[TDateTime]:
         pass
 
-    # @abc.abstractmethod
-    # def _create_radar_sensor_decoder(
-    #     self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    # ) -> RadarSensorDecoder[TDateTime]:
-    #     pass
+    @abc.abstractmethod
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[TDateTime]:
+        pass
 
     @abc.abstractmethod
     def _create_frame_decoder(
