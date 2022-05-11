@@ -7,7 +7,7 @@ from paralleldomain.model.annotation.common import Annotation
 
 @dataclass
 class SemanticSegmentation3D(Annotation):
-    """Represents a 3D Instance Segmentation mask for a point cloud.
+    """Represents a 3D Semantic Segmentation mask for a point cloud.
 
     Args:
         class_ids: :attr:`~.SemanticSegmentation3D.class_ids`

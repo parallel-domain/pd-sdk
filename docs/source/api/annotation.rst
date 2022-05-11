@@ -77,5 +77,10 @@ paralleldomain.model.annotation
     :members:
     :inherited-members:
 
+.. automodule:: paralleldomain.model.annotation.material_properties_2d
+    :members:
+    :inherited-members:
 
-
+.. automodule:: paralleldomain.model.annotation.material_properties_3d
+    :members:
+    :inherited-members:
