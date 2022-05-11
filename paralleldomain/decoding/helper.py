@@ -4,9 +4,9 @@ from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
+from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
-from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation

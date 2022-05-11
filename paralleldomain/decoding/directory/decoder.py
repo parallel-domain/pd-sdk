@@ -1,10 +1,9 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
-from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecoder
-from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder
-
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
+from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecoder
+from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes

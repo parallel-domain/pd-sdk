@@ -14,7 +14,6 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
     TDateTime,
 )
-
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.image import Image

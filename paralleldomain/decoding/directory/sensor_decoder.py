@@ -3,8 +3,8 @@ from functools import lru_cache
 from typing import Set
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName

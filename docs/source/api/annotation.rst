@@ -76,6 +76,3 @@ paralleldomain.model.annotation
 .. automodule:: paralleldomain.model.annotation.surface_normals_3d
     :members:
     :inherited-members:
-
-
-

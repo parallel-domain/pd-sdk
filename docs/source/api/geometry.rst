@@ -34,5 +34,3 @@ paralleldomain.model.geometry
 .. automodule:: paralleldomain.model.geometry.polyline_3d
     :members:
     :inherited-members:
-
-
