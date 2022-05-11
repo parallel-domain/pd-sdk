@@ -33,9 +33,6 @@ class MaterialProperties3D(Annotation):
             The second axis contains the material's opacity value for each point as `float`.
         flag: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains special flags for each point encoded as `float`.
-
-
-
     """
 
     material_ids: np.ndarray
