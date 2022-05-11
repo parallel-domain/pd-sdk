@@ -45,6 +45,9 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
              validation samples. To access the validation samples pass "val". Options are
              ["mini_train", "mini_val", "test", "val", "train"]. Defaults to "mini_train"
         """
+        self._init_kwargs = dict(
+            dataset_path=dataset_path, settings=settings, nu_split_name=nu_split_name, split_name=split_name
+        )
         self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if split_name is None:
@@ -88,6 +91,16 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
             available_annotation_types=available_annotation_types,
             custom_attributes=dict(split_name=self.split_name, nu_split_name=self.nu_split_name),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "nuscenes"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):

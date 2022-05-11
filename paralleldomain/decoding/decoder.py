@@ -15,6 +15,7 @@ from paralleldomain.model.map.map import Map
 from paralleldomain.model.sensor import CameraSensor, LidarSensor, RadarSensor
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.model.unordered_scene import UnorderedScene
+from paralleldomain.utilities.any_path import AnyPath
 
 T = TypeVar("T")
 
@@ -111,6 +112,19 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
 
     def get_dataset(self) -> Dataset:
         return Dataset(decoder=self)
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_format() -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_path(self) -> Optional[AnyPath]:
+        pass
+
+    @abc.abstractmethod
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        pass
 
 
 class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCMeta):

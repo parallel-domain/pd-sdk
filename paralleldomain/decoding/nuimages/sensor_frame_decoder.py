@@ -1,6 +1,7 @@
 import base64
+import logging
 from datetime import datetime
-from typing import Any, ByteString, Dict, List, Tuple, TypeVar, Union
+from typing import Any, ByteString, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import cv2
 import numpy as np
@@ -9,6 +10,7 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, TDateTime
 from paralleldomain.model.annotation import (
+    Annotation,
     AnnotationType,
     AnnotationTypes,
     BoundingBox2D,
@@ -16,6 +18,8 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     SemanticSegmentation2D,
 )
+from paralleldomain.model.image import Image
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -23,6 +27,8 @@ from paralleldomain.utilities.fsio import read_image
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
+logger = logging.getLogger(__name__)
 
 
 class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuImagesDataAccessMixin):
@@ -49,19 +55,23 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
+        distortion_params = [
+            calib_sensor["camera_distortion"][i] if i < len(calib_sensor["camera_distortion"]) else 0.0
+            for i in range(8)
+        ]
         return SensorIntrinsic(
             fx=calib_sensor["camera_intrinsic"][0][0],
             fy=calib_sensor["camera_intrinsic"][1][1],
             cx=calib_sensor["camera_intrinsic"][0][2],
             cy=calib_sensor["camera_intrinsic"][1][2],
-            k1=calib_sensor["camera_distortion"][0],
-            k2=calib_sensor["camera_distortion"][1],
-            p1=calib_sensor["camera_distortion"][2],
-            p2=calib_sensor["camera_distortion"][3],
-            k3=calib_sensor["camera_distortion"][4],
-            k4=calib_sensor["camera_distortion"][5],
-            k5=calib_sensor["camera_distortion"][6],
-            k6=calib_sensor["camera_distortion"][7],
+            k1=distortion_params[0],
+            k2=distortion_params[1],
+            p1=distortion_params[2],
+            p2=distortion_params[3],
+            k3=distortion_params[4],
+            k4=distortion_params[5],
+            k5=distortion_params[6],
+            k6=distortion_params[7],
         )
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
@@ -80,7 +90,7 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         img_path = AnyPath(self._dataset_path) / data["filename"]
         image_data = read_image(path=img_path, convert_to_rgb=True)
 
-        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
+        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype) * 255
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
 
@@ -108,14 +118,17 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         return datetime.fromtimestamp(int(frame_id) / 1000000)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
-
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
             log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
         )
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
         calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
-        trans = Transformation(quaternion=calib_sensor["rotation"], translation=calib_sensor["translation"])
+        translation = np.asarray(calib_sensor["translation"]).reshape(-1)
+        if len(translation) != 3:
+            logger.warning(f"Got a translation with invalid shape {translation.shape}!")
+            translation = translation[:3]
+        trans = Transformation(quaternion=calib_sensor["rotation"], translation=translation)
         trans = NUIMAGES_IMU_TO_INTERNAL_CS @ trans
 
         return trans
@@ -123,8 +136,20 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
         ego_to_world = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
-        sensor_to_world = ego_to_world @ sensor_to_ego
+        sensor_to_world = ego_to_world @ sensor_to_ego.transformation_matrix
         return SensorPose.from_transformation_matrix(sensor_to_world)
+
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        if issubclass(data_type, Image):
+            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            )
+            if sample_data_id is not None:
+                data = self.nu_samples_data[sample_data_id]
+
+                img_path = AnyPath(self._dataset_path) / data["filename"]
+                return img_path
+        return None
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T

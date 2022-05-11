@@ -5,11 +5,15 @@ from typing import Any, Dict, Generic, Optional, Tuple, TypeVar, Union
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.image import Image
+from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.utilities.any_path import AnyPath
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
@@ -66,6 +70,15 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
                 sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
             )
 
+    def get_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        _unique_cache_key = self.get_unique_sensor_frame_id(
+            sensor_name=sensor_name, frame_id=frame_id, extra=f"-file_path-{data_type.__name__}"
+        )
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_file_path(sensor_name=sensor_name, frame_id=frame_id, data_type=data_type),
+        )
+
     def get_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
@@ -118,6 +131,10 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     ) -> T:
         pass
 
+    @abc.abstractmethod
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        pass
+
 
 class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
     def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
@@ -164,6 +181,18 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
     @abc.abstractmethod
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
+
+    def _decode_image_path(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[AnyPath]:
+        return None
+
+    def get_image_path(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[AnyPath]:
+        _unique_cache_key = self.get_unique_sensor_frame_id(
+            sensor_name=sensor_name, frame_id=frame_id, extra="image_path"
+        )
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_image_path(sensor_name=sensor_name, frame_id=frame_id),
+        )
 
 
 class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
