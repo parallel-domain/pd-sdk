@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime
-from typing import Any, Dict, Generic, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 

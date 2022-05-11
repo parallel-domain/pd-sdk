@@ -4,16 +4,13 @@ from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, Typ
 import numpy as np
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
-from paralleldomain.model.point_cloud import (
-    DecoderPointCloud,
-    PointCloud,
-    PointCloudDecoderProtocol,
-)
+from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.model.radar_point_cloud import (
     DecoderRadarPointCloud,
-    RadarPointCloudDecoderProtocol,
     RadarPointCloud,
+    RadarPointCloudDecoderProtocol,
 )
+from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
 try:
