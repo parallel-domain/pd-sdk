@@ -373,7 +373,17 @@
 <span class="sig-name descname"><span class="pre">MaterialProperties2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties2D" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Type[paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D]</p>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D" title="paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D">paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.MaterialProperties3D">
+<span class="sig-name descname"><span class="pre">MaterialProperties3D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D" title="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D">paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2413,7 +2423,7 @@ with <cite>R</cite> (index: 0) being the lowest and <cite>B</cite> (index: 2) be
 <span class="target" id="module-paralleldomain.model.annotation.semantic_segmentation_3d"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SemanticSegmentation3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_ids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 3D Instance Segmentation mask for a point cloud.</p>
+<dd><p>Represents a 3D Semantic Segmentation mask for a point cloud.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>class_ids</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D.class_ids" title="paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D.class_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_ids</span></code></a></p>
@@ -2513,6 +2523,106 @@ normals of each point.</p>
 <span class="n">o3d</span><span class="o">.</span><span class="n">visualization</span><span class="o">.</span><span class="n">draw_geometries</span><span class="p">([</span><span class="n">pcd</span><span class="p">,</span> <span class="n">line_set</span><span class="p">])</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<span class="target" id="module-paralleldomain.model.annotation.material_properties_2d"></span><dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaterialProperties2D</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not Implemented yet!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-paralleldomain.model.annotation.material_properties_3d"></span><dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaterialProperties3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metallic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emissive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a 3D Material Segmentation mask for a point cloud.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material_ids</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.material_ids" title="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.material_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">material_ids</span></code></a></p></li>
+<li><p><strong>metallic</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <code class="xref py py-attr docutils literal notranslate"><span class="pre">metallic</span></code></p></li>
+<li><p><strong>specular</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.specular" title="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.specular"><code class="xref py py-attr docutils literal notranslate"><span class="pre">specular</span></code></a></p></li>
+<li><p><strong>emissive</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.emissive" title="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.emissive"><code class="xref py py-attr docutils literal notranslate"><span class="pre">emissive</span></code></a></p></li>
+<li><p><strong>opacity</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.opacity" title="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.opacity"><code class="xref py py-attr docutils literal notranslate"><span class="pre">opacity</span></code></a></p></li>
+<li><p><strong>flags</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <code class="xref py py-attr docutils literal notranslate"><span class="pre">flags</span></code></p></li>
+<li><p><strong>roughness</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.material_ids">
+<span class="sig-name descname"><span class="pre">material_ids</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.material_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains the material ID for each point as <cite>int</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.roughness">
+<span class="sig-name descname"><span class="pre">roughness</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.roughness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains the material’s roughess value for each point as <cite>float</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.specular">
+<span class="sig-name descname"><span class="pre">specular</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.specular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains the material’s specular value for each point as <cite>float</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.emissive">
+<span class="sig-name descname"><span class="pre">emissive</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.emissive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains the material’s emissive value for each point as <cite>float</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.opacity">
+<span class="sig-name descname"><span class="pre">opacity</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.opacity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains the material’s opacity value for each point as <cite>float</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.flag">
+<span class="sig-name descname"><span class="pre">flag</span></span><a class="headerlink" href="#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N x 1)</cite>, where <cite>N</cite> is the length of the corresponding point cloud.
+The second axis contains special flags for each point encoded as <cite>float</cite>.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
