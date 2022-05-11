@@ -12,7 +12,7 @@ from paralleldomain.model.point_cloud import (
 from paralleldomain.model.radar_point_cloud import (
     DecoderRadarPointCloud,
     RadarPointCloudDecoderProtocol,
-    RadarPointCloud
+    RadarPointCloud,
 )
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
@@ -169,7 +169,7 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_annotations(
-            self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
+        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> List[T]:
         pass
 
@@ -177,7 +177,7 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_available_annotation_types(
-            self, sensor_name: SensorName, frame_id: FrameId
+        self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         pass
 
@@ -190,10 +190,10 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
 
 class SensorFrame(Generic[TDateTime]):
     def __init__(
-            self,
-            sensor_name: SensorName,
-            frame_id: FrameId,
-            decoder: SensorFrameDecoderProtocol[TDateTime],
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: SensorFrameDecoderProtocol[TDateTime],
     ):
         self._frame_id = frame_id
         self._decoder = decoder
@@ -293,10 +293,10 @@ class RadarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Rad
 
 class LidarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
-            self,
-            sensor_name: SensorName,
-            frame_id: FrameId,
-            decoder: LidarSensorFrameDecoderProtocol[TDateTime],
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: LidarSensorFrameDecoderProtocol[TDateTime],
     ):
         super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
         self._decoder = decoder
@@ -308,10 +308,10 @@ class LidarSensorFrame(SensorFrame[TDateTime]):
 
 class RadarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
-            self,
-            sensor_name: SensorName,
-            frame_id: FrameId,
-            decoder: RadarSensorFrameDecoderProtocol[TDateTime],
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: RadarSensorFrameDecoderProtocol[TDateTime],
     ):
         super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
         self._decoder = decoder
@@ -328,10 +328,10 @@ class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Im
 
 class CameraSensorFrame(SensorFrame[TDateTime]):
     def __init__(
-            self,
-            sensor_name: SensorName,
-            frame_id: FrameId,
-            decoder: CameraSensorFrameDecoderProtocol[TDateTime],
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: CameraSensorFrameDecoderProtocol[TDateTime],
     ):
         super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
         self._decoder = decoder
@@ -345,7 +345,7 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     def project_points_from_3d(
-            self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
+        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
     ) -> np.ndarray:
         return project_points_3d_to_2d(
             k_matrix=self.intrinsic.camera_matrix,
@@ -369,9 +369,9 @@ class SensorDecoderProtocol(Protocol[TSensorFrameType]):
 
 class Sensor(Generic[TSensorFrameType]):
     def __init__(
-            self,
-            sensor_name: SensorName,
-            decoder: SensorDecoderProtocol[TSensorFrameType],
+        self,
+        sensor_name: SensorName,
+        decoder: SensorDecoderProtocol[TSensorFrameType],
     ):
         self._decoder = decoder
         self._sensor_name = sensor_name
@@ -425,22 +425,22 @@ class SensorExtrinsic(Transformation):
 
 class SensorIntrinsic:
     def __init__(
-            self,
-            cx=0.0,
-            cy=0.0,
-            fx=0.0,
-            fy=0.0,
-            k1=0.0,
-            k2=0.0,
-            p1=0.0,
-            p2=0.0,
-            k3=0.0,
-            k4=0.0,
-            k5=0.0,
-            k6=0.0,
-            skew=0.0,
-            fov=0.0,
-            camera_model=CameraModel.OPENCV_PINHOLE,
+        self,
+        cx=0.0,
+        cy=0.0,
+        fx=0.0,
+        fy=0.0,
+        k1=0.0,
+        k2=0.0,
+        p1=0.0,
+        p2=0.0,
+        k3=0.0,
+        k4=0.0,
+        k5=0.0,
+        k6=0.0,
+        skew=0.0,
+        fov=0.0,
+        camera_model=CameraModel.OPENCV_PINHOLE,
     ):
         self.cx = cx
         self.cy = cy
