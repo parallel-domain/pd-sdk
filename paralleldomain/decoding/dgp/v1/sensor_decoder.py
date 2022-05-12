@@ -89,6 +89,7 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
     ) -> LidarSensorFrame[datetime]:
         return LidarSensorFrame[datetime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
 
+
 class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
     @lru_cache(maxsize=1)
     def _create_radar_sensor_frame_decoder(self) -> DGPRadarSensorFrameDecoder:

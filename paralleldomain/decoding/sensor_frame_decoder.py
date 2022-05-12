@@ -362,10 +362,6 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         pass
 
     @abc.abstractmethod
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        pass
-
-    @abc.abstractmethod
     def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
