@@ -74,6 +74,11 @@ class MapQueryProtocol(Protocol):
     ) -> List[LaneSegment]:
         pass
 
+    def get_lane_segment_predecessors_straight_path(
+        self, lane_segment_id: LaneSegmentId, steps: int = None
+    ) -> List[LaneSegment]:
+        pass
+
     def get_lane_segments_connected_shortest_paths(
         self, source_id: LaneSegmentId, target_id: LaneSegmentId
     ) -> List[List[LaneSegment]]:
@@ -182,6 +187,12 @@ class Map:
     ) -> List[LaneSegment]:
         lane_segment = LaneSegment.ensure_lane_segment_id(item=lane_segment)
         return self.map_query.get_lane_segment_successors_straight_path(lane_segment_id=lane_segment, steps=steps)
+
+    def get_lane_segment_predecessors_straight_path(
+        self, lane_segment: Union[LaneSegmentId, LaneSegment], steps: int = None
+    ) -> List[LaneSegment]:
+        lane_segment = LaneSegment.ensure_lane_segment_id(item=lane_segment)
+        return self.map_query.get_lane_segment_predecessors_straight_path(lane_segment_id=lane_segment, steps=steps)
 
     def bridge_lane_segments(
         self,

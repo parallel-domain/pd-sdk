@@ -264,6 +264,29 @@ class IGraphMapQuery(MapQuery):
         )
         return [subgraph.vs[node_id]["object"] for node_id in random_walk]
 
+    def get_lane_segment_predecessors_straight_path(
+        self, lane_segment_id: LaneSegmentId, steps: int = None
+    ) -> Tuple[List[LaneSegment], List[int], List[Optional[int]]]:
+        subgraph = self._get_lane_segments_preceeding_lane_segments_graph()
+        start_vertex = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{lane_segment_id}")
+
+        lane_segment_path = []
+        lane_segment = start_vertex["object"]
+        lane_segment_path.append(lane_segment)
+        for _ in range(steps):
+            found_straight_path = False
+            for successor_id in lane_segment.predecessor_ids:
+                new_lane_segment = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{successor_id}")["object"]
+                if new_lane_segment.turn_type == TurnType.STRAIGHT:
+                    lane_segment = new_lane_segment
+                    lane_segment_path.append(lane_segment)
+                    found_straight_path = True
+
+            if not found_straight_path:
+                break
+
+        return lane_segment_path
+
     def get_lane_segment_successors_random_path(
         self, lane_segment_id: LaneSegmentId, steps: int = None
     ) -> List[LaneSegment]:

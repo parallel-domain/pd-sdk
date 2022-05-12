@@ -108,6 +108,12 @@ class MapQuery:
         pass
 
     @abc.abstractmethod
+    def get_lane_segment_predecessors_straight_path(
+        self, lane_segment_id: LaneSegmentId, steps: int = None
+    ) -> List[LaneSegment]:
+        pass
+
+    @abc.abstractmethod
     def get_junctions_for_lane_segment(self, lane_segment_id: LaneSegmentId) -> List[Junction]:
         pass
 
