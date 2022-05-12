@@ -736,6 +736,45 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         else:
             return None
 
+    def _decode_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.RANGE]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.AZ]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.EL]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
     def _decode_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.TS]
         radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)

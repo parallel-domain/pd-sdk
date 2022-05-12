@@ -34,6 +34,21 @@ class RadarPointCloud:
 
     @property
     @abc.abstractmethod
+    def range(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def azimuth(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def elevation(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
     def ts(self) -> np.ndarray:
         pass
 
@@ -69,6 +84,15 @@ class RadarPointCloudDecoderProtocol(Protocol):
     def get_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
+    def get_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    def get_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    def get_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
     def get_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
@@ -83,6 +107,9 @@ class DecoderRadarPointCloud(RadarPointCloud):
         self._rgb = None
         self._doppler = None
         self._power = None
+        self._range = None
+        self._azimuth = None
+        self._elevation = None
         self._ts = None
 
     @property
@@ -112,6 +139,30 @@ class DecoderRadarPointCloud(RadarPointCloud):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._power
+
+    @property
+    def range(self) -> Optional[np.ndarray]:
+        if self._range is None:
+            self._range = self._decoder.get_radar_point_cloud_range(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._range
+
+    @property
+    def azimuth(self) -> Optional[np.ndarray]:
+        if self._azimuth is None:
+            self._azimuth = self._decoder.get_radar_point_cloud_azimuth(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._azimuth
+
+    @property
+    def elevation(self) -> Optional[np.ndarray]:
+        if self._elevation is None:
+            self._elevation = self._decoder.get_radar_point_cloud_elevation(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._elevation
 
     @property
     def ts(self) -> Optional[np.ndarray]:
