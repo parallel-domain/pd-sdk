@@ -700,6 +700,7 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         rpc_data = read_npz(path=cloud_path, files="data")
         return rpc_data
 
+    #TODO: is @lru_cache(maxsize=1) required ?
     def _decode_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename

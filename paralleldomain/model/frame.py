@@ -78,8 +78,10 @@ class Frame(Generic[TDateTime]):
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame[TDateTime]:
         if sensor_name in self.camera_names:
             return self.get_camera(camera_name=sensor_name)
-        else:
+        elif sensor_name in self.lidar_names:
             return self.get_lidar(lidar_name=sensor_name)
+        else:
+            return self.get_radar(lidar_name=sensor_name)
 
     @property
     def sensor_names(self) -> List[SensorName]:
