@@ -65,8 +65,11 @@ class RadarPointFormat:
     X: str = "X"
     Y: str = "Y"
     Z: str = "Z"
-    I: str = "REFLECTED_POWER_DB"
+    POWER: str = "REFLECTED_POWER_DB"
     DOPPLER: str = "VELOCITY_XS"
+    RANGE: str = "RADIAL_DISTANCE"
+    AZ: str = "AZIMUTH_ANGLE"
+    EL: str = "ELEVATION_ANGLE"
     TS: str = "TIMESTAMP"
 
     @classmethod
@@ -75,8 +78,11 @@ class RadarPointFormat:
             cls.X,
             cls.Y,
             cls.Z,
-            cls.I,
+            cls.POWER,
             cls.DOPPLER,
+            cls.RANGE,
+            cls.AZ,
+            cls.EL,
             cls.TS,
         ]
 
@@ -113,8 +119,11 @@ class RadarPointFormatDtype:
     X: str = "<f4"
     Y: str = "<f4"
     Z: str = "<f4"
-    I: str = "<f4"
+    POWER: str = "<f4"
     DOPPLER: str = "<f4"
+    RANGE: str = "<f4"
+    AZ: str = "<f4"
+    EL: str = "<f4"
     TS: str = "<u8"
 
     @classmethod
@@ -123,8 +132,11 @@ class RadarPointFormatDtype:
             cls.X,
             cls.Y,
             cls.Z,
-            cls.I,
+            cls.POWER,
             cls.DOPPLER,
+            cls.RANGE,
+            cls.AZ,
+            cls.EL,
             cls.TS,
         ]
 

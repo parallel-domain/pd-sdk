@@ -29,7 +29,7 @@ class RadarPointCloud:
 
     @property
     @abc.abstractmethod
-    def intensity(self) -> np.ndarray:
+    def power(self) -> np.ndarray:
         pass
 
     @property
@@ -44,7 +44,7 @@ class RadarPointCloud:
 
     @property
     def xyz_i(self) -> np.ndarray:
-        return np.concatenate((self.xyz, self.intensity), axis=1)
+        return np.concatenate((self.xyz, self.power), axis=1)
 
     @property
     def xyz_one(self) -> np.ndarray:
@@ -66,7 +66,7 @@ class RadarPointCloudDecoderProtocol(Protocol):
     def get_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_radar_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def get_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     def get_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
@@ -82,7 +82,7 @@ class DecoderRadarPointCloud(RadarPointCloud):
         self._xyz = None
         self._rgb = None
         self._doppler = None
-        self._intensity = None
+        self._power = None
         self._ts = None
 
     @property
@@ -106,12 +106,12 @@ class DecoderRadarPointCloud(RadarPointCloud):
         return self._rgb
 
     @property
-    def intensity(self) -> Optional[np.ndarray]:
-        if self._intensity is None:
-            self._intensity = self._decoder.get_radar_point_cloud_intensity(
+    def power(self) -> Optional[np.ndarray]:
+        if self._power is None:
+            self._power = self._decoder.get_radar_point_cloud_power(
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
-        return self._intensity
+        return self._power
 
     @property
     def ts(self) -> Optional[np.ndarray]:
