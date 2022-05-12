@@ -700,6 +700,12 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         rpc_data = read_npz(path=cloud_path, files="data")
         return rpc_data
 
+    def _decode_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
+        rd_data = read_npz(path=cloud_path, files="rd_energy_map")
+        return rd_data
+
     def _has_radar_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.HasField("radar_point_cloud")

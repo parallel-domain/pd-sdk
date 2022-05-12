@@ -8,6 +8,8 @@ from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, Poin
 from paralleldomain.model.radar_point_cloud import (
     DecoderRadarPointCloud,
     RadarPointCloud,
+    DecoderRangeDopplerMap,
+    RangeDopplerMap,
     RadarPointCloudDecoderProtocol,
 )
 from paralleldomain.utilities.any_path import AnyPath
@@ -316,6 +318,10 @@ class RadarSensorFrame(SensorFrame[TDateTime]):
     @property
     def radar_point_cloud(self) -> RadarPointCloud:
         return DecoderRadarPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def radar_range_doppler_map(self) -> RangeDopplerMap:
+        return DecoderRangeDopplerMap(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
 
 
 class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):

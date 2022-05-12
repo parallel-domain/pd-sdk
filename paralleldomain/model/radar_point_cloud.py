@@ -68,6 +68,13 @@ class RadarPointCloud:
         return np.concatenate((xyz_data, one_data), axis=1)
 
 
+class RangeDopplerMap:
+    @property
+    @abc.abstractmethod
+    def energy_map(self) -> np.ndarray:
+        pass
+
+
 class RadarPointCloudDecoderProtocol(Protocol):
     def get_radar_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
@@ -94,6 +101,11 @@ class RadarPointCloudDecoderProtocol(Protocol):
         pass
 
     def get_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+
+class RadarRangeDopplerMapDecoderProtocol(Protocol):
+    def get_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
 
 
@@ -179,3 +191,19 @@ class DecoderRadarPointCloud(RadarPointCloud):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._doppler
+
+
+class DecoderRangeDopplerMap(RangeDopplerMap):
+    def __init__(self, decoder: RadarRangeDopplerMapDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
+        self.frame_id = frame_id
+        self.sensor_name = sensor_name
+        self._decoder = decoder
+        self._energy_map = None
+
+    @property
+    def energy_map(self) -> np.ndarray:
+        if self._energy_map is None:
+            self._energy_map = self._decoder.get_range_doppler_energy_map(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._energy_map
