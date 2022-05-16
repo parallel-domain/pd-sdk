@@ -42,11 +42,26 @@ def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False)
     return path
 
 
-def read_json(path: AnyPath) -> Union[Dict, List]:
-    with path.open("r") as fp:
-        json_data = ujson.load(fp)
+# def read_json(path: AnyPath) -> Union[Dict, List]:
+#     with path.open("r") as fp:
+#         json_data = ujson.load(fp)
 
-    return json_data
+#     return json_data
+
+
+def read_json(path: AnyPath) -> Union[Dict, List]:
+    def read_json_results(local_path: AnyPath) -> Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]]:
+        with local_path.open(mode="rb") as fp:
+            json_data = ujson.load(fp)
+        return json_data
+
+    temp_dir = TemporaryDirectory()
+    local_path = AnyPath(temp_dir.name) / path.name
+    path.copy(target=local_path)
+    result = read_json_results(local_path=local_path)
+    temp_dir.cleanup()
+
+    return result
 
 
 def read_json_str(json_str: str) -> Union[Dict, List]:
