@@ -42,13 +42,6 @@ def write_json(obj: Union[Dict, List], path: AnyPath, append_sha1: bool = False)
     return path
 
 
-# def read_json(path: AnyPath) -> Union[Dict, List]:
-#     with path.open("r") as fp:
-#         json_data = ujson.load(fp)
-
-#     return json_data
-
-
 def read_json(path: AnyPath) -> Union[Dict, List]:
     def read_json_results(local_path: AnyPath) -> Dict[str, Union[np.ndarray, Iterable, int, float, tuple, dict]]:
         with local_path.open(mode="rb") as fp:
