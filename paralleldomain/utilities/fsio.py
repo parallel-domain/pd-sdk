@@ -49,11 +49,10 @@ def read_json(path: AnyPath) -> Union[Dict, List]:
         return json_data
 
     if path.is_cloud_path:
-        temp_dir = TemporaryDirectory()
-        local_path = AnyPath(temp_dir.name) / path.name
-        path.copy(target=local_path)
-        result = read_json_results(local_path=local_path)
-        temp_dir.cleanup()
+        with TemporaryDirectory() as temp_dir:
+            local_path = AnyPath(temp_dir) / path.name
+            path.copy(target=local_path)
+            result = read_json_results(local_path=local_path)
     else:
         result = read_json_results(local_path=path)
     return result
