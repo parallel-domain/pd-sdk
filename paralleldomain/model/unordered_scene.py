@@ -164,16 +164,24 @@ class UnorderedScene(Generic[TDateTime]):
             return self.get_camera_sensor(camera_name=sensor_name)
         elif sensor_name in self.lidar_names:
             return self.get_lidar_sensor(lidar_name=sensor_name)
+        elif sensor_name in self.radar_names:
+            return self.get_radar_sensor(radar_name=sensor_name)
         else:
-            raise ValueError(f"Unknown sensor: {sensor_name}!")
+            raise ValueError(f"Sensor {sensor_name} could not be found.")
 
     def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[TDateTime]:
+        if camera_name not in self.camera_names:
+            raise ValueError(f"Camera {camera_name} could not be found.")
         return self._decoder.get_camera_sensor(scene_name=self.name, camera_name=camera_name)
 
     def get_lidar_sensor(self, lidar_name: SensorName) -> LidarSensor[TDateTime]:
+        if lidar_name not in self.lidar_names:
+            raise ValueError(f"LiDAR {lidar_name} could not be found.")
         return self._decoder.get_lidar_sensor(scene_name=self.name, lidar_name=lidar_name)
 
     def get_radar_sensor(self, radar_name: SensorName) -> RadarSensor[TDateTime]:
+        if radar_name not in self.radar_names:
+            raise ValueError(f"LiDAR {radar_name} could not be found.")
         return self._decoder.get_radar_sensor(scene_name=self.name, radar_name=radar_name)
 
     @property

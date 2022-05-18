@@ -425,10 +425,10 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
             )
             return self.lazy_load_cache.get_item(
                 key=_unique_cache_key,
-                loader=lambda: self._decode_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id),
+                loader=lambda: self._decode_radar_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id),
             )
         else:
-            return self._decode_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id)
+            return self._decode_radar_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id)
 
     @abc.abstractmethod
     def _decode_radar_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
@@ -467,5 +467,7 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         pass
 
     @abc.abstractmethod
-    def _decode_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_radar_range_doppler_energy_map(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> Optional[np.ndarray]:
         pass
