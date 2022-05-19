@@ -256,7 +256,7 @@ class IGraphMapQuery(MapQuery):
         start_vertex = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{lane_segment_id}")
         random_walk = subgraph.random_walk(
             start=start_vertex.index,
-            steps=steps if steps is not None else (2**16),
+            steps=steps if steps is not None else (2 ** 16),
             mode="in",
             stuck="return",
         )
@@ -269,7 +269,7 @@ class IGraphMapQuery(MapQuery):
         start_vertex = subgraph.vs.find(f"{NodePrefix.LANE_SEGMENT}_{lane_segment_id}")
         random_walk = subgraph.random_walk(
             start=start_vertex.index,
-            steps=steps if steps is not None else (2**16),
+            steps=steps if steps is not None else (2 ** 16),
             mode="out",
             stuck="return",
         )
