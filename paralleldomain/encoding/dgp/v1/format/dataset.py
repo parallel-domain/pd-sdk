@@ -80,11 +80,11 @@ class DatasetDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         for path in aggregation_folder.iterdir():
             try:
                 path.rm(missing_ok=True)
-            except PermissionError as e:
+            except OSError as e:
                 logger.warning(f"Could not delete {path} because of insufficient permissions!")
                 logger.warning(e)
         try:
             aggregation_folder.rmdir()
-        except PermissionError as e:
+        except OSError as e:
             logger.warning(f"Could not delete {aggregation_folder} because of insufficient permissions!")
             logger.warning(e)
