@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Optional, Union
 
@@ -16,12 +17,18 @@ from paralleldomain.encoding.dgp.v1.format.common import (
 from paralleldomain.encoding.pipeline_encoder import PipelineItem, ScenePipelineItem
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import relative_path, write_json_message
+from paralleldomain.utilities.fsio import relative_path, write_message
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
     def save_aggregated_dataset(
-        self, pipeline_item: ScenePipelineItem, dataset_output_path: AnyPath, target_dataset_name: Optional[str]
+        self,
+        pipeline_item: ScenePipelineItem,
+        dataset_output_path: AnyPath,
+        target_dataset_name: Optional[str],
+        save_binary: bool,
     ):
         scene_paths = list()
         all_annotation_types = set()
@@ -64,11 +71,20 @@ class DatasetDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
             },
         )
 
-        output_path = dataset_output_path / "scene_dataset.json"
+        file_suffix = "json" if not save_binary else "bin"
+        output_path = dataset_output_path / f"scene_dataset.{file_suffix}"
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        write_json_message(obj=dataset_proto, path=output_path)
+        write_message(obj=dataset_proto, path=output_path)
 
         aggregation_folder = dataset_output_path / ENCODED_SCENE_AGGREGATION_FOLDER_NAME
         for path in aggregation_folder.iterdir():
-            path.rm(missing_ok=True)
-        aggregation_folder.rmdir()
+            try:
+                path.rm(missing_ok=True)
+            except PermissionError as e:
+                logger.warning(f"Could not delete {path} because of insufficient permissions!")
+                logger.warning(e)
+        try:
+            aggregation_folder.rmdir()
+        except PermissionError as e:
+            logger.warning(f"Could not delete {aggregation_folder} because of insufficient permissions!")
+            logger.warning(e)

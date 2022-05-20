@@ -10,7 +10,12 @@ from paralleldomain.utilities.any_path import AnyPath
 
 class Point2DDGPV1Mixin(CommonDGPV1FormatMixin):
     def save_points_2d_and_write_state(
-        self, pipeline_item: PipelineItem, data: Points2D, scene_output_path: AnyPath, sim_offset: float
+        self,
+        pipeline_item: PipelineItem,
+        data: Points2D,
+        scene_output_path: AnyPath,
+        sim_offset: float,
+        save_binary: bool,
     ):
         keypoint2d_dto = [self._encode_key_point_2d(p) for p in data.points]
         keypoints2d_dto = annotations_pb2.KeyPoint2DAnnotations(annotations=keypoint2d_dto)
@@ -20,12 +25,12 @@ class Point2DDGPV1Mixin(CommonDGPV1FormatMixin):
             sim_offset=sim_offset,
             target_sensor_name=pipeline_item.target_sensor_name,
             timestamp=pipeline_item.sensor_frame.date_time,
-            file_suffix="json",
+            file_suffix="json" if not save_binary else "bin",
             directory_name=DirectoryName.KEY_POINT_2D,
             scene_output_path=scene_output_path,
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path = fsio.write_json_message(obj=keypoints2d_dto, path=output_path, append_sha1=True)
+        output_path = fsio.write_message(obj=keypoints2d_dto, path=output_path, append_sha1=True)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Points2D])

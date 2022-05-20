@@ -53,7 +53,7 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
         self.store_data_for_aggregation(pipeline_item=pipeline_item)
 
-    def save_aggregated_scene(self, pipeline_item: ScenePipelineItem, dataset_output_path: AnyPath):
+    def save_aggregated_scene(self, pipeline_item: ScenePipelineItem, dataset_output_path: AnyPath, save_binary: bool):
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
         target_scene_name = pipeline_item.scene_name
         scene_output_path = dataset_output_path / target_scene_name
@@ -62,22 +62,24 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         #     scene = self._scene_from_input_dict(input_dict=input_dict)
         #     self.aggregate_inplace_data(scene=scene, scene_output_path=scene_output_path)
 
+        file_suffix = "json" if not save_binary else "bin"
+
         scene_data = []
         scene_samples = []
         scene_sensor_data, calib_dto, ontology_maps, frame_map = self.get_scene_sensor_data(
             scene_name=pipeline_item.scene_name, scene_output_path=scene_output_path
         )
 
-        output_path = scene_output_path / DirectoryName.CALIBRATION / ".json"
+        output_path = scene_output_path / DirectoryName.CALIBRATION / f".{file_suffix}"
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        calibration_file = fsio.write_json_message(obj=calib_dto, path=output_path, append_sha1=True)
+        calibration_file = fsio.write_message(obj=calib_dto, path=output_path, append_sha1=True)
 
         # calibration_file = self.save_calibration_file(pipeline_item=pipeline_item)
         ontologies = dict()
         for annotaiton_id, ontology_proto in ontology_maps.items():
-            output_path = scene_output_path / DirectoryName.ONTOLOGY / ".json"
+            output_path = scene_output_path / DirectoryName.ONTOLOGY / f".{file_suffix}"
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            path = fsio.write_json_message(obj=ontology_proto, path=output_path, append_sha1=True)
+            path = fsio.write_message(obj=ontology_proto, path=output_path, append_sha1=True)
             ontologies[annotaiton_id] = relative_path(start=scene_output_path, path=path).stem
 
         available_annotation_types = [int(k) for k in ontologies.keys()]
@@ -120,9 +122,9 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
             statistics=None,
         )
 
-        output_path = scene_output_path / "scene.json"
+        output_path = scene_output_path / f"scene.{file_suffix}"
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        scene_storage_path = fsio.write_json_message(obj=scene_dto, path=output_path, append_sha1=True)
+        scene_storage_path = fsio.write_message(obj=scene_dto, path=output_path, append_sha1=True)
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][SCENE_DATA_KEY] = dict(
             scene_storage_path=scene_storage_path, available_annotation_types=available_annotation_types
         )
