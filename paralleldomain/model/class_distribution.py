@@ -122,7 +122,6 @@ class ClassDistribution:
                 ),
                 annotation_types_to_use=annotation_types_to_use,
             )
-            print(f"{scene_name} complete.")
         return class_dist
 
     @staticmethod
