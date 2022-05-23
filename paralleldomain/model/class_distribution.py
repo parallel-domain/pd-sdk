@@ -89,7 +89,7 @@ class ClassDistribution:
     def update(
         self,
         other: "ClassDistribution",
-        annotation_types_to_use: Optional[Union[AnnotationTypes, List[AnnotationTypes]]] = None,
+        annotation_types_to_use: Optional[Union[AnnotationType, List[AnnotationType]]] = None,
     ):
         if annotation_types_to_use is None:
             annotation_types_to_use = [AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D]
@@ -107,7 +107,7 @@ class ClassDistribution:
     def from_dataset(
         dataset: Dataset,
         sensors_to_use: Optional[Set[SensorName]] = None,
-        annotation_types_to_use: Optional[Union[AnnotationTypes, List[AnnotationTypes]]] = None,
+        annotation_types_to_use: Optional[Union[AnnotationType, List[AnnotationType]]] = None,
     ) -> "ClassDistribution":
         if annotation_types_to_use is None:
             annotation_types_to_use = [AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D]
@@ -128,7 +128,7 @@ class ClassDistribution:
     def from_scene(
         scene: UnorderedScene,
         sensors_to_use: Optional[Set[SensorName]] = None,
-        annotation_types_to_use: Optional[Union[AnnotationTypes, List[AnnotationTypes]]] = None,
+        annotation_types_to_use: Optional[Union[AnnotationType, List[AnnotationType]]] = None,
     ) -> "ClassDistribution":
         if annotation_types_to_use is None:
             annotation_types_to_use = [AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D]
@@ -150,7 +150,7 @@ class ClassDistribution:
     def from_cameras(
         cameras: Generator[CameraSensor, None, None],
         class_maps: Dict[AnnotationType, ClassMap],
-        annotation_types_to_use: Optional[Union[AnnotationTypes, List[AnnotationTypes]]] = None,
+        annotation_types_to_use: Optional[Union[AnnotationType, List[AnnotationType]]] = None,
     ) -> "ClassDistribution":
         class_dist = ClassDistribution()
 
