@@ -882,6 +882,14 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.Depth in self._annotation_types:
                     (self._output_path / DirectoryName.DEPTH / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.SurfaceNormals2D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_3D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
             for lidar_name in self._lidar_names:
                 (self._output_path / DirectoryName.POINT_CLOUD / lidar_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.BoundingBoxes3D in self._annotation_types:
