@@ -10,7 +10,7 @@ class SceneFlow(Annotation):
     """Represents an Scene Flow mask for a point cloud.
 
     Args:
-        vectors: :attr:`~.SceneFlow.vectors`
+        vectors: :attr:`paralleldomain.model.annotation.scene_flow.SceneFlow.vectors`
 
     Attributes:
         vectors: Matrix of shape `(N x 3)`, , where `N` is the number of points of the corresponding

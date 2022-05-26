@@ -11,11 +11,11 @@ class Point2D(Point2DGeometry):
     """Represents a 2D Point.
 
     Args:
-        x: :attr:`~.Point2D.x`
-        y: :attr:`~.Point2D.y`
-        class_id: :attr:`~.Point2D.class_id`
-        instance_id: :attr:`~.Point2D.instance_id`
-        attributes: :attr:`~.Point2D.attributes`
+        x: :attr:`paralleldomain.model.annotation.point_2d.Point2D.x`
+        y: :attr:`paralleldomain.model.annotation.point_2d.Point2D.y`
+        class_id: :attr:`paralleldomain.model.annotation.point_2d.Point2D.class_id`
+        instance_id: :attr:`paralleldomain.model.annotation.point_2d.Point2D.instance_id`
+        attributes: :attr:`paralleldomain.model.annotation.point_2d.Point2D.attributes`
 
     Attributes:
         x: coordinate along x-axis in image pixels
@@ -40,7 +40,7 @@ class Points2D(Annotation):
     """Collection of 2D Points
 
     Args:
-        points: :attr:`~.Points2D.points`
+        points: :attr:`paralleldomain.model.annotation.point_2d.Points2D.points`
 
     Attributes:
         points: Unordered list of :obj:`Point2D` instances

@@ -6,4 +6,6 @@ paralleldomain.model.sensor
 .. automodule:: paralleldomain.model.sensor
     :members:
     :inherited-members:
-    :exclude-members: SensorFrameDecoderProtocol, LidarSensorFrameDecoderProtocol, CameraSensorFrameDecoderProtocol, SensorDecoderProtocol
+    :exclude-members: SensorFrameDecoderProtocol, LidarSensorFrameDecoderProtocol, CameraSensorFrameDecoderProtocol, SensorDecoderProtocol, FilePathedDataType
+
+.. autoclass:: paralleldomain.model.sensor.FilePathedDataType
