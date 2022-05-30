@@ -40,12 +40,14 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
+        encode_to_binary: bool = False,
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
             dataset_output_path=output_path,
             sim_offset=sim_offset,
             target_dataset_name=target_dataset_name,
             inplace=inplace,
+            encode_to_binary=encode_to_binary,
         )
         pipeline_builder = GenericPipelineBuilder(
             pipeline_item_type=ScenePipelineItem,

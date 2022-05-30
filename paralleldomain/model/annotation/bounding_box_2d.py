@@ -13,13 +13,13 @@ class BoundingBox2D(BoundingBox2DGeometry):
     """Represents a 2D Bounding Box annotation including geometry.
 
     Args:
-        x: :attr:`~.BoundingBox2D.x`
-        y: :attr:`~.BoundingBox2D.y`
-        width: :attr:`~.BoundingBox2D.width`
-        height: :attr:`~.BoundingBox2D.height`
-        class_id: :attr:`~.BoundingBox2D.class_id`
-        instance_id: :attr:`~.BoundingBox2D.instance_id`
-        attributes: :attr:`~.BoundingBox2D.attributes`
+        x: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x`
+        y: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y`
+        width: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width`
+        height: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height`
+        class_id: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id`
+        instance_id: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id`
+        attributes: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes`
 
     Attributes:
         x: Top-Left corner in image pixels coordinates along x-axis
@@ -49,7 +49,7 @@ class BoundingBoxes2D(Annotation):
     """Collection of 2D Bounding Boxes.
 
     Args:
-        boxes: :attr:`~.BoundingBoxes2D.boxes`
+        boxes: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.boxes`
 
     Attributes:
         boxes: Unordered list of :obj:`BoundingBox2D` instances
