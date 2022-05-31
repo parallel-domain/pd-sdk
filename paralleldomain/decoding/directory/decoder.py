@@ -1,17 +1,12 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecoder
-from paralleldomain.decoding.directory.sensor_decoder import (
-    DirectoryCameraSensorDecoder,
-)
+from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_decoder import (
-    CameraSensorDecoder,
-    LidarSensorDecoder,
-)
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -75,10 +70,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[
-                AnnotationTypes.SemanticSegmentation2D,
-                AnnotationTypes.InstanceSegmentation2D,
-            ],
+            available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
             custom_attributes=dict(),
         )
 
