@@ -20,11 +20,13 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
+        metadata_folder: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
+        self.metadata_folder = metadata_folder
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         scene_images_folder = self.dataset_path / self.image_folder
@@ -44,4 +46,5 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
             settings=self.settings,
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
+            metadata_folder=self.metadata_folder,
         )
