@@ -6,6 +6,7 @@ import os
 import uuid
 from abc import abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
+from tempfile import TemporaryDirectory
 from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy as np
@@ -200,16 +201,19 @@ class DatasetEncoder:
             self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
-        encoder = self._scene_encoder(
-            dataset=self._dataset,
-            scene_name=scene_name,
-            output_path=self._output_path / scene_name,
-            camera_names=self._camera_names,
-            lidar_names=self._lidar_names,
-            frame_ids=self._frame_ids,
-            annotation_types=self._annotation_types,
-        )
-        return encoder.encode_scene()
+        with TemporaryDirectory() as temp_dir:
+            encoder = self._scene_encoder(
+                dataset=self._dataset,
+                scene_name=scene_name,
+                output_path=AnyPath(temp_dir),
+                camera_names=self._camera_names,
+                lidar_names=self._lidar_names,
+                frame_ids=self._frame_ids,
+                annotation_types=self._annotation_types,
+            )
+            result = encoder.encode_scene()
+            AnyPath(temp_dir).sync(target=AnyPath(self._output_path / scene_name))
+            return result
 
     def _relative_path(self, path: AnyPath) -> AnyPath:
         return relative_path(path, self._output_path)
