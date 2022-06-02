@@ -12,7 +12,7 @@ class InstanceSegmentation2D(Annotation):
     """Represents a 2D Instance Segmentation mask for a camera image.
 
     Args:
-        instance_ids: :attr:`~.SemanticSegmentation2D.instance_ids`
+        instance_ids: :attr:`paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.instance_ids`  # noqa: E501
 
     Attributes:
         instance_ids: Matrix of shape `(H x W x 1)`, where `H` is the height and `W` is the width of corresponding
@@ -50,7 +50,8 @@ class InstanceSegmentation2D(Annotation):
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Outputs :attr:`~.InstanceSegmentation.instance_ids` mask as RGB matrix with shape `(H x W x 3)`,
+        """Outputs :attr:`paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation.instance_ids`
+        mask as RGB matrix with shape `(H x W x 3)`,
         with `R` being the lowest and `B` being the highest 8 bit."""
         return encode_int32_as_rgb8(mask=self.instance_ids)
 

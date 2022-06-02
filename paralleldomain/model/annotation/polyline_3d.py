@@ -11,11 +11,11 @@ class Line3D(Line3DGeometry):
     """Represents a 3D Line.
 
     Args:
-        start: :attr:`~.Line3D.start`
-        end: :attr:`~.Line3D.end`
-        class_id: :attr:`~.Line3D.class_id`
-        instance_id: :attr:`~.Line3D.instance_id`
-        attributes: :attr:`~.Line3D.attributes`
+        start: :attr:`paralleldomain.model.annotation.polyline_3d.Line3D.start`
+        end: :attr:`paralleldomain.model.annotation.polyline_3d.Line3D.end`
+        class_id: :attr:`paralleldomain.model.annotation.polyline_3d.Line3D.class_id`
+        instance_id: :attr:`paralleldomain.model.annotation.polyline_3d.Line3D.instance_id`
+        attributes: :attr:`paralleldomain.model.annotation.polyline_3d.Line3D.attributes`
 
     Attributes:
         start: the 3D start point of the line in image coordinates
@@ -42,10 +42,10 @@ class Polyline3D(Polyline3DGeometry):
     """A polyline made of a collection of 3D Lines
 
     Args:
-        lines: :attr:`~.Polyline3D.lines`
-        class_id: :attr:`~.Polyline3D.class_id`
-        instance_id: :attr:`~.Polyline3D.instance_id`
-        attributes: :attr:`~.Polyline3D.attributes`
+        lines: :attr:`paralleldomain.model.annotation.polyline_3d.Polyline3D.lines`
+        class_id: :attr:`paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id`
+        instance_id: :attr:`paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id`
+        attributes: :attr:`paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes`
 
     Attributes:
         lines: Ordered list of :obj:`Line3D` instances
@@ -69,7 +69,7 @@ class Polylines3D(Annotation):
     """Collection of 3D Polylines
 
     Args:
-        polylines: :attr:`~.Polylines3D.polylines`
+        polylines: :attr:`paralleldomain.model.annotation.polyline_3d.Polylines3D.polylines`
 
     Attributes:
         polylines: Ordered list of :obj:`Polyline3D` instances
