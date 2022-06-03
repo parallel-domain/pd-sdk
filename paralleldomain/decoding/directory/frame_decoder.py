@@ -21,6 +21,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
+        metadata_folder: str,
         camera_name: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
@@ -28,6 +29,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.camera_name = camera_name
+        self.metadata_folder = metadata_folder
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         raise ValueError("Loading from directoy does not support ego pose!")
@@ -52,6 +54,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
             settings=self.settings,
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
+            metadata_folder=self.metadata_folder,
         )
 
     def _decode_camera_sensor_frame(

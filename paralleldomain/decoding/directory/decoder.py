@@ -15,6 +15,7 @@ from paralleldomain.utilities.any_path import AnyPath
 
 IMAGE_FOLDER_NAME = "image"
 SEMANTIC_SEGMENTATION_FOLDER_NAME = "semantic_segmentation"
+METADATA_FOLDER_NAME = "metadata"
 
 
 class DirectoryDatasetDecoder(DatasetDecoder):
@@ -25,6 +26,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
         semantic_segmentation_folder: Optional[str] = SEMANTIC_SEGMENTATION_FOLDER_NAME,
+        metadata_folder: Optional[str] = METADATA_FOLDER_NAME,
         camera_name: Optional[str] = "default",
         **kwargs,
     ):
@@ -34,6 +36,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
             settings=settings,
             image_folder=image_folder,
             semantic_segmentation_folder=semantic_segmentation_folder,
+            metadata_folder=metadata_folder,
             camera_name=camera_name,
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
@@ -41,6 +44,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self.class_map = class_map
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
+        self.metadata_folder = metadata_folder
         self.camera_name = camera_name
         dataset_name = "-".join(list([dataset_path]))
         super().__init__(dataset_name=dataset_name, settings=settings)
@@ -53,6 +57,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
             settings=self.settings,
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
+            metadata_folder=self.metadata_folder,
             camera_name=self.camera_name,
         )
 
@@ -89,6 +94,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
+        metadata_folder: str,
         camera_name: str,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
@@ -96,6 +102,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         self._class_map = class_map
         self._image_folder = image_folder
         self._semantic_segmentation_folder = semantic_segmentation_folder
+        self._metadata_folder = metadata_folder
         self._camera_name = camera_name
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
@@ -130,6 +137,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
             settings=self.settings,
             image_folder=self._image_folder,
             semantic_segmentation_folder=self._semantic_segmentation_folder,
+            metadata_folder=self._metadata_folder,
         )
 
     def _create_lidar_sensor_decoder(
@@ -145,6 +153,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
             settings=self.settings,
             image_folder=self._image_folder,
             semantic_segmentation_folder=self._semantic_segmentation_folder,
+            metadata_folder=self._metadata_folder,
             camera_name=self._camera_name,
         )
 

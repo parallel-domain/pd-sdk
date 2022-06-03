@@ -62,8 +62,8 @@ SensorDataTypes = Union[
 
 
 class FilePathedDataType:
-    """Allows to get type-safe access to data types that may have a file lnked to them,
-     e.g., annotation data, images and point clouds.
+    """Allows to get type-safe access to data types that may have a file linked to them,
+    e.g., annotation data, images and point clouds.
 
     Attributes:
         BoundingBoxes2D
@@ -97,7 +97,6 @@ class FilePathedDataType:
             if image_file_path is not None:
                 with image_file_path.open("r"):
                     # do something
-
     """
 
     Image: Type[Image] = Image  # noqa: F811

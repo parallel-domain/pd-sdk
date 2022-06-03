@@ -23,6 +23,7 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
         data: Union[AnyPath, BoundingBoxes3D],
         scene_output_path: AnyPath,
         sim_offset: float,
+        save_binary: bool,
     ):
 
         output_path = self.get_file_output_path(
@@ -30,7 +31,7 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
             sim_offset=sim_offset,
             target_sensor_name=pipeline_item.target_sensor_name,
             timestamp=pipeline_item.sensor_frame.date_time,
-            file_suffix="json",
+            file_suffix="json" if not save_binary else "bin",
             directory_name=DirectoryName.BOUNDING_BOX_3D,
             scene_output_path=scene_output_path,
         )
@@ -40,7 +41,7 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
         else:
             annotations = [self.encode_bounding_box_3d(b) for b in data.boxes]
             boxes3d_dto = annotations_pb2.BoundingBox3DAnnotations(annotations=annotations)
-            output_path = str(fsio.write_json_message(obj=boxes3d_dto, path=output_path, append_sha1=True))
+            output_path = str(fsio.write_message(obj=boxes3d_dto, path=output_path, append_sha1=True))
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.BoundingBoxes3D])

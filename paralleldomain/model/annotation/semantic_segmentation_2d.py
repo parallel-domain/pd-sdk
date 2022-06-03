@@ -12,7 +12,7 @@ class SemanticSegmentation2D(Annotation):
     """Represents a 2D Semantic Segmentation mask for a camera image.
 
     Args:
-        class_ids: :attr:`~.SemanticSegmentation2D.class_ids`
+        class_ids: :attr:`paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.class_ids`
 
     Attributes:
         class_ids: Matrix of shape `(H x W x 1)`, where `H` is height and `W` is width of corresponding camera image.
@@ -47,7 +47,8 @@ class SemanticSegmentation2D(Annotation):
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Outputs :attr:`~.SemanticSegmentation.class_ids` mask as RGB-encoded image matrix with shape `(H x W x 3)`,
+        """Outputs :attr:`paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation.class_ids` mask
+        as RGB-encoded image matrix with shape `(H x W x 3)`,
         with `R` (index: 0) being the lowest and `B` (index: 2) being the highest 8 bit."""
         return encode_int32_as_rgb8(mask=self.class_ids)
 
