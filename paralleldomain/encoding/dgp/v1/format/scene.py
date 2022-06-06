@@ -46,6 +46,7 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         {
             CameraModel.OPENCV_PINHOLE: 0,
             CameraModel.OPENCV_FISHEYE: 1,
+            CameraModel.PD_FISHEYE: 3,
         },
     )
 
