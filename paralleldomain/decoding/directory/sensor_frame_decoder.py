@@ -9,7 +9,7 @@ from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, Sem
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image
+from paralleldomain.utilities.fsio import read_image, read_json
 
 T = TypeVar("T")
 
@@ -23,11 +23,13 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
+        metadata_folder: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
         self._image_folder = image_folder
         self._semantic_segmentation_folder = semantic_segmentation_folder
+        self._metadata_folder = metadata_folder
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         return None
@@ -55,7 +57,8 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         }
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
-        return dict()
+        metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
+        return read_json(metadata_path)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> None:
         return None

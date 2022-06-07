@@ -55,15 +55,20 @@ class DGPV1EncodingFormat(
         target_dataset_name: Optional[str],
         inplace: bool,
         sim_offset: float = 0.01 * 5,
+        encode_to_binary: bool = False,
     ):
         super().__init__()
+        self.encode_to_binary = encode_to_binary
         self.inplace = inplace
         self.target_dataset_name = target_dataset_name
         self.sim_offset = sim_offset
         self.dataset_output_path = dataset_output_path
 
     def supports_copy(self, pipeline_item: ScenePipelineItem, data_type: DataType, data_path: AnyPath):
+        suffix = data_path.suffix
         if pipeline_item.dataset_format == "dgpv1":
+            if (suffix == ".json" and self.encode_to_binary) or (suffix == ".bin" and not self.encode_to_binary):
+                return False
             return True
         elif pipeline_item.dataset_format == "dgp":
             if data_type in [
@@ -90,6 +95,7 @@ class DGPV1EncodingFormat(
                 data=data,
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
+                save_binary=self.encode_to_binary,
             )
         elif data_type == AnnotationTypes.BoundingBoxes3D:
             self.save_boxes_3d_and_write_state(
@@ -97,6 +103,7 @@ class DGPV1EncodingFormat(
                 data=data,
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
+                save_binary=self.encode_to_binary,
             )
         elif data_type == Image:
             self.save_image_and_write_state(
@@ -146,6 +153,7 @@ class DGPV1EncodingFormat(
                 pipeline_item=pipeline_item,
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
+                save_binary=self.encode_to_binary,
             )
         elif data_type == AnnotationTypes.Polygons2D:
             self.save_polygons_2d_and_write_state(
@@ -153,6 +161,7 @@ class DGPV1EncodingFormat(
                 pipeline_item=pipeline_item,
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
+                save_binary=self.encode_to_binary,
             )
         elif data_type == AnnotationTypes.Polylines2D:
             self.save_polyline_2d_and_write_state(
@@ -160,6 +169,7 @@ class DGPV1EncodingFormat(
                 pipeline_item=pipeline_item,
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
+                save_binary=self.encode_to_binary,
             )
         elif data_type == AnnotationTypes.SceneFlow:
             self.save_scene_flow_and_write_state(
@@ -206,11 +216,14 @@ class DGPV1EncodingFormat(
         self.aggregate_sensor_frame(pipeline_item=pipeline_item)
 
     def save_scene(self, pipeline_item: ScenePipelineItem, data: Any = None):
-        self.save_aggregated_scene(pipeline_item=pipeline_item, dataset_output_path=self.dataset_output_path)
+        self.save_aggregated_scene(
+            pipeline_item=pipeline_item, dataset_output_path=self.dataset_output_path, save_binary=self.encode_to_binary
+        )
 
     def save_dataset(self, pipeline_item: ScenePipelineItem, data: Any = None):
         self.save_aggregated_dataset(
             pipeline_item=pipeline_item,
             dataset_output_path=self.dataset_output_path,
             target_dataset_name=self.target_dataset_name,
+            save_binary=self.encode_to_binary,
         )

@@ -10,7 +10,7 @@ class InstanceSegmentation3D(Annotation):
     """Represents a 3D Instance Segmentation mask for a point cloud.
 
     Args:
-        instance_ids: :attr:`~.InstanceSegmentation3D.instance_ids`
+        instance_ids: :attr:`paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D.instance_ids`  # noqa: E501
 
     Attributes:
         instance_ids: 2D Matrix of size `(N x 1)`, where `N` is the length of the corresponding point cloud.

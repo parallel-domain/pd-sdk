@@ -66,7 +66,8 @@ from paralleldomain.model.radar_point_cloud import RadarPointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json_message, read_npz, read_png
+
+from paralleldomain.utilities.fsio import read_image, read_json_str, read_message, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -300,7 +301,9 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_calibration(self, scene_name: str, calibration_key: str) -> sample_pb2.SampleCalibration:
         calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.json"
-        return read_json_message(obj=sample_pb2.SampleCalibration(), path=calibration_path)
+        if not calibration_path.exists():
+            calibration_path = self._dataset_path / scene_name / "calibration" / f"{calibration_key}.bin"
+        return read_message(obj=sample_pb2.SampleCalibration(), path=calibration_path)
 
     def _decode_extrinsic_calibration(
         self, scene_name: str, calibration_key: str, sensor_name: SensorName
@@ -356,13 +359,13 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self, scene_name: str, annotation_identifier: str
     ) -> annotations_pb2.BoundingBox3DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        return read_json_message(obj=annotations_pb2.BoundingBox3DAnnotations(), path=annotation_path)
+        return read_message(obj=annotations_pb2.BoundingBox3DAnnotations(), path=annotation_path)
 
     def _decode_bounding_boxes_2d(
         self, scene_name: str, annotation_identifier: str
     ) -> annotations_pb2.BoundingBox2DAnnotations:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        return read_json_message(obj=annotations_pb2.BoundingBox2DAnnotations(), path=annotation_path)
+        return read_message(obj=annotations_pb2.BoundingBox2DAnnotations(), path=annotation_path)
 
     def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -459,7 +462,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_polygons_2d(self, scene_name: str, annotation_identifier: str) -> List[Polygon2D]:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        poly_annotations = read_json_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
+        poly_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
         polygons = list()
         for annotation in poly_annotations.annotations:
             attributes = _decode_attributes(attributes=annotation.attributes)
@@ -473,7 +476,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_polylines_2d(self, scene_name: str, annotation_identifier: str) -> List[Polyline2D]:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        poly_annotations = read_json_message(obj=annotations_pb2.KeyLine2DAnnotations(), path=annotation_path)
+        poly_annotations = read_message(obj=annotations_pb2.KeyLine2DAnnotations(), path=annotation_path)
         polylines = list()
         for annotation in poly_annotations.annotations:
             attributes = _decode_attributes(attributes=annotation.attributes)
@@ -490,7 +493,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_points_2d(self, scene_name: str, annotation_identifier: str) -> List[Point2D]:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        poly_annotations = read_json_message(obj=annotations_pb2.KeyPoint2DAnnotations(), path=annotation_path)
+        poly_annotations = read_message(obj=annotations_pb2.KeyPoint2DAnnotations(), path=annotation_path)
         points = list()
         for annotation in poly_annotations.annotations:
             attributes = _decode_attributes(attributes=annotation.attributes)

@@ -168,6 +168,42 @@ def read_binary_message(obj: TMessage, path: AnyPath) -> TMessage:
     return obj
 
 
+def read_message(
+    obj: TMessage, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
+) -> TMessage:
+    if str(path).endswith(".json"):
+        return read_json_message(
+            path=path, obj=obj, ignore_unknown_fields=ignore_unknown_fields, descriptor_pool=descriptor_pool
+        )
+    else:
+        return read_binary_message(obj=obj, path=path)
+
+
+def write_message(
+    obj: Message,
+    path: AnyPath,
+    append_sha1: bool = False,
+    including_default_value_fields: bool = True,
+    preserving_proto_field_name: bool = True,
+    use_integer_for_enums: bool = False,
+    float_precision: int = None,
+    descriptor_pool: DescriptorPool = None,
+) -> TMessage:
+    if str(path).endswith(".json"):
+        return write_json_message(
+            path=path,
+            obj=obj,
+            append_sha1=append_sha1,
+            descriptor_pool=descriptor_pool,
+            including_default_value_fields=including_default_value_fields,
+            preserving_proto_field_name=preserving_proto_field_name,
+            use_integer_for_enums=use_integer_for_enums,
+            float_precision=float_precision,
+        )
+    else:
+        return write_binary_message(obj=obj, path=path, append_sha1=append_sha1)
+
+
 def write_json_message(
     obj: Message,
     path: AnyPath,
@@ -206,6 +242,34 @@ def write_json_message(
 
     with path.open("w") as fp:
         fp.write(json_obj)
+
+    logger.debug(f"Finished writing {str(path)}")
+
+    return path
+
+
+def write_binary_message(
+    obj: Message,
+    path: AnyPath,
+    append_sha1: bool = False,
+) -> AnyPath:
+    enc_str = obj.SerializeToString(deterministic=True)
+
+    if append_sha1:
+        # noinspection InsecureHash
+        json_obj_sha1 = hashlib.sha1(enc_str).hexdigest()
+        filename_sha1 = (
+            f"{json_obj_sha1}{path.stem}"
+            if path.stem == path.name  # only extension given, no filestem
+            else f"{path.stem}_{json_obj_sha1}{''.join(path.suffixes)}"
+        )
+        new_path = AnyPath(path.parts[0])
+        for p in path.parts[1:-1]:
+            new_path = new_path / p
+        path = new_path / filename_sha1
+
+    with path.open("wb") as fp:
+        fp.write(enc_str)
 
     logger.debug(f"Finished writing {str(path)}")
 
