@@ -700,6 +700,19 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         rpc_data = read_npz(path=cloud_path, files="data")
         return rpc_data
 
+    @lru_cache(maxsize=1)
+    def _decode_radar_energy_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
+        energy_data = read_npz(path=cloud_path, files="rd_energy_map")
+        return energy_data
+
+    def _decode_radar_range_doppler_energy_map(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> Optional[np.ndarray]:
+        rd_data = self._decode_radar_energy_data(sensor_name=sensor_name, frame_id=frame_id)
+        return rd_data
+
     def _has_radar_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.HasField("radar_point_cloud")
@@ -723,8 +736,47 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
     def _decode_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return None
 
-    def _decode_radar_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        fields = [RadarPointFormat.I]
+    def _decode_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.POWER]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.RANGE]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.AZ]
+        radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
+        radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+
+        if all(f in radar_point_cloud_format for f in fields):
+            return rec2array(
+                rec=radar_point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.EL]
         radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
         radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
 
@@ -758,7 +810,7 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
             return rec2array(
                 rec=radar_point_cloud_data,
                 fields=fields,
-            ).astype(np.uint32)
+            ).astype(np.float32)
         else:
             return None
 

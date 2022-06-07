@@ -67,19 +67,29 @@ class Frame(Generic[TDateTime]):
         return self._decoder.get_ego_frame(frame_id=self.frame_id)
 
     def get_camera(self, camera_name: SensorName) -> CameraSensorFrame[TDateTime]:
+        if camera_name not in self.camera_names:
+            raise ValueError(f"Camera {camera_name} could not be found.")
         return self._decoder.get_camera_sensor_frame(frame_id=self.frame_id, sensor_name=camera_name)
 
     def get_lidar(self, lidar_name: SensorName) -> LidarSensorFrame[TDateTime]:
+        if lidar_name not in self.lidar_names:
+            raise ValueError(f"LiDAR {lidar_name} could not be found.")
         return self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=lidar_name)
 
     def get_radar(self, radar_name: SensorName) -> RadarSensorFrame[TDateTime]:
+        if radar_name not in self.radar_names:
+            raise ValueError(f"LiDAR {radar_name} could not be found.")
         return self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=radar_name)
 
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame[TDateTime]:
         if sensor_name in self.camera_names:
             return self.get_camera(camera_name=sensor_name)
-        else:
+        elif sensor_name in self.lidar_names:
             return self.get_lidar(lidar_name=sensor_name)
+        elif sensor_name in self.radar_names:
+            return self.get_radar(radar_name=sensor_name)
+        else:
+            raise ValueError(f"Sensor {sensor_name} could not be found.")
 
     @property
     def sensor_names(self) -> List[SensorName]:

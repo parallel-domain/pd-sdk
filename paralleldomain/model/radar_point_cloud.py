@@ -29,7 +29,22 @@ class RadarPointCloud:
 
     @property
     @abc.abstractmethod
-    def intensity(self) -> np.ndarray:
+    def power(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def range(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def azimuth(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def elevation(self) -> np.ndarray:
         pass
 
     @property
@@ -44,13 +59,20 @@ class RadarPointCloud:
 
     @property
     def xyz_i(self) -> np.ndarray:
-        return np.concatenate((self.xyz, self.intensity), axis=1)
+        return np.concatenate((self.xyz, self.power), axis=1)
 
     @property
     def xyz_one(self) -> np.ndarray:
         xyz_data = self.xyz
         one_data = np.ones((len(xyz_data), 1))
         return np.concatenate((xyz_data, one_data), axis=1)
+
+
+class RangeDopplerMap:
+    @property
+    @abc.abstractmethod
+    def energy_map(self) -> np.ndarray:
+        pass
 
 
 class RadarPointCloudDecoderProtocol(Protocol):
@@ -66,10 +88,24 @@ class RadarPointCloudDecoderProtocol(Protocol):
     def get_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def get_radar_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def get_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    def get_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    def get_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    def get_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     def get_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+
+class RadarRangeDopplerMapDecoderProtocol(Protocol):
+    def get_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         pass
 
 
@@ -82,7 +118,10 @@ class DecoderRadarPointCloud(RadarPointCloud):
         self._xyz = None
         self._rgb = None
         self._doppler = None
-        self._intensity = None
+        self._power = None
+        self._range = None
+        self._azimuth = None
+        self._elevation = None
         self._ts = None
 
     @property
@@ -106,12 +145,36 @@ class DecoderRadarPointCloud(RadarPointCloud):
         return self._rgb
 
     @property
-    def intensity(self) -> Optional[np.ndarray]:
-        if self._intensity is None:
-            self._intensity = self._decoder.get_radar_point_cloud_intensity(
+    def power(self) -> Optional[np.ndarray]:
+        if self._power is None:
+            self._power = self._decoder.get_radar_point_cloud_power(
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
-        return self._intensity
+        return self._power
+
+    @property
+    def range(self) -> Optional[np.ndarray]:
+        if self._range is None:
+            self._range = self._decoder.get_radar_point_cloud_range(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._range
+
+    @property
+    def azimuth(self) -> Optional[np.ndarray]:
+        if self._azimuth is None:
+            self._azimuth = self._decoder.get_radar_point_cloud_azimuth(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._azimuth
+
+    @property
+    def elevation(self) -> Optional[np.ndarray]:
+        if self._elevation is None:
+            self._elevation = self._decoder.get_radar_point_cloud_elevation(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._elevation
 
     @property
     def ts(self) -> Optional[np.ndarray]:
@@ -128,3 +191,19 @@ class DecoderRadarPointCloud(RadarPointCloud):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._doppler
+
+
+class DecoderRangeDopplerMap(RangeDopplerMap):
+    def __init__(self, decoder: RadarRangeDopplerMapDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
+        self.frame_id = frame_id
+        self.sensor_name = sensor_name
+        self._decoder = decoder
+        self._energy_map = None
+
+    @property
+    def energy_map(self) -> np.ndarray:
+        if self._energy_map is None:
+            self._energy_map = self._decoder.get_range_doppler_energy_map(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._energy_map
