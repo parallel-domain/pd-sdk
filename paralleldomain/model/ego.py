@@ -12,7 +12,7 @@ class EgoPose(Transformation):
 
 class EgoFrame:
     """
-    This Objects contains information the ego-object's world pose within a given frame.
+    This Objects contains information about the ego-object's world pose within a given frame.
     """
 
     def __init__(self, pose_loader: Callable[[], EgoPose]):

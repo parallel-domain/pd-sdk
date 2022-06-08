@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="paralleldomain",
-    version="0.6.2",
+    version="0.7.0",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [

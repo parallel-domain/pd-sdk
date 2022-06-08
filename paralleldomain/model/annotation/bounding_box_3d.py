@@ -12,14 +12,14 @@ class BoundingBox3D(BoundingBox3DGeometry):
     """Represents a 3D Bounding Box geometry.
 
     Args:
-        pose: :attr:`~.BoundingBox3D.pose`
-        length: :attr:`~.BoundingBox3D.length`
-        width: :attr:`~.BoundingBox3D.width`
-        height: :attr:`~.BoundingBox3D.height`
-        class_id: :attr:`~.BoundingBox3D.class_id`
-        instance_id: :attr:`~.BoundingBox3D.instance_id`
-        num_points: :attr:`~.BoundingBox3D.num_points`
-        attributes: :attr:`~.BoundingBox3D.attributes`
+        pose: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose`
+        length: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length`
+        width: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width`
+        height: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height`
+        class_id: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id`
+        instance_id: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id`
+        num_points: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points`
+        attributes: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes`
 
     Attributes:
         pose: 6D Pose for box in 3D sensor space.
@@ -51,7 +51,7 @@ class BoundingBoxes3D(Annotation):
     """Collection of 3D Bounding Boxes
 
     Args:
-        boxes: :attr:`~.BoundingBoxes3D.boxes`
+        boxes: :attr:`paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.boxes`
 
     Attributes:
         boxes: Unordered list of :obj:`BoundingBox3D` instances

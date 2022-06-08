@@ -111,7 +111,7 @@ class DGPSceneEncoder(SceneEncoder):
             )
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
-            return self._encode_rgb(sensor_frame=sensor_frame, output_path=output_path)
+            return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
 
     def _encode_rgb(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
         return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)

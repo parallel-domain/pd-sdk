@@ -44,6 +44,8 @@ class AnnotationTypes:
         Points2D
         Polygons2D
         Polylines2D
+        PointCaches
+        BaseColor
 
     Examples:
         Access 2D Bounding Box annotations for a camera frame:
