@@ -51,6 +51,7 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
+from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -169,7 +170,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 for k, v in box_dto.attributes.items():
                     try:
                         attr_parsed[k] = ujson.loads(v)
-                    except (ValueError, JSONDecodeError):
+                    except (ValueError, JSONDecodeError, TypeError):
                         attr_parsed[k] = v
 
                 class_id = box_dto.class_id
@@ -224,6 +225,19 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
+        elif issubclass(annotation_type, MaterialProperties3D):
+            material_ids, roughness, metallic, specular, emissive, opacity, flags = self._decode_material_properties_3d(
+                scene_name=self.scene_name, annotation_identifier=identifier
+            )
+            return MaterialProperties3D(
+                material_ids=material_ids,
+                roughness=roughness,
+                metallic=metallic,
+                specular=specular,
+                emissive=emissive,
+                opacity=opacity,
+                flags=flags,
+            )
         elif issubclass(annotation_type, Albedo2D):
             color = self._decode_albedo_2d(scene_name=self.scene_name, annotation_identifier=identifier)
             return Albedo2D(color=color)
@@ -413,6 +427,27 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return decoded_norms
 
+    def _decode_material_properties_3d(
+        self, scene_name: str, annotation_identifier: str
+    ) -> (np.ndarray, Dict[str, np.ndarray]):
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        try:
+            material_data = read_npz(path=annotation_path, files="material_properties")
+        except KeyError:  # Temporary solution
+            material_data = read_npz(
+                path=annotation_path, files="surface_properties"
+            )  # TODO: Replace with `material_properties`
+
+        material_ids = np.round(material_data[:, 6].reshape(-1, 1) * 255).astype(int)
+        roughness = material_data[:, 0].reshape(-1, 1)
+        metallic = material_data[:, 1].reshape(-1, 1)
+        specular = material_data[:, 2].reshape(-1, 1)
+        emissive = material_data[:, 3].reshape(-1, 1)
+        opacity = material_data[:, 4].reshape(-1, 1)
+        flags = material_data[:, 5].reshape(-1, 1)
+
+        return material_ids, roughness, metallic, specular, emissive, opacity, flags
+
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
         if data_type in annotation_identifiers:
@@ -431,7 +466,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecoder[datetime]):
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return (datum.image.height, datum.image.width, datum.image.channels)
+        return datum.image.height, datum.image.width, datum.image.channels
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)

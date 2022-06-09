@@ -85,7 +85,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
         self._scene: Scene = self._unordered_scene
-        self._reference_timestamp: datetime = self._scene.get_frame(self._frame_ids[0]).date_time
+        self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
         self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
 
     def _offset_timestamp(self, compare_datetime: datetime) -> float:
@@ -340,6 +340,81 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
 
+    def _process_surface_normals_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.SURFACE_NORMALS_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                / DirectoryName.SURFACE_NORMALS_3D
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_surface_normals_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_surface_normals_3d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        surface_normals = sensor_frame.get_annotations(AnnotationTypes.SurfaceNormals3D)
+        return self._run_async(func=fsio.write_npz, obj=dict(surface_normals=surface_normals.normals), path=output_path)
+
+    def _process_material_properties_3d(
+        self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
+    ) -> Future:
+        output_path = (
+            self._output_path
+            / DirectoryName.MATERIAL_PROPERTIES_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+        )
+
+        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+            input_path = (
+                self._dataset._decoder._dataset_path
+                / self._scene.name
+                # / DirectoryName.MATERIAL_PROPERTIES_3D
+                / "surface_properties_3d/"  # replace with line above later
+                / sensor_frame.sensor_name
+                / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100):018d}.npz"  # noqa: E501
+            )
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_material_properties_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_material_properties_3d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        material_properties = sensor_frame.get_annotations(AnnotationTypes.MaterialProperties3D)
+
+        material_ids = material_properties.material_ids
+
+        material_properties_out = np.zeroes(shape=(len(material_ids), 7)).astype(np.float32)
+        material_properties_out[6] = material_ids.astype(np.float32) / 255
+        if material_properties.roughness is not None:
+            material_properties_out[0] = material_properties.roughness
+        if material_properties.metallic is not None:
+            material_properties_out[0] = material_properties.metallic
+        if material_properties.specular is not None:
+            material_properties_out[0] = material_properties.specular
+        if material_properties.emissive is not None:
+            material_properties_out[0] = material_properties.emissive
+        if material_properties.opacity is not None:
+            material_properties_out[0] = material_properties.opacity
+        if material_properties.flags is not None:
+            material_properties_out[0] = material_properties.flags
+
+        return self._run_async(
+            func=fsio.write_npz, obj=dict(surface_properties=material_properties_out), path=output_path
+        )
+
     def _process_instance_segmentation_3d(
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
@@ -564,8 +639,15 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.Depth in lidar_frame.available_annotation_types
                 and AnnotationTypes.Depth in self._annotation_types
                 else None,
-                "7": None,  # surface_normals_3d
+                "7": self._process_surface_normals_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.SurfaceNormals3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.SurfaceNormals3D in self._annotation_types
+                else None,
                 "9": None,  # motion_vectors_3d
+                "15": self._process_material_properties_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.MaterialProperties3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.MaterialProperties3D in self._annotation_types
+                else None,
             },
             sensor_data={
                 "point_cloud": self._process_point_cloud(sensor_frame=lidar_frame, fs_copy=True),
@@ -812,5 +894,13 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.InstanceSegmentation3D in self._annotation_types:
                     (self._output_path / DirectoryName.INSTANCE_SEGMENTATION_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
+                    (self._output_path / DirectoryName.SURFACE_NORMALS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.MaterialProperties3D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
