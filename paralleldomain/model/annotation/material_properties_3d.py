@@ -14,6 +14,7 @@ class MaterialProperties3D(Annotation):
 
     Args:
         material_ids: :attr:`~.MaterialProperties3D.material_ids`
+        roughness: :attr:`~.MaterialProperties3D.roughness`
         metallic: :attr:`~.MaterialProperties3D.metallic`
         specular: :attr:`~.MaterialProperties3D.specular`
         emissive: :attr:`~.MaterialProperties3D.emissive`
@@ -24,7 +25,7 @@ class MaterialProperties3D(Annotation):
         material_ids: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material ID for each point as `int`.
         roughness: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
-            The second axis contains the material's roughess value for each point as `float`.
+            The second axis contains the material's roughness value for each point as `float`.
         specular: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material's specular value for each point as `float`.
         emissive: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
@@ -33,9 +34,6 @@ class MaterialProperties3D(Annotation):
             The second axis contains the material's opacity value for each point as `float`.
         flag: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains special flags for each point encoded as `float`.
-
-
-
     """
 
     material_ids: np.ndarray
