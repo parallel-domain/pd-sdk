@@ -78,7 +78,7 @@ class Frame(Generic[TDateTime]):
 
     def get_radar(self, radar_name: SensorName) -> RadarSensorFrame[TDateTime]:
         if radar_name not in self.radar_names:
-            raise ValueError(f"LiDAR {radar_name} could not be found.")
+            raise ValueError(f"Radar {radar_name} could not be found.")
         return self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=radar_name)
 
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame[TDateTime]:
