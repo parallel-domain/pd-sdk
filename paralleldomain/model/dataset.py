@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Generator, Iterable, List, Optional, Set, TypeVar, Union
 
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -209,6 +209,24 @@ class Dataset:
         names = set()
         for scene in self.unordered_scenes.values():
             names.update(scene.lidar_names)
+        return names
+
+    @property
+    def radar_frames(self) -> Generator[RadarSensorFrame[Optional[datetime]], None, None]:
+        """
+        Returns a generator that yields all RadarSensorFrames of all the unordered scenes in this dataset.
+        """
+        for scene in self.unordered_scenes.values():
+            yield from scene.radar_frames
+
+    @property
+    def radar_names(self) -> Set[SensorName]:
+        """
+        Returns the names of all Radar sensors across all scenes in this dataset.
+        """
+        names = set()
+        for scene in self.unordered_scenes.values():
+            names.update(scene.radar_names)
         return names
 
     @property
