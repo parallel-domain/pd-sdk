@@ -1,15 +1,11 @@
 from typing import Any, Dict, List, Tuple, TypeVar
 
-import numpy as np
 import imagesize
+import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
-from paralleldomain.model.annotation import (
-    AnnotationType,
-    AnnotationTypes,
-    SemanticSegmentation2D,
-)
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, SemanticSegmentation2D
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath

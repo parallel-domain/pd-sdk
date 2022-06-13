@@ -1,11 +1,12 @@
 import abc
+from typing import Optional
 
 import numpy as np
 
 from paralleldomain.model.type_aliases import FrameId, SensorName
 
 try:
-    from typing import Optional, Protocol
+    from typing import Protocol
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 

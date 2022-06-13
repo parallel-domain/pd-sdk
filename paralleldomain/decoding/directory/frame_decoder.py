@@ -2,17 +2,19 @@ from typing import List
 
 import numpy as np
 
-from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
+from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
+from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder, \
+    RadarSensorFrameDecoder
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
 
 class DirectoryFrameDecoder(FrameDecoder[None]):
+
     def __init__(
         self,
         dataset_name: str,
@@ -32,7 +34,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         self.metadata_folder = metadata_folder
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
-        raise ValueError("Loading from directoy does not support ego pose!")
+        raise ValueError("Loading from directory does not support ego pose!")
 
     def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
         return [self.camera_name]
@@ -41,7 +43,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         return [self.camera_name]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        raise ValueError("Loading from directoy does not support lidar data!")
+        raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_datetime(self, frame_id: FrameId) -> None:
         return None
@@ -63,9 +65,19 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         return CameraSensorFrame[None](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[None]:
-        raise ValueError("Loading from directoy does not support lidar data!")
+        raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[None]:
         raise ValueError("Loading from directoy does not support lidar data!")
+
+    def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+        raise ValueError("Loading from directory does not support radar data!")
+
+    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
+        raise ValueError("Loading from directory does not support radar data!")
+
+    def _decode_radar_sensor_frame(self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId,
+                                   sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
+        raise ValueError("Loading from directory does not support radar data!")

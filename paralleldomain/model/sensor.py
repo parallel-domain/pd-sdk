@@ -5,6 +5,13 @@ import numpy as np
 
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
+from paralleldomain.model.radar_point_cloud import (
+    DecoderRadarPointCloud,
+    RadarPointCloud,
+    DecoderRangeDopplerMap,
+    RangeDopplerMap,
+    RadarPointCloudDecoderProtocol,
+)
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
 
@@ -278,6 +285,10 @@ class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Poi
     ...
 
 
+class RadarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], RadarPointCloudDecoderProtocol):
+    ...
+
+
 class LidarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
@@ -291,6 +302,25 @@ class LidarSensorFrame(SensorFrame[TDateTime]):
     @property
     def point_cloud(self) -> PointCloud:
         return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+
+class RadarSensorFrame(SensorFrame[TDateTime]):
+    def __init__(
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        decoder: RadarSensorFrameDecoderProtocol[TDateTime],
+    ):
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self._decoder = decoder
+
+    @property
+    def radar_point_cloud(self) -> RadarPointCloud:
+        return DecoderRadarPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def radar_range_doppler_map(self) -> RangeDopplerMap:
+        return DecoderRangeDopplerMap(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
 
 
 class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):
@@ -380,6 +410,11 @@ class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
     @property
     def sensor_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
         return (self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids)
+
+
+class RadarSensor(Sensor[RadarSensorFrame[TDateTime]]):
+    def get_frame(self, frame_id: FrameId) -> RadarSensorFrame[TDateTime]:
+        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
 
 
 class SensorPose(Transformation):

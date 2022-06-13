@@ -1,6 +1,6 @@
 import abc
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 
@@ -306,4 +306,168 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
 
     @abc.abstractmethod
     def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+
+class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
+    def get_radar_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_size"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_xyz"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_xyz(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_rgb"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_rgb(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_power"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_power(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_power(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_range"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_range(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_range(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_azimuth"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_azimuth(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_azimuth(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_elevation"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_elevation(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_elevation(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_timestamp"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_timestamp(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_radar_point_cloud_doppler(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_doppler"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_doppler(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_doppler(sensor_name=sensor_name, frame_id=frame_id)
+
+    def get_range_doppler_energy_map(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_range_doppler_energy_map"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id)
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_doppler(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_range_doppler_energy_map(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> Optional[np.ndarray]:
         pass

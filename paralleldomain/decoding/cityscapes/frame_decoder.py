@@ -5,9 +5,13 @@ import numpy as np
 from paralleldomain.decoding.cityscapes.sensor_frame_decoder import CityscapesCameraSensorFrameDecoder
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -60,3 +64,15 @@ class CityscapesFrameDecoder(FrameDecoder[None]):
         self, decoder: LidarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[None]:
         raise ValueError("Cityscapes does not contain lidar data!")
+
+    def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+        """Not supported yet"""
+        return list()
+
+    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[None]:
+        raise ValueError("Cityscapes does not contain radar data!")
+
+    def _decode_radar_sensor_frame(
+        self, decoder: RadarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
+    ) -> RadarSensorFrame[None]:
+        raise ValueError("Cityscapes does not contain radar data!")

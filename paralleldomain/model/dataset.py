@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Generator, Iterable, List, Optional, Set, TypeVar, Union
 
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, SensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -84,6 +84,7 @@ class Dataset:
         self._decoder = decoder
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
+        self._number_of_radar_frames = None
 
     @property
     def unordered_scene_names(self) -> List[SceneName]:
@@ -212,12 +213,31 @@ class Dataset:
         return names
 
     @property
+    def radar_frames(self) -> Generator[RadarSensorFrame[Optional[datetime]], None, None]:
+        """
+        Returns a generator that yields all RadarSensorFrames of all the unordered scenes in this dataset.
+        """
+        for scene in self.unordered_scenes.values():
+            yield from scene.radar_frames
+
+    @property
+    def radar_names(self) -> Set[SensorName]:
+        """
+        Returns the names of all Radar sensors across all scenes in this dataset.
+        """
+        names = set()
+        for scene in self.unordered_scenes.values():
+            names.update(scene.radar_names)
+        return names
+
+    @property
     def sensor_frames(self) -> Generator[SensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yields all SensorFrames (Lidar and Camera) of all the unordered scenes in this dataset.
         """
         yield from self.camera_frames
         yield from self.lidar_frames
+        yield from self.radar_frames
 
     @property
     def number_of_camera_frames(self) -> int:
@@ -236,5 +256,13 @@ class Dataset:
         return self._number_of_lidar_frames
 
     @property
+    def number_of_radar_frames(self) -> int:
+        if self._number_of_radar_frames is None:
+            self._number_of_radar_frames = 0
+            for scene in self.unordered_scenes.values():
+                self._number_of_radar_frames += scene.number_of_radar_frames
+        return self._number_of_radar_frames
+
+    @property
     def number_of_sensor_frames(self) -> int:
-        return self.number_of_lidar_frames + self.number_of_camera_frames
+        return self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames
