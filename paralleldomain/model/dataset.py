@@ -84,6 +84,7 @@ class Dataset:
         self._decoder = decoder
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
+        self._number_of_radar_frames = None
 
     @property
     def unordered_scene_names(self) -> List[SceneName]:
@@ -236,6 +237,7 @@ class Dataset:
         """
         yield from self.camera_frames
         yield from self.lidar_frames
+        yield from self.radar_frames
 
     @property
     def number_of_camera_frames(self) -> int:
@@ -254,5 +256,13 @@ class Dataset:
         return self._number_of_lidar_frames
 
     @property
+    def number_of_radar_frames(self) -> int:
+        if self._number_of_radar_frames is None:
+            self._number_of_radar_frames = 0
+            for scene in self.unordered_scenes.values():
+                self._number_of_radar_frames += scene.number_of_radar_frames
+        return self._number_of_radar_frames
+
+    @property
     def number_of_sensor_frames(self) -> int:
-        return self.number_of_lidar_frames + self.number_of_camera_frames
+        return self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames

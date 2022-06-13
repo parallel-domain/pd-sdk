@@ -13,9 +13,13 @@ from paralleldomain.decoding.nuscenes.sensor_frame_decoder import (
     NuScenesLidarSensorFrameDecoder,
 )
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -98,3 +102,15 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
         return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+
+    def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+        """Not supported yet"""
+        return list()
+
+    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
+        raise ValueError("Currently do not support radar data!")
+
+    def _decode_radar_sensor_frame(
+        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+    ) -> RadarSensorFrame[TDateTime]:
+        raise ValueError("Currently do not support radar data!")
