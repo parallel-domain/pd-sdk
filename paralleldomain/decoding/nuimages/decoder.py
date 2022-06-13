@@ -9,7 +9,7 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.nuimages.common import NUIMAGES_CLASSES, NuImagesDataAccessMixin, load_table
 from paralleldomain.decoding.nuimages.frame_decoder import NuImagesFrameDecoder
 from paralleldomain.decoding.nuimages.sensor_decoder import NuImagesCameraSensorDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -167,3 +167,12 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids(scene_name=scene_name)}
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("NuImages does not contain radar data!")

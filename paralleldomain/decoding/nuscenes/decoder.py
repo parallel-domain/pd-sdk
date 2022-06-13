@@ -10,7 +10,7 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.nuscenes.common import NUSCENES_CLASSES, NuScenesDataAccessMixin, load_table
 from paralleldomain.decoding.nuscenes.frame_decoder import NuScenesFrameDecoder
 from paralleldomain.decoding.nuscenes.sensor_decoder import NuScenesCameraSensorDecoder, NuScenesLidarSensorDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -197,3 +197,12 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         scene_token = self.nu_scene_name_to_scene_token[scene_name]
         samples = self.nu_samples[scene_token]
         return {s["token"]: datetime.fromtimestamp(int(s["timestamp"]) / 1000000) for s in samples}
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("Currently do not support radar data!")

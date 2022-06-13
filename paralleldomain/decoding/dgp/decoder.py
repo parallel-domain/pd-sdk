@@ -13,7 +13,7 @@ from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneD
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.map_decoder import MapDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.umd.map_decoder import UMDDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -181,6 +181,15 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.point_cloud}))
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported in v0"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[TDateTime]:
+        raise ValueError("DGP V0 does not support radar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
