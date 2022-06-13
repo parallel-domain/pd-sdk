@@ -504,9 +504,13 @@ class IGraphMapQuery(MapQuery):
                     if successor != 0
                 ]
             )
-            if lane_segment.right_neighbor is not None:
+            if lane_segment.right_neighbor_id is not None and lane_segment.right_neighbor_id != 0:
                 lane_segment_edges_x_to_the_left_of_y.append(
-                    (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.right_neighbor.lane_segment_id}")
+                    (lane_segment_node_id, f"{NodePrefix.LANE_SEGMENT}_{lane_segment.right_neighbor_id}")
+                )
+            if lane_segment.left_neighbor_id is not None and lane_segment.left_neighbor_id != 0:
+                lane_segment_edges_x_to_the_left_of_y.append(
+                    (f"{NodePrefix.LANE_SEGMENT}_{lane_segment.left_neighbor_id}", lane_segment_node_id)
                 )
             if lane_segment.parent_road_segment_id is not None and lane_segment.parent_road_segment_id != 0:
                 lane_segment_edges_x_contains_y.append(
