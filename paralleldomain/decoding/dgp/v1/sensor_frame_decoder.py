@@ -724,7 +724,9 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return len(data)
 
-    def _decode_radar_fields(self, sensor_name: SensorName, frame_id: FrameId, fields: List[str] , field_type: type) -> Optional[np.ndarray]:
+    def _decode_radar_fields(
+        self, sensor_name: SensorName, frame_id: FrameId, fields: List[str], field_type: type
+    ) -> Optional[np.ndarray]:
         radar_point_cloud_format = self._decode_radar_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
         if all(f in radar_point_cloud_format for f in fields):
             radar_point_cloud_data = self._decode_radar_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
@@ -744,15 +746,15 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
 
     def _decode_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.POWER]
-        return self._decode_radar_fields(sensor_name,frame_id,fields,field_type=np.float32)
+        return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)
 
     def _decode_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.RANGE]
-        return self._decode_radar_fields(sensor_name, frame_id, fields,field_type=np.float32)
+        return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)
 
     def _decode_radar_point_cloud_azimuth(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.AZ]
-        return self._decode_radar_fields(sensor_name, frame_id, fields,field_type=np.float32)
+        return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)
 
     def _decode_radar_point_cloud_elevation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.EL]

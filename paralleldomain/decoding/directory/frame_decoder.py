@@ -5,8 +5,11 @@ import numpy as np
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder, \
-    RadarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    LidarSensorFrameDecoder,
+    RadarSensorFrameDecoder,
+)
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -14,7 +17,6 @@ from paralleldomain.utilities.any_path import AnyPath
 
 
 class DirectoryFrameDecoder(FrameDecoder[None]):
-
     def __init__(
         self,
         dataset_name: str,
@@ -78,6 +80,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
         raise ValueError("Loading from directory does not support radar data!")
 
-    def _decode_radar_sensor_frame(self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId,
-                                   sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
+    def _decode_radar_sensor_frame(
+        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
+    ) -> RadarSensorFrame[TDateTime]:
         raise ValueError("Loading from directory does not support radar data!")
