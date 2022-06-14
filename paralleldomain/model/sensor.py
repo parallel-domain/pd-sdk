@@ -7,10 +7,10 @@ from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.model.radar_point_cloud import (
     DecoderRadarPointCloud,
-    RadarPointCloud,
     DecoderRangeDopplerMap,
-    RangeDopplerMap,
+    RadarPointCloud,
     RadarPointCloudDecoderProtocol,
+    RangeDopplerMap,
 )
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
@@ -220,16 +220,30 @@ class SensorFrame(Generic[TDateTime]):
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
-    def vehicle_to_world(self) -> Transformation:
+    def ego_to_world(self) -> Transformation:
         """
-        Alias for the pose property.
+        Transformation from ego to world coordinate system
         """
         return self.pose
 
     @property
-    def vehicle_to_sensor(self) -> Transformation:
+    def world_to_ego(self) -> Transformation:
         """
-        Alias for the extrinsic property.
+        Transformation from world to ego coordinate system
+        """
+        return self.pose.inverse
+
+    @property
+    def ego_to_sensor(self) -> Transformation:
+        """
+        Transformation from ego to sensor coordinate system
+        """
+        return self.extrinsic.inverse
+
+    @property
+    def sensor_to_ego(self) -> Transformation:
+        """
+        Transformation from sensor to ego coordinate system
         """
         return self.extrinsic
 
