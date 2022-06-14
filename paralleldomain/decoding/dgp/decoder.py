@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 class _DatasetDecoderMixin:
     def __init__(self, dataset_path: Union[str, AnyPath], **kwargs):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_dataset_dto = lru_cache(maxsize=1)(self._decode_dataset_dto)
 
     def _decode_scene_paths(self) -> List[Path]:
         dto = self._decode_dataset_dto()
@@ -39,7 +40,6 @@ class _DatasetDecoderMixin:
             for path in dto.scene_splits[split_key].filenames
         ]
 
-    @lru_cache(maxsize=1)
     def _decode_dataset_dto(self) -> DatasetDTO:
         dataset_cloud_path: AnyPath = self._dataset_path
         scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
@@ -129,6 +129,9 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_scene_dto = lru_cache(maxsize=1)(self._decode_scene_dto)
+        self._data_by_key_with_name = lru_cache(maxsize=1)(self._data_by_key_with_name)
+        self._sample_by_index = lru_cache(maxsize=1)(self._sample_by_index)
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -219,7 +222,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
         return iso8601.parse_date(sample.id.timestamp)
 
-    @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> SceneDTO:
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
@@ -234,12 +236,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = SceneDTO.from_dict(scene_data)
         return scene_dto
 
-    @lru_cache(maxsize=1)
     def _data_by_key_with_name(self, scene_name: str, data_name: str) -> Dict[str, SceneDataDTO]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {d.key: d for d in dto.data if d.id.name == data_name}
 
-    @lru_cache(maxsize=1)
     def _sample_by_index(self, scene_name: str) -> Dict[str, SceneSampleDTO]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {s.id.index: s for s in dto.samples}

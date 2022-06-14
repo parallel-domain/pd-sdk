@@ -30,6 +30,7 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.metadata_folder = metadata_folder
         self._class_map = class_map
+        self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         scene_images_folder = self.dataset_path / self.image_folder
@@ -40,7 +41,6 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
     ) -> CameraSensorFrame[None]:
         return CameraSensorFrame[None](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
-    @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
         return DirectoryCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,

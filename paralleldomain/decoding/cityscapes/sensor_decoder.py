@@ -16,6 +16,7 @@ class CityscapesCameraSensorDecoder(CameraSensorDecoder[None]):
     def __init__(self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
+        self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         frame_ids = set()
@@ -31,7 +32,6 @@ class CityscapesCameraSensorDecoder(CameraSensorDecoder[None]):
     ) -> CameraSensorFrame[None]:
         return CameraSensorFrame[None](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
-    @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
         return CityscapesCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,

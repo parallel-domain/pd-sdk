@@ -4,9 +4,9 @@ from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, decode_
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -78,6 +78,14 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("Cityscapes does not contain radar data!")
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         frame_ids = set()

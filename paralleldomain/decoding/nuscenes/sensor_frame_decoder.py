@@ -169,8 +169,8 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             scene_name=scene_name,
             settings=settings,
         )
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
         NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]

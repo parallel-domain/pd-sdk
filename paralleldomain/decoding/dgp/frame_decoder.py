@@ -33,6 +33,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
         self._ontologies = ontologies
+        self._data_by_key = lru_cache(maxsize=1)(self._data_by_key)
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         sensor_name = next(iter(self._decode_available_camera_names(frame_id=frame_id)), None)
@@ -53,7 +54,6 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         sample = self.scene_samples[frame_id]
         return scene_sample_to_date_time(sample=sample)
 
-    @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, SceneDataDTO]:
         return {d.key: d for d in self.scene_data}
 

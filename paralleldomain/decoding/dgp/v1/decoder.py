@@ -37,6 +37,7 @@ assert metadata_pd_pb2, "Required for PD Dataset Metadata Parsing using Proto."
 class _DatasetDecoderMixin:
     def __init__(self, dataset_path: Union[str, AnyPath], **kwargs):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_dataset_dto = lru_cache(maxsize=1)(self._decode_dataset_dto)
 
     def _decode_scene_paths(self) -> List[Path]:
         dto = self._decode_dataset_dto()
@@ -46,7 +47,6 @@ class _DatasetDecoderMixin:
             for path in dto.scene_splits[split_key].filenames
         ]
 
-    @lru_cache(maxsize=1)
     def _decode_dataset_dto(self) -> dataset_pb2.SceneDataset:
         dataset_cloud_path: AnyPath = self._dataset_path
         scene_dataset_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
@@ -144,6 +144,9 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_scene_dto = lru_cache(maxsize=1)(self._decode_scene_dto)
+        self._data_by_key_with_name = lru_cache(maxsize=1)(self._data_by_key_with_name)
+        self._sample_by_index = lru_cache(maxsize=1)(self._sample_by_index)
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -240,7 +243,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             settings=self.settings,
         )
 
-    @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> scene_pb2.Scene:
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
@@ -254,12 +256,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
         return scene_dto
 
-    @lru_cache(maxsize=1)
     def _data_by_key_with_name(self, scene_name: str, data_name: str) -> Dict[str, sample_pb2.Datum]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {d.key: d for d in dto.data if d.id.name == data_name}
 
-    @lru_cache(maxsize=1)
     def _sample_by_index(self, scene_name: str) -> Dict[str, sample_pb2.Sample]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {str(s.id.index): s for s in dto.samples}

@@ -104,15 +104,15 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self.scene_data = scene_data
         self._ontologies = ontologies
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
+        self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
+        self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
 
-    @lru_cache(maxsize=1)
     def _data_by_sensor_name(self, sensor_name: SensorName) -> Dict[str, sample_pb2.Datum]:
         return {d.key: d for d in self.scene_data if d.id.name == sensor_name}
 
     def _get_current_frame_sample(self, frame_id: FrameId) -> sample_pb2.Sample:
         return self.scene_samples[frame_id]
 
-    @lru_cache(maxsize=1)
     def _get_sensor_frame_data(self, frame_id: FrameId, sensor_name: SensorName) -> sample_pb2.Datum:
         sample = self._get_current_frame_sample(frame_id=frame_id)
         # all sensor data of the sensor
@@ -594,12 +594,15 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
 
 
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
-    @lru_cache(maxsize=1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._decode_point_cloud_format = lru_cache(maxsize=1)(self._decode_point_cloud_format)
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
+
     def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return [point_cloud_pb2.PointCloud.ChannelType.Name(pf) for pf in datum.point_cloud.point_format]
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
@@ -697,21 +700,24 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
 
 class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[datetime]):
-    @lru_cache(maxsize=1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._decode_radar_point_cloud_format = lru_cache(maxsize=1)(self._decode_radar_point_cloud_format)
+        self._decode_radar_point_cloud_data = lru_cache(maxsize=1)(self._decode_radar_point_cloud_data)
+        self._decode_radar_energy_data = lru_cache(maxsize=1)(self._decode_radar_energy_data)
+
     def _decode_radar_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return [
             radar_point_cloud_pb2.RadarPointCloud.ChannelType.Name(pf) for pf in datum.radar_point_cloud.point_format
         ]
 
-    @lru_cache(maxsize=1)
     def _decode_radar_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
         rpc_data = read_npz(path=cloud_path, files="data")
         return rpc_data
 
-    @lru_cache(maxsize=1)
     def _decode_radar_energy_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
@@ -789,8 +795,8 @@ class DGPPointCachePointsDecoder:
         self._pose = pose
         self._parent_pose = parent_pose
         self._file_path = cache_folder / (sha + ".npz")
+        self.get_point_data = lru_cache(maxsize=1)(self.get_point_data)
 
-    @lru_cache(maxsize=1)
     def get_point_data(self) -> np.ndarray:
         with self._file_path.open("rb") as f:
             cache_points = np.load(f)["data"]
