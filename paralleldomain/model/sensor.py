@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, Typ
 
 import numpy as np
 
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.model.radar_point_cloud import (
@@ -185,6 +186,9 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         pass
 
+    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        pass
+
 
 class SensorFrame(Generic[TDateTime]):
     def __init__(
@@ -258,6 +262,10 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list(self._annotation_type_identifiers.keys())
+
+    @property
+    def class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return self._decoder.get_class_maps()
 
     @property
     def metadata(self) -> Dict[str, Any]:

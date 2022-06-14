@@ -6,6 +6,7 @@ import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -24,7 +25,7 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
         self.dataset_name = dataset_name
 
     def get_unique_sensor_frame_id(
-        self, sensor_name: SensorName, frame_id: FrameId, extra: Optional[str] = None
+        self, sensor_name: Optional[SensorName], frame_id: Optional[FrameId], extra: Optional[str] = None
     ) -> str:
         return create_cache_key(
             dataset_name=self.dataset_name,
@@ -90,12 +91,6 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             loader=lambda: self._decode_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id),
         )
 
-    @abc.abstractmethod
-    def _decode_available_annotation_types(
-        self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        pass
-
     def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="-metadata"
@@ -105,13 +100,31 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             loader=lambda: self._decode_metadata(sensor_name=sensor_name, frame_id=frame_id),
         )
 
-    @abc.abstractmethod
-    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
-        pass
+    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        _unique_cache_key = self.get_unique_sensor_frame_id(extra="class_maps", sensor_name=None, frame_id=None)
+        class_maps = self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_class_maps(),
+        )
+        return class_maps
 
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         # if needed add caching here
         return self._decode_date_time(sensor_name=sensor_name, frame_id=frame_id)
+
+    @abc.abstractmethod
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_available_annotation_types(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        pass
 
     @abc.abstractmethod
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:

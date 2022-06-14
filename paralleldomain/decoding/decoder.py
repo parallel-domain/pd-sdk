@@ -224,7 +224,7 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         )
 
     def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="classmaps")
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="class_maps")
         class_maps = self.lazy_load_cache.get_item(
             key=_unique_cache_key,
             loader=lambda: self._decode_class_maps(scene_name=scene_name),

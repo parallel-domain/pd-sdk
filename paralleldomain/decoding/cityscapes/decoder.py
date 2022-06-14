@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
-from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, get_scene_path
+from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, decode_class_maps, get_scene_path
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
@@ -99,7 +99,7 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=CITYSCAPE_CLASSES)}
+        return decode_class_maps()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

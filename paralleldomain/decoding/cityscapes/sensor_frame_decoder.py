@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 import cv2
 import numpy as np
 
-from paralleldomain.decoding.cityscapes.common import get_scene_labels_path, get_scene_path
+from paralleldomain.decoding.cityscapes.common import decode_class_maps, get_scene_labels_path, get_scene_path
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.annotation import (
@@ -13,6 +13,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     SemanticSegmentation2D,
 )
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -34,6 +35,9 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         return 1024, 2048, 3
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return decode_class_maps()
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         scene_images_folder = get_scene_path(

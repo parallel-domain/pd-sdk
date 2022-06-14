@@ -59,6 +59,9 @@ class ClassMap:
     def __getitem__(self, key: int) -> ClassDetail:
         return self._class_id_to_class_detail[key]
 
+    def __len__(self):
+        return len(self._class_id_to_class_detail)
+
     @staticmethod
     def from_id_label_dict(id_label_dict: Dict[int, str]) -> "ClassMap":
         return ClassMap(classes=[ClassDetail(id=k, name=v) for k, v in id_label_dict.items()])

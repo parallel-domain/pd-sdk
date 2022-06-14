@@ -6,7 +6,8 @@ import numpy as np
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
-from paralleldomain.model.class_mapping import ClassDetail
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
@@ -335,6 +336,14 @@ class NuImagesDataAccessMixin:
             trans = NUIMAGES_IMU_TO_INTERNAL_CS @ trans
             return trans
         raise ValueError(f"No ego pose for frame id {frame_id}")
+
+    @property
+    def nu_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return {
+            AnnotationTypes.InstanceSegmentation2D: ClassMap(classes=self.nu_class_infos),
+            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
+            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
+        }
 
 
 NUIMAGES_CLASSES = list()

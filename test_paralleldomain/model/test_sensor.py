@@ -1,9 +1,22 @@
 import time
 from datetime import datetime
+from typing import Dict
 
 from paralleldomain import Scene
 from paralleldomain.decoding.decoder import DatasetDecoder
+from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
+
+
+def class_maps_do_match(map_a: Dict[AnnotationType, ClassMap], map_b: Dict[AnnotationType, ClassMap]):
+    assert set(map_a.keys()) == set(map_b.keys())
+    for k, v in map_a.items():
+        assert len(v) == len(map_b[k])
+        assert len(v.class_ids) == len(map_b[k].class_ids)
+        assert len(v.class_names) == len(map_b[k].class_names)
+        for cid in v.class_ids:
+            assert map_b[k][cid] == v[cid]
 
 
 class TestSensorFrame:
@@ -93,6 +106,24 @@ class TestSensorFrame:
         assert len(rgb.shape) == 3
         assert rgb.shape[0] == image.height
         assert rgb.shape[1] == image.width
+
+    def test_camera_frame_class_map_access(self, scene: Scene):
+        sensor_frame = next(iter(scene.camera_frames))
+        class_maps = sensor_frame.class_maps
+        scene_class_maps = scene.class_maps
+        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_lidar_frame_class_map_access(self, scene: Scene):
+        sensor_frame = next(iter(scene.lidar_frames))
+        class_maps = sensor_frame.class_maps
+        scene_class_maps = scene.class_maps
+        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_radar_frame_class_map_access(self, scene: Scene):
+        sensor_frame = next(iter(scene.radar_frames))
+        class_maps = sensor_frame.class_maps
+        scene_class_maps = scene.class_maps
+        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
 
 
 class TestSensor:

@@ -23,6 +23,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -31,6 +32,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
+        self._ontologies = ontologies
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         sensor_name = next(iter(self._decode_available_camera_names(frame_id=frame_id)), None)
@@ -86,6 +88,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
+            ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -102,6 +105,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
+            ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )

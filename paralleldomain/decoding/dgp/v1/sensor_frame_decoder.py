@@ -25,6 +25,7 @@ from paralleldomain.common.dgp.v1.constants import (
 )
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.dgp.v1.common import decode_class_maps
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -60,13 +61,13 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.radar_point_cloud import RadarPointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-
 from paralleldomain.utilities.fsio import read_image, read_json_str, read_message, read_npz, read_png
 from paralleldomain.utilities.transformation import Transformation
 
@@ -93,6 +94,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, sample_pb2.Sample],
         scene_data: List[sample_pb2.Datum],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -100,6 +102,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data
+        self._ontologies = ontologies
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
 
     @lru_cache(maxsize=1)
@@ -127,6 +130,11 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         return timestamp_to_datetime(ts=data.id.timestamp)
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return decode_class_maps(
+            ontologies=self._ontologies, dataset_path=self._dataset_path, scene_name=self.scene_name
+        )
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         sample = self._get_current_frame_sample(frame_id=frame_id)

@@ -155,10 +155,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["lidar"])
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {
-            # AnnotationTypes.SemanticSegmentation3D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes3D: ClassMap(classes=self.nu_class_infos),
-        }
+        return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

@@ -1,11 +1,12 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import Set
+from typing import List, Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
+from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -21,12 +22,14 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
         image_folder: str,
         semantic_segmentation_folder: str,
         metadata_folder: str,
+        class_map: List[ClassDetail],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.metadata_folder = metadata_folder
+        self._class_map = class_map
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         scene_images_folder = self.dataset_path / self.image_folder
@@ -47,4 +50,5 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
             metadata_folder=self.metadata_folder,
+            class_map=self._class_map,
         )

@@ -7,7 +7,8 @@ from typing import Any, Callable, Dict, Generator, Hashable, List, Optional, Tup
 import numpy as np
 
 from paralleldomain.decoding.common import create_cache_key
-from paralleldomain.model.class_mapping import ClassDetail
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import INTERNAL_COORDINATE_SYSTEM, CoordinateSystem
@@ -364,6 +365,13 @@ class NuScenesDataAccessMixin:
             key=_unique_cache_key,
             loader=get_nu_class_infos,
         )
+
+    @property
+    def nu_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return {
+            # AnnotationTypes.SemanticSegmentation3D: ClassMap(classes=self.nu_class_infos),
+            AnnotationTypes.BoundingBoxes3D: ClassMap(classes=self.nu_class_infos),
+        }
 
     def get_ego_pose(self, scene_token: str, frame_id: FrameId) -> np.ndarray:
         time_diffs = []

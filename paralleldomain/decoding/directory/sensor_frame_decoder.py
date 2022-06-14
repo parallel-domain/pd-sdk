@@ -4,8 +4,10 @@ import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.directory.common import decode_class_maps
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, SemanticSegmentation2D
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -24,15 +26,17 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         image_folder: str,
         semantic_segmentation_folder: str,
         metadata_folder: str,
+        class_map: List[ClassDetail],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
         self._image_folder = image_folder
+        self._class_map = class_map
         self._semantic_segmentation_folder = semantic_segmentation_folder
         self._metadata_folder = metadata_folder
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return None
+        return SensorIntrinsic()
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         width, height = imagesize.get(f"{frame_id}")
@@ -46,6 +50,9 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return decode_class_maps(class_map=self._class_map)
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId

@@ -35,6 +35,7 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, sample_pb2.Sample],
         scene_data: List[sample_pb2.Datum],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -43,6 +44,7 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
+        self._ontologies = ontologies
 
     @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
@@ -79,6 +81,7 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
 
@@ -93,6 +96,7 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
     def _decode_lidar_sensor_frame(
@@ -112,6 +116,7 @@ class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
     def _decode_radar_sensor_frame(

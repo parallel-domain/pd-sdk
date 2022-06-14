@@ -11,6 +11,7 @@ from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
+from paralleldomain.decoding.dgp.v1.common import decode_class_maps
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.v1.sensor_decoder import (
     DGPCameraSensorDecoder,
@@ -147,12 +148,14 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -160,12 +163,14 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -173,12 +178,14 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _create_radar_sensor_decoder(
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[TDateTime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPRadarSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -216,35 +223,19 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-
-        ontologies = {}
-        for annotation_key, ontology_file in scene_dto.ontologies.items():
-            ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
-            if not ontology_path.exists():
-                ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.bin"
-            ontology_dto = read_message(obj=ontology_pb2.Ontology(), path=ontology_path)
-
-            ontologies[ANNOTATION_TYPE_MAP[annotation_key]] = ClassMap(
-                classes=[
-                    ClassDetail(
-                        name=o.name,
-                        id=o.id,
-                        instanced=o.isthing,
-                        meta={"color": {"r": o.color.r, "g": o.color.g, "b": o.color.b}},
-                    )
-                    for o in ontology_dto.items
-                ]
-            )
-
-        return ontologies
+        return decode_class_maps(
+            ontologies=scene_dto.ontologies, dataset_path=self._dataset_path, scene_name=scene_name
+        )
 
     def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPFrameDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
