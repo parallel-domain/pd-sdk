@@ -12,6 +12,7 @@ from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.projection import DistortionLookup
 
 T = TypeVar("T")
 F = TypeVar("F", Image, PointCloud, Annotation)
@@ -159,6 +160,15 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
             loader=lambda: self._decode_intrinsic(sensor_name=sensor_name, frame_id=frame_id),
         )
 
+    def get_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        _unique_cache_key = self.get_unique_sensor_frame_id(
+            sensor_name=sensor_name, frame_id=frame_id, extra="distortion_lookup"
+        )
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_distortion_lookup(sensor_name=sensor_name, frame_id=frame_id),
+        )
+
     def get_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         if self.settings.cache_images:
             _unique_cache_key = self.get_unique_sensor_frame_id(
@@ -186,6 +196,11 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
     @abc.abstractmethod
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         pass
+
+    def _decode_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        if sensor_name in self.settings.distortion_lookups:
+            return self.settings.distortion_lookups[sensor_name]
+        return None
 
     @abc.abstractmethod
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:

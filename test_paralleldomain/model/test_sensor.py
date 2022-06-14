@@ -1,8 +1,11 @@
 import time
+from collections import defaultdict
 from datetime import datetime
 from typing import Dict
+from unittest import mock
 
 from paralleldomain import Scene
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -124,6 +127,25 @@ class TestSensorFrame:
         class_maps = sensor_frame.class_maps
         scene_class_maps = scene.class_maps
         class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_distortion_loop_access(self, decoder: DatasetDecoder):
+        decoder_cls = decoder.__class__
+        init_kwargs = decoder.get_decoder_init_kwargs()
+        init_kwargs["settings"] = None
+        no_lookup_decoder = decoder_cls(**init_kwargs)
+        datast = no_lookup_decoder.get_dataset()
+        sensor_frame = next(iter(datast.camera_frames))
+        distortion_lookup = sensor_frame.distortion_lookup
+        assert distortion_lookup is None
+        no_lookup_decoder.lazy_load_cache.clear()
+        fake_loopup = mock.MagicMock()
+
+        init_kwargs["settings"] = DecoderSettings(distortion_lookups={sensor_frame.sensor_name: fake_loopup})
+        with_lookup_decoder = decoder_cls(**init_kwargs)
+        dataset = with_lookup_decoder.get_dataset()
+        sensor_frame = next(iter(dataset.camera_frames))
+        distortion_lookup = sensor_frame.distortion_lookup
+        assert distortion_lookup == fake_loopup
 
 
 class TestSensor:

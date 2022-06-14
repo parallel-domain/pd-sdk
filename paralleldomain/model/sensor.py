@@ -14,7 +14,7 @@ from paralleldomain.model.radar_point_cloud import (
     RangeDopplerMap,
 )
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
+from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable, project_points_3d_to_2d
 
 try:
     from typing import Protocol
@@ -349,6 +349,9 @@ class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Im
     def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
         pass
 
+    def get_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        pass
+
 
 class CameraSensorFrame(SensorFrame[TDateTime]):
     def __init__(
@@ -368,9 +371,16 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
     def intrinsic(self) -> "SensorIntrinsic":
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
+    @property
+    def distortion_lookup(self) -> Optional[DistortionLookup]:
+        return self._decoder.get_distortion_lookup(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
     def project_points_from_3d(
-        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
+        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookup] = None
     ) -> np.ndarray:
+        if distortion_lookup is None:
+            distortion_lookup = self.distortion_lookup
+
         return project_points_3d_to_2d(
             k_matrix=self.intrinsic.camera_matrix,
             camera_model=self.intrinsic.camera_model,
