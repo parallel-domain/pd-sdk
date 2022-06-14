@@ -111,22 +111,25 @@ class TestSensorFrame:
         assert rgb.shape[1] == image.width
 
     def test_camera_frame_class_map_access(self, scene: Scene):
-        sensor_frame = next(iter(scene.camera_frames))
-        class_maps = sensor_frame.class_maps
-        scene_class_maps = scene.class_maps
-        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+        if scene.number_of_camera_frames > 0:
+            sensor_frame = next(iter(scene.camera_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
 
     def test_lidar_frame_class_map_access(self, scene: Scene):
-        sensor_frame = next(iter(scene.lidar_frames))
-        class_maps = sensor_frame.class_maps
-        scene_class_maps = scene.class_maps
-        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+        if scene.number_of_lidar_frames > 0:
+            sensor_frame = next(iter(scene.lidar_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
 
     def test_radar_frame_class_map_access(self, scene: Scene):
-        sensor_frame = next(iter(scene.radar_frames))
-        class_maps = sensor_frame.class_maps
-        scene_class_maps = scene.class_maps
-        class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+        if scene.number_of_radar_frames > 0:
+            sensor_frame = next(iter(scene.radar_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
 
     def test_distortion_loop_access(self, decoder: DatasetDecoder):
         decoder_cls = decoder.__class__
