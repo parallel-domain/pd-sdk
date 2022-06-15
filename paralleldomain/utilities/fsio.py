@@ -9,6 +9,8 @@ from typing import Dict, Iterable, List, Optional, TypeVar, Union
 import cv2
 import numpy as np
 import ujson
+from PIL import Image
+from io import BytesIO
 from google.protobuf.descriptor_pool import DescriptorPool
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.message import Message
@@ -57,34 +59,22 @@ def read_json_str(json_str: str) -> Union[Dict, List]:
 
 def write_png(obj: np.ndarray, path: AnyPath):
     with path.open("wb") as fp:
-        fp.write(
-            cv2.imencode(
-                ext=".png",
-                img=cv2.cvtColor(
-                    src=obj,
-                    code=cv2.COLOR_RGBA2BGRA,
-                ),
-            )[1].tobytes()
-        )
+        fp.write(cv2.imencode(ext=".png", img=cv2.cvtColor(src=obj, code=cv2.COLOR_RGBA2BGRA,),)[1].tobytes())
     logger.debug(f"Finished writing {str(path)}")
     return path
 
 
-def read_image(path: AnyPath, convert_to_rgb: bool = True) -> np.ndarray:
+def read_image(path: AnyPath, convert_to_rgb: bool = True, is_indexed=False) -> np.ndarray:
     with path.open(mode="rb") as fp:
-        image_data = cv2.imdecode(
-            buf=np.frombuffer(fp.read(), np.uint8),
-            flags=cv2.IMREAD_UNCHANGED,
-        )
+        if is_indexed:
+            return Image.open(BytesIO(fp.read()))
+        image_data = cv2.imdecode(buf=np.frombuffer(fp.read(), np.uint8), flags=cv2.IMREAD_UNCHANGED,)
         if convert_to_rgb:
             color_convert_code = cv2.COLOR_BGR2RGB
             if image_data.shape[-1] == 4:
                 color_convert_code = cv2.COLOR_BGRA2RGBA
 
-            image_data = cv2.cvtColor(
-                src=image_data,
-                code=color_convert_code,
-            )
+            image_data = cv2.cvtColor(src=image_data, code=color_convert_code,)
     return image_data
 
 
@@ -152,10 +142,7 @@ def read_json_message(
         json_data = ujson.load(fp)
 
     result = ParseDict(
-        js_dict=json_data,
-        message=obj,
-        ignore_unknown_fields=ignore_unknown_fields,
-        descriptor_pool=descriptor_pool,
+        js_dict=json_data, message=obj, ignore_unknown_fields=ignore_unknown_fields, descriptor_pool=descriptor_pool,
     )
 
     return result
@@ -248,11 +235,7 @@ def write_json_message(
     return path
 
 
-def write_binary_message(
-    obj: Message,
-    path: AnyPath,
-    append_sha1: bool = False,
-) -> AnyPath:
+def write_binary_message(obj: Message, path: AnyPath, append_sha1: bool = False,) -> AnyPath:
     enc_str = obj.SerializeToString(deterministic=True)
 
     if append_sha1:

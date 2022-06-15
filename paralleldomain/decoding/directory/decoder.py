@@ -7,7 +7,7 @@ from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSens
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -121,7 +121,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         return [self._camera_name]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        raise ValueError("Loading from directoy does not support lidar data!")
+        raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self._class_map)}
