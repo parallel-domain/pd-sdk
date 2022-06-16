@@ -14,7 +14,11 @@ T = TypeVar("T")
 
 class GTACameraSensorFrameDecoder(DirectoryCameraSensorFrameDecoder):
     def __init__(
-        self, dataset_name: str, scene_name: SceneName, dataset_path: AnyPath, settings: DecoderSettings,
+        self,
+        dataset_name: str,
+        scene_name: SceneName,
+        dataset_path: AnyPath,
+        settings: DecoderSettings,
     ):
         super().__init__(
             dataset_name=dataset_name,

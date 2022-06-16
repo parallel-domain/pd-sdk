@@ -48,7 +48,11 @@ class GTADatasetDecoder(DirectoryDatasetDecoder):
 
 class GTASceneDecoder(DirectorySceneDecoder):
     def __init__(
-        self, dataset_path: Union[str, AnyPath], dataset_name: str, settings: DecoderSettings, camera_name: str,
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        settings: DecoderSettings,
+        camera_name: str,
     ):
         super().__init__(
             dataset_path=dataset_path,
