@@ -80,6 +80,7 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
         return ""
 
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported atm"""
         return list()
 
     def _create_radar_sensor_decoder(
@@ -135,12 +136,3 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
         return {fid: None for fid in self.get_frame_ids(scene_name=scene_name)}
-
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
-        """Radar not supported"""
-        return list()
-
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[TDateTime]:
-        raise ValueError("Loading from directory does not support radar data!")
