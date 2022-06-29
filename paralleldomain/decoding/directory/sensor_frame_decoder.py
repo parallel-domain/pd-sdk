@@ -1,14 +1,15 @@
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.common import decode_class_maps
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, SemanticSegmentation2D
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -99,3 +100,14 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         class_ids = read_image(path=annotation_path, convert_to_rgb=False)
         class_ids = class_ids.astype(int)
         return np.expand_dims(class_ids, axis=-1)
+
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
+        if issubclass(data_type, SemanticSegmentation2D):
+            if data_type in annotation_identifiers:
+                annotation_path = self._dataset_path / self._semantic_segmentation_folder / f"{frame_id}"
+                return annotation_path
+        elif issubclass(data_type, Image):
+            img_path = self._dataset_path / self._image_folder / f"{frame_id}"
+            return img_path
+        return None

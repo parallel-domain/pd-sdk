@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Set, Optional
+from typing import List, Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
@@ -28,7 +28,7 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
         self.dataset_path = dataset_path
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
-        self.metadata_folder = metadata_folder
+        self._metadata_folder = metadata_folder
         self._class_map = class_map
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
@@ -49,6 +49,6 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
             settings=self.settings,
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
-            metadata_folder=self.metadata_folder,
+            metadata_folder=self._metadata_folder,
             class_map=self._class_map,
         )

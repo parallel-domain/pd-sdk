@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -15,6 +15,7 @@ from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import read_json
 
 
 class DirectoryFrameDecoder(FrameDecoder[None]):
@@ -35,7 +36,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.camera_name = camera_name
-        self.metadata_folder = metadata_folder
+        self._metadata_folder = metadata_folder
         self._class_map = class_map
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
@@ -61,7 +62,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
             settings=self.settings,
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
-            metadata_folder=self.metadata_folder,
+            metadata_folder=self._metadata_folder,
             class_map=self._class_map,
         )
 
@@ -88,3 +89,9 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> RadarSensorFrame[TDateTime]:
         raise ValueError("Loading from directory does not support radar data!")
+
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        if self._metadata_folder is None:
+            return dict()
+        metadata_path = self.dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
+        return read_json(metadata_path)
