@@ -66,7 +66,7 @@ class TestSensorFrame:
         time2 = time.time() - start
         assert xyz is not None
         assert xyz.shape[0] > 0
-        assert time2 < time1
+        assert time2 <= time1
         assert time2 < 1
 
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
