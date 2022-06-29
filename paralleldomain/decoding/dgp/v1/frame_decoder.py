@@ -45,6 +45,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, sample_pb2.Sample],
         scene_data: List[sample_pb2.Datum],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -53,6 +54,8 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
+        self._ontologies = ontologies
+        self._data_by_key = lru_cache(maxsize=1)(self._data_by_key)
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         sensor_name = next(iter(self._decode_available_camera_names(frame_id=frame_id)), None)
@@ -73,7 +76,6 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         sample = self.scene_samples[frame_id]
         return timestamp_to_datetime(sample.id.timestamp)
 
-    @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
         return {d.key: d for d in self.scene_data}
 
@@ -112,6 +114,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
+            ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -128,6 +131,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
+            ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -144,6 +148,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             dataset_path=self.dataset_path,
             scene_samples=self.scene_samples,
             scene_data=self.scene_data,
+            ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )

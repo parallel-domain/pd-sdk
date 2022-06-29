@@ -1,8 +1,9 @@
-from dataclasses import dataclass
-from typing import Optional, TypeVar
+from dataclasses import dataclass, field
+from typing import Dict, Optional, TypeVar
 
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache
+from paralleldomain.utilities.projection import DistortionLookup
 
 T = TypeVar("T")
 
@@ -28,3 +29,4 @@ class DecoderSettings:
     cache_images: bool = False
     cache_point_clouds: bool = False
     cache_annotations: bool = False
+    distortion_lookups: Dict[SensorName, DistortionLookup] = field(default_factory=dict)

@@ -1,3 +1,4 @@
+import abc
 import math
 from typing import Optional
 
@@ -8,7 +9,13 @@ from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_O
 from paralleldomain.utilities.mask import lookup_values
 
 
-class DistortionLookupTable(np.ndarray):
+class DistortionLookup:
+    @abc.abstractmethod
+    def evaluate_at(self, theta: np.ndarray) -> np.ndarray:
+        pass
+
+
+class DistortionLookupTable(DistortionLookup, np.ndarray):
     """Container object for distortion lookup tables used in distortion model `pd_fisheye`.
     Can be accessed like any `np.ndarray`"""
 
@@ -30,17 +37,20 @@ class DistortionLookupTable(np.ndarray):
             data_sorted = np.vstack([data_sorted, np.array([math.pi, extrapolated_theta_d])])
         return data_sorted.view(cls)
 
+    def evaluate_at(self, theta: np.ndarray) -> np.ndarray:
+        return np.interp(x=theta, xp=self[:, 0], fp=self[:, 1])
+
 
 def _project_points_3d_to_2d_pd_fisheye(
     k_matrix: np.ndarray,
     points_3d: np.ndarray,
-    distortion_lookup: DistortionLookupTable,
+    distortion_lookup: DistortionLookup,
 ) -> np.ndarray:
     xy_prime = points_3d[:, [0, 1]]
     r = np.linalg.norm(xy_prime, axis=1)
 
     theta = np.arctan2(r, points_3d[:, 2])
-    theta_d = np.interp(x=theta, xp=distortion_lookup[:, 0], fp=distortion_lookup[:, 1])
+    theta_d = distortion_lookup.evaluate_at(theta=theta)
 
     r_d = (theta_d / r).reshape(-1, 1)
 
@@ -58,7 +68,7 @@ def project_points_3d_to_2d(
     camera_model: str,
     points_3d: np.ndarray,
     distortion_parameters: Optional[np.ndarray] = None,
-    distortion_lookup: Optional[DistortionLookupTable] = None,
+    distortion_lookup: Optional[DistortionLookup] = None,
 ) -> np.ndarray:
     """Projects an array of 3D points in Cartesian coordinates onto an image plane.
 
@@ -121,7 +131,7 @@ def project_points_2d_to_3d(
     points_2d: np.ndarray,
     depth: np.ndarray,
     distortion_parameters: Optional[np.ndarray] = None,
-    distortion_lookup: Optional[DistortionLookupTable] = None,
+    distortion_lookup: Optional[DistortionLookup] = None,
     interpolate: bool = True,
 ) -> np.ndarray:
     """Maps image plane coordinates to 3D points in Cartesian coordinates.

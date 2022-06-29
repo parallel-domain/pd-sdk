@@ -15,6 +15,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     TDateTime,
 )
 from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -59,6 +60,9 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return {}
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return self.nu_class_maps
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         return self.get_datetime_with_frame_id(scene_token=self.scene_token, frame_id=frame_id)
@@ -165,8 +169,8 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             scene_name=scene_name,
             settings=settings,
         )
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
         NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]

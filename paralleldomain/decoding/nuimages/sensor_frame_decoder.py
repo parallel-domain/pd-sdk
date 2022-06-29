@@ -18,6 +18,7 @@ from paralleldomain.model.annotation import (
     InstanceSegmentation2D,
     SemanticSegmentation2D,
 )
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -113,6 +114,9 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return {}
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return self.nu_class_maps
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         return datetime.fromtimestamp(int(frame_id) / 1000000)

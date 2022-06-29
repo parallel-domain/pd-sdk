@@ -132,11 +132,7 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {
-            AnnotationTypes.InstanceSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
-        }
+        return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

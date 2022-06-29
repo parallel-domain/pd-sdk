@@ -35,6 +35,7 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, sample_pb2.Sample],
         scene_data: List[sample_pb2.Datum],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -43,8 +44,9 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         self.custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
+        self._ontologies = ontologies
+        self._data_by_key = lru_cache(maxsize=1)(self._data_by_key)
 
-    @lru_cache(maxsize=1)
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
         return {d.key: d for d in self.scene_data}
 
@@ -64,12 +66,15 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
 
 
 class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
+
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
     ) -> CameraSensorFrame[datetime]:
         return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
-    @lru_cache(maxsize=1)
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -79,11 +84,15 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
 
 class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
-    @lru_cache(maxsize=1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._create_lidar_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_lidar_sensor_frame_decoder)
+
     def _create_lidar_sensor_frame_decoder(self) -> DGPLidarSensorFrameDecoder:
         return DGPLidarSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -93,6 +102,7 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
     def _decode_lidar_sensor_frame(
@@ -102,7 +112,10 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
 
 
 class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
-    @lru_cache(maxsize=1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._create_radar_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_radar_sensor_frame_decoder)
+
     def _create_radar_sensor_frame_decoder(self) -> DGPRadarSensorFrameDecoder:
         return DGPRadarSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -112,6 +125,7 @@ class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
             scene_data=self.scene_data,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            ontologies=self._ontologies,
         )
 
     def _decode_radar_sensor_frame(

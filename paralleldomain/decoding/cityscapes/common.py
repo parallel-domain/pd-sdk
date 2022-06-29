@@ -1,4 +1,7 @@
-from paralleldomain.model.class_mapping import ClassDetail
+from typing import Dict
+
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import SceneName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -227,3 +230,7 @@ CITYSCAPE_CLASSES = [
         meta=dict(ignoreInEval=True, catId=7, trainId=-1, category="vehicle", color=(0, 0, 142)),
     ),
 ]
+
+
+def decode_class_maps() -> Dict[AnnotationType, ClassMap]:
+    return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=CITYSCAPE_CLASSES)}

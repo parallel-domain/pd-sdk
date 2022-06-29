@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
-from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, get_scene_path
+from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, decode_class_maps, get_scene_path
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
@@ -79,6 +79,15 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
 
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported atm"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("Cityscapes does not contain radar data!")
+
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         frame_ids = set()
         for camera in self._camera_names:
@@ -99,7 +108,7 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=CITYSCAPE_CLASSES)}
+        return decode_class_maps()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -127,12 +136,3 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
         return {fid: None for fid in self.get_frame_ids(scene_name=scene_name)}
-
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
-        """Radar not supported"""
-        return list()
-
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[TDateTime]:
-        raise ValueError("Loading from directory does not support radar data!")

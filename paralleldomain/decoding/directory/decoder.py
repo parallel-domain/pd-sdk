@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
+from paralleldomain.decoding.directory.common import decode_class_maps
 from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecoder
 from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
@@ -124,7 +125,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self._class_details)}
+        return decode_class_maps(class_map=self._class_details)
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -137,6 +138,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
             image_folder=self._image_folder,
             semantic_segmentation_folder=self._semantic_segmentation_folder,
             metadata_folder=self._metadata_folder,
+            class_map=self._class_map,
         )
 
     def _create_lidar_sensor_decoder(
@@ -154,6 +156,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
             semantic_segmentation_folder=self._semantic_segmentation_folder,
             metadata_folder=self._metadata_folder,
             camera_name=self._camera_name,
+            class_map=self._class_map,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:

@@ -10,6 +10,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     LidarSensorFrameDecoder,
     RadarSensorFrameDecoder,
 )
+from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -27,6 +28,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         semantic_segmentation_folder: str,
         metadata_folder: Optional[str],
         camera_name: str,
+        class_map: List[ClassDetail],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
@@ -34,6 +36,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.camera_name = camera_name
         self.metadata_folder = metadata_folder
+        self._class_map = class_map
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         raise ValueError("Loading from directory does not support ego pose!")
@@ -59,6 +62,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
             image_folder=self.image_folder,
             semantic_segmentation_folder=self.semantic_segmentation_folder,
             metadata_folder=self.metadata_folder,
+            class_map=self._class_map,
         )
 
     def _decode_camera_sensor_frame(

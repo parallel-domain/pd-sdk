@@ -10,6 +10,7 @@ from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
+from paralleldomain.decoding.dgp.common import decode_class_maps
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.map_decoder import MapDecoder
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 class _DatasetDecoderMixin:
     def __init__(self, dataset_path: Union[str, AnyPath], **kwargs):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_dataset_dto = lru_cache(maxsize=1)(self._decode_dataset_dto)
 
     def _decode_scene_paths(self) -> List[Path]:
         dto = self._decode_dataset_dto()
@@ -38,7 +40,6 @@ class _DatasetDecoderMixin:
             for path in dto.scene_splits[split_key].filenames
         ]
 
-    @lru_cache(maxsize=1)
     def _decode_dataset_dto(self) -> DatasetDTO:
         dataset_cloud_path: AnyPath = self._dataset_path
         scene_dataset_json_path: AnyPath = dataset_cloud_path / "scene_dataset.json"
@@ -128,16 +129,21 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         )
 
         self._dataset_path: AnyPath = AnyPath(dataset_path)
+        self._decode_scene_dto = lru_cache(maxsize=1)(self._decode_scene_dto)
+        self._data_by_key_with_name = lru_cache(maxsize=1)(self._data_by_key_with_name)
+        self._sample_by_index = lru_cache(maxsize=1)(self._sample_by_index)
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[TDateTime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPCameraSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -145,12 +151,14 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[TDateTime]:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPLidarSensorDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -193,34 +201,19 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-
-        ontologies = {}
-        for annotation_key, ontology_file in scene_dto.ontologies.items():
-            ontology_path = self._dataset_path / scene_name / "ontology" / f"{ontology_file}.json"
-            ontology_data = read_json(path=ontology_path)
-
-            ontology_dto = OntologyFileDTO.from_dict(ontology_data)
-            ontologies[ANNOTATION_TYPE_MAP[annotation_key]] = ClassMap(
-                classes=[
-                    ClassDetail(
-                        name=o.name,
-                        id=o.id,
-                        instanced=o.isthing,
-                        meta={"color": {"r": o.color.r, "g": o.color.g, "b": o.color.b}},
-                    )
-                    for o in ontology_dto.items
-                ]
-            )
-
-        return ontologies
+        return decode_class_maps(
+            ontologies=scene_dto.ontologies, dataset_path=self._dataset_path, scene_name=scene_name
+        )
 
     def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder:
+        scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return DGPFrameDecoder(
             dataset_name=dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             scene_samples=self._sample_by_index(scene_name=scene_name),
-            scene_data=self._decode_scene_dto(scene_name=scene_name).data,
+            scene_data=scene_dto.data,
+            ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
@@ -229,7 +222,6 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _scene_sample_to_date_time(sample: SceneSampleDTO) -> datetime:
         return iso8601.parse_date(sample.id.timestamp)
 
-    @lru_cache(maxsize=1)
     def _decode_scene_dto(self, scene_name: str) -> SceneDTO:
         scene_names = self._decode_scene_names()
         scene_index = scene_names.index(scene_name)
@@ -244,12 +236,10 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = SceneDTO.from_dict(scene_data)
         return scene_dto
 
-    @lru_cache(maxsize=1)
     def _data_by_key_with_name(self, scene_name: str, data_name: str) -> Dict[str, SceneDataDTO]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {d.key: d for d in dto.data if d.id.name == data_name}
 
-    @lru_cache(maxsize=1)
     def _sample_by_index(self, scene_name: str) -> Dict[str, SceneSampleDTO]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {s.id.index: s for s in dto.samples}

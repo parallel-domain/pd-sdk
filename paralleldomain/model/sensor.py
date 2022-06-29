@@ -3,17 +3,18 @@ from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, Typ
 
 import numpy as np
 
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.model.radar_point_cloud import (
     DecoderRadarPointCloud,
-    RadarPointCloud,
     DecoderRangeDopplerMap,
-    RangeDopplerMap,
+    RadarPointCloud,
     RadarPointCloudDecoderProtocol,
+    RangeDopplerMap,
 )
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
+from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable, project_points_3d_to_2d
 
 try:
     from typing import Protocol
@@ -185,6 +186,9 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         pass
 
+    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        pass
+
 
 class SensorFrame(Generic[TDateTime]):
     def __init__(
@@ -220,16 +224,30 @@ class SensorFrame(Generic[TDateTime]):
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
-    def vehicle_to_world(self) -> Transformation:
+    def ego_to_world(self) -> Transformation:
         """
-        Alias for the pose property.
+        Transformation from ego to world coordinate system
         """
         return self.pose
 
     @property
-    def vehicle_to_sensor(self) -> Transformation:
+    def world_to_ego(self) -> Transformation:
         """
-        Alias for the extrinsic property.
+        Transformation from world to ego coordinate system
+        """
+        return self.pose.inverse
+
+    @property
+    def ego_to_sensor(self) -> Transformation:
+        """
+        Transformation from ego to sensor coordinate system
+        """
+        return self.extrinsic.inverse
+
+    @property
+    def sensor_to_ego(self) -> Transformation:
+        """
+        Transformation from sensor to ego coordinate system
         """
         return self.extrinsic
 
@@ -244,6 +262,10 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list(self._annotation_type_identifiers.keys())
+
+    @property
+    def class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return self._decoder.get_class_maps()
 
     @property
     def metadata(self) -> Dict[str, Any]:
@@ -327,6 +349,9 @@ class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Im
     def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
         pass
 
+    def get_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        pass
+
 
 class CameraSensorFrame(SensorFrame[TDateTime]):
     def __init__(
@@ -346,9 +371,16 @@ class CameraSensorFrame(SensorFrame[TDateTime]):
     def intrinsic(self) -> "SensorIntrinsic":
         return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
+    @property
+    def distortion_lookup(self) -> Optional[DistortionLookup]:
+        return self._decoder.get_distortion_lookup(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
     def project_points_from_3d(
-        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookupTable] = None
+        self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookup] = None
     ) -> np.ndarray:
+        if distortion_lookup is None:
+            distortion_lookup = self.distortion_lookup
+
         return project_points_3d_to_2d(
             k_matrix=self.intrinsic.camera_matrix,
             camera_model=self.intrinsic.camera_model,

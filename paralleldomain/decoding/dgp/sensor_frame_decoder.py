@@ -16,14 +16,17 @@ from paralleldomain.common.dgp.v0.dtos import (
     CalibrationDTO,
     CalibrationExtrinsicDTO,
     CalibrationIntrinsicDTO,
+    OntologyFileDTO,
     PoseDTO,
     SceneDataDatum,
     SceneDataDatumPointCloud,
     SceneDataDTO,
+    SceneDTO,
     SceneSampleDTO,
     scene_data_to_date_time,
 )
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.dgp.common import decode_class_maps
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -52,6 +55,7 @@ from paralleldomain.model.annotation import (
     SurfaceNormals3D,
 )
 from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -72,6 +76,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         dataset_path: AnyPath,
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
+        ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -79,16 +84,18 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data
+        self._ontologies = ontologies
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
+        self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
+        self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
+        self._get_3d_boxes_for_point_cache = lru_cache(maxsize=5)(self._get_3d_boxes_for_point_cache)
 
-    @lru_cache(maxsize=1)
     def _data_by_sensor_name(self, sensor_name: SensorName) -> Dict[str, SceneDataDTO]:
         return {d.key: d for d in self.scene_data if d.id.name == sensor_name}
 
     def _get_current_frame_sample(self, frame_id: FrameId) -> SceneSampleDTO:
         return self.scene_samples[frame_id]
 
-    @lru_cache(maxsize=1)
     def _get_sensor_frame_data(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDTO:
         sample = self._get_current_frame_sample(frame_id=frame_id)
         # all sensor data of the sensor
@@ -102,6 +109,11 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
     def _get_sensor_frame_data_datum(self, frame_id: FrameId, sensor_name: SensorName) -> SceneDataDatum:
         scene_data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         return scene_data.datum
+
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return decode_class_maps(
+            ontologies=self._ontologies, dataset_path=self._dataset_path, scene_name=self.scene_name
+        )
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
@@ -296,7 +308,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
 
-    @lru_cache(5)
     def _get_3d_boxes_for_point_cache(
         self, bbox_annotation_identifier: str, sensor_name: SensorName, frame_id: FrameId
     ):
@@ -524,17 +535,20 @@ class PointInfo(Enum):
 
 
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._decode_point_cloud_format = lru_cache(maxsize=1)(self._decode_point_cloud_format)
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
+
     def _get_index(self, p_info: PointInfo, sensor_name: SensorName, frame_id: FrameId):
         point_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
         point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(point_format)}
         return point_cloud_info[p_info]
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return datum.point_cloud.point_format
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
@@ -600,8 +614,8 @@ class DGPPointCachePointsDecoder:
         self._pose = pose
         self._parent_pose = parent_pose
         self._file_path = cache_folder / (sha + ".npz")
+        self.get_point_data = lru_cache(maxsize=1)(self.get_point_data)
 
-    @lru_cache(maxsize=1)
     def get_point_data(self) -> np.ndarray:
         with self._file_path.open("rb") as f:
             cache_points = np.load(f)["data"]
