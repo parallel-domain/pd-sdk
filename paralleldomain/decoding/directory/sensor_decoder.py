@@ -1,6 +1,6 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import Set
+from typing import Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
@@ -20,7 +20,7 @@ class DirectoryCameraSensorDecoder(CameraSensorDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
-        metadata_folder: str,
+        metadata_folder: Optional[str],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path

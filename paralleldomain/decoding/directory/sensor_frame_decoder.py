@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Tuple, TypeVar
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import imagesize
 import numpy as np
@@ -23,7 +24,7 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
-        metadata_folder: str,
+        metadata_folder: Optional[str],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
@@ -32,11 +33,13 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         self._metadata_folder = metadata_folder
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return None
+        return SensorIntrinsic()
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        width, height = imagesize.get(f"{frame_id}")
-        return width, height, 3
+        img_path = self._dataset_path / self._image_folder / f"{frame_id}"
+        with img_path.open("rb") as fh:
+            width, height = imagesize.get(BytesIO(fh.read()))
+            return height, width, 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         scene_images_folder = self._dataset_path / self._image_folder
@@ -57,6 +60,8 @@ class DirectoryCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         }
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+        if self._metadata_folder is None:
+            return dict()
         metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
         return read_json(metadata_path)
 

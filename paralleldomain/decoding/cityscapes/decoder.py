@@ -4,11 +4,11 @@ from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, get_sce
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -127,3 +127,12 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
         return {fid: None for fid in self.get_frame_ids(scene_name=scene_name)}
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[TDateTime]:
+        raise ValueError("Loading from directory does not support radar data!")
