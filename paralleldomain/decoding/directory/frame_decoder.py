@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -25,7 +25,7 @@ class DirectoryFrameDecoder(FrameDecoder[None]):
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
-        metadata_folder: str,
+        metadata_folder: Optional[str],
         camera_name: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)

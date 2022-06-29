@@ -2,6 +2,7 @@ import hashlib
 import logging
 import os
 import zipfile
+from io import BytesIO
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from time import sleep
 from typing import Dict, Iterable, List, Optional, TypeVar, Union
@@ -9,11 +10,10 @@ from typing import Dict, Iterable, List, Optional, TypeVar, Union
 import cv2
 import numpy as np
 import ujson
-from PIL import Image
-from io import BytesIO
 from google.protobuf.descriptor_pool import DescriptorPool
 from google.protobuf.json_format import MessageToDict, ParseDict
 from google.protobuf.message import Message
+from PIL import Image
 
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -75,7 +75,8 @@ def write_png(obj: np.ndarray, path: AnyPath):
 def read_image(path: AnyPath, convert_to_rgb: bool = True, is_indexed=False) -> np.ndarray:
     with path.open(mode="rb") as fp:
         if is_indexed:
-            return Image.open(BytesIO(fp.read()))
+            pil_image = Image.open(BytesIO(fp.read()))
+            return np.asarray(pil_image)
         image_data = cv2.imdecode(
             buf=np.frombuffer(fp.read(), np.uint8),
             flags=cv2.IMREAD_UNCHANGED,

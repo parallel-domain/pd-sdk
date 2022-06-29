@@ -1,15 +1,15 @@
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
-from paralleldomain.decoding.gta5.common import GTA_CLASSES, IMAGE_FOLDER_NAME, SEMANTIC_SEGMENTATION_FOLDER_NAME
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import SceneDecoder
 from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder, DirectorySceneDecoder
+from paralleldomain.decoding.frame_decoder import FrameDecoder
+from paralleldomain.decoding.gta5.common import GTA_CLASSES, IMAGE_FOLDER_NAME, SEMANTIC_SEGMENTATION_FOLDER_NAME
 from paralleldomain.decoding.gta5.frame_decoder import GTAFrameDecoder
 from paralleldomain.decoding.gta5.sensor_decoder import GTACameraSensorDecoder
-from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -25,7 +25,7 @@ class GTADatasetDecoder(DirectoryDatasetDecoder):
         super().__init__(
             dataset_path=dataset_path,
             settings=settings,
-            class_map=None,
+            class_map=GTA_CLASSES,
             image_folder=IMAGE_FOLDER_NAME,
             semantic_segmentation_folder=SEMANTIC_SEGMENTATION_FOLDER_NAME,
             metadata_folder=None,
@@ -39,6 +39,7 @@ class GTADatasetDecoder(DirectoryDatasetDecoder):
             dataset_name=self.dataset_name,
             settings=self.settings,
             camera_name=self.camera_name,
+            class_map=self.class_map,
         )
 
     @staticmethod
@@ -53,12 +54,13 @@ class GTASceneDecoder(DirectorySceneDecoder):
         dataset_name: str,
         settings: DecoderSettings,
         camera_name: str,
+        class_map: List[ClassDetail],
     ):
         super().__init__(
             dataset_path=dataset_path,
             dataset_name=dataset_name,
             settings=settings,
-            class_map=None,
+            class_map=class_map,
             image_folder=IMAGE_FOLDER_NAME,
             semantic_segmentation_folder=SEMANTIC_SEGMENTATION_FOLDER_NAME,
             metadata_folder=None,

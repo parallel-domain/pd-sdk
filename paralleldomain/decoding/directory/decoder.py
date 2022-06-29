@@ -7,7 +7,7 @@ from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSens
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -21,7 +21,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
-        class_map: ClassMap,
+        class_map: List[ClassDetail],
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
         semantic_segmentation_folder: Optional[str] = SEMANTIC_SEGMENTATION_FOLDER_NAME,
@@ -64,7 +64,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         return [self.image_folder]
 
     def _decode_scene_names(self) -> List[SceneName]:
-        return ()
+        return list()
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
@@ -89,16 +89,16 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
-        class_map: ClassMap,
+        class_map: List[ClassDetail],
         settings: DecoderSettings,
         image_folder: str,
         semantic_segmentation_folder: str,
-        metadata_folder: str,
+        metadata_folder: Optional[str],
         camera_name: str,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         super().__init__(dataset_name=dataset_name, settings=settings)
-        self._class_map = class_map
+        self._class_details = class_map
         self._image_folder = image_folder
         self._semantic_segmentation_folder = semantic_segmentation_folder
         self._metadata_folder = metadata_folder
@@ -124,7 +124,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self._class_map)}
+        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self._class_details)}
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
