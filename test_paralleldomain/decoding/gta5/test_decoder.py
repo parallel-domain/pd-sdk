@@ -40,7 +40,7 @@ def test_can_load_scene(gta_dataset_train_scene: UnorderedScene):
 def test_knows_all_frames(gta_dataset_train_scene: UnorderedScene):
     assert (
         len(gta_dataset_train_scene.frame_ids) == 24966
-    )  # numer o frames mentioned here https://download.visinf.tu-darmstadt.de/data/from_games/
+    )  # numer of frames mentioned here https://download.visinf.tu-darmstadt.de/data/from_games/
 
 
 def test_decode_train_scene_names(gta_train_dataset: Dataset):
