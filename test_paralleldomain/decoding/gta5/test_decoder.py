@@ -58,7 +58,7 @@ def test_decode_camera_image(gta_dataset_train_scene: UnorderedScene):
         assert image is not None
         rgb = image.rgb
         assert isinstance(rgb, np.ndarray)
-        assert rgb.shape == (1024, 2048, 3) or rgb.shape == (1052, 1914, 3)
+        assert rgb.shape == (1024, 2048, 3) or rgb.shape == (1052, 1914, 3) or rgb.shape == (1046, 1914, 3)
         assert rgb.shape[0] == image.height
         assert rgb.shape[1] == image.width
         assert rgb.shape[2] == image.channels
@@ -73,7 +73,11 @@ def test_decode_camera_semseg_2d(gta_dataset_train_scene: UnorderedScene):
         assert semseg is not None
         class_ids = semseg.class_ids
         assert isinstance(class_ids, np.ndarray)
-        assert class_ids.shape == (1024, 2048, 1) or class_ids.shape == (1052, 1914, 1)
+        assert (
+            class_ids.shape == (1024, 2048, 1)
+            or class_ids.shape == (1052, 1914, 1)
+            or class_ids.shape == (1046, 1914, 1)
+        )
         assert np.all(np.logical_and(np.unique(class_ids) <= 33, np.unique(class_ids) > -1))
 
 
