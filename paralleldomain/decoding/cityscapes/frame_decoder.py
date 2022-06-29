@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -76,3 +76,6 @@ class CityscapesFrameDecoder(FrameDecoder[None]):
         self, decoder: RadarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
     ) -> RadarSensorFrame[None]:
         raise ValueError("Cityscapes does not contain radar data!")
+
+    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+        return dict()

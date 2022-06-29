@@ -1,8 +1,11 @@
+from typing import List, Optional
+
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryCameraSensorFrameDecoder
 from paralleldomain.decoding.gta5.common import IMAGE_FOLDER_NAME, SEMANTIC_SEGMENTATION_FOLDER_NAME
+from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.type_aliases import FrameId, SceneName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image
@@ -15,6 +18,8 @@ class GTACameraSensorFrameDecoder(DirectoryCameraSensorFrameDecoder):
         scene_name: SceneName,
         dataset_path: AnyPath,
         settings: DecoderSettings,
+        class_map: List[ClassDetail],
+        metadata_folder: Optional[str],
     ):
         super().__init__(
             dataset_name=dataset_name,
@@ -23,7 +28,8 @@ class GTACameraSensorFrameDecoder(DirectoryCameraSensorFrameDecoder):
             settings=settings,
             image_folder=IMAGE_FOLDER_NAME,
             semantic_segmentation_folder=SEMANTIC_SEGMENTATION_FOLDER_NAME,
-            metadata_folder=None,
+            metadata_folder=metadata_folder,
+            class_map=class_map,
         )
 
     def _decode_semantic_segmentation_2d(

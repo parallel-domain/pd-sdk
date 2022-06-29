@@ -99,7 +99,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         super().__init__(dataset_name=dataset_name, settings=settings)
-        self._class_details = class_map
+        self._class_map = class_map
         self._image_folder = image_folder
         self._semantic_segmentation_folder = semantic_segmentation_folder
         self._metadata_folder = metadata_folder
@@ -125,7 +125,7 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return decode_class_maps(class_map=self._class_details)
+        return decode_class_maps(class_map=self._class_map)
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
