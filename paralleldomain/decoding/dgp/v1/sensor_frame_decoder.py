@@ -565,6 +565,8 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model = CameraModel.OPENCV_PINHOLE
         elif dto.fisheye == 3:
             camera_model = CameraModel.PD_FISHEYE
+        elif dto.fisheye == 6:
+            camera_model = CameraModel.PD_ORTHOGRAPHIC
         elif dto.fisheye > 1:
             camera_model = f"custom_{dto.fisheye}"
         else:

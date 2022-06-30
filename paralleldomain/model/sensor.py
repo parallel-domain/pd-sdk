@@ -21,7 +21,12 @@ try:
 except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
-from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
+from paralleldomain.constants import (
+    CAMERA_MODEL_OPENCV_FISHEYE,
+    CAMERA_MODEL_OPENCV_PINHOLE,
+    CAMERA_MODEL_PD_FISHEYE,
+    CAMERA_MODEL_PD_ORTHOGRAPHIC,
+)
 from paralleldomain.model.annotation import Annotation, AnnotationType
 from paralleldomain.model.annotation.albedo_2d import Albedo2D
 from paralleldomain.model.annotation.bounding_box_2d import BoundingBoxes2D
@@ -145,11 +150,16 @@ class CameraModel:
         PD_FISHEYE: Returns internally used string-representation for Parallel Domain Fisheye camera model
 
             Uses custom distortion lookup table for translation between non-distorted and distorted angles.
+
+        PD_ORTHOGRAPHIC: Returns internally used string-representation for Parallel Domain Orthographic camera model
+
+            Uses `fx,fy` for pixel per meter resolution. `p1,p2` are used for near- and far-clip plane values.
     """
 
     OPENCV_PINHOLE: str = CAMERA_MODEL_OPENCV_PINHOLE
     OPENCV_FISHEYE: str = CAMERA_MODEL_OPENCV_FISHEYE
     PD_FISHEYE: str = CAMERA_MODEL_PD_FISHEYE
+    PD_ORTHOGRAPHIC: str = CAMERA_MODEL_PD_ORTHOGRAPHIC
 
 
 class SensorFrameDecoderProtocol(Protocol[TDateTime]):
