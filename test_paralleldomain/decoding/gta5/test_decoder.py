@@ -50,8 +50,9 @@ def test_decode_train_scene_names(gta_train_dataset: Dataset):
 
 
 def test_decode_camera_image(gta_dataset_train_scene: UnorderedScene):
+    camera_frames = gta_dataset_train_scene.camera_frames
     for i in range(5):
-        camera_frame = next(gta_dataset_train_scene.camera_frames)
+        camera_frame = next(camera_frames)
         assert camera_frame is not None
         assert isinstance(camera_frame, CameraSensorFrame)
         image = camera_frame.image
@@ -65,8 +66,9 @@ def test_decode_camera_image(gta_dataset_train_scene: UnorderedScene):
 
 
 def test_decode_camera_semseg_2d(gta_dataset_train_scene: UnorderedScene):
+    camera_frames = gta_dataset_train_scene.camera_frames
     for i in range(5):
-        camera_frame = next(gta_dataset_train_scene.camera_frames)
+        camera_frame = next(camera_frames)
         assert camera_frame is not None
         assert isinstance(camera_frame, CameraSensorFrame)
         semseg = camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
