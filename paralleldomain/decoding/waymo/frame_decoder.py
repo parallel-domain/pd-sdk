@@ -80,4 +80,5 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         raise ValueError("his dataset has no radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
-        return dict()
+        record = self.get_record_at(frame_id=frame_id)
+        return dict(stats=record.context.stats, name=record.context.name)

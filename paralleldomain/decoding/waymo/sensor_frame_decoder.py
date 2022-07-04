@@ -76,7 +76,8 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         return dict()
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
-        return dict()
+        record = self.get_record_at(frame_id=frame_id)
+        return dict(stats=record.context.stats, name=record.context.name)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         record = self.get_record_at(frame_id=frame_id)

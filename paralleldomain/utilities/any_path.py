@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from awscli.clidriver import create_clidriver
+from pathy import Pathy
 from s3path import S3Path
 
 from paralleldomain.utilities.os import cpu_count
@@ -34,8 +35,13 @@ class AnyPath:
         parsed = urlparse(path)
         if parsed.scheme == "s3":
             self._backend = S3Path(path.replace("s3://", "/"))
+            self._type = "s3"
+        if parsed.scheme == "gs":
+            self._backend = Pathy(path)
+            self._type = "gcs"
         else:
             self._backend = Path(path)
+            self._type = "local"
 
     @staticmethod
     def _create_valid_any_path(new_path: Union[Path, S3Path]) -> "AnyPath":
@@ -95,7 +101,7 @@ class AnyPath:
             pool.map(_copy, (i for i in self._backend.rglob("*")))
 
     def sync(self, target: "AnyPath", delete=False):
-        if self.is_cloud_path or target.is_cloud_path:
+        if self._type == target._type == "s3":
             aws_driver = create_clidriver()
             command = ["s3", "sync", str(self), str(target), "--no-progress"]
             if delete:
@@ -104,7 +110,7 @@ class AnyPath:
             if result_code > 0:
                 raise S3UnspecifiedException(command=command)
         else:
-            raise TypeError("Sync is only supported for cloud paths.")
+            raise TypeError("Sync is only supported for s3 paths.")
 
     def relative_to(self, other: "AnyPath") -> "AnyPath":
         if isinstance(self._backend, type(other._backend)):
@@ -114,7 +120,7 @@ class AnyPath:
             raise TypeError("Not possible to compare different backend types.")
 
     def copy(self, target: "AnyPath"):
-        if self.is_cloud_path and target.is_cloud_path:
+        if self._type == target._type == "s3":
             aws_driver = create_clidriver()
             command = ["s3", "cp", str(self), str(target), "--no-progress"]
             if self.is_dir():
@@ -153,7 +159,7 @@ class AnyPath:
 
     @property
     def parts(self) -> Tuple[str, ...]:
-        if self.is_cloud_path:
+        if self._type == "s3":
             return tuple(["s3://"]) + self._backend.parts[1:]
         else:
             return self._backend.parts
