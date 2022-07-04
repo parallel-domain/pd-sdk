@@ -176,9 +176,11 @@ class DatasetEncoder:
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
+        sync_after_scene_encoded: bool = True,
     ):
         self._dataset = dataset
         self._output_path = AnyPath(output_path)
+        self._sync_after_scene_encoded = sync_after_scene_encoded
 
         # Adapt to use specific SceneEncoder type
         self._scene_encoder: Type[SceneEncoder] = SceneEncoder
@@ -201,19 +203,42 @@ class DatasetEncoder:
             self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
     def _call_scene_encoder(self, scene_name: str) -> Any:
+        if self._sync_after_scene_encoded:
+            return self._call_scene_encoder_delayed_sync(scene_name)
+        else:
+            return self._call_scene_encoder_ongoing_sync(scene_name)
+
+    def _call_scene_encoder_delayed_sync(self, scene_name: str) -> Any:
         with TemporaryDirectory() as temp_dir:
+            temp_dir = AnyPath(temp_dir)
+            output_dir = AnyPath(self._output_path / scene_name)
             encoder = self._scene_encoder(
                 dataset=self._dataset,
                 scene_name=scene_name,
-                output_path=AnyPath(temp_dir),
+                output_path=temp_dir,
                 camera_names=self._camera_names,
                 lidar_names=self._lidar_names,
                 frame_ids=self._frame_ids,
                 annotation_types=self._annotation_types,
             )
             result = encoder.encode_scene()
-            AnyPath(temp_dir).sync(target=AnyPath(self._output_path / scene_name))
-            return result
+            if temp_dir.is_cloud_path or output_dir.is_cloud_path:
+                temp_dir.sync(target=output_dir)
+            else:
+                temp_dir.copytree(target=output_dir)
+            return output_dir / result.parts[-1]
+
+    def _call_scene_encoder_ongoing_sync(self, scene_name: str) -> Any:
+        encoder = self._scene_encoder(
+            dataset=self._dataset,
+            scene_name=scene_name,
+            output_path=self._output_path / scene_name,
+            camera_names=self._camera_names,
+            lidar_names=self._lidar_names,
+            frame_ids=self._frame_ids,
+            annotation_types=self._annotation_types,
+        )
+        return encoder.encode_scene()
 
     def _relative_path(self, path: AnyPath) -> AnyPath:
         return relative_path(path, self._output_path)
