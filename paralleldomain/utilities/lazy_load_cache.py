@@ -223,7 +223,7 @@ def byte_str_to_bytes(byte_str: str) -> int:
     base = 1024 if base_letter == "i" else 1000
     power = powers[power_letter.lower()]
     number = float(number)
-    total_bits = number * base ** power * bit_factor
+    total_bits = number * base**power * bit_factor
     return int(total_bits)
 
 
