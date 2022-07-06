@@ -6,7 +6,7 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.decoding.waymo_open_dataset.common import (
-    get_cached_pre_calcualted_train_scene_to_id_map,
+    get_cached_pre_calcualted_scene_to_frame_info,
     get_record_iterator,
 )
 from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import WaymoOpenDatasetCameraSensorFrameDecoder
@@ -32,9 +32,9 @@ class WaymoOpenDatasetCameraSensorDecoder(CameraSensorDecoder[datetime]):
         self._dataset_path = dataset_path
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        if self.use_precalculated_maps and self.split_name == "training":
-            id_map = get_cached_pre_calcualted_train_scene_to_id_map(
-                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name
+        if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
+            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             if self.scene_name in id_map:
                 return [elem["frame_id"] for elem in id_map[self.scene_name]]

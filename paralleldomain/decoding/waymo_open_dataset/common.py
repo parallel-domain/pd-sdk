@@ -99,36 +99,45 @@ def get_record_at(record_path: AnyPath, frame_id: FrameId) -> Optional[dataset_p
         return frame
 
 
-def load_pre_calcualted_train_scene_to_id_map() -> Dict[SceneName, List[Dict[str, Any]]]:
-    file_path = AnyPath(__file__).absolute().parent / "pre_calculated" / "train_scenes_to_frame_info.json"
+def load_pre_calcualted_scene_to_id_map(split_name: str) -> Dict[SceneName, List[Dict[str, Any]]]:
+    file_path = AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_scenes_to_frame_info.json"
     with file_path.open("r") as fp:
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_train_scene_to_id_map(
-    lazy_load_cache: LazyLoadCache, dataset_name: str
+def get_cached_pre_calcualted_scene_to_frame_info(
+    lazy_load_cache: LazyLoadCache, dataset_name: str, split_name: str
 ) -> Dict[SceneName, List[Dict[str, Any]]]:
-    _unique_cache_key = create_cache_key(dataset_name=dataset_name, extra="training_scene_to_fid")
+    _unique_cache_key = create_cache_key(dataset_name=dataset_name, extra=f"{split_name}scene_to_fid")
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_train_scene_to_id_map,
+        loader=load_pre_calcualted_scene_to_id_map,
     )
     return id_map
 
 
-def load_pre_calcualted_train_scene_to_has_segmentation() -> Dict[str, bool]:
-    file_path = AnyPath(__file__).absolute().parent / "pre_calculated" / "train_sensor_frame_to_has_segmentation.json"
+def load_pre_calcualted_scene_to_has_segmentation(split_name: str) -> Dict[str, bool]:
+    file_path = (
+        AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_sensor_frame_to_has_segmentation.json"
+    )
     with file_path.open("r") as fp:
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_train_scene_to_has_segmentation(
-    lazy_load_cache: LazyLoadCache, dataset_name: str, scene_name: SceneName, frame_id: FrameId, sensor_name: SensorName
+def get_cached_pre_calcualted_scene_to_has_segmentation(
+    lazy_load_cache: LazyLoadCache,
+    dataset_name: str,
+    scene_name: SceneName,
+    frame_id: FrameId,
+    sensor_name: SensorName,
+    split_name: str,
 ) -> bool:
-    _unique_cache_key = create_cache_key(dataset_name=dataset_name, extra="train_sensor_frame_to_has_segmentation")
+    _unique_cache_key = create_cache_key(
+        dataset_name=dataset_name, extra=f"{split_name}_sensor_frame_to_has_segmentation"
+    )
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_train_scene_to_has_segmentation,
+        loader=load_pre_calcualted_scene_to_has_segmentation,
     )
     key = f"{scene_name}-{frame_id}-{sensor_name}"
     if key in id_map:

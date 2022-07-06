@@ -9,9 +9,8 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.waymo_open_dataset.common import (
     decode_class_maps,
-    get_cached_pre_calcualted_train_scene_to_id_map,
+    get_cached_pre_calcualted_scene_to_frame_info,
     get_record_iterator,
-    load_pre_calcualted_train_scene_to_id_map,
 )
 from paralleldomain.decoding.waymo_open_dataset.frame_decoder import WaymoOpenDatasetFrameDecoder
 from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import WaymoOpenDatasetCameraSensorDecoder
@@ -60,9 +59,9 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         return self.get_scene_names()
 
     def _decode_scene_names(self) -> List[SceneName]:
-        if self.use_precalculated_maps and self.split_name == "training":
-            id_map = get_cached_pre_calcualted_train_scene_to_id_map(
-                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name
+        if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
+            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             return sorted(list(id_map.keys()))
 
@@ -108,9 +107,9 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        if self.use_precalculated_maps and self.split_name == "training":
-            id_map = get_cached_pre_calcualted_train_scene_to_id_map(
-                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name
+        if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
+            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             if scene_name in id_map:
                 return {elem["frame_id"] for elem in id_map[scene_name]}
@@ -163,9 +162,9 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         frame_id_to_date_time_map = dict()
-        if self.use_precalculated_maps and self.split_name == "training":
-            id_map = get_cached_pre_calcualted_train_scene_to_id_map(
-                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name
+        if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
+            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+                lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             for elem in id_map[scene_name]:
                 frame_id_to_date_time_map[elem["frame_id"]] = datetime.fromtimestamp(elem["timestamp_micros"] / 1000000)
