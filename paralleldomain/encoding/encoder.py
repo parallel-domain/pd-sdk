@@ -6,6 +6,7 @@ import os
 import uuid
 from abc import abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
+from tempfile import TemporaryDirectory
 from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy as np
@@ -175,9 +176,11 @@ class DatasetEncoder:
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
         set_stop: Optional[int] = None,
+        sync_after_scene_encoded: bool = True,
     ):
         self._dataset = dataset
         self._output_path = AnyPath(output_path)
+        self._sync_after_scene_encoded = sync_after_scene_encoded
 
         # Adapt to use specific SceneEncoder type
         self._scene_encoder: Type[SceneEncoder] = SceneEncoder
@@ -199,17 +202,32 @@ class DatasetEncoder:
             set_slice = slice(set_start, set_stop)
             self._scene_names = self._dataset.unordered_scene_names[set_slice]
 
-    def _call_scene_encoder(self, scene_name: str) -> Any:
+    def _call_scene_encoder(self, scene_name: str) -> AnyPath:
+        remote_output_dir = self._output_path / scene_name
+        if self._sync_after_scene_encoded:
+            temp_dir = TemporaryDirectory()
+            output_dir = AnyPath(temp_dir.name)
+        else:
+            output_dir = remote_output_dir
+
         encoder = self._scene_encoder(
             dataset=self._dataset,
             scene_name=scene_name,
-            output_path=self._output_path / scene_name,
+            output_path=output_dir,
             camera_names=self._camera_names,
             lidar_names=self._lidar_names,
             frame_ids=self._frame_ids,
             annotation_types=self._annotation_types,
         )
-        return encoder.encode_scene()
+        result = encoder.encode_scene()
+        if self._sync_after_scene_encoded:
+            if remote_output_dir.is_cloud_path:
+                output_dir.sync(target=remote_output_dir)
+            else:
+                output_dir.copytree(target=remote_output_dir)
+            temp_dir.cleanup()
+
+        return remote_output_dir / result.parts[-1]
 
     def _relative_path(self, path: AnyPath) -> AnyPath:
         return relative_path(path, self._output_path)

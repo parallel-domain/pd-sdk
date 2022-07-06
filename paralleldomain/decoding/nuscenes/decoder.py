@@ -10,7 +10,7 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.nuscenes.common import NUSCENES_CLASSES, NuScenesDataAccessMixin, load_table
 from paralleldomain.decoding.nuscenes.frame_decoder import NuScenesFrameDecoder
 from paralleldomain.decoding.nuscenes.sensor_decoder import NuScenesCameraSensorDecoder, NuScenesLidarSensorDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -45,6 +45,9 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
              validation samples. To access the validation samples pass "val". Options are
              ["mini_train", "mini_val", "test", "val", "train"]. Defaults to "mini_train"
         """
+        self._init_kwargs = dict(
+            dataset_path=dataset_path, settings=settings, nu_split_name=nu_split_name, split_name=split_name
+        )
         self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if split_name is None:
@@ -88,6 +91,16 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
             available_annotation_types=available_annotation_types,
             custom_attributes=dict(split_name=self.split_name, nu_split_name=self.nu_split_name),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "nuscenes"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
@@ -142,10 +155,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["lidar"])
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {
-            # AnnotationTypes.SemanticSegmentation3D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes3D: ClassMap(classes=self.nu_class_infos),
-        }
+        return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -184,3 +194,12 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         scene_token = self.nu_scene_name_to_scene_token[scene_name]
         samples = self.nu_samples[scene_token]
         return {s["token"]: datetime.fromtimestamp(int(s["timestamp"]) / 1000000) for s in samples}
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("Currently do not support radar data!")

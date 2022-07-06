@@ -12,7 +12,7 @@ class Depth(Annotation):
 
 
     Args:
-        depth: :attr:`~.Depth.depth`
+        depth: :attr:`paralleldomain.model.annotation.depth.Depth.depth`
 
     Attributes:
         depth: Matrix of shape `(H X W x 1)`, , where `H` is the height and `W` is the width of corresponding

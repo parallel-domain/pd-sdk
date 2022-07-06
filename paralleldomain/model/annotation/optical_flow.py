@@ -10,10 +10,10 @@ class OpticalFlow(Annotation):
     """Represents an Optical Flow mask for a camera image.
 
     Args:
-        vectors: :attr:`~.OpticalFlow.vectors`
+        vectors: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors`
 
     Attributes:
-        vectors: Matrix of shape `(H X W x 2)`, , where `H` is the height and `W` is the width of corresponding
+        vectors: Matrix of shape `(H X W x 2)`, where `H` is the height and `W` is the width of corresponding
             camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.
 
     Example:

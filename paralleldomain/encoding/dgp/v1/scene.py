@@ -1,8 +1,6 @@
 import concurrent
 import hashlib
 import logging
-import random
-import time
 import uuid
 from collections import defaultdict
 from concurrent.futures import Future
@@ -63,6 +61,8 @@ class DGPSceneEncoder(SceneEncoder):
         {
             CameraModel.OPENCV_PINHOLE: 0,
             CameraModel.OPENCV_FISHEYE: 1,
+            CameraModel.PD_FISHEYE: 3,
+            CameraModel.PD_ORTHOGRAPHIC: 6,
         },
     )
 
@@ -112,7 +112,7 @@ class DGPSceneEncoder(SceneEncoder):
             )
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
-            return self._encode_rgb(sensor_frame=sensor_frame, output_path=output_path)
+            return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)
 
     def _encode_rgb(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
         return self._run_async(func=fsio.write_png, obj=sensor_frame.image.rgba, path=output_path)

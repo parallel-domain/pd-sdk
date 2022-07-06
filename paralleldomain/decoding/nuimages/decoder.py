@@ -9,7 +9,7 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.nuimages.common import NUIMAGES_CLASSES, NuImagesDataAccessMixin, load_table
 from paralleldomain.decoding.nuimages.frame_decoder import NuImagesFrameDecoder
 from paralleldomain.decoding.nuimages.sensor_decoder import NuImagesCameraSensorDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -32,6 +32,7 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             split: Split to use within this dataset. Defaults to v1.0-train.
             Options are [v1.0-mini, v1.0-test, v1.0-train, v1.0-val].
         """
+        self._init_kwargs = dict(dataset_path=dataset_path, settings=settings, split_name=split_name)
         self.settings = settings
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if split_name is None:
@@ -74,6 +75,16 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             available_annotation_types=available_annotation_types,
             custom_attributes=dict(split_name=self.split_name),
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "nuimages"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
 
 
 class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
@@ -121,10 +132,7 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {
-            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
-        }
+        return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -155,3 +163,12 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids(scene_name=scene_name)}
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("NuImages does not contain radar data!")

@@ -61,6 +61,32 @@ class PointFormat:
         ]
 
 
+class RadarPointFormat:
+    X: str = "X"
+    Y: str = "Y"
+    Z: str = "Z"
+    POWER: str = "REFLECTED_POWER_DB"
+    DOPPLER: str = "VELOCITY_XS"
+    RANGE: str = "RADIAL_DISTANCE"
+    AZ: str = "AZIMUTH_ANGLE"
+    EL: str = "ELEVATION_ANGLE"
+    TS: str = "TIMESTAMP"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.POWER,
+            cls.DOPPLER,
+            cls.RANGE,
+            cls.AZ,
+            cls.EL,
+            cls.TS,
+        ]
+
+
 class PointFormatDtype:
     X: str = "<f4"
     Y: str = "<f4"
@@ -89,11 +115,38 @@ class PointFormatDtype:
         ]
 
 
+class RadarPointFormatDtype:
+    X: str = "<f4"
+    Y: str = "<f4"
+    Z: str = "<f4"
+    POWER: str = "<f4"
+    DOPPLER: str = "<f4"
+    RANGE: str = "<f4"
+    AZ: str = "<f4"
+    EL: str = "<f4"
+    TS: str = "<u8"
+
+    @classmethod
+    def to_list(cls):
+        return [
+            cls.X,
+            cls.Y,
+            cls.Z,
+            cls.POWER,
+            cls.DOPPLER,
+            cls.RANGE,
+            cls.AZ,
+            cls.EL,
+            cls.TS,
+        ]
+
+
 class DirectoryName:
     CALIBRATION: str = "calibration"
     ONTOLOGY: str = "ontology"
     RGB: str = "rgb"
     POINT_CLOUD: str = "point_cloud"
+    RADAR_POINT_CLOUD: str = "radar_point_cloud"
     BOUNDING_BOX_2D: str = "bounding_box_2d"
     BOUNDING_BOX_3D: str = "bounding_box_3d"
     SEMANTIC_SEGMENTATION_2D: str = "semantic_segmentation_2d"

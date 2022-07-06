@@ -1,14 +1,26 @@
+import abc
 import math
 from typing import Optional
 
 import cv2
 import numpy as np
 
-from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
+from paralleldomain.constants import (
+    CAMERA_MODEL_OPENCV_FISHEYE,
+    CAMERA_MODEL_OPENCV_PINHOLE,
+    CAMERA_MODEL_PD_FISHEYE,
+    CAMERA_MODEL_PD_ORTHOGRAPHIC,
+)
 from paralleldomain.utilities.mask import lookup_values
 
 
-class DistortionLookupTable(np.ndarray):
+class DistortionLookup:
+    @abc.abstractmethod
+    def evaluate_at(self, theta: np.ndarray) -> np.ndarray:
+        pass
+
+
+class DistortionLookupTable(DistortionLookup, np.ndarray):
     """Container object for distortion lookup tables used in distortion model `pd_fisheye`.
     Can be accessed like any `np.ndarray`"""
 
@@ -30,17 +42,20 @@ class DistortionLookupTable(np.ndarray):
             data_sorted = np.vstack([data_sorted, np.array([math.pi, extrapolated_theta_d])])
         return data_sorted.view(cls)
 
+    def evaluate_at(self, theta: np.ndarray) -> np.ndarray:
+        return np.interp(x=theta, xp=self[:, 0], fp=self[:, 1])
+
 
 def _project_points_3d_to_2d_pd_fisheye(
     k_matrix: np.ndarray,
     points_3d: np.ndarray,
-    distortion_lookup: DistortionLookupTable,
+    distortion_lookup: DistortionLookup,
 ) -> np.ndarray:
     xy_prime = points_3d[:, [0, 1]]
     r = np.linalg.norm(xy_prime, axis=1)
 
     theta = np.arctan2(r, points_3d[:, 2])
-    theta_d = np.interp(x=theta, xp=distortion_lookup[:, 0], fp=distortion_lookup[:, 1])
+    theta_d = distortion_lookup.evaluate_at(theta=theta)
 
     r_d = (theta_d / r).reshape(-1, 1)
 
@@ -53,19 +68,31 @@ def _project_points_3d_to_2d_pd_fisheye(
     return uv
 
 
+def _project_points_3d_to_2d_pd_orthographic(
+    k_matrix: np.ndarray,
+    points_3d: np.ndarray,
+) -> np.ndarray:
+    xy_prime = points_3d[:, [0, 1]]
+    xy_prime_one = np.ones(shape=(len(xy_prime), 1))
+
+    uv = (k_matrix @ np.hstack([xy_prime, xy_prime_one]).T).T[:, :2]
+
+    return uv
+
+
 def project_points_3d_to_2d(
     k_matrix: np.ndarray,
     camera_model: str,
     points_3d: np.ndarray,
     distortion_parameters: Optional[np.ndarray] = None,
-    distortion_lookup: Optional[DistortionLookupTable] = None,
+    distortion_lookup: Optional[DistortionLookup] = None,
 ) -> np.ndarray:
     """Projects an array of 3D points in Cartesian coordinates onto an image plane.
 
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
             `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
-        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`.
+        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`, `pd_orthographic`.
             More details in :obj:`~.model.sensor.CameraModel`.
         points_3d: A matrix with dimensions (nx3) containing the points.
             Points must be already in the camera's coordinate system.
@@ -109,6 +136,11 @@ def project_points_3d_to_2d(
             points_3d=points_3d,
             distortion_lookup=distortion_lookup,
         )
+    elif camera_model == CAMERA_MODEL_PD_ORTHOGRAPHIC:
+        uv = _project_points_3d_to_2d_pd_orthographic(
+            k_matrix=k_matrix,
+            points_3d=points_3d,
+        )
     else:
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
 
@@ -121,7 +153,7 @@ def project_points_2d_to_3d(
     points_2d: np.ndarray,
     depth: np.ndarray,
     distortion_parameters: Optional[np.ndarray] = None,
-    distortion_lookup: Optional[DistortionLookupTable] = None,
+    distortion_lookup: Optional[DistortionLookup] = None,
     interpolate: bool = True,
 ) -> np.ndarray:
     """Maps image plane coordinates to 3D points in Cartesian coordinates.

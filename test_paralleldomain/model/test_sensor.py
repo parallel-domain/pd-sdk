@@ -1,9 +1,25 @@
 import time
+from collections import defaultdict
 from datetime import datetime
+from typing import Dict
+from unittest import mock
 
 from paralleldomain import Scene
+from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder
+from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
+
+
+def class_maps_do_match(map_a: Dict[AnnotationType, ClassMap], map_b: Dict[AnnotationType, ClassMap]):
+    assert set(map_a.keys()) == set(map_b.keys())
+    for k, v in map_a.items():
+        assert len(v) == len(map_b[k])
+        assert len(v.class_ids) == len(map_b[k].class_ids)
+        assert len(v.class_names) == len(map_b[k].class_names)
+        for cid in v.class_ids:
+            assert map_b[k][cid] == v[cid]
 
 
 class TestSensorFrame:
@@ -50,7 +66,7 @@ class TestSensorFrame:
         time2 = time.time() - start
         assert xyz is not None
         assert xyz.shape[0] > 0
-        assert time2 < time1
+        assert time2 <= time1
         assert time2 < 1
 
         scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
@@ -93,6 +109,46 @@ class TestSensorFrame:
         assert len(rgb.shape) == 3
         assert rgb.shape[0] == image.height
         assert rgb.shape[1] == image.width
+
+    def test_camera_frame_class_map_access(self, scene: Scene):
+        if scene.number_of_camera_frames > 0:
+            sensor_frame = next(iter(scene.camera_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_lidar_frame_class_map_access(self, scene: Scene):
+        if scene.number_of_lidar_frames > 0:
+            sensor_frame = next(iter(scene.lidar_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_radar_frame_class_map_access(self, scene: Scene):
+        if scene.number_of_radar_frames > 0:
+            sensor_frame = next(iter(scene.radar_frames))
+            class_maps = sensor_frame.class_maps
+            scene_class_maps = scene.class_maps
+            class_maps_do_match(map_a=class_maps, map_b=scene_class_maps)
+
+    def test_distortion_loop_access(self, decoder: DatasetDecoder):
+        decoder_cls = decoder.__class__
+        init_kwargs = decoder.get_decoder_init_kwargs()
+        init_kwargs["settings"] = None
+        no_lookup_decoder = decoder_cls(**init_kwargs)
+        datast = no_lookup_decoder.get_dataset()
+        sensor_frame = next(iter(datast.camera_frames))
+        distortion_lookup = sensor_frame.distortion_lookup
+        assert distortion_lookup is None
+        no_lookup_decoder.lazy_load_cache.clear()
+        fake_loopup = mock.MagicMock()
+
+        init_kwargs["settings"] = DecoderSettings(distortion_lookups={sensor_frame.sensor_name: fake_loopup})
+        with_lookup_decoder = decoder_cls(**init_kwargs)
+        dataset = with_lookup_decoder.get_dataset()
+        sensor_frame = next(iter(dataset.camera_frames))
+        distortion_lookup = sensor_frame.distortion_lookup
+        assert distortion_lookup == fake_loopup
 
 
 class TestSensor:

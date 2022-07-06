@@ -1,14 +1,14 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
-from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, get_scene_path
+from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, decode_class_maps, get_scene_path
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
+from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
+from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -24,6 +24,7 @@ class CityscapesDatasetDecoder(DatasetDecoder):
         settings: Optional[DecoderSettings] = None,
         **kwargs,
     ):
+        self._init_kwargs = dict(dataset_path=dataset_path, settings=settings, splits=splits)
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         if splits is None:
             splits = ["test", "train", "val"]
@@ -55,6 +56,16 @@ class CityscapesDatasetDecoder(DatasetDecoder):
             custom_attributes=dict(splits=self.splits),
         )
 
+    @staticmethod
+    def get_format() -> str:
+        return "cityscapes"
+
+    def get_path(self) -> Optional[AnyPath]:
+        return self._dataset_path
+
+    def get_decoder_init_kwargs(self) -> Dict[str, Any]:
+        return self._init_kwargs
+
 
 class CityscapesSceneDecoder(SceneDecoder[None]):
     def __init__(self, dataset_path: Union[str, AnyPath], dataset_name: str, settings: DecoderSettings):
@@ -67,6 +78,15 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
+
+    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+        """Radar not supported atm"""
+        return list()
+
+    def _create_radar_sensor_decoder(
+        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
+    ) -> RadarSensorDecoder[None]:
+        raise ValueError("Cityscapes does not contain radar data!")
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         frame_ids = set()
@@ -88,7 +108,7 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
         return list()
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=CITYSCAPE_CLASSES)}
+        return decode_class_maps()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

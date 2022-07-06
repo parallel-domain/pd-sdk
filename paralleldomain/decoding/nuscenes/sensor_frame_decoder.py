@@ -1,7 +1,7 @@
 import base64
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, ByteString, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, ByteString, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import cv2
 import numpy as np
@@ -14,8 +14,10 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     SensorFrameDecoder,
     TDateTime,
 )
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
+from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoPose
+from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
@@ -24,6 +26,7 @@ from paralleldomain.utilities.fsio import read_image
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+F = TypeVar("F", Image, PointCloud, Annotation)
 
 
 class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAccessMixin):
@@ -58,6 +61,9 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return {}
 
+    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        return self.nu_class_maps
+
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         return self.get_datetime_with_frame_id(scene_token=self.scene_token, frame_id=frame_id)
 
@@ -79,6 +85,26 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         ego_to_world = EgoPose.from_transformation_matrix(ego_to_world_mat)
         sensor_to_world = ego_to_world @ sensor_to_ego
         return sensor_to_world
+
+    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+        if issubclass(data_type, Image):
+            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+                scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
+            )
+            if sample_data_id is not None:
+                data = self.nu_samples_data_by_token[sample_data_id]
+
+                img_path = AnyPath(self._dataset_path) / data["filename"]
+                return img_path
+        elif issubclass(data_type, PointCloud):
+            sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
+                scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
+            )
+            if sample_data_id is not None:
+                lidar_filename = self.nu_samples_data_by_token[sample_data_id]["filename"]
+                return self._dataset_path / lidar_filename
+
+        return None
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
@@ -143,8 +169,8 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             scene_name=scene_name,
             settings=settings,
         )
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
-    @lru_cache(maxsize=1)
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
         NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
