@@ -36,7 +36,7 @@ class AnyPath:
         if parsed.scheme == "s3":
             self._backend = S3Path(path.replace("s3://", "/"))
             self._type = "s3"
-        if parsed.scheme == "gs":
+        elif parsed.scheme == "gs":
             self._backend = Pathy(path)
             self._type = "gcs"
         else:

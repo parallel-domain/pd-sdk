@@ -8,11 +8,12 @@ from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
+from paralleldomain.decoding.waymo_open_dataset.decoder import WaymoOpenDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
-known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "directory"]
+known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "directory", "waymo_open_dataset"]
 
 
 def decode_dataset(
@@ -39,19 +40,16 @@ def decode_dataset(
         ).get_dataset()
     elif dataset_format == CityscapesDatasetDecoder.get_format():
         return CityscapesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
-
     elif dataset_format == NuImagesDatasetDecoder.get_format():
         return NuImagesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
-
     elif dataset_format == NuScenesDatasetDecoder.get_format():
         return NuScenesDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
-
     elif dataset_format == DirectoryDatasetDecoder.get_format():
         return DirectoryDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
-
     elif dataset_format == GTADatasetDecoder.get_format():
         return GTADatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
-
+    elif dataset_format == WaymoOpenDatasetDecoder.get_format():
+        return WaymoOpenDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
     else:
         raise ValueError(
             f"Unknown Dataset format {dataset_format}. Currently supported dataset formats are {known_formats}"
