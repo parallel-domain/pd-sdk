@@ -339,10 +339,43 @@ data is required and stores it in the PD SDK model classes and attributes.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a str with the name of the dataset storage format (e.g. dgp, cityscapes, nuscenes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><span class="pre">paralleldomain.utilities.any_path.AnyPath</span></a></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an optional path to a file or a folder where the dataset is stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyPath</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.decoder_init_kwargs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decoder_init_kwargs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.decoder_init_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an optional path to a file or a folder where the dataset is stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.unordered_scenes">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unordered_scenes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">paralleldomain.model.unordered_scene.UnorderedScene</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.unordered_scenes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary of <code class="xref py py-obj docutils literal notranslate"><span class="pre">SensorFrameSet</span></code> instances with the scene name as key. This a superset of
-scenes and hence will also include all scenes.</p>
+scenes and hence will also include all scenes (Scenes that have sensor frames with a date time).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]]]</p>
@@ -424,6 +457,103 @@ scenes and hence will also include all scenes.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.get_sensor_frames">
+<span class="sig-name descname"><span class="pre">get_sensor_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yield all sensor frames from the scenes with the given names.
+If None is passed for scenes_names all scenes in this dataset are used. Same for sensor_names and frame_ids.
+None means all available will be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sensor_names</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>frame_ids</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>scene_names</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.camera_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraSensorFrame" title="paralleldomain.model.sensor.CameraSensorFrame"><span class="pre">paralleldomain.model.sensor.CameraSensorFrame</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.camera_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all CameraSensorFrames of all the unordered scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraSensorFrame" title="paralleldomain.model.sensor.CameraSensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.camera_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.camera_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of all camera sensors across all scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.lidar_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lidar_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.LidarSensorFrame" title="paralleldomain.model.sensor.LidarSensorFrame"><span class="pre">paralleldomain.model.sensor.LidarSensorFrame</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.lidar_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all LidarSensorFrames of all the unordered scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.LidarSensorFrame" title="paralleldomain.model.sensor.LidarSensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">LidarSensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.lidar_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lidar_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.lidar_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of all lidar sensors across all scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.radar_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">radar_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.RadarSensorFrame" title="paralleldomain.model.sensor.RadarSensorFrame"><span class="pre">paralleldomain.model.sensor.RadarSensorFrame</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.radar_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all RadarSensorFrames of all the unordered scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.RadarSensorFrame" title="paralleldomain.model.sensor.RadarSensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">RadarSensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.radar_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">radar_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.radar_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of all Radar sensors across all scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.sensor_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><span class="pre">paralleldomain.model.sensor.SensorFrame</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.sensor_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all SensorFrames (Lidar and Camera) of all the unordered scenes in this dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>

@@ -76,7 +76,7 @@ paralleldomain.model.annotation
 .. automodule:: paralleldomain.model.annotation.surface_normals_3d
     :members:
     :inherited-members:
-
+    
 .. automodule:: paralleldomain.model.annotation.material_properties_2d
     :members:
     :inherited-members:

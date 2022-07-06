@@ -298,22 +298,308 @@ as described in the
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraModel.PD_ORTHOGRAPHIC">
+<span class="sig-name descname"><span class="pre">PD_ORTHOGRAPHIC</span></span><a class="headerlink" href="#paralleldomain.model.sensor.CameraModel.PD_ORTHOGRAPHIC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns internally used string-representation for Parallel Domain Orthographic camera model</p>
+<p>Uses <cite>fx,fy</cite> for pixel per meter resolution. <cite>p1,p2</cite> are used for near- and far-clip plane values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.extrinsic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">paralleldomain.model.sensor.SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.extrinsic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorExtrinsic</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">paralleldomain.model.sensor.SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Vehicle coordinate system at the current time step to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorPose</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.ego_to_world">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.ego_to_world" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.world_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.world_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from world to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.ego_to_sensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to sensor coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.sensor_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.sensor_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from sensor to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RadarSensorFrameDecoderProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to sensor coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.ego_to_world">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.ego_to_world" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.extrinsic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">paralleldomain.model.sensor.SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.extrinsic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorExtrinsic</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">paralleldomain.model.sensor.SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Vehicle coordinate system at the current time step to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorPose</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.sensor_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.sensor_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from sensor to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.world_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.world_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from world to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RadarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to sensor coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.ego_to_world">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.ego_to_world" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.extrinsic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">paralleldomain.model.sensor.SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.extrinsic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorExtrinsic</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">paralleldomain.model.sensor.SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Vehicle coordinate system at the current time step to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorPose</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.sensor_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.sensor_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from sensor to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.world_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.world_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from world to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to sensor coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.ego_to_world">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.ego_to_world" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from ego to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.extrinsic">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">paralleldomain.model.sensor.SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.extrinsic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorExtrinsic</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.pose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">paralleldomain.model.sensor.SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Vehicle coordinate system at the current time step to world coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorPose</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.sensor_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.sensor_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from sensor to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.world_to_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.world_to_ego" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation from world to ego coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.Sensor">
@@ -328,6 +614,11 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RadarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
@@ -680,6 +971,205 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FilePathedDataType</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows to get type-safe access to data types that may have a file linked to them,
+e.g., annotation data, images and point clouds.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes2D">
+<span class="sig-name descname"><span class="pre">BoundingBoxes2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D">paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes3D">
+<span class="sig-name descname"><span class="pre">BoundingBoxes3D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D">paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation2D">
+<span class="sig-name descname"><span class="pre">SemanticSegmentation2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D" title="paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D">paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation2D">
+<span class="sig-name descname"><span class="pre">InstanceSegmentation2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D" title="paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D">paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation3D">
+<span class="sig-name descname"><span class="pre">SemanticSegmentation3D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D" title="paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D">paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation3D">
+<span class="sig-name descname"><span class="pre">InstanceSegmentation3D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D" title="paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D">paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.OpticalFlow">
+<span class="sig-name descname"><span class="pre">OpticalFlow</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.OpticalFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow" title="paralleldomain.model.annotation.optical_flow.OpticalFlow">paralleldomain.model.annotation.optical_flow.OpticalFlow</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Depth">
+<span class="sig-name descname"><span class="pre">Depth</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Depth" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.depth.Depth" title="paralleldomain.model.annotation.depth.Depth">paralleldomain.model.annotation.depth.Depth</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals3D">
+<span class="sig-name descname"><span class="pre">SurfaceNormals3D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals3D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D" title="paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D">paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals2D">
+<span class="sig-name descname"><span class="pre">SurfaceNormals2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D" title="paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D">paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.SceneFlow">
+<span class="sig-name descname"><span class="pre">SceneFlow</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.SceneFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow" title="paralleldomain.model.annotation.scene_flow.SceneFlow">paralleldomain.model.annotation.scene_flow.SceneFlow</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.MaterialProperties2D">
+<span class="sig-name descname"><span class="pre">MaterialProperties2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.MaterialProperties2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D" title="paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D">paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Albedo2D">
+<span class="sig-name descname"><span class="pre">Albedo2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Albedo2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.albedo_2d.Albedo2D]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Points2D">
+<span class="sig-name descname"><span class="pre">Points2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Points2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.point_2d.Points2D" title="paralleldomain.model.annotation.point_2d.Points2D">paralleldomain.model.annotation.point_2d.Points2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Polygons2D">
+<span class="sig-name descname"><span class="pre">Polygons2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Polygons2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.polygon_2d.Polygons2D" title="paralleldomain.model.annotation.polygon_2d.Polygons2D">paralleldomain.model.annotation.polygon_2d.Polygons2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Polylines2D">
+<span class="sig-name descname"><span class="pre">Polylines2D</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Polylines2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.polyline_2d.Polylines2D" title="paralleldomain.model.annotation.polyline_2d.Polylines2D">paralleldomain.model.annotation.polyline_2d.Polylines2D</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Image">
+<span class="sig-name descname"><span class="pre">Image</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Image" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.image.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.PointCloud">
+<span class="sig-name descname"><span class="pre">PointCloud</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.PointCloud" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.point_cloud.PointCloud]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Access 2D Bounding Box annotation file path for a camera frame:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_frame</span><span class="p">:</span> <span class="n">SensorFrame</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># get any camera&#39;s SensorFrame</span>
+
+<span class="kn">from</span> <span class="nn">paralleldomain.model.sensor</span> <span class="kn">import</span> <span class="n">FilePathedDataType</span>
+
+<span class="n">image_file_path</span> <span class="o">=</span> <span class="n">camera_frame</span><span class="o">.</span><span class="n">get_file_path</span><span class="p">(</span><span class="n">FilePathedDataType</span><span class="o">.</span><span class="n">Image</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">image_file_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">image_file_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">):</span>
+        <span class="c1"># do something</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

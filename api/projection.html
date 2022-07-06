@@ -288,13 +288,13 @@ extrapolate for maximum valid angle value of Pi.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>k_matrix</strong> (<em>numpy.ndarray</em>) – Camera intrinsic matrix. Definition can be found in
 <a class="reference external" href="https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html">OpenCV documentation</a>.</p></li>
-<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite>, <cite>opencv_fisheye</cite>, <cite>pd_fisheye</cite>.
+<li><p><strong>camera_model</strong> (<em>str</em>) – One of <cite>opencv_pinhole</cite>, <cite>opencv_fisheye</cite>, <cite>pd_fisheye</cite>, <cite>pd_orthographic</cite>.
 More details in <a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraModel" title="paralleldomain.model.sensor.CameraModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraModel</span></code></a>.</p></li>
 <li><p><strong>points_3d</strong> (<em>numpy.ndarray</em>) – A matrix with dimensions (nx3) containing the points.
 Points must be already in the camera’s coordinate system.</p></li>
 <li><p><strong>distortion_parameters</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Array of applicable distortion parameters for
 distortion models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</p></li>
-<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><em>paralleldomain.utilities.projection.DistortionLookupTable</em></a><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
+<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><em>paralleldomain.utilities.projection.DistortionLookup</em><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -326,7 +326,7 @@ Points must be in image coordinate system (x,y).</p></li>
 <li><p><strong>depth</strong> (<em>numpy.ndarray</em>) – Depth mask with the same dimensions as the image canvas.</p></li>
 <li><p><strong>distortion_parameters</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Array of applicable distortion parameters for
 distortion models <cite>opencv_pinhole</cite> and <cite>opencv_fisheye</cite>.</p></li>
-<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#paralleldomain.utilities.projection.DistortionLookupTable" title="paralleldomain.utilities.projection.DistortionLookupTable"><em>paralleldomain.utilities.projection.DistortionLookupTable</em></a><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
+<li><p><strong>distortion_lookup</strong> (<em>Optional</em><em>[</em><em>paralleldomain.utilities.projection.DistortionLookup</em><em>]</em>) – Table of undistorted and distorted angles. Required for <cite>pd_fisheye</cite> model.</p></li>
 <li><p><strong>interpolate</strong> (<em>bool</em>) – When points are not exactly on an image pixel, apply bi-linear interpolation to estimate
 the corresponding depth value. Default: True.</p></li>
 </ul>
