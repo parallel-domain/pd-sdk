@@ -209,15 +209,9 @@ GTA_CLASSES = [
         meta=dict(ignoreInEval=False, catId=7, trainId=18, category="vehicle", color=(119, 11, 32)),
     ),
     ClassDetail(
-        name="unlabeled",
+        name="license plate",
         id=34,
         instanced=False,
         meta=dict(ignoreInEval=True, catId=0, trainId=255, category="void", color=(0, 0, 0)),
-    ),
-    ClassDetail(
-        name="license plate",
-        id=255,
-        instanced=False,
-        meta=dict(ignoreInEval=True, catId=7, trainId=-1, category="vehicle", color=(0, 0, 142)),
     ),
 ]
