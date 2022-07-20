@@ -538,5 +538,7 @@ class SensorIntrinsic:
             )
         elif self.camera_model == CAMERA_MODEL_PD_FISHEYE:
             return None
+        elif self.camera_model == CAMERA_MODEL_PD_ORTHOGRAPHIC:
+            return None
         else:
             raise NotImplementedError(f"No distortion parameters implemented for camera model {self.camera_model}")
