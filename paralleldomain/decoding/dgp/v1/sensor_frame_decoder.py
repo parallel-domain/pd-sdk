@@ -61,9 +61,9 @@ from paralleldomain.model.annotation import (
     SurfaceNormals2D,
     SurfaceNormals3D,
 )
-from paralleldomain.model.annotation.point_3d import Points3D
-from paralleldomain.model.annotation.polygon_3d import Polygons3D
-from paralleldomain.model.annotation.polyline_3d import Polylines3D
+from paralleldomain.model.annotation.point_3d import Point3D, Points3D
+from paralleldomain.model.annotation.polygon_3d import Polygon3D, Polygons3D
+from paralleldomain.model.annotation.polyline_3d import Line3D, Polyline3D, Polylines3D
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -280,7 +280,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         elif issubclass(annotation_type, Points3D):
             points = self._decode_points_3d(scene_name=self.scene_name, annotation_identifier=identifier)
             return Points3D(points=points)
-
         elif issubclass(annotation_type, PointCaches):
             caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
             return PointCaches(caches=caches)
@@ -463,7 +462,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return decoded_norms
 
-    def _lines_from_pb_annotation(
+    def _lines_2d_from_pb_annotation(
         self,
         annotation: Union[annotations_pb2.Polygon2DAnnotation, annotations_pb2.KeyLine2DAnnotation],
         class_id: int,
@@ -481,6 +480,24 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return lines
 
+    def _lines_3d_from_pb_annotation(
+        self,
+        annotation: Union[annotations_pb2.Polygon3DAnnotation, annotations_pb2.KeyLine3DAnnotation],
+        class_id: int,
+        instance_id: int,
+    ) -> List[Line3D]:
+        lines = list()
+        points = list()
+        for vertex in annotation.vertices:
+            point = Point3D(x=vertex.x, y=vertex.y, z=vertex.z, class_id=class_id, instance_id=instance_id)
+            points.append(point)
+
+        for start, end in zip(points, points[1:]):
+            line = Line3D(start=start, end=end, class_id=class_id, directed=False, instance_id=instance_id)
+            lines.append(line)
+
+        return lines
+
     def _decode_polygons_2d(self, scene_name: str, annotation_identifier: str) -> List[Polygon2D]:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         poly_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
@@ -489,7 +506,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             attributes = _decode_attributes(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
-            lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
+            lines = self._lines_2d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
 
             polygon = Polygon2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
             polygons.append(polygon)
@@ -506,7 +523,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             key = annotation.key
             attributes["key"] = key
 
-            lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
+            lines = self._lines_2d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
 
             polyline = Polyline2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
             polylines.append(polyline)
@@ -534,61 +551,59 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             points.append(point)
         return points
 
-    def _decode_polygons_3d(self, scene_name: str, annotation_identifier: str) -> List[Polygon2D]:
-        ...  # TBD
-        # annotation_path = self._dataset_path / scene_name / annotation_identifier
-        # poly_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
-        # polygons = list()
-        # for annotation in poly_annotations.annotations:
-        #     attributes = _decode_attributes(attributes=annotation.attributes)
-        #     instance_id = attributes.pop("instance_id", -1)
-        #     class_id = annotation.class_id
-        #     lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
-        #
-        #     polygon = Polygon2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
-        #     polygons.append(polygon)
-        # return polygons
+    def _decode_polygons_3d(self, scene_name: str, annotation_identifier: str) -> List[Polygon3D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        polygon_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
+        polygons = list()
+        for annotation in polygon_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            lines = self._lines_3d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
 
-    def _decode_polylines_3d(self, scene_name: str, annotation_identifier: str) -> List[Polyline2D]:
-        ...  # TBD
-        # annotation_path = self._dataset_path / scene_name / annotation_identifier
-        # poly_annotations = read_message(obj=annotations_pb2.KeyLine2DAnnotations(), path=annotation_path)
-        # polylines = list()
-        # for annotation in poly_annotations.annotations:
-        #     attributes = _decode_attributes(attributes=annotation.attributes)
-        #     instance_id = attributes.pop("instance_id", -1)
-        #     class_id = annotation.class_id
-        #     key = annotation.key
-        #     attributes["key"] = key
-        #
-        #     lines = self._lines_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
-        #
-        #     polyline = Polyline2D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
-        #     polylines.append(polyline)
-        # return polylines
+            polygon = Polygon3D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
+            polygons.append(polygon)
+        return polygons
 
-    def _decode_points_3d(self, scene_name: str, annotation_identifier: str) -> List[Point2D]:
-        ...  # TBD
-        # annotation_path = self._dataset_path / scene_name / annotation_identifier
-        # poly_annotations = read_message(obj=annotations_pb2.KeyPoint2DAnnotations(), path=annotation_path)
-        # points = list()
-        # for annotation in poly_annotations.annotations:
-        #     attributes = _decode_attributes(attributes=annotation.attributes)
-        #     instance_id = attributes.pop("instance_id", -1)
-        #     class_id = annotation.class_id
-        #     key = annotation.key
-        #     attributes["key"] = key
-        #
-        #     point = Point2D(
-        #         x=annotation.point.x,
-        #         y=annotation.point.y,
-        #         class_id=class_id,
-        #         instance_id=instance_id,
-        #         attributes=attributes,
-        #     )
-        #
-        #     points.append(point)
-        # return points
+    def _decode_polylines_3d(self, scene_name: str, annotation_identifier: str) -> List[Polyline3D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        polyline_annotations = read_message(obj=annotations_pb2.KeyLine3DAnnotations(), path=annotation_path)
+        polylines = list()
+        for annotation in polyline_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            key = annotation.key
+            attributes["key"] = key
+
+            lines = self._lines_3d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
+
+            polyline = Polyline3D(lines=lines, class_id=class_id, instance_id=instance_id, attributes=attributes)
+            polylines.append(polyline)
+        return polylines
+
+    def _decode_points_3d(self, scene_name: str, annotation_identifier: str) -> List[Point3D]:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        point_annotations = read_message(obj=annotations_pb2.KeyPoint3DAnnotations(), path=annotation_path)
+        points = list()
+        for annotation in point_annotations.annotations:
+            attributes = _decode_attributes(attributes=annotation.attributes)
+            instance_id = attributes.pop("instance_id", -1)
+            class_id = annotation.class_id
+            key = annotation.key
+            attributes["key"] = key
+
+            point = Point3D(
+                x=annotation.point.x,
+                y=annotation.point.y,
+                z=annotation.point.z,
+                class_id=class_id,
+                instance_id=instance_id,
+                attributes=attributes,
+            )
+
+            points.append(point)
+        return points
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
