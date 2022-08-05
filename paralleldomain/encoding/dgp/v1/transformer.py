@@ -46,3 +46,15 @@ class KeyLine2DTransformer(ObjectTransformer):
 
 class Polygon2DTransformer(ObjectTransformer):
     ...
+
+
+class KeyPoint3DTransformer(ObjectTransformer):
+    ...
+
+
+class KeyLine3DTransformer(ObjectTransformer):
+    ...
+
+
+class Polygon3DTransformer(ObjectTransformer):
+    ...

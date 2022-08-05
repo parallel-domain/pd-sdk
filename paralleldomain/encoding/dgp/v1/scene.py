@@ -29,8 +29,11 @@ from paralleldomain.encoding.dgp.v1.transformer import (
     InstanceSegmentation2DTransformer,
     InstanceSegmentation3DTransformer,
     KeyLine2DTransformer,
+    KeyLine3DTransformer,
     KeyPoint2DTransformer,
+    KeyPoint3DTransformer,
     Polygon2DTransformer,
+    Polygon3DTransformer,
     SemanticSegmentation2DTransformer,
     SemanticSegmentation3DTransformer,
 )
@@ -43,8 +46,11 @@ from paralleldomain.model.annotation import (
     BoundingBox2D,
     BoundingBox3D,
     Point2D,
+    Point3D,
     Polygon2D,
+    Polygon3D,
     Polyline2D,
+    Polyline3D,
 )
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, SensorFrame
@@ -505,6 +511,102 @@ class DGPSceneEncoder(SceneEncoder):
         )
         return self._run_async(func=fsio.write_json_message, obj=polygons2d_dto, path=output_path, append_sha1=True)
 
+    def _encode_key_point_3d(self, point: Point3D) -> annotations_pb2.KeyPoint3DAnnotation:
+        keypoint_proto = annotations_pb2.KeyPoint3DAnnotation(
+            class_id=point.class_id,
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in point.attributes.items() if k != "key"
+            },
+            point=annotations_pb2.KeyPoint3D(x=point.x, y=point.y, z=point.z),
+            key=point.attributes["key"] if "key" in point.attributes else "",
+        )
+
+        return keypoint_proto
+
+    def _encode_key_points_3d(
+        self, sensor_frame: Union[CameraSensorFrame[datetime], LidarSensorFrame[datetime]]
+    ) -> Future:
+        points3d = sensor_frame.get_annotations(AnnotationTypes.Points3D)
+        keypoint3d_dto = KeyPoint3DTransformer.transform(
+            objects=[self._encode_key_point_3d(p) for p in points3d.points]
+        )
+        keypoints3d_dto = annotations_pb2.KeyPoint3DAnnotations(annotations=keypoint3d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.KEY_POINT_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=keypoints3d_dto, path=output_path, append_sha1=True)
+
+    def _encode_key_line_3d(self, line: Polyline3D) -> annotations_pb2.KeyLine3DAnnotation:
+        keyline_proto = annotations_pb2.KeyLine3DAnnotation(
+            class_id=line.class_id,
+            attributes={
+                _attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items() if k != "key"
+            },
+            vertices=[
+                annotations_pb2.KeyPoint3D(x=int(ll.start.x), y=int(ll.start.y), z=int(ll.start.z)) for ll in line.lines
+            ]
+            + [
+                annotations_pb2.KeyPoint3D(
+                    x=int(line.lines[-1].end.x), y=int(line.lines[-1].end.y), z=int(line.lines[-1].end.z)
+                )
+            ],
+            key=line.attributes["key"] if "key" in line.attributes else "",
+        )
+
+        return keyline_proto
+
+    def _encode_key_lines_3d(
+        self, sensor_frame: Union[CameraSensorFrame[datetime], LidarSensorFrame[datetime]]
+    ) -> Future:
+        polylines3d = sensor_frame.get_annotations(AnnotationTypes.Polylines3D)
+        keyline3d_dto = KeyLine3DTransformer.transform(
+            objects=[self._encode_key_line_3d(p) for p in polylines3d.polylines]
+        )
+        keylines3d_dto = annotations_pb2.KeyLine2DAnnotations(annotations=keyline3d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.KEY_LINE_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=keylines3d_dto, path=output_path, append_sha1=True)
+
+    def _encode_polygon_3d(self, polygon: Polygon3D) -> annotations_pb2.Polygon3DAnnotation:
+        polygon_proto = annotations_pb2.Polygon3DAnnotation(
+            class_id=polygon.class_id,
+            attributes={_attribute_key_dump(k): _attribute_value_dump(v) for k, v in polygon.attributes.items()},
+            vertices=[annotations_pb2.KeyPoint3D(x=ll.start.x, y=ll.start.y, z=ll.start.z) for ll in polygon.lines]
+            + [
+                annotations_pb2.KeyPoint3D(
+                    x=polygon.lines[-1].end.x, y=polygon.lines[-1].end.y, z=polygon.lines[-1].end.z
+                )
+            ],
+        )
+
+        return polygon_proto
+
+    def _encode_polygons_3d(
+        self, sensor_frame: Union[CameraSensorFrame[datetime], LidarSensorFrame[datetime]]
+    ) -> Future:
+        polygons3d = sensor_frame.get_annotations(AnnotationTypes.Polygons3D)
+        polygon3d_dto = Polygon3DTransformer.transform(
+            objects=[self._encode_polygon_3d(p) for p in polygons3d.polygons]
+        )
+        polygons3d_dto = annotations_pb2.Polygon3DAnnotations(annotations=polygon3d_dto)
+
+        output_path = (
+            self._output_path
+            / DirectoryName.POLYGON_3D
+            / sensor_frame.sensor_name
+            / f"{round((self._offset_timestamp(compare_datetime=sensor_frame.date_time)+self._sim_offset)*100):018d}.json"  # noqa: E501
+        )
+        return self._run_async(func=fsio.write_json_message, obj=polygons3d_dto, path=output_path, append_sha1=True)
+
     def _process_surface_normals_2d(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
         output_path = (
             self._output_path
@@ -769,6 +871,18 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.SurfaceNormals2D in camera_frame.available_annotation_types
                 and AnnotationTypes.SurfaceNormals2D in self._annotation_types
                 else None,
+                "16": self._encode_key_points_3d(sensor_frame=camera_frame)
+                if AnnotationTypes.Points3D in camera_frame.available_annotation_types
+                and AnnotationTypes.Points3D in self._annotation_types
+                else None,
+                "17": self._encode_key_lines_3d(sensor_frame=camera_frame)
+                if AnnotationTypes.Polylines3D in camera_frame.available_annotation_types
+                and AnnotationTypes.Polylines3D in self._annotation_types
+                else None,
+                "18": self._encode_polygons_3d(sensor_frame=camera_frame)
+                if AnnotationTypes.Polygons3D in camera_frame.available_annotation_types
+                and AnnotationTypes.Polygons3D in self._annotation_types
+                else None,
             },
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),
@@ -805,6 +919,18 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.SceneFlow in lidar_frame.available_annotation_types
                 and AnnotationTypes.SceneFlow in self._annotation_types
                 and not last_frame
+                else None,
+                "16": self._encode_key_points_3d(sensor_frame=lidar_frame)
+                if AnnotationTypes.Points3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.Points3D in self._annotation_types
+                else None,
+                "17": self._encode_key_lines_3d(sensor_frame=lidar_frame)
+                if AnnotationTypes.Polylines3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.Polylines3D in self._annotation_types
+                else None,
+                "18": self._encode_polygons_3d(sensor_frame=lidar_frame)
+                if AnnotationTypes.Polygons3D in lidar_frame.available_annotation_types
+                and AnnotationTypes.Polygons3D in self._annotation_types
                 else None,
             },
             sensor_data={
