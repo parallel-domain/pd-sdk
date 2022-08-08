@@ -145,10 +145,7 @@ class BoundingBox2DBaseGeometry(Generic[T]):
 
         """
 
-        if type(points) is np.ndarray:
-            np_points = points
-        else:
-            np_points = np.array([[p.x, p.y] for p in points])
+        np_points = points if isinstance(points, np.ndarray) else np.array([[p.x, p.y] for p in points])
 
         np_points = np.vstack(
             [
