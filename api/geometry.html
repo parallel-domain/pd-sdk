@@ -393,7 +393,7 @@ other instance annotation types, e.g., <code class="xref py py-obj docutils lite
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.bounding_box_2d.T</em><em>]</em><em>]</em>) – List of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Point2DGeometry</span></code> which need to be included in updated bounding box.</p></li>
+<li><p><strong>points</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.bounding_box_2d.T</em><em>]</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – List of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Point2DGeometry</span></code> which need to be included in updated bounding box.</p></li>
 <li><p><strong>inline</strong> (<em>bool</em>) – When set, do not return a copy of the object but update the current object. Default: <cite>False</cite>.</p></li>
 </ul>
 </dd>
@@ -509,7 +509,7 @@ merged into it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.bounding_box_2d.T</em><em>]</em><em>]</em>) – List of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Point2DGeometry</span></code> which need to be included in updated bounding box.</p></li>
+<li><p><strong>points</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.bounding_box_2d.T</em><em>]</em><em>]</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – List of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Point2DGeometry</span></code> which need to be included in updated bounding box.</p></li>
 <li><p><strong>inline</strong> (<em>bool</em>) – When set, do not return a copy of the object but update the current object. Default: <cite>False</cite>.</p></li>
 </ul>
 </dd>
