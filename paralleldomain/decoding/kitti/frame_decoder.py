@@ -38,8 +38,6 @@ class KITTIFrameDecoder(FrameDecoder[None]):
         self._noc_optical_flow_folder = noc_optical_flow_folder
         self._use_non_occluded = use_non_occluded
         self.camera_name = camera_name
-        # self._metadata_folder = metadata_folder
-        # self._class_map = class_map
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         raise ValueError("Loading from directory does not support ego pose!")

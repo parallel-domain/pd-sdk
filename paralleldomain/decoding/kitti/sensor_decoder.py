@@ -33,7 +33,6 @@ class KITTICameraSensorDecoder(CameraSensorDecoder[None]):
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        # TODO: Might need to change this...
         scene_images_folder = self._dataset_path / self._image_folder
         # [:-7] removes _10.png or _11.png for first and second images in pairs.
         # We don't want to pull second images since they don't have a following image.

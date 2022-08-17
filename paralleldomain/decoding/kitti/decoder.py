@@ -123,7 +123,6 @@ class KITTISceneDecoder(SceneDecoder[None]):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        # TODO: Might need to change this...
         scene_images_folder = self._dataset_path / self._image_folder
         # [:-7] removes _10.png or _11.png for first and second images in pairs.
         # We don't want to pull second images since they don't have a following image.
@@ -137,7 +136,7 @@ class KITTISceneDecoder(SceneDecoder[None]):
         return [self._camera_name]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        raise ValueError("Loading from directory does not support lidar data!")
+        raise ValueError("KITTI decoder does not currently support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return dict()

@@ -70,8 +70,8 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         if self._metadata_folder is None:
             return dict()
-        # metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
-        # return read_json(metadata_path)
+        metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
+        return read_json(metadata_path)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> None:
         return None
