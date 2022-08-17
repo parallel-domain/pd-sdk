@@ -6,13 +6,14 @@ from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
 from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
+from paralleldomain.decoding.kitti.decoder import KITTIDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
-known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "directory"]
+known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "kitti", "directory"]
 
 
 def decode_dataset(
@@ -51,6 +52,9 @@ def decode_dataset(
 
     elif dataset_format == GTADatasetDecoder.get_format():
         return GTADatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
+
+    elif dataset_format == KITTIDatasetDecoder.get_format():
+        return KITTIDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
 
     else:
         raise ValueError(
