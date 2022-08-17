@@ -18,8 +18,8 @@ def kitti_dataset_path() -> str:
     if KITTI_DATASET_PATH_ENV in os.environ:
         return os.environ[KITTI_DATASET_PATH_ENV]
     else:
-        # pytest.skip()
-        return "s3://pd-internal-ml/flow/KITTI2015"
+        pytest.skip()
+        # return "s3://pd-internal-ml/flow/KITTI2015"
 
 
 @pytest.fixture
