@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import List, Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTICameraSensorFrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTIFlowCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.class_mapping import ClassDetail
@@ -12,7 +12,7 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class KITTICameraSensorDecoder(CameraSensorDecoder[None]):
+class KITTIFlowCameraSensorDecoder(CameraSensorDecoder[datetime]):
     def __init__(
         self,
         dataset_name: str,
@@ -38,11 +38,11 @@ class KITTICameraSensorDecoder(CameraSensorDecoder[None]):
 
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[None]:
-        return CameraSensorFrame[None](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
+    ) -> CameraSensorFrame[datetime]:
+        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
-    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
-        return KITTICameraSensorFrameDecoder(
+    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
+        return KITTIFlowCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
             dataset_path=self._dataset_path,

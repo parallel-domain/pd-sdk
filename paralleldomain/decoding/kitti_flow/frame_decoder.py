@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
-from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTICameraSensorFrameDecoder
+from paralleldomain.decoding.frame_decoder import FrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTIFlowCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -18,7 +19,7 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 
 
-class KITTIFrameDecoder(FrameDecoder[None]):
+class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
     def __init__(
         self,
         dataset_name: str,
@@ -54,8 +55,8 @@ class KITTIFrameDecoder(FrameDecoder[None]):
     def _decode_datetime(self, frame_id: FrameId) -> None:
         return None
 
-    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
-        return KITTICameraSensorFrameDecoder(
+    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
+        return KITTIFlowCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
             dataset_path=self.dataset_path,
@@ -67,27 +68,27 @@ class KITTIFrameDecoder(FrameDecoder[None]):
         )
 
     def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[None]:
-        return CameraSensorFrame[None](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
+    ) -> CameraSensorFrame[datetime]:
+        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
-    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[None]:
+    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
         raise ValueError("Loading from directory does not support lidar data!")
 
     def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[None]:
+        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
+    ) -> LidarSensorFrame[datetime]:
         raise ValueError("Loading from directoy does not support lidar data!")
 
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("Loading from directory does not support radar data!")
 
-    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
+    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[datetime]:
         raise ValueError("Loading from directory does not support radar data!")
 
     def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[TDateTime]:
+        self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
+    ) -> RadarSensorFrame[datetime]:
         raise ValueError("Loading from directory does not support radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:

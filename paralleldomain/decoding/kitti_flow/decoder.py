@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
+from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFrameDecoder
-from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTICameraSensorDecoder
+from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFlowFrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTIFlowCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -19,7 +19,7 @@ OCC_OPTICAL_FLOW_FOLDER_NAME = "flow_occ"
 NOC_OPTICAL_FLOW_FOLDER_NAME = "flow_noc"
 
 
-class KITTIDatasetDecoder(DatasetDecoder):
+class KITTIFlowDatasetDecoder(DatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath] = KITTI_DATASET_PATH,
@@ -53,7 +53,7 @@ class KITTIDatasetDecoder(DatasetDecoder):
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
-        return KITTISceneDecoder(
+        return KITTIFlowSceneDecoder(
             dataset_path=self._dataset_path,
             dataset_name=self.dataset_name,
             settings=self.settings,
@@ -84,7 +84,7 @@ class KITTIDatasetDecoder(DatasetDecoder):
 
     @staticmethod
     def get_format() -> str:
-        return "kitti"
+        return "kitti-flow"
 
     def get_path(self) -> Optional[AnyPath]:
         return self._dataset_path
@@ -93,7 +93,7 @@ class KITTIDatasetDecoder(DatasetDecoder):
         return self._init_kwargs
 
 
-class KITTISceneDecoder(SceneDecoder[None]):
+class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
@@ -146,8 +146,8 @@ class KITTISceneDecoder(SceneDecoder[None]):
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[None]:
-        return KITTICameraSensorDecoder(
+    ) -> CameraSensorDecoder[datetime]:
+        return KITTIFlowCameraSensorDecoder(
             dataset_name=self.dataset_name,
             dataset_path=self._dataset_path,
             scene_name=scene_name,
@@ -160,11 +160,13 @@ class KITTISceneDecoder(SceneDecoder[None]):
 
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[None]:
+    ) -> LidarSensorDecoder[datetime]:
         raise ValueError("Directory decoder does not support lidar data!")
 
-    def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder[None]:
-        return KITTIFrameDecoder(
+    def _create_frame_decoder(
+        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
+    ) -> FrameDecoder[datetime]:
+        return KITTIFlowFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
@@ -178,7 +180,8 @@ class KITTISceneDecoder(SceneDecoder[None]):
 
     def _frame_id_to_timestamp(self, frame_id: str):
         epoch_time = datetime(1970, 1, 1)
-        seconds = int(frame_id[:6]) * 100 + int(frame_id[7:9])
+        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
+        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
         timestamp = epoch_time + timedelta(seconds)
         return timestamp
 
@@ -192,5 +195,5 @@ class KITTISceneDecoder(SceneDecoder[None]):
 
     def _create_radar_sensor_decoder(
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[TDateTime]:
+    ) -> RadarSensorDecoder[datetime]:
         raise ValueError("Loading from directory does not support radar data!")

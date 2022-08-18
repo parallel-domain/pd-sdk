@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
@@ -17,7 +18,7 @@ from paralleldomain.utilities.fsio import read_image, read_json
 T = TypeVar("T")
 
 
-class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
+class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
     def __init__(
         self,
         dataset_name: str,
@@ -56,7 +57,6 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return {AnnotationTypes.OpticalFlow: None}
 
-    # TODO Generalize this
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
@@ -72,9 +72,15 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
         return read_json(metadata_path)
 
-    # TODO: implement this
-    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> None:
-        return None
+    def _frame_id_to_timestamp(self, frame_id: str):
+        epoch_time = datetime(1970, 1, 1)
+        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
+        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
+        timestamp = epoch_time + timedelta(seconds)
+        return timestamp
+
+    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
+        return self._frame_id_to_timestamp(frame_id=frame_id)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         return SensorExtrinsic.from_transformation_matrix(np.eye(4))
@@ -101,7 +107,7 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         else:
             annotation_path = self._dataset_path / self._occ_optical_flow_folder / f"{frame_id}"
         image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False)
-        vectors = (image_data[:, :, :2] - 2**15) / 64.0
+        vectors = (image_data[:, :, :2] - 2 ** 15) / 64.0
         # TODO: What to do with the occlusion mask?
 
         return vectors
