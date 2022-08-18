@@ -46,8 +46,7 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
             return height, width, 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        scene_images_folder = self._dataset_path / self._image_folder
-        img_path = scene_images_folder / f"{frame_id}"
+        img_path = self._dataset_path / self._image_folder / f"{frame_id}"
         image_data = read_image(path=img_path, convert_to_rgb=True)
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
@@ -55,7 +54,7 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         return concatenated
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return dict()
+        return {AnnotationTypes.OpticalFlow: None}
 
     # TODO Generalize this
     def _decode_available_annotation_types(
@@ -73,6 +72,7 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
         metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
         return read_json(metadata_path)
 
+    # TODO: implement this
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> None:
         return None
 
@@ -94,6 +94,8 @@ class KITTICameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
     def _decode_optical_flow(self, scene_name: str, frame_id: FrameId, annotation_identifier: str) -> np.ndarray:
+        if frame_id[-7:] == "_11.png":
+            return None
         if self._use_non_occluded:
             annotation_path = self._dataset_path / self._noc_optical_flow_folder / f"{frame_id}"
         else:

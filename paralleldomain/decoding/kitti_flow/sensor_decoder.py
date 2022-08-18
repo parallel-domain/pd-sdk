@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import List, Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.kitti.sensor_frame_decoder import KITTICameraSensorFrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTICameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.class_mapping import ClassDetail
@@ -33,11 +33,8 @@ class KITTICameraSensorDecoder(CameraSensorDecoder[None]):
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        scene_images_folder = self._dataset_path / self._image_folder
-        # [:-7] removes _10.png or _11.png for first and second images in pairs.
-        # We don't want to pull second images since they don't have a following image.
-        path_set = {path.name[:-7] for path in scene_images_folder.iterdir()}
-        return {path + "_10.png" for path in path_set}
+        frame_ids = {self.scene_name + "_10.png", self.scene_name + "_11.png"}
+        return frame_ids
 
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName

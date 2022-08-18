@@ -1,10 +1,11 @@
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.kitti.frame_decoder import KITTIFrameDecoder
-from paralleldomain.decoding.kitti.sensor_decoder import KITTICameraSensorDecoder
+from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTICameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -64,10 +65,15 @@ class KITTIDatasetDecoder(DatasetDecoder):
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
-        return [self.image_folder]
+        scene_images_folder = self._dataset_path / self.image_folder
+        # [:-7] removes _10.png or _11.png for first and second images in pairs.
+        # We don't want to pull second images since they don't have a following image.
+        scenes = {path.name[:-7] for path in scene_images_folder.iterdir()}
+        return list(scenes)
 
     def _decode_scene_names(self) -> List[SceneName]:
-        return list()
+        # May need to sort here depending on unordered scene logic
+        return self._decode_unordered_scene_names()
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
@@ -123,11 +129,8 @@ class KITTISceneDecoder(SceneDecoder[None]):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        scene_images_folder = self._dataset_path / self._image_folder
-        # [:-7] removes _10.png or _11.png for first and second images in pairs.
-        # We don't want to pull second images since they don't have a following image.
-        path_set = {path.name[:-7] for path in scene_images_folder.iterdir()}
-        return {path + "_10.png" for path in path_set}
+        frame_ids = {scene_name + "_10.png", scene_name + "_11.png"}
+        return frame_ids
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         return [self._camera_name]
@@ -139,7 +142,7 @@ class KITTISceneDecoder(SceneDecoder[None]):
         raise ValueError("KITTI decoder does not currently support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return dict()
+        return {AnnotationTypes.OpticalFlow: None}
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -173,8 +176,15 @@ class KITTISceneDecoder(SceneDecoder[None]):
             camera_name=self._camera_name,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
-        return {fid: None for fid in self.get_frame_ids(scene_name=scene_name)}
+    def _frame_id_to_timestamp(self, frame_id: str):
+        epoch_time = datetime(1970, 1, 1)
+        seconds = int(frame_id[:6]) * 100 + int(frame_id[7:9])
+        timestamp = epoch_time + timedelta(seconds)
+        return timestamp
+
+    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
+        fids = self._decode_frame_id_set(scene_name=scene_name)
+        return {fid: self._frame_id_to_timestamp(frame_id=fid) for fid in fids}
 
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
         """Radar not supported"""

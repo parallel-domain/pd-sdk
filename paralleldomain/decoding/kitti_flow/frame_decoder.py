@@ -4,7 +4,7 @@ import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
-from paralleldomain.decoding.kitti.sensor_frame_decoder import KITTICameraSensorFrameDecoder
+from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTICameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,

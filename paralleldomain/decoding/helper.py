@@ -6,7 +6,7 @@ from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
 from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
-from paralleldomain.decoding.kitti.decoder import KITTIDatasetDecoder
+from paralleldomain.decoding.kitti_flow.decoder import KITTIDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
 from paralleldomain.model.dataset import Dataset
