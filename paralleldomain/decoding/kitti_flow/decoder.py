@@ -14,7 +14,6 @@ from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
-KITTI_DATASET_PATH = "s3://pd-internal-ml/flow/KITTI2015"
 IMAGE_FOLDER_NAME = "image_2"
 OCC_OPTICAL_FLOW_FOLDER_NAME = "flow_occ"
 NOC_OPTICAL_FLOW_FOLDER_NAME = "flow_noc"
@@ -23,7 +22,7 @@ NOC_OPTICAL_FLOW_FOLDER_NAME = "flow_noc"
 class KITTIFlowDatasetDecoder(DatasetDecoder):
     def __init__(
         self,
-        dataset_path: Union[str, AnyPath] = KITTI_DATASET_PATH,
+        dataset_path: Union[str, AnyPath],
         split_name: str = "training",
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
