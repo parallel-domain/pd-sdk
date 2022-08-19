@@ -547,11 +547,11 @@ class DGPSceneEncoder(SceneEncoder):
                 _attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items() if k != "key"
             },
             vertices=[
-                annotations_pb2.KeyPoint3D(x=int(ll.start.x), y=int(ll.start.y), z=int(ll.start.z)) for ll in line.lines
+                annotations_pb2.KeyPoint3D(x=ll.start.x, y=ll.start.y, z=ll.start.z) for ll in line.lines
             ]
             + [
                 annotations_pb2.KeyPoint3D(
-                    x=int(line.lines[-1].end.x), y=int(line.lines[-1].end.y), z=int(line.lines[-1].end.z)
+                    x=line.lines[-1].end.x, y=line.lines[-1].end.y, z=line.lines[-1].end.z
                 )
             ],
             key=line.attributes["key"] if "key" in line.attributes else "",
@@ -1192,6 +1192,13 @@ class DGPSceneEncoder(SceneEncoder):
                     (self._output_path / DirectoryName.SURFACE_NORMALS_2D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
+                if AnnotationTypes.Points3D in self._annotation_types:
+                    (self._output_path / DirectoryName.KEY_POINT_3D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.Polylines3D in self._annotation_types:
+                    (self._output_path / DirectoryName.KEY_LINE_3D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.Polygons3D in self._annotation_types:
+                    (self._output_path / DirectoryName.POLYGON_3D / camera_name).mkdir(exist_ok=True, parents=True)
+
             for lidar_name in self._lidar_names:
                 (self._output_path / DirectoryName.POINT_CLOUD / lidar_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.BoundingBoxes3D in self._annotation_types:
