@@ -97,7 +97,7 @@ def test_decode_camera_image_next(kitti_dataset_train_scene: Scene):
     camera_frame = next(kitti_dataset_train_scene.camera_frames)
     image = camera_frame.image
     fid = camera_frame.frame_id
-    fid_next = fid_next = fid[:-5] + "1.png"
+    fid_next = fid[:-5] + "1.png"
     next_image_path = AnyPath(dataset_path) / image_folder / fid_next
     next_image = read_image(next_image_path)
     assert next_image is not None

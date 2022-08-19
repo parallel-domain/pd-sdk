@@ -13,7 +13,15 @@ from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
-known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "kitti", "directory"]
+known_formats = [
+    DGPDatasetDecoder.get_format(),
+    CityscapesDatasetDecoder.get_format(),
+    NuImagesDatasetDecoder.get_format(),
+    NuScenesDatasetDecoder.get_format(),
+    GTADatasetDecoder.get_format(),
+    KITTIFlowDatasetDecoder.get_format(),
+    DirectoryDatasetDecoder.get_format(),
+]
 
 
 def decode_dataset(

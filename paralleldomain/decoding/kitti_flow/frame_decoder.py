@@ -5,6 +5,7 @@ import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder
+from paralleldomain.decoding.kitti_flow.common import frame_id_to_timestamp
 from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTIFlowCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
@@ -52,8 +53,8 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("Loading from directory does not support lidar data!")
 
-    def _decode_datetime(self, frame_id: FrameId) -> None:
-        return None
+    def _decode_datetime(self, frame_id: FrameId) -> datetime:
+        return frame_id_to_timestamp(frame_id=frame_id)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return KITTIFlowCameraSensorFrameDecoder(

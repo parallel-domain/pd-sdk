@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
@@ -6,6 +6,7 @@ import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.kitti_flow.common import frame_id_to_timestamp
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, OpticalFlow
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -38,7 +39,7 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self._use_non_occluded = use_non_occluded
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return SensorIntrinsic()
+        return SensorIntrinsic(fx=721.5377, fy=721.5377, cx=609.5593, cy=172.854)
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         img_path = self._dataset_path / self._image_folder / f"{frame_id}"
@@ -55,7 +56,7 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         return concatenated
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.OpticalFlow: None}
+        return dict()
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -72,15 +73,8 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
         return read_json(metadata_path)
 
-    def _frame_id_to_timestamp(self, frame_id: str):
-        epoch_time = datetime(1970, 1, 1)
-        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
-        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
-        timestamp = epoch_time + timedelta(seconds)
-        return timestamp
-
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        return self._frame_id_to_timestamp(frame_id=frame_id)
+        return frame_id_to_timestamp(frame_id=frame_id)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         return SensorExtrinsic.from_transformation_matrix(np.eye(4))
@@ -92,10 +86,10 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
         if issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(
+            flow_vectors, valid_mask = self._decode_optical_flow(
                 scene_name=self.scene_name, annotation_identifier=identifier, frame_id=frame_id
             )
-            return OpticalFlow(vectors=flow_vectors)
+            return OpticalFlow(vectors=flow_vectors, valid_mask=valid_mask)
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
@@ -108,9 +102,9 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
             annotation_path = self._dataset_path / self._occ_optical_flow_folder / f"{frame_id}"
         image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False)
         vectors = (image_data[:, :, :2] - 2 ** 15) / 64.0
-        # TODO: What to do with the occlusion mask?
+        valid_mask = image_data[:, :, -1]
 
-        return vectors
+        return vectors, valid_mask
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
