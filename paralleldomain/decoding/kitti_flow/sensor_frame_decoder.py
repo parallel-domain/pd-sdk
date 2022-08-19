@@ -39,7 +39,7 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self._use_non_occluded = use_non_occluded
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return SensorIntrinsic()
+        return SensorIntrinsic(fx=721.5377, fy=721.5377, cx=609.5593, cy=172.854)
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
         img_path = self._dataset_path / self._image_folder / f"{frame_id}"
@@ -56,7 +56,7 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         return concatenated
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.OpticalFlow: None}
+        return dict()
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -86,10 +86,10 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
         if issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(
+            flow_vectors, valid_mask = self._decode_optical_flow(
                 scene_name=self.scene_name, annotation_identifier=identifier, frame_id=frame_id
             )
-            return OpticalFlow(vectors=flow_vectors)
+            return OpticalFlow(vectors=flow_vectors, valid_mask=valid_mask)
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
@@ -102,9 +102,9 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
             annotation_path = self._dataset_path / self._occ_optical_flow_folder / f"{frame_id}"
         image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False)
         vectors = (image_data[:, :, :2] - 2 ** 15) / 64.0
-        # TODO: What to do with the occlusion mask?
+        valid_mask = image_data[:, :, -1]
 
-        return vectors
+        return vectors, valid_mask
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)

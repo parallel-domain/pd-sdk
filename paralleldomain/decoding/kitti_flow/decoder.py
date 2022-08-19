@@ -30,7 +30,6 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
         occ_optical_flow_folder: Optional[str] = OCC_OPTICAL_FLOW_FOLDER_NAME,
         noc_optical_flow_folder: Optional[str] = NOC_OPTICAL_FLOW_FOLDER_NAME,
         use_non_occluded: bool = False,
-        camera_name: Optional[str] = "default",
         **kwargs,
     ):
         self._init_kwargs = dict(
@@ -41,7 +40,7 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
             occ_optical_flow_folder=occ_optical_flow_folder,
             noc_optical_flow_folder=noc_optical_flow_folder,
             use_non_occluded=use_non_occluded,
-            camera_name=camera_name,
+            camera_name="default",
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
 
@@ -49,7 +48,7 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
         self.occ_optical_flow_folder = occ_optical_flow_folder
         self.noc_optical_flow_folder = noc_optical_flow_folder
         self._use_non_occluded = use_non_occluded
-        self.camera_name = camera_name
+        self.camera_name = "default"
         dataset_name = "-".join(list([dataset_path, split_name]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
@@ -143,7 +142,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         raise ValueError("KITTI decoder does not currently support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.OpticalFlow: None}
+        return dict()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
