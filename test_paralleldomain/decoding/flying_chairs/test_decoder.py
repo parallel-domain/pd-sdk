@@ -20,8 +20,7 @@ def flying_chairs_dataset_path() -> str:
     if FLYING_CHAIRS_DATASET_PATH_ENV in os.environ:
         return os.environ[FLYING_CHAIRS_DATASET_PATH_ENV]
     else:
-        return "s3://pd-internal-ml/flow/FlyingChairs"
-        # pytest.skip()
+        pytest.skip()
 
 
 @pytest.fixture

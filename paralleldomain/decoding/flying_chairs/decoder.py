@@ -16,7 +16,6 @@ from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
-FLYING_CHAIRS_DATASET_PATH = "s3://pd-internal-ml/flow/FlyingChairs"
 SPLIT_FILENAME = "FlyingChairs_train_val.txt"
 IMAGE_FOLDER_NAME = "data"
 OPTICAL_FLOW_FOLDER_NAME = "data"
@@ -25,13 +24,12 @@ OPTICAL_FLOW_FOLDER_NAME = "data"
 class FlyingChairsDatasetDecoder(DatasetDecoder):
     def __init__(
         self,
-        dataset_path: Union[str, AnyPath] = FLYING_CHAIRS_DATASET_PATH,
+        dataset_path: Union[str, AnyPath],
         split_name: str = "training",
         split_filename: str = SPLIT_FILENAME,
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
         optical_flow_folder: Optional[str] = OPTICAL_FLOW_FOLDER_NAME,
-        camera_name: Optional[str] = "default",
         **kwargs,
     ):
         self._init_kwargs = dict(
@@ -40,13 +38,13 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
             settings=settings,
             image_folder=image_folder,
             optical_flow_folder=optical_flow_folder,
-            camera_name=camera_name,
+            camera_name="default",
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.split_name = split_name
         self.image_folder = image_folder
         self.optical_flow_folder = optical_flow_folder
-        self.camera_name = camera_name
+        self.camera_name = "default"
         dataset_name = "-".join(list([dataset_path, split_name]))
         # train-val split is a list of 1s and 2s
         split_path = self._dataset_path / split_filename
