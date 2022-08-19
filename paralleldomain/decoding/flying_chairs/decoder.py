@@ -38,7 +38,7 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
             optical_flow_folder=optical_flow_folder,
             camera_name=camera_name,
         )
-        self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
+        self._dataset_path: AnyPath = AnyPath(dataset_path)
 
         self.image_folder = image_folder
         self.optical_flow_folder = optical_flow_folder
