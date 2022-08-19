@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy as np
+import time
 
 from paralleldomain import Dataset
 from paralleldomain.model.annotation import AnnotationType
@@ -224,7 +225,9 @@ class DatasetEncoder:
             if remote_output_dir.is_cloud_path:
                 output_dir.sync(target=remote_output_dir)
             else:
+                time.sleep(0.5)
                 output_dir.copytree(target=remote_output_dir)
+                time.sleep(0.5)
             temp_dir.cleanup()
 
         return remote_output_dir / result.parts[-1]
