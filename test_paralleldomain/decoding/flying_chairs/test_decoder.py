@@ -58,8 +58,8 @@ def test_knows_all_frames(flying_chairs_dataset_train_scenes: List, flying_chair
 
 
 def test_decode_train_scene_names(flying_chairs_train_dataset: Dataset):
-    assert len(flying_chairs_train_dataset.scene_names) == 22872
-    assert len(flying_chairs_train_dataset.unordered_scene_names) == 22872
+    assert len(flying_chairs_train_dataset.scene_names) == 22232
+    assert len(flying_chairs_train_dataset.unordered_scene_names) == 22232
 
 
 def test_decode_camera_image(flying_chairs_dataset_train_scene: Scene):

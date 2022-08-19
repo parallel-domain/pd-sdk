@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
+import numpy as np
+
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.flying_chairs.common import frame_id_to_timestamp
@@ -15,6 +17,7 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
 FLYING_CHAIRS_DATASET_PATH = "s3://pd-internal-ml/flow/FlyingChairs"
+SPLIT_FILENAME = "FlyingChairs_train_val.txt"
 IMAGE_FOLDER_NAME = "data"
 OPTICAL_FLOW_FOLDER_NAME = "data"
 
@@ -24,6 +27,7 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
         self,
         dataset_path: Union[str, AnyPath] = FLYING_CHAIRS_DATASET_PATH,
         split_name: str = "training",
+        split_filename: str = SPLIT_FILENAME,
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
         optical_flow_folder: Optional[str] = OPTICAL_FLOW_FOLDER_NAME,
@@ -39,11 +43,16 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
             camera_name=camera_name,
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-
+        self.split_name = split_name
         self.image_folder = image_folder
         self.optical_flow_folder = optical_flow_folder
         self.camera_name = camera_name
         dataset_name = "-".join(list([dataset_path, split_name]))
+        # train-val split is a list of 1s and 2s
+        split_path = self._dataset_path / split_filename
+        with split_path.open("r") as f:
+            self.split_labels = list(np.loadtxt(f, dtype=np.int32))
+
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
@@ -61,10 +70,16 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
         Image filenames are of the form xxxxx_img1.ppm and xxxxx_img2.ppm.
         Flow filenames are of the form xxxxx_flow.flo.
         """
-        # TODO Handle train/val split here
+
         scene_images_folder = self._dataset_path / self.image_folder
-        scenes = {path.name[:5] for path in scene_images_folder.iterdir()}
-        return list(scenes)
+        all_scenes = {path.name[:5] for path in scene_images_folder.iterdir()}
+        if self.split_name == "training":
+            scenes = [name for name in all_scenes if self.split_labels[int(name) - 1] == 1]
+        elif self.split_name == "validation":
+            scenes = [name for name in all_scenes if self.split_labels[int(name) - 1] == 2]
+        else:
+            raise ValueError("split_name must be training or validation for FlyingChairs.")
+        return scenes
 
     def _decode_scene_names(self) -> List[SceneName]:
         return self._decode_unordered_scene_names()
