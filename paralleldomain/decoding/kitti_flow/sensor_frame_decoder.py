@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
@@ -6,6 +6,7 @@ import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.kitti_flow.common import frame_id_to_timestamp
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, OpticalFlow
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -72,15 +73,8 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         metadata_path = self._dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
         return read_json(metadata_path)
 
-    def _frame_id_to_timestamp(self, frame_id: str):
-        epoch_time = datetime(1970, 1, 1)
-        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
-        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
-        timestamp = epoch_time + timedelta(seconds)
-        return timestamp
-
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        return self._frame_id_to_timestamp(frame_id=frame_id)
+        return frame_id_to_timestamp(frame_id=frame_id)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         return SensorExtrinsic.from_transformation_matrix(np.eye(4))

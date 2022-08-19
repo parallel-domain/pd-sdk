@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
+from paralleldomain.decoding.kitti_flow.common import frame_id_to_timestamp
 from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFlowFrameDecoder
 from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTIFlowCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
@@ -178,16 +179,9 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
             camera_name=self._camera_name,
         )
 
-    def _frame_id_to_timestamp(self, frame_id: str):
-        epoch_time = datetime(1970, 1, 1)
-        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
-        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
-        timestamp = epoch_time + timedelta(seconds)
-        return timestamp
-
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         fids = self._decode_frame_id_set(scene_name=scene_name)
-        return {fid: self._frame_id_to_timestamp(frame_id=fid) for fid in fids}
+        return {fid: frame_id_to_timestamp(frame_id=fid) for fid in fids}
 
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
         """Radar not supported"""
