@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
+from paralleldomain.decoding.flying_chairs.common import frame_id_to_timestamp
+from paralleldomain.decoding.flying_chairs.frame_decoder import FlyingChairsFrameDecoder
+from paralleldomain.decoding.flying_chairs.sensor_decoder import FlyingChairsCameraSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFlowFrameDecoder
-from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTIFlowCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
@@ -13,22 +14,19 @@ from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
-KITTI_DATASET_PATH = "s3://pd-internal-ml/flow/KITTI2015"
-IMAGE_FOLDER_NAME = "image_2"
-OCC_OPTICAL_FLOW_FOLDER_NAME = "flow_occ"
-NOC_OPTICAL_FLOW_FOLDER_NAME = "flow_noc"
+FLYING_CHAIRS_DATASET_PATH = "s3://pd-internal-ml/flow/FlyingChairs"
+IMAGE_FOLDER_NAME = "data"
+OPTICAL_FLOW_FOLDER_NAME = "data"
 
 
-class KITTIFlowDatasetDecoder(DatasetDecoder):
+class FlyingChairsDatasetDecoder(DatasetDecoder):
     def __init__(
         self,
-        dataset_path: Union[str, AnyPath] = KITTI_DATASET_PATH,
+        dataset_path: Union[str, AnyPath] = FLYING_CHAIRS_DATASET_PATH,
         split_name: str = "training",
         settings: Optional[DecoderSettings] = None,
         image_folder: Optional[str] = IMAGE_FOLDER_NAME,
-        occ_optical_flow_folder: Optional[str] = OCC_OPTICAL_FLOW_FOLDER_NAME,
-        noc_optical_flow_folder: Optional[str] = NOC_OPTICAL_FLOW_FOLDER_NAME,
-        use_non_occluded: bool = False,
+        optical_flow_folder: Optional[str] = OPTICAL_FLOW_FOLDER_NAME,
         camera_name: Optional[str] = "default",
         **kwargs,
     ):
@@ -37,42 +35,38 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
             split_name=split_name,
             settings=settings,
             image_folder=image_folder,
-            occ_optical_flow_folder=occ_optical_flow_folder,
-            noc_optical_flow_folder=noc_optical_flow_folder,
-            use_non_occluded=use_non_occluded,
+            optical_flow_folder=optical_flow_folder,
             camera_name=camera_name,
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
 
         self.image_folder = image_folder
-        self.occ_optical_flow_folder = occ_optical_flow_folder
-        self.noc_optical_flow_folder = noc_optical_flow_folder
-        self._use_non_occluded = use_non_occluded
+        self.optical_flow_folder = optical_flow_folder
         self.camera_name = camera_name
         dataset_name = "-".join(list([dataset_path, split_name]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
-        return KITTIFlowSceneDecoder(
+        return FlyingChairsSceneDecoder(
             dataset_path=self._dataset_path,
             dataset_name=self.dataset_name,
             settings=self.settings,
             image_folder=self.image_folder,
-            occ_optical_flow_folder=self.occ_optical_flow_folder,
-            noc_optical_flow_folder=self.noc_optical_flow_folder,
-            use_non_occluded=self._use_non_occluded,
+            optical_flow_folder=self.optical_flow_folder,
             camera_name=self.camera_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
+        """
+        Image filenames are of the form xxxxx_img1.ppm and xxxxx_img2.ppm.
+        Flow filenames are of the form xxxxx_flow.flo.
+        """
+        # TODO Handle train/val split here
         scene_images_folder = self._dataset_path / self.image_folder
-        # [:-7] removes _10.png or _11.png for first and second images in pairs.
-        # We don't want to pull second images since they don't have a following image.
-        scenes = {path.name[:-7] for path in scene_images_folder.iterdir()}
+        scenes = {path.name[:5] for path in scene_images_folder.iterdir()}
         return list(scenes)
 
     def _decode_scene_names(self) -> List[SceneName]:
-        # May need to sort here depending on unordered scene logic
         return self._decode_unordered_scene_names()
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
@@ -84,7 +78,7 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
 
     @staticmethod
     def get_format() -> str:
-        return "kitti-flow"
+        return "flying-chairs"
 
     def get_path(self) -> Optional[AnyPath]:
         return self._dataset_path
@@ -93,24 +87,20 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
         return self._init_kwargs
 
 
-class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
+class FlyingChairsSceneDecoder(SceneDecoder[datetime]):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
         settings: DecoderSettings,
         image_folder: str,
-        occ_optical_flow_folder: str,
-        noc_optical_flow_folder: str,
-        use_non_occluded: bool,
+        optical_flow_folder: str,
         camera_name: str,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         super().__init__(dataset_name=dataset_name, settings=settings)
         self._image_folder = image_folder
-        self._occ_optical_flow_folder = occ_optical_flow_folder
-        self._noc_optical_flow_folder = noc_optical_flow_folder
-        self._use_non_occluded = use_non_occluded
+        self._optical_flow_folder = optical_flow_folder
         self._camera_name = camera_name
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
@@ -119,8 +109,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
             available_annotation_types=[AnnotationTypes.OpticalFlow],
             dataset_path=self._dataset_path,
             image_folder=self._image_folder,
-            occ_optical_flow_folder=self._occ_optical_flow_folder,
-            noc_optical_flow_folder=self._noc_optical_flow_folder,
+            optical_flow_folder=self._optical_flow_folder,
             camera_name=self._camera_name,
         )
         return metadata_dict
@@ -129,7 +118,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        frame_ids = {scene_name + "_10.png", scene_name + "_11.png"}
+        frame_ids = {scene_name + "_img1.ppm", scene_name + "_img2.ppm"}
         return frame_ids
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
@@ -139,7 +128,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         return [self._camera_name]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        raise ValueError("KITTI decoder does not currently support lidar data!")
+        raise ValueError("FlyingChairs decoder does not currently support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return {AnnotationTypes.OpticalFlow: None}
@@ -147,15 +136,13 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
     ) -> CameraSensorDecoder[datetime]:
-        return KITTIFlowCameraSensorDecoder(
+        return FlyingChairsCameraSensorDecoder(
             dataset_name=self.dataset_name,
             dataset_path=self._dataset_path,
             scene_name=scene_name,
             settings=self.settings,
             image_folder=self._image_folder,
-            occ_optical_flow_folder=self._occ_optical_flow_folder,
-            noc_optical_flow_folder=self._noc_optical_flow_folder,
-            use_non_occluded=self._use_non_occluded,
+            optical_flow_folder=self._optical_flow_folder,
         )
 
     def _create_lidar_sensor_decoder(
@@ -166,28 +153,19 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
     ) -> FrameDecoder[datetime]:
-        return KITTIFlowFrameDecoder(
+        return FlyingChairsFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
             image_folder=self._image_folder,
-            occ_optical_flow_folder=self._occ_optical_flow_folder,
-            noc_optical_flow_folder=self._noc_optical_flow_folder,
-            use_non_occluded=self._use_non_occluded,
+            optical_flow_folder=self._optical_flow_folder,
             camera_name=self._camera_name,
         )
 
-    def _frame_id_to_timestamp(self, frame_id: str):
-        epoch_time = datetime(1970, 1, 1)
-        # First frame and second frame will be separated by 0.1s, per the 10Hz frame rate in KITTI
-        seconds = int(frame_id[:6]) + 0.1 * int(frame_id[7:9])
-        timestamp = epoch_time + timedelta(seconds)
-        return timestamp
-
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         fids = self._decode_frame_id_set(scene_name=scene_name)
-        return {fid: self._frame_id_to_timestamp(frame_id=fid) for fid in fids}
+        return {fid: frame_id_to_timestamp(frame_id=fid) for fid in fids}
 
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
         """Radar not supported"""

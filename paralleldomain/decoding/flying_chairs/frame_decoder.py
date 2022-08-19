@@ -4,8 +4,9 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.flying_chairs.common import frame_id_to_timestamp
+from paralleldomain.decoding.flying_chairs.sensor_frame_decoder import FlyingChairsCameraSensorFrameDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTIFlowCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -19,7 +20,7 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 
 
-class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
+class FlyingChairsFrameDecoder(FrameDecoder[datetime]):
     def __init__(
         self,
         dataset_name: str,
@@ -27,17 +28,13 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
         dataset_path: AnyPath,
         settings: DecoderSettings,
         image_folder: str,
-        occ_optical_flow_folder: str,
-        noc_optical_flow_folder: str,
-        use_non_occluded: bool,
+        optical_flow_folder: str,
         camera_name: str,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.dataset_path = dataset_path
         self._image_folder = image_folder
-        self._occ_optical_flow_folder = occ_optical_flow_folder
-        self._noc_optical_flow_folder = noc_optical_flow_folder
-        self._use_non_occluded = use_non_occluded
+        self._optical_flow_folder = optical_flow_folder
         self.camera_name = camera_name
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
@@ -52,19 +49,17 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("Loading from directory does not support lidar data!")
 
-    def _decode_datetime(self, frame_id: FrameId) -> None:
-        return None
+    def _decode_datetime(self, frame_id: FrameId) -> datetime:
+        return frame_id_to_timestamp(frame_id=frame_id)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
-        return KITTIFlowCameraSensorFrameDecoder(
+        return FlyingChairsCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
             dataset_path=self.dataset_path,
             settings=self.settings,
             image_folder=self._image_folder,
-            occ_optical_flow_folder=self._occ_optical_flow_folder,
-            noc_optical_flow_folder=self._noc_optical_flow_folder,
-            use_non_occluded=self._use_non_occluded,
+            optical_flow_folder=self._optical_flow_folder,
         )
 
     def _decode_camera_sensor_frame(
