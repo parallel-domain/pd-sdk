@@ -132,7 +132,7 @@ class BoundingBox2DBaseGeometry(Generic[T]):
         return edges
 
     def include_points(
-        self, points: List[Point2DBaseGeometry[T]], inline: bool = False
+        self, points: Union[List[Point2DBaseGeometry[T]], np.ndarray], inline: bool = False
     ) -> Optional["BoundingBox2DBaseGeometry[T]"]:
         """Extends the dimensions of the box to include the specified point.
 
@@ -145,7 +145,8 @@ class BoundingBox2DBaseGeometry(Generic[T]):
 
         """
 
-        np_points = np.array([[p.x, p.y] for p in points])
+        np_points = points if isinstance(points, np.ndarray) else np.array([[p.x, p.y] for p in points])
+
         np_points = np.vstack(
             [
                 np_points,

@@ -41,60 +41,6 @@ class TestSensorFrame:
         assert xyz is not None
         assert xyz.shape[0] > 0
 
-    def test_lazy_cloud_caching(self, decoder: DatasetDecoder):
-        LAZY_LOAD_CACHE.clear()
-        dataset = decoder.get_dataset()
-        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        sensor_frame = next(iter(frame.lidar_frames))
-        cloud = sensor_frame.point_cloud
-        assert cloud is not None
-        start = time.time()
-        xyz = cloud.xyz
-        time1 = time.time() - start
-        assert xyz is not None
-        assert xyz.shape[0] > 0
-
-        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        sensor_frame = next(iter(frame.lidar_frames))
-        cloud = sensor_frame.point_cloud
-        start = time.time()
-        xyz = cloud.xyz
-        time2 = time.time() - start
-        assert xyz is not None
-        assert xyz.shape[0] > 0
-        assert time2 <= time1
-        assert time2 < 1
-
-        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        sensor_frame = next(iter(frame.lidar_frames))
-        cloud = sensor_frame.point_cloud
-        start = time.time()
-        xyz = cloud.xyz
-        time3 = time.time() - start
-        assert xyz is not None
-        assert xyz.shape[0] > 0
-        assert time3 < time1
-        assert time3 < 1
-
-        scene = dataset.get_scene(scene_name=list(dataset.scene_names)[0])
-        frame_ids = scene.frame_ids
-        frame = scene.get_frame(frame_id=frame_ids[0])
-        sensor_frame = next(iter(frame.lidar_frames))
-        cloud = sensor_frame.point_cloud
-        start = time.time()
-        xyz = cloud.xyz
-        time4 = time.time() - start
-        assert xyz is not None
-        assert xyz.shape[0] > 0
-        assert time4 < time1
-        assert time3 < 1
-
     def test_lazy_image_loading(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
