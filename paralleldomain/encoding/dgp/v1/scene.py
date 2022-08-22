@@ -546,14 +546,8 @@ class DGPSceneEncoder(SceneEncoder):
             attributes={
                 _attribute_key_dump(k): _attribute_value_dump(v) for k, v in line.attributes.items() if k != "key"
             },
-            vertices=[
-                annotations_pb2.KeyPoint3D(x=ll.start.x, y=ll.start.y, z=ll.start.z) for ll in line.lines
-            ]
-            + [
-                annotations_pb2.KeyPoint3D(
-                    x=line.lines[-1].end.x, y=line.lines[-1].end.y, z=line.lines[-1].end.z
-                )
-            ],
+            vertices=[annotations_pb2.KeyPoint3D(x=ll.start.x, y=ll.start.y, z=ll.start.z) for ll in line.lines]
+            + [annotations_pb2.KeyPoint3D(x=line.lines[-1].end.x, y=line.lines[-1].end.y, z=line.lines[-1].end.z)],
             key=line.attributes["key"] if "key" in line.attributes else "",
         )
 

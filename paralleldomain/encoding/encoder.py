@@ -222,7 +222,7 @@ class DatasetEncoder:
         )
         result = encoder.encode_scene()
         # TODO: properly wait for all jobs to finish instead of using time.sleep
-        time.sleep(60) # give threadpool chance to finish before copying / deleting
+        time.sleep(60)  # give threadpool chance to finish before copying / deleting
         if self._sync_after_scene_encoded:
             if remote_output_dir.is_cloud_path:
                 output_dir.sync(target=remote_output_dir)
