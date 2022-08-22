@@ -221,15 +221,17 @@ class DatasetEncoder:
             annotation_types=self._annotation_types,
         )
         result = encoder.encode_scene()
+        # TODO: properly wait for all jobs to finish instead of using time.sleep
+        time.sleep(60) # give threadpool chance to finish before copying / deleting
         if self._sync_after_scene_encoded:
             if remote_output_dir.is_cloud_path:
                 output_dir.sync(target=remote_output_dir)
             else:
-                time.sleep(0.5)
                 output_dir.copytree(target=remote_output_dir)
-                time.sleep(0.5)
-            temp_dir.cleanup()
-
+            try:
+                temp_dir.cleanup()
+            except OSError as e:
+                logger.warning(f"Could not delete temp directory. Ignoring and continuing. Error: {e}")
         return remote_output_dir / result.parts[-1]
 
     def _relative_path(self, path: AnyPath) -> AnyPath:
