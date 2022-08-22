@@ -47,11 +47,10 @@ class OpticalFlow(Annotation):
     """
 
     vectors: np.ndarray
-    valid_mask: np.ndarray
-
-    def __post_init__(self):
-        if self.valid_mask is None:
-            self.valid_mask = np.ones(self.vectors.shape[:2])
+    valid_mask: np.ndarray = None
 
     def __sizeof__(self):
-        return self.vectors.nbytes + self.valid_mask.nbytes
+        if self.valid_mask is not None:
+            return self.vectors.nbytes + self.valid_mask.nbytes
+        else:
+            return self.vectors.nbytes
