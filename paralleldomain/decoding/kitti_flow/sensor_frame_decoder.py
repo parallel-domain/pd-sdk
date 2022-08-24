@@ -95,13 +95,13 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
 
     def _decode_optical_flow(self, scene_name: str, frame_id: FrameId, annotation_identifier: str) -> np.ndarray:
         if frame_id[-7:] == "_11.png":
-            return None
+            return None, None
         if self._use_non_occluded:
             annotation_path = self._dataset_path / self._noc_optical_flow_folder / f"{frame_id}"
         else:
             annotation_path = self._dataset_path / self._occ_optical_flow_folder / f"{frame_id}"
 
-        image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False).astype(np.float32)
+        image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False)
         vectors = (image_data[:, :, :2] - 2 ** 15) / 64.0
         valid_mask = image_data[:, :, -1]
 
