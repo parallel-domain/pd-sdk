@@ -100,8 +100,8 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
             annotation_path = self._dataset_path / self._noc_optical_flow_folder / f"{frame_id}"
         else:
             annotation_path = self._dataset_path / self._occ_optical_flow_folder / f"{frame_id}"
-        image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False)
-        vectors = (image_data[:, :, :2] - 2**15) / 64.0
+        image_data = read_image(path=annotation_path, convert_to_rgb=True, is_indexed=False).astype(np.float32)
+        vectors = (image_data[:, :, :2] - 2 ** 15) / 64.0
         valid_mask = image_data[:, :, -1]
 
         return vectors, valid_mask
