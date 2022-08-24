@@ -150,6 +150,23 @@ def read_npz(
     return result if len(result) != 1 else list(result.values())[0]
 
 
+def read_flo(path: AnyPath):
+    """
+    Reads optical flow files in the .flo format. Notably used for Flying Chairs:
+    https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs"""
+    with path.open(mode="rb") as fp:
+
+        header = fp.read(4)
+        if header.decode("utf-8") != "PIEH":
+            raise Exception("Flow file header does not contain PIEH")
+        hw_raw = np.frombuffer(fp.read(8), dtype=np.int32)
+        width = hw_raw[0]
+        height = hw_raw[1]
+        raw = np.frombuffer(fp.read(), dtype=np.float32)
+        flow = raw[: (width * height) * 2].reshape((height, width, 2))
+    return flow
+
+
 def read_json_message(
     obj: TMessage, path: AnyPath, ignore_unknown_fields: bool = True, descriptor_pool: DescriptorPool = None
 ) -> TMessage:

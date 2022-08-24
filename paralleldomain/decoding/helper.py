@@ -5,14 +5,25 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPV1DatasetDecoder
 from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
+from paralleldomain.decoding.flying_chairs.decoder import FlyingChairsDatasetDecoder
 from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
+from paralleldomain.decoding.kitti_flow.decoder import KITTIFlowDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
-known_formats = ["dgp", "cityscapes", "nuimages", "nuscenes", "gta5", "directory"]
+known_formats = [
+    DGPDatasetDecoder.get_format(),
+    CityscapesDatasetDecoder.get_format(),
+    NuImagesDatasetDecoder.get_format(),
+    NuScenesDatasetDecoder.get_format(),
+    GTADatasetDecoder.get_format(),
+    KITTIFlowDatasetDecoder.get_format(),
+    FlyingChairsDatasetDecoder.get_format(),
+    DirectoryDatasetDecoder.get_format(),
+]
 
 
 def decode_dataset(
@@ -51,6 +62,12 @@ def decode_dataset(
 
     elif dataset_format == GTADatasetDecoder.get_format():
         return GTADatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
+
+    elif dataset_format == KITTIFlowDatasetDecoder.get_format():
+        return KITTIFlowDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
+
+    elif dataset_format == FlyingChairsDatasetDecoder.get_format():
+        return FlyingChairsDatasetDecoder(dataset_path=dataset_path, settings=settings, **decoder_kwargs).get_dataset()
 
     else:
         raise ValueError(
