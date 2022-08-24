@@ -144,7 +144,7 @@ class FlyingChairsSceneDecoder(SceneDecoder[datetime]):
         raise ValueError("FlyingChairs decoder does not currently support lidar data!")
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.OpticalFlow: None}
+        return dict()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

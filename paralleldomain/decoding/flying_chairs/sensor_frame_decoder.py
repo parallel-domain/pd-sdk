@@ -52,7 +52,7 @@ class FlyingChairsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         return concatenated
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return {AnnotationTypes.OpticalFlow: None}
+        return dict()
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
