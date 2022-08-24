@@ -12,13 +12,13 @@ from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image
-from test_paralleldomain.decoding.constants import KITTI_DATASET_PATH_ENV
+from test_paralleldomain.decoding.constants import KITTI_FLOW_DATASET_PATH_ENV
 
 
 @pytest.fixture
 def kitti_dataset_path() -> str:
-    if KITTI_DATASET_PATH_ENV in os.environ:
-        return os.environ[KITTI_DATASET_PATH_ENV]
+    if KITTI_FLOW_DATASET_PATH_ENV in os.environ:
+        return os.environ[KITTI_FLOW_DATASET_PATH_ENV]
     else:
         pytest.skip()
 
