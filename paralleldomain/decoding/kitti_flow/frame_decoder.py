@@ -93,7 +93,4 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
         raise ValueError("Loading from directory does not support radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
-        if self._metadata_folder is None:
-            return dict()
-        metadata_path = self.dataset_path / self._metadata_folder / f"{AnyPath(frame_id).stem + '.json'}"
-        return read_json(metadata_path)
+        return dict()

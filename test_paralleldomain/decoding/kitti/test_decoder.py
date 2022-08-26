@@ -81,14 +81,15 @@ def test_decode_optical_flow(kitti_dataset_train_scene: Scene):
     )
     assert camera_frame is not None
     assert isinstance(camera_frame, CameraSensorFrame)
-    flow = camera_frame.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
-    assert flow is not None
-    vectors = flow.vectors
-    assert isinstance(vectors, np.ndarray)
-    assert vectors.shape[0] > 350
-    assert vectors.shape[1] > 1200
-    assert vectors.shape[2] == 2
-    assert np.all(np.logical_and(flow.vectors.max() < 1024, flow.vectors.min() >= 0))
+    if AnnotationTypes.OpticalFlow in camera_frame.available_annotation_types:
+        flow = camera_frame.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
+        assert flow is not None
+        vectors = flow.vectors
+        assert isinstance(vectors, np.ndarray)
+        assert vectors.shape[0] > 350
+        assert vectors.shape[1] > 1200
+        assert vectors.shape[2] == 2
+        assert np.all(np.logical_and(flow.vectors.max() < 512, flow.vectors.min() >= -512))
 
 
 def test_decode_camera_image_next(kitti_dataset_train_scene: Scene):

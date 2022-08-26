@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 
@@ -47,7 +48,7 @@ class OpticalFlow(Annotation):
     """
 
     vectors: np.ndarray
-    valid_mask: np.ndarray = None
+    valid_mask: Optional[np.ndarray] = None
 
     def __sizeof__(self):
         if self.valid_mask is not None:
