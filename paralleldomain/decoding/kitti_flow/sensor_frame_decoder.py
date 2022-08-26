@@ -92,7 +92,9 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
-    def _decode_optical_flow(self, scene_name: str, frame_id: FrameId, annotation_identifier: str) -> np.ndarray:
+    def _decode_optical_flow(
+        self, scene_name: str, frame_id: FrameId, annotation_identifier: str
+    ) -> Tuple[np.ndarray, np.ndarray]:
         if self._use_non_occluded:
             annotation_path = self._dataset_path / self._noc_optical_flow_folder / f"{frame_id}"
         else:

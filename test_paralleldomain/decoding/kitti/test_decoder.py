@@ -6,7 +6,8 @@ import pytest
 
 from paralleldomain import Dataset
 from paralleldomain.decoding.kitti_flow.decoder import KITTIFlowDatasetDecoder
-from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, OpticalFlow
+from paralleldomain.model.image import Image
 from paralleldomain.model.scene import Scene
 from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
@@ -57,6 +58,16 @@ def test_knows_all_frames(kitti_dataset_train_scenes: List, kitti_train_dataset:
 def test_decode_train_scene_names(kitti_train_dataset: Dataset):
     assert len(kitti_train_dataset.scene_names) == 200
     assert len(kitti_train_dataset.unordered_scene_names) == 200
+
+
+def test_decode_file_path(kitti_dataset_train_scene: Scene):
+    camera_frame = kitti_dataset_train_scene.get_frame(frame_id=kitti_dataset_train_scene.frame_ids[0]).get_sensor(
+        sensor_name="default"
+    )
+    image_file_path = camera_frame.get_file_path(data_type=Image)
+    flow_file_path = camera_frame.get_file_path(data_type=OpticalFlow)
+    assert isinstance(image_file_path, AnyPath)
+    assert isinstance(flow_file_path, AnyPath)
 
 
 def test_decode_camera_image(kitti_dataset_train_scene: Scene):
