@@ -6,7 +6,8 @@ import pytest
 
 from paralleldomain import Dataset
 from paralleldomain.decoding.kitti_flow.decoder import KITTIFlowDatasetDecoder
-from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, OpticalFlow
+from paralleldomain.model.image import Image
 from paralleldomain.model.scene import Scene
 from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
@@ -59,6 +60,16 @@ def test_decode_train_scene_names(kitti_train_dataset: Dataset):
     assert len(kitti_train_dataset.unordered_scene_names) == 200
 
 
+def test_decode_file_path(kitti_dataset_train_scene: Scene):
+    camera_frame = kitti_dataset_train_scene.get_frame(frame_id=kitti_dataset_train_scene.frame_ids[0]).get_sensor(
+        sensor_name="default"
+    )
+    image_file_path = camera_frame.get_file_path(data_type=Image)
+    flow_file_path = camera_frame.get_file_path(data_type=OpticalFlow)
+    assert isinstance(image_file_path, AnyPath)
+    assert isinstance(flow_file_path, AnyPath)
+
+
 def test_decode_camera_image(kitti_dataset_train_scene: Scene):
     camera_frame = next(kitti_dataset_train_scene.camera_frames)
     assert camera_frame is not None
@@ -81,14 +92,15 @@ def test_decode_optical_flow(kitti_dataset_train_scene: Scene):
     )
     assert camera_frame is not None
     assert isinstance(camera_frame, CameraSensorFrame)
-    flow = camera_frame.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
-    assert flow is not None
-    vectors = flow.vectors
-    assert isinstance(vectors, np.ndarray)
-    assert vectors.shape[0] > 350
-    assert vectors.shape[1] > 1200
-    assert vectors.shape[2] == 2
-    assert np.all(np.logical_and(flow.vectors.max() < 1024, flow.vectors.min() >= 0))
+    if AnnotationTypes.OpticalFlow in camera_frame.available_annotation_types:
+        flow = camera_frame.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
+        assert flow is not None
+        vectors = flow.vectors
+        assert isinstance(vectors, np.ndarray)
+        assert vectors.shape[0] > 350
+        assert vectors.shape[1] > 1200
+        assert vectors.shape[2] == 2
+        assert np.all(np.logical_and(flow.vectors.max() < 512, flow.vectors.min() >= -512))
 
 
 def test_decode_camera_image_next(kitti_dataset_train_scene: Scene):
