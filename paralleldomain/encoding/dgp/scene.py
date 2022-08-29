@@ -33,7 +33,6 @@ from paralleldomain.common.dgp.v0.dtos import (
     SceneSampleIdDTO,
     TranslationDTO,
 )
-from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.transformer import (
     BoundingBox2DTransformer,
     BoundingBox3DTransformer,
@@ -92,12 +91,26 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
         self._scene: Scene = self._unordered_scene
+        self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
+        self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
+
+    def _offset_timestamp(self, compare_datetime: datetime) -> float:
+        diff = compare_datetime - self._reference_timestamp
+        return diff.total_seconds()
+
+    def _timestamp_for_sensorframe(self, sensor_frame: SensorFrame) -> int:
+        return round((self._offset_timestamp(compare_datetime=sensor_frame.date_time) + self._sim_offset) * 100)
 
     def _process_rgb(self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.Image)
-        output_path = self._output_path / DirectoryName.RGB / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.RGB / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_rgb(sensor_frame=sensor_frame, output_path=output_path)
@@ -107,9 +120,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_point_cloud(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.PointCloud)
-        output_path = self._output_path / DirectoryName.POINT_CLOUD / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.POINT_CLOUD / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_point_cloud(sensor_frame=sensor_frame, output_path=output_path)
@@ -145,9 +163,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_depth(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.Depth)
-        output_path = self._output_path / DirectoryName.DEPTH / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.DEPTH / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_depth(sensor_frame=sensor_frame, output_path=output_path)
@@ -161,9 +184,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_bounding_boxes_2d(self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.BoundingBoxes2D)
-        output_path = self._output_path / DirectoryName.BOUNDING_BOX_2D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.BOUNDING_BOX_2D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_bounding_boxes_2d(sensor_frame=sensor_frame, output_path=output_path)
@@ -176,7 +204,12 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> Future:
         if output_path is None:  # needed for backwards compatibility
             input_path = sensor_frame.get_file_path(FilePathedDataType.BoundingBoxes2D)
-            output_path = self._output_path / DirectoryName.BOUNDING_BOX_2D / sensor_frame.sensor_name / input_path.name
+            file_name = (
+                f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+                if input_path is None
+                else input_path.name
+            )
+            output_path = self._output_path / DirectoryName.BOUNDING_BOX_2D / sensor_frame.sensor_name / file_name
 
         boxes2d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
         box2d_dto = BoundingBox2DTransformer.transform(objects=[self._encode_bounding_box_2d(b) for b in boxes2d.boxes])
@@ -186,9 +219,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_bounding_boxes_3d(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.BoundingBoxes3D)
-        output_path = self._output_path / DirectoryName.BOUNDING_BOX_3D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.BOUNDING_BOX_3D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_bounding_boxes_3d(sensor_frame=sensor_frame, output_path=output_path)
@@ -201,7 +239,12 @@ class DGPSceneEncoder(SceneEncoder):
     ) -> Future:
         if output_path is None:  # needed for backwards compatibility
             input_path = sensor_frame.get_file_path(FilePathedDataType.BoundingBoxes3D)
-            output_path = self._output_path / DirectoryName.BOUNDING_BOX_3D / sensor_frame.sensor_name / input_path.name
+            file_name = (
+                f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+                if input_path is None
+                else input_path.name
+            )
+            output_path = self._output_path / DirectoryName.BOUNDING_BOX_3D / sensor_frame.sensor_name / file_name
 
         boxes3d = sensor_frame.get_annotations(AnnotationTypes.BoundingBoxes3D)
         box3d_dto = BoundingBox3DTransformer.transform(objects=[self._encode_bounding_box_3d(b) for b in boxes3d.boxes])
@@ -213,11 +256,14 @@ class DGPSceneEncoder(SceneEncoder):
         self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.SemanticSegmentation2D)
-        output_path = (
-            self._output_path / DirectoryName.SEMANTIC_SEGMENTATION_2D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
         )
+        output_path = self._output_path / DirectoryName.SEMANTIC_SEGMENTATION_2D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_semantic_segmentation_2d(sensor_frame=sensor_frame, output_path=output_path)
@@ -234,11 +280,14 @@ class DGPSceneEncoder(SceneEncoder):
         self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.InstanceSegmentation2D)
-        output_path = (
-            self._output_path / DirectoryName.INSTANCE_SEGMENTATION_2D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
         )
+        output_path = self._output_path / DirectoryName.INSTANCE_SEGMENTATION_2D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_instance_segmentation_2d(sensor_frame=sensor_frame, output_path=output_path)
@@ -253,9 +302,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_motion_vectors_2d(self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.OpticalFlow)
-        output_path = self._output_path / DirectoryName.MOTION_VECTORS_2D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.MOTION_VECTORS_2D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_motion_vectors_2d(sensor_frame=sensor_frame, output_path=output_path)
@@ -270,11 +324,14 @@ class DGPSceneEncoder(SceneEncoder):
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.SemanticSegmentation3D)
-        output_path = (
-            self._output_path / DirectoryName.SEMANTIC_SEGMENTATION_3D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
         )
+        output_path = self._output_path / DirectoryName.SEMANTIC_SEGMENTATION_3D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_semantic_segmentation_3d(sensor_frame=sensor_frame, output_path=output_path)
@@ -289,9 +346,14 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _process_surface_normals_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.SurfaceNormals3D)
-        output_path = self._output_path / DirectoryName.SURFACE_NORMALS_3D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.SURFACE_NORMALS_3D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_surface_normals_3d(sensor_frame=sensor_frame, output_path=output_path)
@@ -306,11 +368,14 @@ class DGPSceneEncoder(SceneEncoder):
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.MaterialProperties3D)
-        output_path = (
-            self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
         )
+        output_path = self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_material_properties_3d(sensor_frame=sensor_frame, output_path=output_path)
@@ -345,11 +410,14 @@ class DGPSceneEncoder(SceneEncoder):
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.InstanceSegmentation3D)
-        output_path = (
-            self._output_path / DirectoryName.INSTANCE_SEGMENTATION_3D / sensor_frame.sensor_name / input_path.name
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
         )
+        output_path = self._output_path / DirectoryName.INSTANCE_SEGMENTATION_3D / sensor_frame.sensor_name / file_name
 
-        if fs_copy and isinstance(self._dataset._decoder, DGPDatasetDecoder):
+        if fs_copy and input_path is not None:
             return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
         else:
             return self._encode_instance_segmentation_3d(sensor_frame=sensor_frame, output_path=output_path)
