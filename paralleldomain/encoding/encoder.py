@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple, Type, Union
 
 import numpy as np
+import time
 
 from paralleldomain import Dataset
 from paralleldomain.model.annotation import AnnotationType

@@ -22,8 +22,11 @@ ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
     11: AnnotationTypes.Polylines2D,
     12: AnnotationTypes.Polygons2D,
     13: AnnotationTypes.SurfaceNormals2D,
-    15: AnnotationTypes.Albedo2D,
-    16: AnnotationTypes.MaterialProperties2D,
+    16: AnnotationTypes.Points3D,
+    17: AnnotationTypes.Polylines3D,
+    18: AnnotationTypes.Polygons3D,
+    20: AnnotationTypes.Albedo2D,  # DGPv0 15
+    21: AnnotationTypes.MaterialProperties2D,  # DGPv0 16
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
@@ -156,6 +159,9 @@ class DirectoryName:
     KEY_POINT_2D: str = "key_point_2d"
     KEY_LINE_2D: str = "key_line_2d"
     POLYGON_2D: str = "polygon_2d"
+    KEY_POINT_3D: str = "key_point_3d"
+    KEY_LINE_3D: str = "key_line_3d"
+    POLYGON_3D: str = "polygon_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     MOTION_VECTORS_3D: str = "motion_vectors_3d"
     DEPTH: str = "depth"
