@@ -708,6 +708,18 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         self._decode_radar_point_cloud_data = lru_cache(maxsize=1)(self._decode_radar_point_cloud_data)
         self._decode_radar_energy_data = lru_cache(maxsize=1)(self._decode_radar_energy_data)
 
+    def _decode_available_annotation_types(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        if datum.radar_point_cloud:
+            type_to_path = datum.radar_point_cloud.annotations
+        else:
+            raise ValueError("RADAR data not found.")
+
+        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+        return available_annotation_types
+
     def _decode_radar_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         return [
