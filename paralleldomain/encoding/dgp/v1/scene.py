@@ -1244,10 +1244,6 @@ class DGPSceneEncoder(SceneEncoder):
                     (self._output_path / DirectoryName.INSTANCE_SEGMENTATION_2D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
-                if AnnotationTypes.OpticalFlow in self._annotation_types:
-                    (self._output_path / DirectoryName.MOTION_VECTORS_2D / camera_name).mkdir(
-                        exist_ok=True, parents=True
-                    )
                 if AnnotationTypes.Depth in self._annotation_types:
                     (self._output_path / DirectoryName.DEPTH / camera_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.OpticalFlow in self._annotation_types:
@@ -1297,6 +1293,10 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.SceneFlow in self._annotation_types:
                     (self._output_path / DirectoryName.MOTION_VECTORS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.MaterialProperties3D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
                 if AnnotationTypes.Points3D in self._annotation_types:
