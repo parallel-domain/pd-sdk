@@ -25,8 +25,8 @@ ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
     16: AnnotationTypes.Points3D,
     17: AnnotationTypes.Polylines3D,
     18: AnnotationTypes.Polygons3D,
-    98: AnnotationTypes.Albedo2D,  # DGPv0 15
-    99: AnnotationTypes.MaterialProperties2D,  # DGPv0 16
+    98: AnnotationTypes.Albedo2D,  # DGPv0 12
+    99: AnnotationTypes.MaterialProperties2D,  # DGPv0 13
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
