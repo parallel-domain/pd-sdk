@@ -33,6 +33,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class DirectoryName:
+    ALBEDO_2D: str = "base_color"
     BOUNDING_BOX_2D: str = "bounding_box_2d"
     BOUNDING_BOX_3D: str = "bounding_box_3d"
     CALIBRATION: str = "calibration"

@@ -320,6 +320,67 @@ class DGPSceneEncoder(SceneEncoder):
 
         return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
 
+    def _process_surface_normals_2d(self, sensor_frame: SensorFrame[datetime], fs_copy: bool = False) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.SurfaceNormals2D)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.SURFACE_NORMALS_2D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_surface_normals_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_surface_normals_2d(
+        self, sensor_frame: SensorFrame[datetime], output_path: AnyPath
+    ) -> Union[Future, None]:
+        surface_normals = sensor_frame.get_annotations(AnnotationTypes.SurfaceNormals2D)
+        encoded_normals = ((surface_normals.normals * 0.5 + 0.5) * 255).astype(np.uint8)
+        return self._run_async(func=fsio.write_png, obj=encoded_normals, path=output_path)
+
+    def _process_albedo_2d(self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = True) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.Albedo2D)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.ALBEDO_2D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_albedo_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_albedo_2d(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
+        raise NotImplementedError(
+            "Encoding of Albedo2D annotations not implemented, yet. Please copy annotations instead."
+        )
+
+    def _process_material_properties_2d(
+        self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = True
+    ) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.MaterialProperties2D)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.MATERIAL_PROPERTIES_2D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_material_properties_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_material_properties_2d(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
+        raise NotImplementedError(
+            "Encoding of MaterialProperties2D annotations not implemented, yet. Please copy annotations instead."
+        )
+
     def _process_semantic_segmentation_3d(
         self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False
     ) -> Future:
@@ -343,6 +404,25 @@ class DGPSceneEncoder(SceneEncoder):
         mask_out = SemanticSegmentation3DTransformer.transform(mask=semseg3d.class_ids)
 
         return self._run_async(func=fsio.write_npz, obj=dict(segmentation=mask_out), path=output_path)
+
+    def _process_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.SceneFlow)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.MOTION_VECTORS_3D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_motion_vectors_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], output_path: AnyPath) -> Future:
+        scene_flow = sensor_frame.get_annotations(AnnotationTypes.SceneFlow)
+
+        return self._run_async(func=fsio.write_npz, obj=dict(motion_vectors=scene_flow.vectors), path=output_path)
 
     def _process_surface_normals_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = False) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.SurfaceNormals3D)
@@ -595,7 +675,18 @@ class DGPSceneEncoder(SceneEncoder):
                 and AnnotationTypes.OpticalFlow in self._annotation_types
                 and not last_frame
                 else None,
-                "10": None,  # surface_normals_2d
+                "10": self._process_surface_normals_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.SurfaceNormals2D in camera_frame.available_annotation_types
+                and AnnotationTypes.SurfaceNormals2D in self._annotation_types
+                else None,
+                "12": self._process_albedo_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.Albedo2D in camera_frame.available_annotation_types
+                and AnnotationTypes.Albedo2D in self._annotation_types
+                else None,
+                "13": self._process_material_properties_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.MaterialProperties2D in camera_frame.available_annotation_types
+                and AnnotationTypes.MaterialProperties2D in self._annotation_types
+                else None,
             },
             sensor_data={
                 "rgb": self._process_rgb(sensor_frame=camera_frame, fs_copy=True),
@@ -627,7 +718,10 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.SurfaceNormals3D in lidar_frame.available_annotation_types
                 and AnnotationTypes.SurfaceNormals3D in self._annotation_types
                 else None,
-                "9": None,  # motion_vectors_3d
+                "9": self._process_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.SceneFlow in lidar_frame.available_annotation_types
+                and AnnotationTypes.SceneFlow in self._annotation_types
+                else None,
                 "15": self._process_material_properties_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.MaterialProperties3D in lidar_frame.available_annotation_types
                 and AnnotationTypes.MaterialProperties3D in self._annotation_types
@@ -738,7 +832,7 @@ class DGPSceneEncoder(SceneEncoder):
                 fisheye=self._fisheye_camera_model_map[intr.camera_model],
             )
 
-            return (sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic)
+            return sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic
 
         def get_lidar_calibration(
             sf: LidarSensorFrame[datetime],
@@ -770,7 +864,7 @@ class DGPSceneEncoder(SceneEncoder):
                 fisheye=0,
             )
 
-            return (sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic)
+            return sf.sensor_name, calib_dto_extrinsic, calib_dto_intrinsic
 
         res = list(map(get_camera_calibration, camera_frames)) + list(map(get_lidar_calibration, lidar_frames))
 
