@@ -67,19 +67,23 @@ class DGPDatasetEncoder(DatasetEncoder):
 
         if self._annotation_types:
             metadata_proto.available_annotation_types.extend(
-                [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
-                    for a_type in self._annotation_types
-                    if a_type is not Annotation  # equiv: not implemented, yet!
-                ]
+                sorted(
+                    [
+                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        for a_type in self._annotation_types
+                        if a_type is not Annotation  # equiv: not implemented, yet!
+                    ]
+                )
             )
         else:
             metadata_proto.available_annotation_types.extend(
-                [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
-                    for a_type in self._dataset.available_annotation_types
-                    if a_type is not Annotation  # equiv: not implemented, yet!
-                ]
+                sorted(
+                    [
+                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        for a_type in self._dataset.available_annotation_types
+                        if a_type is not Annotation  # equiv: not implemented, yet!
+                    ]
+                )
             )
 
         dataset_proto = dataset_pb2.SceneDataset(
