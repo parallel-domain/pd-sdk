@@ -11,9 +11,12 @@ from paralleldomain.model.annotation.material_properties_2d import MaterialPrope
 from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Points2D
+from paralleldomain.model.annotation.point_3d import Points3D
 from paralleldomain.model.annotation.point_cache import PointCaches
 from paralleldomain.model.annotation.polygon_2d import Polygons2D
+from paralleldomain.model.annotation.polygon_3d import Polygons3D
 from paralleldomain.model.annotation.polyline_2d import Polylines2D
+from paralleldomain.model.annotation.polyline_3d import Polylines3D
 from paralleldomain.model.annotation.scene_flow import SceneFlow
 from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSegmentation2D
 from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
@@ -86,6 +89,9 @@ class AnnotationTypes:
     MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
     Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
     Points2D: Type[Points2D] = Points2D  # noqa: F811
+    Points3D: Type[Points3D] = Points3D  # noqa: F811
     Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
+    Polygons3D: Type[Polygons3D] = Polygons3D  # noqa: F811
     Polylines2D: Type[Polylines2D] = Polylines2D  # noqa: F811
+    Polylines3D: Type[Polylines3D] = Polylines3D  # noqa: F811
     PointCaches: Type[PointCaches] = PointCaches  # noqa: F811

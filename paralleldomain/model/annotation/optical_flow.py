@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 
@@ -11,10 +12,13 @@ class OpticalFlow(Annotation):
 
     Args:
         vectors: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors`
+        valid_mask: np.ndarray
 
     Attributes:
         vectors: Matrix of shape `(H X W x 2)`, where `H` is the height and `W` is the width of corresponding
             camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.
+        valid_mask: Matrix of shape `(H X W)` with values {0,1}. 1 indicates a pixel with a valid flow label.
+            0 indicates no groundtruth flow at that pixel.
 
     Example:
         Using the Optical Flow vector mask in combination with :attr:`.Image.coordinates` allows for a
@@ -44,6 +48,10 @@ class OpticalFlow(Annotation):
     """
 
     vectors: np.ndarray
+    valid_mask: Optional[np.ndarray] = None
 
     def __sizeof__(self):
-        return self.vectors.nbytes
+        if self.valid_mask is not None:
+            return self.vectors.nbytes + self.valid_mask.nbytes
+        else:
+            return self.vectors.nbytes

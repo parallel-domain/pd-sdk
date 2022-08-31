@@ -27,6 +27,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
+        sync_after_scene_encoded: bool = True,
     ) -> None:
         super().__init__(
             dataset=dataset,
@@ -34,6 +35,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             scene_names=scene_names,
             set_start=scene_start,
             set_stop=scene_stop,
+            sync_after_scene_encoded=sync_after_scene_encoded,
         )
         self._dataset_name: str = dataset_name
 
@@ -65,19 +67,23 @@ class DGPDatasetEncoder(DatasetEncoder):
 
         if self._annotation_types:
             metadata_proto.available_annotation_types.extend(
-                [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
-                    for a_type in self._annotation_types
-                    if a_type is not Annotation  # equiv: not implemented, yet!
-                ]
+                sorted(
+                    [
+                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        for a_type in self._annotation_types
+                        if a_type is not Annotation  # equiv: not implemented, yet!
+                    ]
+                )
             )
         else:
             metadata_proto.available_annotation_types.extend(
-                [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
-                    for a_type in self._dataset.available_annotation_types
-                    if a_type is not Annotation  # equiv: not implemented, yet!
-                ]
+                sorted(
+                    [
+                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        for a_type in self._dataset.available_annotation_types
+                        if a_type is not Annotation  # equiv: not implemented, yet!
+                    ]
+                )
             )
 
         dataset_proto = dataset_pb2.SceneDataset(
@@ -98,10 +104,7 @@ class DGPDatasetEncoder(DatasetEncoder):
     def encode_dataset(self) -> AnyPath:
         scene_files = {}
         for scene_name in self._scene_names:
-            # try:
-            scene_files[scene_name] = self._call_scene_encoder(scene_name=scene_name)
-            # except Exception:
-            #     continue
+            scene_files[scene_name]: AnyPath = self._call_scene_encoder(scene_name=scene_name)
 
         return self._encode_dataset_json(scene_files=scene_files)
 
@@ -132,7 +135,6 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
     ) -> "DGPDatasetEncoder":
-        # Todo detect decoder type from path content
         decoder = DGPDatasetDecoder(dataset_path=input_path)
         return DGPDatasetEncoder.from_decoder(
             decoder=decoder,

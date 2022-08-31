@@ -11,6 +11,7 @@ from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 from test_paralleldomain.decoding.constants import (
     CITYSCAPES_DATASET_PATH_ENV,
     DGP_DATASET_PATH_ENV,
+    KITTI_FLOW_DATASET_PATH_ENV,
     NUIMAGES_DATASET_PATH_ENV,
 )
 
@@ -20,6 +21,7 @@ from test_paralleldomain.decoding.constants import (
         ("dgp", DGP_DATASET_PATH_ENV, dict()),
         ("cityscapes", CITYSCAPES_DATASET_PATH_ENV, dict(splits=["test"])),
         ("nuimages", NUIMAGES_DATASET_PATH_ENV, dict(split="v1.0-mini")),
+        ("kitti-flow", KITTI_FLOW_DATASET_PATH_ENV, dict(split_name="training")),
     ]
 )
 def dataset_params(request) -> Dict[str, Any]:

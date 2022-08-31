@@ -4,9 +4,8 @@
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf.internal import builder as _builder
 
 # @@protoc_insertion_point(imports)
 
@@ -17,67 +16,8 @@ DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
     b'\n\x18\x64gp/proto/geometry.proto\x12\tdgp.proto"*\n\x07Point3D\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02"*\n\x07Vector3\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01"<\n\nQuaternion\x12\n\n\x02qx\x18\x01 \x01(\x01\x12\n\n\x02qy\x18\x02 \x01(\x01\x12\n\n\x02qz\x18\x03 \x01(\x01\x12\n\n\x02qw\x18\x04 \x01(\x01"X\n\x04Pose\x12\'\n\x0btranslation\x18\x01 \x01(\x0b\x32\x12.dgp.proto.Vector3\x12\'\n\x08rotation\x18\x02 \x01(\x0b\x32\x15.dgp.proto.Quaternion"\xce\x01\n\x10\x43\x61meraIntrinsics\x12\n\n\x02\x66x\x18\x01 \x01(\x01\x12\n\n\x02\x66y\x18\x02 \x01(\x01\x12\n\n\x02\x63x\x18\x03 \x01(\x01\x12\n\n\x02\x63y\x18\x04 \x01(\x01\x12\x0c\n\x04skew\x18\x05 \x01(\x01\x12\x0b\n\x03\x66ov\x18\x06 \x01(\x01\x12\n\n\x02k1\x18\x07 \x01(\x01\x12\n\n\x02k2\x18\x08 \x01(\x01\x12\n\n\x02k3\x18\t \x01(\x01\x12\n\n\x02k4\x18\n \x01(\x01\x12\n\n\x02k5\x18\x0b \x01(\x01\x12\n\n\x02k6\x18\x0c \x01(\x01\x12\n\n\x02p1\x18\r \x01(\x01\x12\n\n\x02p2\x18\x0e \x01(\x01\x12\x0f\n\x07\x66isheye\x18\x0f \x01(\rb\x06proto3'
 )
 
-
-_POINT3D = DESCRIPTOR.message_types_by_name["Point3D"]
-_VECTOR3 = DESCRIPTOR.message_types_by_name["Vector3"]
-_QUATERNION = DESCRIPTOR.message_types_by_name["Quaternion"]
-_POSE = DESCRIPTOR.message_types_by_name["Pose"]
-_CAMERAINTRINSICS = DESCRIPTOR.message_types_by_name["CameraIntrinsics"]
-Point3D = _reflection.GeneratedProtocolMessageType(
-    "Point3D",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _POINT3D,
-        "__module__": "dgp.proto.geometry_pb2"
-        # @@protoc_insertion_point(class_scope:dgp.proto.Point3D)
-    },
-)
-_sym_db.RegisterMessage(Point3D)
-
-Vector3 = _reflection.GeneratedProtocolMessageType(
-    "Vector3",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _VECTOR3,
-        "__module__": "dgp.proto.geometry_pb2"
-        # @@protoc_insertion_point(class_scope:dgp.proto.Vector3)
-    },
-)
-_sym_db.RegisterMessage(Vector3)
-
-Quaternion = _reflection.GeneratedProtocolMessageType(
-    "Quaternion",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _QUATERNION,
-        "__module__": "dgp.proto.geometry_pb2"
-        # @@protoc_insertion_point(class_scope:dgp.proto.Quaternion)
-    },
-)
-_sym_db.RegisterMessage(Quaternion)
-
-Pose = _reflection.GeneratedProtocolMessageType(
-    "Pose",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _POSE,
-        "__module__": "dgp.proto.geometry_pb2"
-        # @@protoc_insertion_point(class_scope:dgp.proto.Pose)
-    },
-)
-_sym_db.RegisterMessage(Pose)
-
-CameraIntrinsics = _reflection.GeneratedProtocolMessageType(
-    "CameraIntrinsics",
-    (_message.Message,),
-    {
-        "DESCRIPTOR": _CAMERAINTRINSICS,
-        "__module__": "dgp.proto.geometry_pb2"
-        # @@protoc_insertion_point(class_scope:dgp.proto.CameraIntrinsics)
-    },
-)
-_sym_db.RegisterMessage(CameraIntrinsics)
-
+_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "dgp.proto.geometry_pb2", globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
     DESCRIPTOR._options = None

@@ -5,7 +5,12 @@ from typing import Optional
 import cv2
 import numpy as np
 
-from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
+from paralleldomain.constants import (
+    CAMERA_MODEL_OPENCV_FISHEYE,
+    CAMERA_MODEL_OPENCV_PINHOLE,
+    CAMERA_MODEL_PD_FISHEYE,
+    CAMERA_MODEL_PD_ORTHOGRAPHIC,
+)
 from paralleldomain.utilities.mask import lookup_values
 
 
@@ -63,6 +68,18 @@ def _project_points_3d_to_2d_pd_fisheye(
     return uv
 
 
+def _project_points_3d_to_2d_pd_orthographic(
+    k_matrix: np.ndarray,
+    points_3d: np.ndarray,
+) -> np.ndarray:
+    xy_prime = points_3d[:, [0, 1]]
+    xy_prime_one = np.ones(shape=(len(xy_prime), 1))
+
+    uv = (k_matrix @ np.hstack([xy_prime, xy_prime_one]).T).T[:, :2]
+
+    return uv
+
+
 def project_points_3d_to_2d(
     k_matrix: np.ndarray,
     camera_model: str,
@@ -75,7 +92,7 @@ def project_points_3d_to_2d(
     Args:
         k_matrix: Camera intrinsic matrix. Definition can be found in
             `OpenCV documentation <https://docs.opencv.org/4.5.3/dc/dbb/tutorial_py_calibration.html>`_.
-        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`.
+        camera_model: One of `opencv_pinhole`, `opencv_fisheye`, `pd_fisheye`, `pd_orthographic`.
             More details in :obj:`~.model.sensor.CameraModel`.
         points_3d: A matrix with dimensions (nx3) containing the points.
             Points must be already in the camera's coordinate system.
@@ -118,6 +135,11 @@ def project_points_3d_to_2d(
             k_matrix=k_matrix,
             points_3d=points_3d,
             distortion_lookup=distortion_lookup,
+        )
+    elif camera_model == CAMERA_MODEL_PD_ORTHOGRAPHIC:
+        uv = _project_points_3d_to_2d_pd_orthographic(
+            k_matrix=k_matrix,
+            points_3d=points_3d,
         )
     else:
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
