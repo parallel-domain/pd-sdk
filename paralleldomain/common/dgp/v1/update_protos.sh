@@ -9,7 +9,6 @@ rm -rf src
 
 git clone git@github.com:TRI-ML/dgp.git src
 cd src || exit
-git checkout camera_distortion
 git-filter-repo --path dgp/proto --path dgp/contribs/pd --force
 
 # overwrite geometry.proto
@@ -21,11 +20,18 @@ protoc -I . --python_out=. dgp/proto/geometry.proto
 # delete RPC files
 find . -type f -iname "*_grpc.py" -exec rm {} \;
 
-# disable Flake8 linting on pre-built python files
-find . -type f -iname "*_pb2.py" -exec sed -i '1s/^/# flake8: noqa \n/' {} \;
+if [[ "$(uname)" == "Darwin" ]]; then # OS X uses different 'sed' arguments
+  # disable Flake8 linting on pre-built python files
+  find . -type f -iname "*_pb2.py" -exec sed -i '' -e '1s/^/# flake8: noqa \n/' {} \;
+  # change relative to absolute imports
+  find . -type f -iname "*_pb2.py" -exec sed -i '' -e 's/from dgp.proto/from paralleldomain.common.dgp.v1.src.dgp.proto/g' {} \;
+else
+  # disable Flake8 linting on pre-built python files
+  find . -type f -iname "*_pb2.py" -exec sed -i '1s/^/# flake8: noqa \n/' {} \;
+  # change relative to absolute imports
+  find . -type f -iname "*_pb2.py" -exec sed -i 's/from dgp.proto/from paralleldomain.common.dgp.v1.src.dgp.proto/g' {} \;
+fi
 
-# change relative to absolute imports
-find . -type f -iname "*_pb2.py" -exec sed -i 's/from dgp.proto/from paralleldomain.common.dgp.v1.src.dgp.proto/g' {} \;
 
 
 # make every folder a submodule

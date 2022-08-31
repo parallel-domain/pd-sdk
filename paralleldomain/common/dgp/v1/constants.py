@@ -22,8 +22,11 @@ ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
     11: AnnotationTypes.Polylines2D,
     12: AnnotationTypes.Polygons2D,
     13: AnnotationTypes.SurfaceNormals2D,
-    15: AnnotationTypes.Albedo2D,
-    16: AnnotationTypes.MaterialProperties2D,
+    16: AnnotationTypes.Points3D,
+    17: AnnotationTypes.Polylines3D,
+    18: AnnotationTypes.Polygons3D,
+    98: AnnotationTypes.Albedo2D,  # DGPv0 12
+    99: AnnotationTypes.MaterialProperties2D,  # DGPv0 13
 }
 
 ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
@@ -142,22 +145,28 @@ class RadarPointFormatDtype:
 
 
 class DirectoryName:
-    CALIBRATION: str = "calibration"
-    ONTOLOGY: str = "ontology"
-    RGB: str = "rgb"
-    POINT_CLOUD: str = "point_cloud"
-    RADAR_POINT_CLOUD: str = "radar_point_cloud"
+    ALBEDO_2D: str = "base_color"
     BOUNDING_BOX_2D: str = "bounding_box_2d"
     BOUNDING_BOX_3D: str = "bounding_box_3d"
-    SEMANTIC_SEGMENTATION_2D: str = "semantic_segmentation_2d"
+    CALIBRATION: str = "calibration"
+    DEPTH: str = "depth"
     INSTANCE_SEGMENTATION_2D: str = "instance_segmentation_2d"
-    SEMANTIC_SEGMENTATION_3D: str = "semantic_segmentation_3d"
     INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
-    KEY_POINT_2D: str = "key_point_2d"
     KEY_LINE_2D: str = "key_line_2d"
-    POLYGON_2D: str = "polygon_2d"
+    KEY_LINE_3D: str = "key_line_3d"
+    KEY_POINT_2D: str = "key_point_2d"
+    KEY_POINT_3D: str = "key_point_3d"
+    MATERIAL_PROPERTIES_2D: str = "roughness_metallic_specular"
+    MATERIAL_PROPERTIES_3D: str = "material_properties_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     MOTION_VECTORS_3D: str = "motion_vectors_3d"
-    DEPTH: str = "depth"
+    ONTOLOGY: str = "ontology"
+    POINT_CLOUD: str = "point_cloud"
+    POLYGON_2D: str = "polygon_2d"
+    POLYGON_3D: str = "polygon_3d"
+    RADAR_POINT_CLOUD: str = "radar_point_cloud"
+    RGB: str = "rgb"
+    SEMANTIC_SEGMENTATION_2D: str = "semantic_segmentation_2d"
+    SEMANTIC_SEGMENTATION_3D: str = "semantic_segmentation_3d"
     SURFACE_NORMALS_2D: str = "surface_normals_2d"
     SURFACE_NORMALS_3D: str = "surface_normals_3d"
