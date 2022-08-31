@@ -896,8 +896,8 @@ class DGPPointCachePointsDecoder:
         self._pose = pose
         self._parent_pose = parent_pose
         self._file_path = cache_folder / (sha + ".npz")
-        self.get_point_data = lru_cache(maxsize=1)(self.get_point_data)
 
+    @lru_cache(maxsize=1)
     def get_point_data(self) -> np.ndarray:
         with self._file_path.open("rb") as f:
             cache_points = np.load(f)["data"]
