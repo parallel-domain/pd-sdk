@@ -202,9 +202,9 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
 
         if copy_data_types is None and copy_all_available_sensors_and_annotations:
             copy_data_types: List[SensorDataTypes] = dataset.available_annotation_types
-            if len(dataset.camera_names) > 0:
+            if any(len(scene.camera_names) > 0 for scene in dataset.unordered_scenes.values()):
                 copy_data_types.append(FilePathedDataType.Image)
-            if len(dataset.lidar_names) > 0:
+            if any(len(scene.lidar_names) > 0 for scene in dataset.unordered_scenes.values()):
                 copy_data_types.append(FilePathedDataType.PointCloud)
         self.copy_data_types = copy_data_types
 

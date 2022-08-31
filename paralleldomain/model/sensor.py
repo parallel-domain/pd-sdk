@@ -35,6 +35,7 @@ from paralleldomain.model.annotation.depth import Depth
 from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
 from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D
 from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
+from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
 from paralleldomain.model.annotation.optical_flow import OpticalFlow
 from paralleldomain.model.annotation.point_2d import Points2D
 from paralleldomain.model.annotation.point_cache import PointCaches
@@ -66,6 +67,7 @@ SensorDataTypes = Union[
     Type[SurfaceNormals2D],
     Type[SceneFlow],
     Type[MaterialProperties2D],
+    Type[MaterialProperties3D],
     Type[Albedo2D],
     Type[Points2D],
     Type[Polygons2D],
@@ -91,6 +93,7 @@ class FilePathedDataType:
         SurfaceNormals2D
         SceneFlow
         MaterialProperties2D
+        MaterialProperties3D
         Albedo2D
         Points2D
         Polygons2D
@@ -126,6 +129,7 @@ class FilePathedDataType:
     SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D  # noqa: F811
     SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
+    MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
     Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
     Points2D: Type[Points2D] = Points2D  # noqa: F811
     Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
@@ -537,6 +541,8 @@ class SensorIntrinsic:
                 ]
             )
         elif self.camera_model == CAMERA_MODEL_PD_FISHEYE:
+            return None
+        elif self.camera_model == CAMERA_MODEL_PD_ORTHOGRAPHIC:
             return None
         else:
             raise NotImplementedError(f"No distortion parameters implemented for camera model {self.camera_model}")

@@ -52,17 +52,21 @@ class DGPDatasetEncoder(DatasetEncoder):
         metadata_dto.name = self._dataset_name if self._dataset_name else self._dataset.name
         metadata_dto.creation_date = datetime.utcnow().strftime(DATETIME_FORMAT)
         if self._annotation_types:
-            metadata_dto.available_annotation_types = [
-                int(ANNOTATION_TYPE_MAP_INV[a_type])
-                for a_type in self._annotation_types
-                if a_type is not Annotation  # equiv: not implemented, yet!
-            ]
+            metadata_dto.available_annotation_types = sorted(
+                [
+                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    for a_type in self._annotation_types
+                    if a_type is not Annotation  # equiv: not implemented, yet!
+                ]
+            )
         else:
-            metadata_dto.available_annotation_types = [
-                int(ANNOTATION_TYPE_MAP_INV[a_type])
-                for a_type in self._dataset.available_annotation_types
-                if a_type is not Annotation  # equiv: not implemented, yet!
-            ]
+            metadata_dto.available_annotation_types = sorted(
+                [
+                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    for a_type in self._dataset.available_annotation_types
+                    if a_type is not Annotation  # equiv: not implemented, yet!
+                ]
+            )
 
         ds_dto = DatasetDTO(
             metadata=metadata_dto,  # needs refinement, currently assumes DGP->DGP
