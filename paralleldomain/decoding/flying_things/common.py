@@ -35,7 +35,7 @@ SPLIT_NAME_TO_FOLDER_NAME = {
 def frame_id_to_timestamp(frame_id: str) -> datetime:
     """
     frame_id is of the form "xxxxx_imgx.p"
-    Since there is no true framerate or timestamp in FlyingChairs, we make one up.
+    Since there is no true framerate or timestamp in FlyingThings, we make one up.
     """
     epoch_time = datetime(1970, 1, 1)
     seconds = int(frame_id) + 0.1
@@ -144,12 +144,3 @@ def read_flow(file_path: AnyPath) -> np.ndarray:
         return read_pfm(file_path=file_path)[0][:, :, 0:2]
     else:
         return read_flo(path=file_path)
-    # with file_path.open("rb") as f:
-    #     header = f.read(4)
-    #     if header.decode("utf-8") != "PIEH":
-    #         raise Exception("Flow file header does not contain PIEH")
-    #
-    #     width = np.fromfile(f, np.int32, 1).squeeze()
-    #     height = np.fromfile(f, np.int32, 1).squeeze()
-    #     flow = np.fromfile(f, np.float32, width * height * 2).reshape((height, width, 2))
-    # return flow.astype(np.float32)
