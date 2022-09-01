@@ -6,10 +6,10 @@ import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.flying_chairs.common import frame_id_to_timestamp
 from paralleldomain.decoding.flying_things.common import (
     OPTICAL_FLOW_BACKWARD_DIRECTION_NAME,
     OPTICAL_FLOW_FORWARD_DIRECTION_NAME,
+    frame_id_to_timestamp,
     get_image_folder_name,
     get_scene_flow_folder,
     get_scene_folder,

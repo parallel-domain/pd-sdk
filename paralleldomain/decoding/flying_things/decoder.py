@@ -199,9 +199,6 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
-        return self._decode_unordered_scene_names()
-
-    def _decode_scene_names(self) -> List[SceneName]:
         has_clean = (self._dataset_path / CLEAN_IMAGE_FOLDER_1_NAME).exists()
         has_final = (self._dataset_path / FINAL_IMAGE_FOLDER_1_NAME).exists()
         scene_names = list()
@@ -222,6 +219,9 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         if has_final:
             scene_names += final_scenes
         return scene_names
+
+    def _decode_scene_names(self) -> List[SceneName]:
+        return self._decode_unordered_scene_names()
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
@@ -308,7 +308,7 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[datetime]:
-        raise ValueError("Directory decoder does not support lidar data!")
+        raise ValueError("FlyingThings does not support lidar data!")
 
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
@@ -334,4 +334,4 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
     def _create_radar_sensor_decoder(
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[datetime]:
-        raise ValueError("Loading from directory does not support radar data!")
+        raise ValueError("FlyingThings does not support radar data!")

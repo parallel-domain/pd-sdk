@@ -42,7 +42,7 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
         self.camera_name = camera_name
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
-        raise ValueError("Loading from directory does not support ego pose!")
+        raise ValueError("KITTI-flow does not support ego pose!")
 
     def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
         return [self.camera_name]
@@ -51,7 +51,7 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
         return [self.camera_name]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        raise ValueError("Loading from directory does not support lidar data!")
+        raise ValueError("KITTI-flow does not support lidar data!")
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         return frame_id_to_timestamp(frame_id=frame_id)
@@ -74,23 +74,23 @@ class KITTIFlowFrameDecoder(FrameDecoder[datetime]):
         return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
-        raise ValueError("Loading from directory does not support lidar data!")
+        raise ValueError("KITTI-flow does not support lidar data!")
 
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[datetime]:
-        raise ValueError("Loading from directoy does not support lidar data!")
+        raise ValueError("KITTI-flow does not support lidar data!")
 
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
-        raise ValueError("Loading from directory does not support radar data!")
+        raise ValueError("KITTI-flow does not support radar data!")
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[datetime]:
-        raise ValueError("Loading from directory does not support radar data!")
+        raise ValueError("KITTI-flow does not support radar data!")
 
     def _decode_radar_sensor_frame(
         self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> RadarSensorFrame[datetime]:
-        raise ValueError("Loading from directory does not support radar data!")
+        raise ValueError("KITTI-flow does not support radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         return dict()
