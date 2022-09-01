@@ -22,7 +22,7 @@ def flying_things_dataset_path() -> str:
 
 @pytest.fixture
 def flying_things_train_dataset(flying_things_dataset_path: str) -> Dataset:
-    decoder = FlyingThingsDatasetDecoder(dataset_path=flying_things_dataset_path)
+    decoder = FlyingThingsDatasetDecoder(dataset_path=flying_things_dataset_path, is_full_dataset_format=False)
     dataset = decoder.get_dataset()
     return dataset
 
@@ -78,15 +78,17 @@ def test_decode_camera_image(flying_things_dataset_train_scene: Scene):
 
 def test_decode_optical_flow(flying_things_dataset_train_scene: Scene):
     camera_frame = flying_things_dataset_train_scene.get_frame(
-        frame_id=flying_things_dataset_train_scene.frame_ids[0]
-    ).get_sensor(sensor_name="left")
+        frame_id=flying_things_dataset_train_scene.frame_ids[3]
+    ).get_sensor(sensor_name="right")
     assert camera_frame is not None
     assert isinstance(camera_frame, CameraSensorFrame)
     flow = camera_frame.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
     assert flow is not None
     vectors = flow.vectors
+    if vectors is None:
+        vectors = flow.backward_vectors
     assert isinstance(vectors, np.ndarray)
     assert vectors.shape[0] == 540
     assert vectors.shape[1] == 960
     assert vectors.shape[2] == 2
-    assert np.all(np.logical_and(flow.vectors.max() < 960, flow.vectors.min() >= -960))
+    assert np.all(np.logical_and(vectors.max() < 960, vectors.min() >= -960))

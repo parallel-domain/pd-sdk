@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import List, Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.flying_things.common import get_scene_folder
+from paralleldomain.decoding.flying_things.common import decode_frame_id_set, get_scene_folder
 from paralleldomain.decoding.flying_things.sensor_frame_decoder import FlyingThingsCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
@@ -20,20 +20,25 @@ class FlyingThingsCameraSensorDecoder(CameraSensorDecoder[datetime]):
         dataset_path: AnyPath,
         settings: DecoderSettings,
         split_name: str,
+        split_list: List[int],
+        is_full_dataset_format: bool = False,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
+        self._is_full_dataset_format = is_full_dataset_format
+        self._split_list = split_list
         self._dataset_path = dataset_path
         self._split_name = split_name
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
-        folder_path = (
-            get_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name, split_name=self._split_name)
-            / sensor_name
+        return decode_frame_id_set(
+            scene_name=self.scene_name,
+            split_name=self._split_name,
+            split_list=self._split_list,
+            is_full_dataset_format=self._is_full_dataset_format,
+            dataset_path=self._dataset_path,
+            sensor_name=sensor_name,
         )
-
-        frame_ids = {img.split(".png")[0] for img in folder_path.glob("*.png")}
-        return frame_ids
 
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
@@ -47,4 +52,6 @@ class FlyingThingsCameraSensorDecoder(CameraSensorDecoder[datetime]):
             dataset_path=self._dataset_path,
             settings=self.settings,
             split_name=self._split_name,
+            split_list=self._split_list,
+            is_full_dataset_format=self._is_full_dataset_format,
         )

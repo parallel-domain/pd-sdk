@@ -12,7 +12,9 @@ from paralleldomain.decoding.flying_things.common import (
     OPTICAL_FLOW_FOLDER_NAME,
     RIGHT_SENSOR_NAME,
     SPLIT_NAME_TO_FOLDER_NAME,
+    decode_frame_id_set,
     frame_id_to_timestamp,
+    get_frame_ids_of_subset_scene,
     get_scene_folder,
 )
 from paralleldomain.decoding.flying_things.frame_decoder import FlyingThingsFrameDecoder
@@ -32,19 +34,157 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         dataset_path: Union[str, AnyPath],
         split_name: str = "training",
         settings: Optional[DecoderSettings] = None,
+        is_full_dataset_format: bool = False,
+        train_split_file: Optional[AnyPath] = None,
+        val_split_file: Optional[AnyPath] = None,
         **kwargs,
     ):
+        """
+        Format Definition see here:
+        https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html#information
+        This decoder supports both formats of Flying Things that are available. For one the Full Dataset format with
+        the structure:
+        dataset_path
+            frames_cleanpass
+                TEST
+                    A
+                        scene_folder_xy
+                            image_clean
+                                left: X images
+                                right: X images
+                        .
+                        .
+                    B
+                    C
+                TRAIN
+                    A
+                        scene_folder_xy
+                            image_clean
+                                left: X images
+                                right: X images
+                        .
+                        .
+                    B
+                    C
+            frames_finalpass
+                TEST
+                    A
+                        scene_folder_xy
+                            image_final
+                                left: X images
+                                right: X images
+                        .
+                        .
+                    B
+                    C
+                TRAIN
+                    .
+                    .
+            optical_flow
+                TEST
+                    A
+                        scene_folder_xy
+                            into_future
+                                left: X images
+                                right: X images
+                            into_past
+                                left: X images
+                                right: X images
+                        .
+                        .
+                    B
+                    C
+                TRAIN
+                    .
+                    .
+        where each folder under TEST or TRAIN contain a scene. And the Format of the DispNet/FlowNet2.0 dataset subsets,
+        which has no per scene folders but a split file. This Format would have the following folder structure:
+        dataset_path
+            frames_cleanpass
+                train
+                    image_clean
+                        left: 21,818 imgs
+                        right: 21,818 imgs
+                val
+                    image_clean
+                        left: 4,248 imgs
+                        right: 4,248 imgs
+            frames_finalpass
+                train
+                    image_final
+                        left: 21,818 imgs
+                        right: 21,818 imgs
+                val
+                    image_final
+                        left: 4,248 imgs
+                        right: 4,248 imgs
+            optical_flow
+                train
+                    left
+                        into_past: 19,642 flo
+                        into_future: 19,642 flo
+                    right
+                        into_past: 19,642 flo
+                        into_future: 19,642 flo
+                val
+                    left
+                        into_past: 3,824 flo
+                        into_future: 3,824 flo
+                    right
+                        into_past: 3,824 flo
+                        into_future: 3,824 flo
+
+        Args:
+        dataset_path: The path to the root folder of the dataset. See Above description.
+        split_name: One of `training`, `train`, `validation`, `val`, `testing`, `test`. Depending on the Format -
+            Full vs Subset, either test or val is available. E.g. the full dataset only has train and test splits, while
+            the DispNet/FlowNet2.0 dataset subsets has train and val.
+        settings: Optional settings for the decoder. For Details see DecoderSettings.
+        is_full_dataset_format: A boolean flag to indicate if the dataset_path points to the Full dataset format or
+            the DispNet/FlowNet2.0 dataset subsets format.
+        train_split_file: Optional path to a file that contains the scene splits in case of the
+            DispNet/FlowNet2.0 dataset subsets format train split. This is only needed if is_full_dataset_format
+            is False. If no path is passed we assume that the file is located under
+            dataset_path/sequence-lengths-train.txt
+            This file can be found in the Sequence lengths column of the DispNet/FlowNet2.0 dataset subsets
+            documentation of the official website.
+        val_split_file: Optional path to a file that contains the scene splits in case of the
+            DispNet/FlowNet2.0 dataset subsets format val split.  This is only needed if is_full_dataset_format
+            is False. If no path is passed we assume that the file is located under
+            dataset_path/sequence-lengths-train.txt
+            This file can be found in the Sequence lengths column of the DispNet/FlowNet2.0 dataset subsets
+            documentation of the official website.
+        """
+
+        self.val_split_file = val_split_file
+        self.train_split_file = train_split_file
+        self.is_full_dataset_format = is_full_dataset_format
         self._init_kwargs = dict(
             dataset_path=dataset_path,
             split_name=split_name,
             settings=settings,
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        sub_folders = list(self._dataset_path.iterdir())
-        if "FlyingThings3D" in sub_folders:
-            self._dataset_path = self._dataset_path / "FlyingThings3D"
+        if self.val_split_file is None and not is_full_dataset_format:
+            self.val_split_file = self._dataset_path / "sequence-lengths-val.txt"
 
-        self.split_name = SPLIT_NAME_TO_FOLDER_NAME[split_name]
+        if self.train_split_file is None and not is_full_dataset_format:
+            self.train_split_file = self._dataset_path / "sequence-lengths-train.txt"
+
+        self.split_name: str = SPLIT_NAME_TO_FOLDER_NAME[split_name]
+        if not self.is_full_dataset_format:
+            self.split_name = self.split_name.lower()
+
+        self.split_file: AnyPath = {
+            "val": self.val_split_file,
+            "train": self.train_split_file,
+        }[self.split_name]
+
+        self.split_list: List[int] = list()
+        if self.split_file is not None:
+            with self.split_file.open("r") as f:
+                self.split_list = [int(line) for line in f.readlines()]
+
         dataset_name = "-".join(list([dataset_path, split_name]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
@@ -54,17 +194,34 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
             dataset_name=self.dataset_name,
             settings=self.settings,
             split_name=self.split_name,
+            is_full_dataset_format=self.is_full_dataset_format,
+            split_list=self.split_list,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         return self._decode_unordered_scene_names()
 
     def _decode_scene_names(self) -> List[SceneName]:
-        folder_path = self._dataset_path / OPTICAL_FLOW_FOLDER_NAME / self.split_name
-        scenes_names = list(folder_path.iterdir())
-        clean_scenes = [f"{CLEAN_IMAGE_FOLDER_1_NAME}/{n}" for n in scenes_names]
-        final_scenes = [f"{FINAL_IMAGE_FOLDER_1_NAME}/{n}" for n in scenes_names]
-        return clean_scenes + final_scenes
+        has_clean = (self._dataset_path / CLEAN_IMAGE_FOLDER_1_NAME).exists()
+        has_final = (self._dataset_path / FINAL_IMAGE_FOLDER_1_NAME).exists()
+        scene_names = list()
+        if self.is_full_dataset_format:
+            names = list()
+            for sub_split in ["A", "B", "C"]:
+                folder_path = self._dataset_path / OPTICAL_FLOW_FOLDER_NAME / self.split_name / sub_split
+                names += [f"{sub_split}/{n}" for n in folder_path.iterdir()]
+
+            clean_scenes = [f"{CLEAN_IMAGE_FOLDER_1_NAME}/{n}" for n in names]
+            final_scenes = [f"{FINAL_IMAGE_FOLDER_1_NAME}/{n}" for n in names]
+        else:
+            clean_scenes = [f"{CLEAN_IMAGE_FOLDER_1_NAME}/{i}" for i in range(len(self.split_list))]
+            final_scenes = [f"{FINAL_IMAGE_FOLDER_1_NAME}/{i}" for i in range(len(self.split_list))]
+
+        if has_clean:
+            scene_names += clean_scenes
+        if has_final:
+            scene_names += final_scenes
+        return scene_names
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
@@ -91,7 +248,11 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         dataset_name: str,
         settings: DecoderSettings,
         split_name: str,
+        split_list: List[int],
+        is_full_dataset_format: bool = False,
     ):
+        self._is_full_dataset_format = is_full_dataset_format
+        self._split_list = split_list
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         super().__init__(dataset_name=dataset_name, settings=settings)
         self._split_name = split_name
@@ -110,12 +271,14 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        folder_path = (
-            get_scene_folder(dataset_path=self._dataset_path, scene_name=scene_name, split_name=self._split_name)
-            / LEFT_SENSOR_NAME
+        return decode_frame_id_set(
+            scene_name=scene_name,
+            split_name=self._split_name,
+            split_list=self._split_list,
+            is_full_dataset_format=self._is_full_dataset_format,
+            dataset_path=self._dataset_path,
+            sensor_name=LEFT_SENSOR_NAME,
         )
-        frame_ids = {img.split(".png")[0] for img in folder_path.glob("*.png")}
-        return frame_ids
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
         return self._decode_camera_names(scene_name=scene_name)
@@ -138,6 +301,8 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
             scene_name=scene_name,
             settings=self.settings,
             split_name=self._split_name,
+            split_list=self._split_list,
+            is_full_dataset_format=self._is_full_dataset_format,
         )
 
     def _create_lidar_sensor_decoder(
@@ -154,6 +319,8 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
             dataset_path=self._dataset_path,
             settings=self.settings,
             split_name=self._split_name,
+            split_list=self._split_list,
+            is_full_dataset_format=self._is_full_dataset_format,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
