@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import List, Optional, Set
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.flying_things.common import decode_frame_id_set, get_scene_folder
+from paralleldomain.decoding.flying_things.common import decode_frame_id_set
 from paralleldomain.decoding.flying_things.sensor_frame_decoder import FlyingThingsCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder

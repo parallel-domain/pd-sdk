@@ -59,8 +59,6 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
     def _get_flow_file_path(self, sensor_name: SensorName, frame_id: FrameId, forward: bool) -> AnyPath:
         direction = OPTICAL_FLOW_FORWARD_DIRECTION_NAME if forward else OPTICAL_FLOW_BACKWARD_DIRECTION_NAME
 
-        # if not forward:
-        #     frame_id = str(int(frame_id) + 1).zfill(7)
         suffix = "pfm"
         if self._is_full_dataset_format:
             base_folder = get_scene_flow_folder(
