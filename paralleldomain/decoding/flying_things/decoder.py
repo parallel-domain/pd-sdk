@@ -175,14 +175,14 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         if not self.is_full_dataset_format:
             self.split_name = self.split_name.lower()
 
-        self.split_file: AnyPath = {
-            "val": self.val_split_file,
-            "train": self.train_split_file,
-        }[self.split_name]
-
         self.split_list: List[int] = list()
-        if self.split_file is not None:
-            with self.split_file.open("r") as f:
+
+        if self.split_name in ["val", "train"]:
+            split_file: AnyPath = {
+                "val": self.val_split_file,
+                "train": self.train_split_file,
+            }[self.split_name]
+            with split_file.open("r") as f:
                 self.split_list = [int(line) for line in f.readlines()]
 
         dataset_name = "-".join(list([dataset_path, split_name]))

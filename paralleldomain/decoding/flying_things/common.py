@@ -22,10 +22,13 @@ RIGHT_SENSOR_NAME = "right"
 SPLIT_NAME_TO_FOLDER_NAME = {
     "training": "TRAIN",
     "train": "TRAIN",
+    "TRAIN": "TRAIN",
     "testing": "TEST",
     "test": "TEST",
+    "TEST": "TEST",
     "validation": "val",
     "val": "val",
+    "VAL": "val",
 }
 
 
