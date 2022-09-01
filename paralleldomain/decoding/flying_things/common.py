@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 
@@ -8,26 +8,49 @@ from paralleldomain.model.type_aliases import SceneName
 from paralleldomain.utilities.any_path import AnyPath
 
 CLEAN_IMAGE_FOLDER_1_NAME = "frames_cleanpass"
-CLEAN_IMAGE_FOLDER_2_NAME = "image_clean"
-FINAL_IMAGE_FOLDER_1_NAME = "frames_finalpass"
-FINAL_IMAGE_FOLDER_2_NAME = "image_final"
+# FlyingThings Subset only has frames_cleanpass folder, can remove these
+# CLEAN_IMAGE_FOLDER_2_NAME = "image_clean"
+# FINAL_IMAGE_FOLDER_1_NAME = "frames_finalpass"
+# FINAL_IMAGE_FOLDER_2_NAME = "image_final"
 OPTICAL_FLOW_FOLDER_NAME = "optical_flow"
 
 LEFT_SENSOR_NAME = "left"
 RIGHT_SENSOR_NAME = "right"
 
-SPLIT_NAME_TO_FOLDER_NAME = {"training": "TRAIN", "train": "TRAIN", "testing": "TEST", "test": "TEST"}
+SPLIT_NAME_TO_FOLDER_NAME = {
+    "training": "train",
+    "train": "train",
+    "TRAIN": "train",
+    "testing": "val",
+    "test": "val",
+    "validation": "val",
+    "TEST": "val",
+    "VAL": "val",
+}
+SPLIT_NAME_TO_SCENE_FILENAME = {"train": "sequence-lengths-val.txt ", "val": "sequence-lengths-val.txt"}
 
 
 def frame_id_to_timestamp(frame_id: str) -> datetime:
     """
     frame_id is of the form "xxxxx_imgx.p"
-    Since there is no true framerate or timestamp in FlyingChairs, we make one up.
+    Since there is no true framerate or timestamp in FlyingThings, we make one up.
     """
     epoch_time = datetime(1970, 1, 1)
     seconds = int(frame_id) + 0.1
     timestamp = epoch_time + timedelta(seconds)
     return timestamp
+
+
+def get_scene_lengths(
+    dataset_path: AnyPath,
+    split_name: str,
+) -> List[int]:
+    # split_lengths is a list of the number of images in each scene.
+    split_scene_filename = SPLIT_NAME_TO_SCENE_FILENAME[split_name]
+    split_scene_path = dataset_path / split_scene_filename
+    with split_scene_path.open("r") as f:
+        split_lengths = list(np.loadtxt(f, dtype=np.int32))
+    return split_lengths
 
 
 def get_scene_folder(
