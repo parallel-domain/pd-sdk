@@ -55,7 +55,7 @@ def test_knows_all_frames(flying_things_dataset_train_scenes: List, flying_thing
 
 def test_decode_train_scene_names(flying_things_train_dataset: Dataset):
     # todo: find out proper number of frames for each split
-    num_scenes = None
+    num_scenes = 2183
     assert len(flying_things_train_dataset.scene_names) == num_scenes
     assert len(flying_things_train_dataset.unordered_scene_names) == num_scenes
 
