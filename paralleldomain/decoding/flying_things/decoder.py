@@ -33,6 +33,7 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         split_name: str = "training",
         settings: Optional[DecoderSettings] = None,
         is_full_dataset_format: bool = False,
+        is_driving_subset: bool = False,
         train_split_file: Optional[AnyPath] = None,
         val_split_file: Optional[AnyPath] = None,
         **kwargs,
@@ -140,6 +141,8 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
         settings: Optional settings for the decoder. For Details see DecoderSettings.
         is_full_dataset_format: A boolean flag to indicate if the dataset_path points to the Full dataset format or
             the DispNet/FlowNet2.0 dataset subsets format.
+        is_driving_subset: Since the Driving Subset of the official dataset has a different focal length from the other
+            subsets, this flag indicates the decoder to use the changed camera intrinsics (fx/fy = 450 instead of 1050).
         train_split_file: Optional path to a file that contains the scene splits in case of the
             DispNet/FlowNet2.0 dataset subsets format train split. This is only needed if is_full_dataset_format
             is False. If no path is passed we assume that the file is located under
@@ -154,6 +157,7 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
             documentation of the official website.
         """
 
+        self.is_driving_subset = is_driving_subset
         self.val_split_file = val_split_file
         self.train_split_file = train_split_file
         self.is_full_dataset_format = is_full_dataset_format
@@ -248,8 +252,10 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         split_name: str,
         split_list: List[int],
         is_full_dataset_format: bool = False,
+        is_driving_subset: bool = False,
     ):
         self._is_full_dataset_format = is_full_dataset_format
+        self._is_driving_subset = is_driving_subset
         self._split_list = split_list
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         super().__init__(dataset_name=dataset_name, settings=settings)
@@ -301,6 +307,7 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
+            is_driving_subset=self._is_driving_subset,
         )
 
     def _create_lidar_sensor_decoder(
@@ -319,6 +326,7 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
+            is_driving_subset=self._is_driving_subset,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:

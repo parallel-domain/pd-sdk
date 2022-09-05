@@ -21,9 +21,11 @@ class FlyingThingsCameraSensorDecoder(CameraSensorDecoder[datetime]):
         settings: DecoderSettings,
         split_name: str,
         split_list: List[int],
+        is_driving_subset: bool,
         is_full_dataset_format: bool = False,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
+        self._is_driving_subset = is_driving_subset
         self._is_full_dataset_format = is_full_dataset_format
         self._split_list = split_list
         self._dataset_path = dataset_path
@@ -54,4 +56,5 @@ class FlyingThingsCameraSensorDecoder(CameraSensorDecoder[datetime]):
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
+            is_driving_subset=self._is_driving_subset,
         )

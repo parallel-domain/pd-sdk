@@ -36,16 +36,20 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         settings: DecoderSettings,
         split_name: str,
         split_list: List[int],
+        is_driving_subset: bool,
         is_full_dataset_format: bool = False,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
+        self._is_driving_subset = is_driving_subset
         self._is_full_dataset_format = is_full_dataset_format
         self._split_list = split_list
         self._dataset_path = dataset_path
         self._split_name = split_name
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return SensorIntrinsic()
+        if self._is_driving_subset:
+            return SensorIntrinsic(fx=450.0, fy=450.0, cx=479.5, cy=269.5)
+        return SensorIntrinsic(fx=1050.0, fy=1050.0, cx=479.5, cy=269.5)
 
     def _get_image_file_path(self, sensor_name: SensorName, frame_id: FrameId) -> AnyPath:
         base_folder = get_scene_folder(
