@@ -1,12 +1,8 @@
-import re
 from datetime import datetime, timedelta
 from typing import List, Set, Tuple
 
-import numpy as np
-
 from paralleldomain.model.type_aliases import FrameId, SceneName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_flo
 
 CLEAN_IMAGE_FOLDER_1_NAME = "frames_cleanpass"
 CLEAN_IMAGE_FOLDER_2_NAME = "image_clean"
@@ -99,48 +95,3 @@ def decode_frame_id_set(
     else:
         frame_ids = get_frame_ids_of_subset_scene(scene_name=scene_name, split_list=split_list)
         return set(frame_ids)
-
-
-def read_pfm(file_path: AnyPath) -> Tuple[np.ndarray, float]:
-    """
-    Adapted from: https://lmb.informatik.uni-freiburg.de/resources/datasets/IO.py
-    """
-    with file_path.open("rb") as file:
-        header = file.readline().rstrip()
-        if header.decode("ascii") == "PF":
-            color = True
-        elif header.decode("ascii") == "Pf":
-            color = False
-        else:
-            raise Exception("Not a PFM file.")
-
-        dim_match = re.match(r"^(\d+)\s(\d+)\s$", file.readline().decode("ascii"))
-        if dim_match:
-            width, height = list(map(int, dim_match.groups()))
-        else:
-            raise Exception("Malformed PFM header.")
-
-        scale = float(file.readline().decode("ascii").rstrip())
-        if scale < 0:  # little-endian
-            endian = "<"
-            scale = -scale
-        else:
-            endian = ">"  # big-endian
-
-        data = np.fromfile(file, endian + "f")
-        shape = (height, width, 3) if color else (height, width)
-
-        data = np.reshape(data, shape)
-        data = np.flipud(data)
-        return data, scale
-
-
-def read_flow(file_path: AnyPath) -> np.ndarray:
-    """
-    Adapted from: https://lmb.informatik.uni-freiburg.de/resources/datasets/IO.py
-    """
-    name = file_path.name
-    if name.endswith(".pfm") or name.endswith(".PFM"):
-        return read_pfm(file_path=file_path)[0][:, :, 0:2]
-    else:
-        return read_flo(path=file_path)

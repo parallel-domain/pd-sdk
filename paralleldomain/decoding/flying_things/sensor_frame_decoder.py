@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
@@ -13,16 +14,15 @@ from paralleldomain.decoding.flying_things.common import (
     get_image_folder_name,
     get_scene_flow_folder,
     get_scene_folder,
-    read_flow,
 )
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, OpticalFlow
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json
+from paralleldomain.utilities.fsio import read_flo, read_image
 
 T = TypeVar("T")
 
@@ -149,3 +149,48 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
             img_path = self._get_image_file_path(sensor_name=sensor_name, frame_id=frame_id)
             return img_path
         return None
+
+
+def read_pfm(file_path: AnyPath) -> Tuple[np.ndarray, float]:
+    """
+    Adapted from: https://lmb.informatik.uni-freiburg.de/resources/datasets/IO.py
+    """
+    with file_path.open("rb") as file:
+        header = file.readline().rstrip()
+        if header.decode("ascii") == "PF":
+            color = True
+        elif header.decode("ascii") == "Pf":
+            color = False
+        else:
+            raise Exception("Not a PFM file.")
+
+        dim_match = re.match(r"^(\d+)\s(\d+)\s$", file.readline().decode("ascii"))
+        if dim_match:
+            width, height = list(map(int, dim_match.groups()))
+        else:
+            raise Exception("Malformed PFM header.")
+
+        scale = float(file.readline().decode("ascii").rstrip())
+        if scale < 0:  # little-endian
+            endian = "<"
+            scale = -scale
+        else:
+            endian = ">"  # big-endian
+
+        data = np.fromfile(file, endian + "f")
+        shape = (height, width, 3) if color else (height, width)
+
+        data = np.reshape(data, shape)
+        data = np.flipud(data)
+        return data, scale
+
+
+def read_flow(file_path: AnyPath) -> np.ndarray:
+    """
+    Adapted from: https://lmb.informatik.uni-freiburg.de/resources/datasets/IO.py
+    """
+    name = file_path.name
+    if name.endswith(".pfm") or name.endswith(".PFM"):
+        return read_pfm(file_path=file_path)[0][:, :, 0:2]
+    else:
+        return read_flo(path=file_path)

@@ -20,6 +20,16 @@ def flying_things_dataset_path() -> str:
         pytest.skip()
 
 
+# SPLIT_NAME_TO_FOLDER_NAME = {
+#     "training": "TRAIN",
+#     "train": "TRAIN",
+#     "TRAIN": "TRAIN",
+#     "testing": "TEST",
+#     "test": "TEST",
+#     "TEST": "TEST",
+#     "validation": "val",
+#     "val": "val",
+#     "VAL": "val",
 @pytest.fixture
 def flying_things_train_dataset(flying_things_dataset_path: str) -> Dataset:
     decoder = FlyingThingsDatasetDecoder(dataset_path=flying_things_dataset_path, is_full_dataset_format=False)
@@ -41,6 +51,47 @@ def flying_things_dataset_train_scene(
     return scene
 
 
+def _check_decode(dataset_path: str, is_full_dataset_format: bool, split_name: str, num_scenes: int):
+    decoder = FlyingThingsDatasetDecoder(
+        dataset_path=dataset_path, is_full_dataset_format=is_full_dataset_format, split_name=split_name
+    )
+    dataset = decoder.get_dataset()
+    assert dataset is not None
+    assert len(dataset.scene_names) == num_scenes
+    assert len(dataset.unordered_scene_names) == num_scenes
+
+
+@pytest.mark.parametrize(
+    "split_name,valid,num_scenes",
+    [
+        ("validation", True, 425),
+        ("val", True, 425),
+        ("VAL", True, 425),
+        ("VALasddsg", False, 0),
+        ("training", True, 2183),
+        ("train", True, 2183),
+        ("TRAIN", True, 2183),
+        ("asdasda", False, 0),
+    ],
+)
+def test_can_decode_val_split(split_name: str, valid: bool, num_scenes: int, flying_things_dataset_path: str):
+    if valid:
+        _check_decode(
+            dataset_path=flying_things_dataset_path,
+            split_name=split_name,
+            is_full_dataset_format=False,
+            num_scenes=num_scenes,
+        )
+    else:
+        with pytest.raises(KeyError):
+            _check_decode(
+                dataset_path=flying_things_dataset_path,
+                split_name=split_name,
+                is_full_dataset_format=False,
+                num_scenes=num_scenes,
+            )
+
+
 def test_can_load_scene(flying_things_dataset_train_scenes: List, flying_things_train_dataset: Dataset):
     for scene_name in flying_things_dataset_train_scenes:
         scene = flying_things_train_dataset.get_scene(scene_name=scene_name)
@@ -51,13 +102,6 @@ def test_knows_all_frames(flying_things_dataset_train_scenes: List, flying_thing
     for scene_name in flying_things_dataset_train_scenes:
         scene = flying_things_train_dataset.get_scene(scene_name=scene_name)
         assert 6 <= len(scene.frame_ids) <= 15  # FlyingThings3D: 6–15 frames for every scene
-
-
-def test_decode_train_scene_names(flying_things_train_dataset: Dataset):
-    # todo: find out proper number of frames for each split
-    num_scenes = 2183
-    assert len(flying_things_train_dataset.scene_names) == num_scenes
-    assert len(flying_things_train_dataset.unordered_scene_names) == num_scenes
 
 
 def test_decode_camera_image(flying_things_dataset_train_scene: Scene):
