@@ -12,13 +12,19 @@ class OpticalFlow(Annotation):
 
     Args:
         vectors: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors`
-        valid_mask: np.ndarray
+        valid_mask: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask`
+        backward_vectors: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.backward_vectors`
+        backward_valid_mask: :attr:`paralleldomain.model.annotation.optical_flow.OpticalFlow.backward_valid_mask`
 
     Attributes:
         vectors: Matrix of shape `(H X W x 2)`, where `H` is the height and `W` is the width of corresponding
             camera image. The third axis contains the x and y offset to the pixels coordinate on the next image.
-        valid_mask: Matrix of shape `(H X W)` with values {0,1}. 1 indicates a pixel with a valid flow label.
-            0 indicates no groundtruth flow at that pixel.
+        valid_mask: Matrix of shape `(H X W)` with values {0,1}. 1 indicates a pixel with a valid flow label in the
+            vectors attribute. 0 indicates no groundtruth flow at that pixel.
+        backward_vectors: Matrix of shape `(H X W x 2)`, where `H` is the height and `W` is the width of corresponding
+            camera image. The third axis contains the x and y offset to the pixels coordinate on the previous image.
+        backward_valid_mask: Matrix of shape `(H X W)` with values {0,1}. 1 indicates a pixel with a valid flow label
+            in the backward_vectors attribute. 0 indicates no groundtruth flow at that pixel.
 
     Example:
         Using the Optical Flow vector mask in combination with :attr:`.Image.coordinates` allows for a
@@ -47,11 +53,20 @@ class OpticalFlow(Annotation):
             cv2.waitKey()
     """
 
-    vectors: np.ndarray
+    vectors: Optional[np.ndarray]
+    backward_vectors: Optional[np.ndarray] = None
     valid_mask: Optional[np.ndarray] = None
+    backward_valid_mask: Optional[np.ndarray] = None
+
+    def __post_init__(self):
+        if self.vectors is None and self.backward_vectors is None:
+            raise ValueError(
+                "Invalid OpticalFlow annotation! Either vectors or backward_vectors has to contain a value!"
+            )
 
     def __sizeof__(self):
-        if self.valid_mask is not None:
-            return self.vectors.nbytes + self.valid_mask.nbytes
-        else:
-            return self.vectors.nbytes
+        total_size = 0
+        for vec in [self.vectors, self.backward_vectors, self.valid_mask, self.backward_valid_mask]:
+            if vec is not None:
+                total_size += vec.nbytes
+        return total_size
