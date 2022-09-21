@@ -75,16 +75,3 @@ class DatasetDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         output_path = dataset_output_path / f"scene_dataset.{file_suffix}"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         write_message(obj=dataset_proto, path=output_path)
-
-        aggregation_folder = dataset_output_path / ENCODED_SCENE_AGGREGATION_FOLDER_NAME
-        for path in aggregation_folder.iterdir():
-            try:
-                path.rm(missing_ok=True)
-            except OSError as e:
-                logger.warning(f"Could not delete {path} because of insufficient permissions!")
-                logger.warning(e)
-        try:
-            aggregation_folder.rmdir()
-        except OSError as e:
-            logger.warning(f"Could not delete {aggregation_folder} because of insufficient permissions!")
-            logger.warning(e)
