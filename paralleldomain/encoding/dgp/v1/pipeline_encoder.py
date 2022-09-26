@@ -11,7 +11,7 @@ try:
 except ImportError:
     pypeln = None
 
-from paralleldomain.encoding.pipeline_encoder import DatasetPipelineEncoder, ScenePipelineItem
+from paralleldomain.encoding.pipeline_encoder import DatasetPipelineEncoder, EncoderStep, ScenePipelineItem
 from paralleldomain.utilities.any_path import AnyPath
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         inplace: bool = False,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         sim_offset: float = 0.01 * 5,
+        custom_encoder_steps: List[EncoderStep] = None,
         allowed_frames: Optional[List[FrameId]] = None,
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
@@ -59,6 +60,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
             scene_names=scene_names,
             decoder_kwargs=decoder_kwargs,
             output_path=output_path,
+            custom_encoder_steps=custom_encoder_steps,
             sensor_names=sensor_names,
             allowed_frames=allowed_frames,
             copy_data_types=copy_data_types,
