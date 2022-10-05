@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Type
 
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.encoding.dgp.v1.format.bounding_box_2d import BoundingBox2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.bounding_box_3d import BoundingBox3DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.camera_image import CameraDGPV1Mixin
@@ -20,7 +21,7 @@ from paralleldomain.encoding.dgp.v1.format.semantic_segmentation_3d import Seman
 from paralleldomain.encoding.dgp.v1.format.surface_normals_2d import SurfaceNormals2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.surface_normals_3d import SurfaceNormals3DDGPV1Mixin
 from paralleldomain.encoding.pipeline_encoder import DataType, EncodingFormat, ScenePipelineItem, SensorDataTypes
-from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.annotation import Annotation, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -55,9 +56,15 @@ class DGPV1EncodingFormat(
         target_dataset_name: Optional[str],
         inplace: bool,
         sim_offset: float = 0.01 * 5,
+        custom_annotation_type_map: Optional[Dict[str, Type[Annotation]]] = None,
         encode_to_binary: bool = False,
     ):
-        super().__init__()
+        if custom_annotation_type_map is None:
+            annotation_type_map = ANNOTATION_TYPE_MAP
+        else:
+            annotation_type_map = custom_annotation_type_map
+        super().__init__(annotation_type_map=annotation_type_map)
+
         self.encode_to_binary = encode_to_binary
         self.inplace = inplace
         self.target_dataset_name = target_dataset_name

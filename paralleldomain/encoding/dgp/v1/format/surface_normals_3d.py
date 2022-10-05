@@ -1,6 +1,6 @@
 from typing import Union
 
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
+from paralleldomain.common.dgp.v1.constants import DirectoryName
 from paralleldomain.encoding.dgp.v1.format.common import ANNOTATIONS_KEY, CUSTOM_FORMAT_KEY, CommonDGPV1FormatMixin
 from paralleldomain.encoding.pipeline_encoder import PipelineItem
 from paralleldomain.model.annotation import AnnotationTypes, SurfaceNormals3D
@@ -37,6 +37,6 @@ class SurfaceNormals3DDGPV1Mixin(CommonDGPV1FormatMixin):
             save_path = fsio.write_npz(obj=dict(surface_normals=normals_or_path.normals), path=output_path)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
-            str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.SurfaceNormals3D])
+            str(self._annotation_type_map_inv[AnnotationTypes.SurfaceNormals3D])
         ] = save_path
         return save_path

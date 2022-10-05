@@ -16,13 +16,7 @@ from paralleldomain.common.dgp.v1 import (
     radar_point_cloud_pb2,
     sample_pb2,
 )
-from paralleldomain.common.dgp.v1.constants import (
-    ANNOTATION_TYPE_MAP,
-    DGP_TO_INTERNAL_CS,
-    PointFormat,
-    RadarPointFormat,
-    TransformType,
-)
+from paralleldomain.common.dgp.v1.constants import DGP_TO_INTERNAL_CS, PointFormat, RadarPointFormat, TransformType
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.v1.common import decode_class_maps
@@ -100,12 +94,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
+        annotation_type_map: Dict[str, Type[Annotation]],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self._dataset_path = dataset_path
         self.scene_samples = scene_samples
         self.scene_data = scene_data
         self._ontologies = ontologies
+        self._annotation_type_map = annotation_type_map
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
         self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
@@ -136,7 +132,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps(
-            ontologies=self._ontologies, dataset_path=self._dataset_path, scene_name=self.scene_name
+            ontologies=self._ontologies,
+            dataset_path=self._dataset_path,
+            scene_name=self.scene_name,
+            annotation_type_map=self._annotation_type_map,
         )
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
@@ -606,7 +605,7 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         type_to_path = datum.image.annotations
-        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+        available_annotation_types = {self._annotation_type_map[k]: v for k, v in type_to_path.items()}
 
         point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
         if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
@@ -681,7 +680,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         type_to_path = datum.point_cloud.annotations
-        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+        available_annotation_types = {self._annotation_type_map[k]: v for k, v in type_to_path.items()}
 
         point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
         if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
@@ -804,7 +803,7 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         type_to_path = datum.radar_point_cloud.annotations
 
-        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+        available_annotation_types = {self._annotation_type_map[k]: v for k, v in type_to_path.items()}
         return available_annotation_types
 
     def _decode_radar_point_cloud_format(self, sensor_name: SensorName, frame_id: FrameId) -> List[str]:

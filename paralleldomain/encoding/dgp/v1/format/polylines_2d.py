@@ -1,5 +1,5 @@
 from paralleldomain.common.dgp.v1 import annotations_pb2
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
+from paralleldomain.common.dgp.v1.constants import DirectoryName
 from paralleldomain.encoding.dgp.v1.format.common import ANNOTATIONS_KEY, CUSTOM_FORMAT_KEY, CommonDGPV1FormatMixin
 from paralleldomain.encoding.dgp.v1.utils import _attribute_key_dump, _attribute_value_dump
 from paralleldomain.encoding.pipeline_encoder import PipelineItem
@@ -33,7 +33,7 @@ class Polyline2DDGPV1Mixin(CommonDGPV1FormatMixin):
         output_path = fsio.write_message(obj=keylines2d_dto, path=output_path, append_sha1=True)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
-            str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Polylines2D])
+            str(self._annotation_type_map_inv[AnnotationTypes.Polylines2D])
         ] = output_path
 
     @staticmethod

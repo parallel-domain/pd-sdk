@@ -1,8 +1,9 @@
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from paralleldomain.encoding.dgp.v1.encoding_format import DGPV1EncodingFormat
 from paralleldomain.encoding.generic_pipeline_builder import GenericPipelineBuilder
+from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.sensor import SensorDataTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 
@@ -40,6 +41,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
+        custom_annotation_type_map: Optional[Dict[str, Type[Annotation]]] = None,
         encode_to_binary: bool = False,
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
@@ -48,6 +50,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
             target_dataset_name=target_dataset_name,
             inplace=inplace,
             encode_to_binary=encode_to_binary,
+            custom_annotation_type_map=custom_annotation_type_map,
         )
         pipeline_builder = GenericPipelineBuilder(
             pipeline_item_type=ScenePipelineItem,

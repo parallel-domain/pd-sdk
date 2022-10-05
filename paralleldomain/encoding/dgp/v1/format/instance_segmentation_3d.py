@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
+from paralleldomain.common.dgp.v1.constants import DirectoryName
 from paralleldomain.encoding.dgp.v1.format.common import ANNOTATIONS_KEY, CUSTOM_FORMAT_KEY, CommonDGPV1FormatMixin
 from paralleldomain.encoding.pipeline_encoder import PipelineItem
 from paralleldomain.model.annotation import AnnotationTypes, InstanceSegmentation3D
@@ -40,6 +40,6 @@ class InstanceSegmentation3DDGPV1Mixin(CommonDGPV1FormatMixin):
             save_path = fsio.write_npz(obj=dict(instance=mask_out), path=output_path)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
-            str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.InstanceSegmentation3D])
+            str(self._annotation_type_map_inv[AnnotationTypes.InstanceSegmentation3D])
         ] = save_path
         return save_path

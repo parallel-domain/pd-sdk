@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Type, Union
 
 import numpy as np
 from google.protobuf import timestamp_pb2
@@ -17,7 +17,7 @@ from paralleldomain.common.dgp.v1 import (
     sample_pb2,
     scene_pb2,
 )
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DirectoryName, PointFormat
+from paralleldomain.common.dgp.v1.constants import DirectoryName, PointFormat
 from paralleldomain.common.dgp.v1.utils import datetime_to_timestamp
 from paralleldomain.encoding.dgp.v1.format.aggregation import DataAggregationMixin
 from paralleldomain.encoding.dgp.v1.format.common import (
@@ -416,13 +416,16 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         raise ValueError("Pipeline Item does not contain a scene!")
 
     def encode_ontologie_map(
-        self, annotations: Dict[str, AnyPath], class_maps: Dict[str, ClassMap], scene: Scene
+        self,
+        annotations: Dict[str, AnyPath],
+        class_maps: Dict[str, ClassMap],
+        scene: Scene,
     ) -> Dict[int, ontology_pb2.Ontology]:
         onthologie_map = dict()
         for annotation_id in annotations.keys():
             if annotation_id not in onthologie_map:
                 iannotation_id = int(annotation_id)
-                a_type = ANNOTATION_TYPE_MAP[iannotation_id]
+                a_type = self._annotation_type_map[iannotation_id]
                 class_map = class_maps.get(annotation_id, None)
                 if class_map is None:
                     class_map = scene.get_class_map(a_type)

@@ -1,7 +1,7 @@
 import abc
 from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Type
 
 from paralleldomain.common.dgp.v1 import sample_pb2
 from paralleldomain.decoding.common import DecoderSettings
@@ -21,6 +21,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     LidarSensorFrameDecoder,
     RadarSensorFrameDecoder,
 )
+from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -38,6 +39,7 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
+        annotation_type_map: Dict[str, Type[Annotation]],
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         self.scene_data = scene_data
@@ -45,6 +47,7 @@ class DGPSensorDecoder(SensorDecoder[datetime], metaclass=abc.ABCMeta):
         self.scene_samples = scene_samples
         self.dataset_path = dataset_path
         self._ontologies = ontologies
+        self._annotation_type_map = annotation_type_map
         self._data_by_key = lru_cache(maxsize=1)(self._data_by_key)
 
     def _data_by_key(self) -> Dict[str, sample_pb2.Datum]:
@@ -85,6 +88,7 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
             ontologies=self._ontologies,
+            annotation_type_map=self._annotation_type_map,
         )
 
 
@@ -103,6 +107,7 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
             ontologies=self._ontologies,
+            annotation_type_map=self._annotation_type_map,
         )
 
     def _decode_lidar_sensor_frame(
@@ -126,6 +131,7 @@ class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
             ontologies=self._ontologies,
+            annotation_type_map=self._annotation_type_map,
         )
 
     def _decode_radar_sensor_frame(

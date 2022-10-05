@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Type, Union
 
 from paralleldomain.common.dgp.v1 import dataset_pb2, scene_pb2
-from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
+from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP, DATETIME_FORMAT
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.encoding.dgp.v1.scene import DGPSceneEncoder
@@ -23,6 +23,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         self,
         dataset: Dataset,
         output_path: str,
+        custom_annotation_type_map: Optional[Dict[str, Type[Annotation]]] = None,
         dataset_name: str = None,
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
@@ -37,6 +38,13 @@ class DGPDatasetEncoder(DatasetEncoder):
             set_stop=scene_stop,
             sync_after_scene_encoded=sync_after_scene_encoded,
         )
+
+        if custom_annotation_type_map is None:
+            annotation_type_map = ANNOTATION_TYPE_MAP
+        else:
+            annotation_type_map = custom_annotation_type_map
+        self._annotation_type_map_inv = {v: k for k, v in annotation_type_map.items() if v is not Annotation}
+
         self._dataset_name: str = dataset_name
 
         self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
@@ -69,7 +77,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             metadata_proto.available_annotation_types.extend(
                 sorted(
                     [
-                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        int(self._annotation_type_map_inv[a_type])
                         for a_type in self._annotation_types
                         if a_type is not Annotation  # equiv: not implemented, yet!
                     ]
@@ -79,7 +87,7 @@ class DGPDatasetEncoder(DatasetEncoder):
             metadata_proto.available_annotation_types.extend(
                 sorted(
                     [
-                        int(ANNOTATION_TYPE_MAP_INV[a_type])
+                        int(self._annotation_type_map_inv[a_type])
                         for a_type in self._dataset.available_annotation_types
                         if a_type is not Annotation  # equiv: not implemented, yet!
                     ]

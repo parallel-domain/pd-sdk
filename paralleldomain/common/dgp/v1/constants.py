@@ -29,10 +29,6 @@ ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
     99: AnnotationTypes.MaterialProperties2D,  # DGPv0 13
 }
 
-ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
-    v: k for k, v in ANNOTATION_TYPE_MAP.items() if v is not Annotation
-}
-
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 

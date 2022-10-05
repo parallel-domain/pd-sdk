@@ -1,12 +1,12 @@
 import pickle
 from datetime import datetime
 from tempfile import TemporaryDirectory
-from typing import Dict, Union
+from typing import Dict, Type, Union
 from uuid import uuid4
 
 from paralleldomain.common.dgp.v1 import annotations_pb2
 from paralleldomain.encoding.pipeline_encoder import PipelineItem, ScenePipelineItem
-from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D
+from paralleldomain.model.annotation import Annotation, BoundingBox2D, BoundingBoxes2D
 from paralleldomain.utilities.any_path import AnyPath
 
 CUSTOM_FORMAT_KEY = "dgp_v1_data"
@@ -21,6 +21,11 @@ ENCODED_SCENE_AGGREGATION_FOLDER_NAME = "scene_aggregation_tmp"
 
 
 class CommonDGPV1FormatMixin:
+    def __init__(self, *args, annotation_type_map: Dict[str, Type[Annotation]], **kwargs):
+        super().__init__(*args, annotation_type_map=annotation_type_map, **kwargs)
+        self._annotation_type_map = annotation_type_map
+        self._annotation_type_map_inv = {v: k for k, v in annotation_type_map.items() if v is not Annotation}
+
     @staticmethod
     def _offset_timestamp(compare_datetime: datetime, reference_timestamp: datetime) -> float:
         diff = compare_datetime - reference_timestamp
