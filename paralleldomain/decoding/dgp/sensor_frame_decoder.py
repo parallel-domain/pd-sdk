@@ -9,7 +9,7 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v0.constants import DGP_TO_INTERNAL_CS, TransformType
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -77,6 +77,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         scene_samples: Dict[FrameId, SceneSampleDTO],
         scene_data: List[SceneDataDTO],
         ontologies: Dict[str, str],
+        annotation_type_map: Dict[str, Type[Annotation]],
         custom_reference_to_box_bottom: Transformation,
         settings: DecoderSettings,
     ):
@@ -85,6 +86,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self.scene_samples = scene_samples
         self.scene_data = scene_data
         self._ontologies = ontologies
+        self._annotation_type_map = annotation_type_map
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
         self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
@@ -112,7 +114,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps(
-            ontologies=self._ontologies, dataset_path=self._dataset_path, scene_name=self.scene_name
+            ontologies=self._ontologies,
+            dataset_path=self._dataset_path,
+            scene_name=self.scene_name,
+            annotation_type_map=self._annotation_type_map,
         )
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
@@ -270,7 +275,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         else:
             type_to_path = datum.point_cloud.annotations
 
-        available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
+        available_annotation_types = {self._annotation_type_map[k]: v for k, v in type_to_path.items()}
 
         point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
         if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():

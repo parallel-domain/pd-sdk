@@ -5,12 +5,12 @@ import uuid
 from collections import defaultdict
 from concurrent.futures import Future
 from datetime import datetime
-from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Set, Tuple, Type, Union
 
 import numpy as np
 
 from paralleldomain import Scene
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v0.constants import DATETIME_FORMAT, POINT_FORMAT, DirectoryName
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -75,6 +75,7 @@ class DGPSceneEncoder(SceneEncoder):
         dataset: Dataset,
         scene_name: str,
         output_path: AnyPath,
+        annotation_type_map_inv: Dict[Type[Annotation], str],
         camera_names: Optional[Union[List[str], None]] = None,
         lidar_names: Optional[Union[List[str], None]] = None,
         frame_ids: Optional[List[str]] = None,
@@ -90,6 +91,7 @@ class DGPSceneEncoder(SceneEncoder):
             annotation_types=annotation_types,
         )
 
+        self._annotation_type_map_inv = annotation_type_map_inv
         self._scene: Scene = self._unordered_scene
         self._reference_timestamp: datetime = self._scene.get_frame(self._scene.frame_ids[0]).date_time
         self._sim_offset: float = 0.01 * 5  # sim timestep * offset count ; unit: seconds
@@ -777,7 +779,9 @@ class DGPSceneEncoder(SceneEncoder):
 
     def _encode_ontologies(self) -> Dict[str, Future]:
         ontology_dtos = {
-            ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(class_map=self._scene.get_class_map(a_type))
+            self._annotation_type_map_inv[a_type]: OntologyFileDTO.from_class_map(
+                class_map=self._scene.get_class_map(a_type)
+            )
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
         }

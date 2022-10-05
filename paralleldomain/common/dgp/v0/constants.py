@@ -24,10 +24,6 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "15": AnnotationTypes.MaterialProperties3D,
 }
 
-ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
-    v: k for k, v in ANNOTATION_TYPE_MAP.items() if v is not Annotation
-}
-
 POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP")
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 

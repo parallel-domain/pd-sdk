@@ -1,9 +1,10 @@
 import argparse
 import logging
 from datetime import datetime
+from functools import partial
 from typing import Dict, List, Optional, Type, Union
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DATETIME_FORMAT
 from paralleldomain.common.dgp.v0.dtos import DatasetDTO, DatasetMetaDTO, DatasetSceneSplitDTO
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
@@ -27,6 +28,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         scene_names: Optional[List[str]] = None,
         scene_start: Optional[int] = None,
         scene_stop: Optional[int] = None,
+        custom_annotation_type_map: Optional[Dict[str, Type[Annotation]]] = None,
     ) -> None:
         super().__init__(
             dataset=dataset,
@@ -35,9 +37,18 @@ class DGPDatasetEncoder(DatasetEncoder):
             set_start=scene_start,
             set_stop=scene_stop,
         )
+
+        if custom_annotation_type_map is None:
+            annotation_type_map = ANNOTATION_TYPE_MAP
+        else:
+            annotation_type_map = custom_annotation_type_map
+        self._annotation_type_map_inv = {v: k for k, v in annotation_type_map.items() if v is not Annotation}
+
         self._dataset_name: str = dataset_name
 
-        self._scene_encoder: Type[SceneEncoder] = DGPSceneEncoder
+        self._scene_encoder: Type[SceneEncoder] = partial(
+            DGPSceneEncoder, annotation_type_map_inv=self._annotation_type_map_inv
+        )
         # Adapt if should be limited to a set of cameras, or empty list for no cameras
         self._camera_names: Union[List[str], None] = None
         # Adapt if should be limited to a set of lidars, or empty list for no lidars
@@ -54,7 +65,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         if self._annotation_types:
             metadata_dto.available_annotation_types = sorted(
                 [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    int(self._annotation_type_map_inv[a_type])
                     for a_type in self._annotation_types
                     if a_type is not Annotation  # equiv: not implemented, yet!
                 ]
@@ -62,7 +73,7 @@ class DGPDatasetEncoder(DatasetEncoder):
         else:
             metadata_dto.available_annotation_types = sorted(
                 [
-                    int(ANNOTATION_TYPE_MAP_INV[a_type])
+                    int(self._annotation_type_map_inv[a_type])
                     for a_type in self._dataset.available_annotation_types
                     if a_type is not Annotation  # equiv: not implemented, yet!
                 ]
