@@ -41,7 +41,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path)
 
-        self.class_map = class_map
+        self.class_map = [ClassDetail(**c) if isinstance(c, Dict) else c for c in class_map]
         self.image_folder = image_folder
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.metadata_folder = metadata_folder

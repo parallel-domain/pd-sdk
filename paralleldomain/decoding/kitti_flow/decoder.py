@@ -160,7 +160,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[datetime]:
-        raise ValueError("Directory decoder does not support lidar data!")
+        raise ValueError("KITTI-flow does not support lidar data!")
 
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
@@ -188,4 +188,4 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
     def _create_radar_sensor_decoder(
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[datetime]:
-        raise ValueError("Loading from directory does not support radar data!")
+        raise ValueError("KITTI-flow does not support radar data!")

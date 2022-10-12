@@ -63,6 +63,10 @@ class PipelineItem(Generic[TSceneType]):
 
     @property
     def dataset(self) -> Dataset:
+        if "dataset_path" not in self.decoder_kwargs:
+            return decode_dataset(
+                dataset_format=self.dataset_format, dataset_path=self.dataset_path, **self.decoder_kwargs
+            )
         return decode_dataset(dataset_format=self.dataset_format, **self.decoder_kwargs)
 
     @property
