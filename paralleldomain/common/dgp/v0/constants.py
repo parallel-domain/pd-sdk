@@ -31,6 +31,12 @@ ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
 POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP")
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
+NON_DGP_ANNOTATIONS = {
+    AnnotationTypes.Albedo2D,
+    AnnotationTypes.MaterialProperties2D,
+    AnnotationTypes.MaterialProperties3D,
+}
+
 
 class DirectoryName:
     ALBEDO_2D: str = "base_color"

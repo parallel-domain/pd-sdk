@@ -10,7 +10,13 @@ from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 import numpy as np
 
 from paralleldomain import Scene
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v0.constants import (
+    ANNOTATION_TYPE_MAP_INV,
+    DATETIME_FORMAT,
+    NON_DGP_ANNOTATIONS,
+    POINT_FORMAT,
+    DirectoryName,
+)
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -694,7 +700,7 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar_frame(
-        self, frame_id: str, lidar_frame: LidarSensorFrame[datetime]
+        self, frame_id: str, lidar_frame: LidarSensorFrame[datetime], last_frame: Optional[bool] = False
     ) -> Tuple[str, Dict[str, Dict[str, Future]]]:
         return frame_id, dict(
             annotations={
@@ -721,6 +727,7 @@ class DGPSceneEncoder(SceneEncoder):
                 "9": self._process_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.SceneFlow in lidar_frame.available_annotation_types
                 and AnnotationTypes.SceneFlow in self._annotation_types
+                and not last_frame
                 else None,
                 "15": self._process_material_properties_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.MaterialProperties3D in lidar_frame.available_annotation_types
@@ -757,7 +764,9 @@ class DGPSceneEncoder(SceneEncoder):
         lidar_encoding_futures = {
             ENCODING_THREAD_POOL.submit(
                 lambda fid: self._encode_lidar_frame(
-                    frame_id=fid, lidar_frame=self._scene.get_frame(fid).get_lidar(lidar_name=lidar_name)
+                    frame_id=fid,
+                    lidar_frame=self._scene.get_frame(fid).get_lidar(lidar_name=lidar_name),
+                    last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
                 ),
                 frame_id,
             )
@@ -780,6 +789,8 @@ class DGPSceneEncoder(SceneEncoder):
             ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(class_map=self._scene.get_class_map(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
+            and a_type in self._scene.available_annotation_types
+            and a_type not in NON_DGP_ANNOTATIONS
         }
 
         output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
@@ -968,6 +979,12 @@ class DGPSceneEncoder(SceneEncoder):
                     (self._output_path / DirectoryName.SURFACE_NORMALS_3D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
+                if AnnotationTypes.Albedo2D in self._annotation_types:
+                    (self._output_path / DirectoryName.ALBEDO_2D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.MaterialProperties2D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
             for lidar_name in self._lidar_names:
                 (self._output_path / DirectoryName.POINT_CLOUD / lidar_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.BoundingBoxes3D in self._annotation_types:
@@ -984,6 +1001,10 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
                     (self._output_path / DirectoryName.SURFACE_NORMALS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SceneFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.MOTION_VECTORS_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
                 if AnnotationTypes.MaterialProperties3D in self._annotation_types:
