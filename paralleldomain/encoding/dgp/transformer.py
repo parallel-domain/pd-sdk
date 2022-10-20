@@ -29,7 +29,13 @@ class InstanceSegmentation2DTransformer(SemanticSegmentation2DTransformer):
 class OpticalFlowTransformer(MaskTransformer):
     @staticmethod
     def _transform(mask: np.ndarray) -> np.ndarray:
-        return encode_2int16_as_rgba8(mask)
+        # Constrain float between 0.0 and 1.0 then convert to uint16
+        height, width = mask.shape[:2]
+        mask /= 2 * np.array([width, height])
+        mask += 0.5
+        mask_2int16 = (mask * 65535).astype(np.uint16)
+
+        return encode_2int16_as_rgba8(mask_2int16)
 
 
 class SemanticSegmentation3DTransformer(MaskTransformer):

@@ -1062,6 +1062,7 @@ class DGPSceneEncoder(SceneEncoder):
             ANNOTATION_TYPE_MAP_INV[a_type]: class_map_to_ontology_proto(class_map=self._scene.get_class_map(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
+            and a_type in self._scene.available_annotation_types
         }
 
         output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
