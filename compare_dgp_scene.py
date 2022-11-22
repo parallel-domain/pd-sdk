@@ -23,6 +23,27 @@ class Conf:
         self.test_scene = None
         self.target_scene = None
 
+    def print_help_prologue(self):
+        sys.stdout.write("This script compares two DGP datasets and reports differences between them.\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("Example command:\n")
+        sys.stdout.write("\tpython compare_dgp_scene.py --test-dataset /path/to/test/dataset --target-dataset /path/to/target/dataset --test-scene scene_000000 -v\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("The tests are named according to their annotation, frame and sensor as follows:\n")
+        sys.stdout.write("\ttest_<annotation>[f<frame#>-<sensor_name>]\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("We can use standard pytest keyword filtering to select filter tests along these dimension.\n")
+        sys.stdout.write("\tRun only the test for a specific annotation on a single frame and single sensor:\n")
+        sys.stdout.write("\t\t-k test_camera_depth[f8-Rear]\n")
+        sys.stdout.write("\tRun all tests for a single annotation:\n")
+        sys.stdout.write("\t\t-k test_camera_depth\n")
+        sys.stdout.write("\tRun all tests for a specific frame:\n")
+        sys.stdout.write("\t\t-k [f8\n")
+        sys.stdout.write("\tRun all tests for a specific sensor:\n")
+        sys.stdout.write("\t\t-k Rear]\n")
+        sys.exit(0)
+
+
     def pytest_addoption(self, parser):
         parser.addoption("--test-dataset", action="store", help="Dataset under test")
         parser.addoption("--target-dataset", action="store", help="Dataset to use for verification")
@@ -30,24 +51,27 @@ class Conf:
         parser.addoption("--target-scene", action="store", help="Name of scene in target dataset")
 
     def pytest_configure(self, config):
-        test_dataset_path = config.getoption("--test-dataset")
-        target_dataset_path = config.getoption("--target-dataset")
-        test_scene_name = config.getoption("--test-scene")
-        target_scene_name = config.getoption("--target-scene")
-        if not test_dataset_path:
-            raise Exception("--test-dataset option is required")
-        if not target_dataset_path:
-            raise Exception("--target-dataset option is required")
-        if not test_scene_name:
-            raise Exception("--test-scene option is required")
-        target_scene_name = target_scene_name or test_scene_name
+        if not config.getoption("--help"):
+            test_dataset_path = config.getoption("--test-dataset")
+            target_dataset_path = config.getoption("--target-dataset")
+            test_scene_name = config.getoption("--test-scene")
+            target_scene_name = config.getoption("--target-scene")
+            if not test_dataset_path:
+                raise Exception("--test-dataset option is required")
+            if not target_dataset_path:
+                raise Exception("--target-dataset option is required")
+            if not test_scene_name:
+                raise Exception("--test-scene option is required")
+            target_scene_name = target_scene_name or test_scene_name
 
-        self.test_decoder = DGPDatasetDecoder(dataset_path=test_dataset_path)
-        self.target_decoder = DGPDatasetDecoder(dataset_path=target_dataset_path)
-        self.test_dataset = self.test_decoder.get_dataset()
-        self.target_dataset = self.target_decoder.get_dataset()
-        self.test_scene = self.test_dataset.get_scene(test_scene_name)
-        self.target_scene = self.target_dataset.get_scene(target_scene_name)
+            self.test_decoder = DGPDatasetDecoder(dataset_path=test_dataset_path)
+            self.target_decoder = DGPDatasetDecoder(dataset_path=target_dataset_path)
+            self.test_dataset = self.test_decoder.get_dataset()
+            self.target_dataset = self.target_decoder.get_dataset()
+            self.test_scene = self.test_dataset.get_scene(test_scene_name)
+            self.target_scene = self.target_dataset.get_scene(target_scene_name)
+        else:
+            self.print_help_prologue()
 
     def pytest_generate_tests(self, metafunc):
         # Let's parameterize the fixture `frame_pair` by all frames in the datasets
