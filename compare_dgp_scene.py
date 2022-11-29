@@ -94,6 +94,17 @@ class Conf:
                 raise Exception(f"Mismatch in test camera names ({test_camera_names}) "
                                 f"and target camera names ({target_camera_names})")
             metafunc.parametrize('camera_name', test_camera_names)
+        # Let's parameterize the fixture `scene_pair`
+        if 'scene_pair' in metafunc.fixturenames:
+            metafunc.parametrize('scene_pair', [(self.test_scene, self.target_scene)], ids=['scene'])
+
+
+@pytest.fixture(scope='session')
+def scene_pair(request) -> Tuple[Frame, Frame]:
+    """
+    Returns scene pair (test_scene, target_scene)
+    """
+    return request.param
 
 
 @pytest.fixture(scope='session')
@@ -122,6 +133,51 @@ def camera_frame_pair(frame_pair, camera_name) -> Tuple[CameraSensorFrame, Camer
     """
     test_frame, target_frame = frame_pair
     return test_frame.get_camera(camera_name=camera_name), target_frame.get_camera(camera_name=camera_name)
+
+
+def test_ontology(scene_pair):
+    """Ontologies match between the scenes"""
+    test_scene, target_scene = scene_pair
+
+    test_pass = True
+
+    if set(test_scene.available_annotation_types) != set(target_scene.available_annotation_types):
+        print(f"Available annotation types mismatch:\n {test_scene.available_annotation_types}\n\n {target_scene.available_annotation_types}\n")
+        # Don't fail on these
+
+    common_annotation_types = set(test_scene.available_annotation_types).intersection(target_scene.available_annotation_types)
+    for annotation in common_annotation_types:
+        test_class_map, target_class_map = test_scene.get_class_map(annotation), target_scene.get_class_map(annotation)
+        test_class_dict = {k: (v.name, v.id, v.instanced) for k, v in test_class_map.items()}
+        target_class_dict = {k: (v.name, v.id, v.instanced) for k, v in target_class_map.items()}
+        if test_class_dict != target_class_dict:
+            print(f"Ontology for {annotation} mismatch:\n {test_class_dict}\n\n {target_class_dict}\n")
+            test_pass = False
+
+    assert test_pass
+
+
+def test_camera_model(camera_frame_pair):
+    """Camera model matches for a pair of camera frames"""
+    test_camera_frame, target_camera_frame = camera_frame_pair
+    test_extrinsics, target_extrinsics = test_camera_frame.extrinsic, target_camera_frame.extrinsic
+    test_intrinsics, target_intrinsics = test_camera_frame.intrinsic, target_camera_frame.intrinsic
+
+    test_pass = True
+
+    if not np.allclose(test_extrinsics.transformation_matrix, target_extrinsics.transformation_matrix):
+        print(f"Extrinsics mismatch:\n {test_extrinsics}\n\n {target_extrinsics}\n")
+        test_pass = False
+
+    if not np.allclose(test_intrinsics.camera_matrix, target_intrinsics.camera_matrix):
+        print(f"Camera matrix mismatch:\n {test_intrinsics.camera_matrix}\n\n {target_intrinsics.camera_matrix}\n")
+        test_pass = False
+
+    if not np.allclose(test_intrinsics.distortion_parameters, target_intrinsics.distortion_parameters):
+        print(f"Camera distortion mismatch\n {test_intrinsics.distortion_parameters}\n\n {target_intrinsics.distortion_parameters}\n")
+        test_pass = False
+
+    assert test_pass
 
 
 def test_camera_rgb(camera_frame_pair):
