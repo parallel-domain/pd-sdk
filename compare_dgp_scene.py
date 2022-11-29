@@ -12,6 +12,13 @@ from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.scene import Frame
 
+from utils import diff_images
+
+RGB_PIXEL_DIFF_THRESHOLD = 5
+DEPTH_PIXEL_DIFF_THRESHOLD = 5
+INST_SEG_PIXEL_DIFF_THRESHOLD = 5
+SEM_SEG_PIXEL_DIFF_THRESHOLD = 5
+
 
 class Conf:
     """
@@ -188,6 +195,13 @@ def test_camera_rgb(camera_frame_pair):
     """RGB data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_image, target_image = test_camera_frame.image, target_camera_frame.image
+    # TODO configure path
+    pixel_percent_difference = diff_images(test_image.rgb,
+                                           target_image.rgb,
+                                           f"test_images\\rgb_comparison_images\\{test_camera_frame.sensor_name}",
+                                           f"rgb_diff_{test_camera_frame.frame_id}.png",
+                                           save_images=True)
+    assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
     assert test_image.height == target_image.height
     assert test_image.width == target_image.width
 
@@ -457,12 +471,18 @@ def test_camera_bbox3d(camera_frame_pair):
         assert False
 
 
-
 def test_camera_semseg2d(camera_frame_pair):
     """Semantic segmentation 2D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_semseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
     target_semseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+    pixel_percent_difference = diff_images(test_semseg2d.rgb_encoded, target_semseg2d.rgb_encoded,
+                                           f"test_images\\semantic_comparison_images\\{test_camera_frame.sensor_name}",
+                                           f"semantic_diff_{test_camera_frame.frame_id}.png",
+                                           save_images=True)
+    class_diff = np.setdiff1d(np.unique(test_semseg2d.class_ids.flatten()),
+                              np.unique(target_semseg2d.class_ids.flatten()))
+    assert pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD
     assert np.array_equal(test_semseg2d.class_ids, target_semseg2d.class_ids)
 
 
@@ -471,14 +491,31 @@ def test_camera_instanceseg2d(camera_frame_pair):
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_instanceseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
     target_instanceseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
-    assert np.array_equal(test_instanceseg2d.instance_ids, target_instanceseg2d.instance_ids)
-
+    # TODO migrate path
+    pixel_percent_difference = diff_images(test_instanceseg2d.rgb_encoded, target_instanceseg2d.rgb_encoded,
+                                           f"test_images\\instance_comparison_images\\{test_camera_frame.sensor_name}",
+                                           f"instance_diff_{test_camera_frame.frame_id}.png",
+                                           save_images=True)
+    instance_diff = np.setdiff1d(np.unique(test_instanceseg2d.instance_ids.flatten()),
+                                 np.unique(target_instanceseg2d.instance_ids.flatten()))
+    assert pixel_percent_difference < INST_SEG_PIXEL_DIFF_THRESHOLD
+    assert len(np.unique(target_instanceseg2d.instance_ids.flatten())) == \
+           len(np.unique(test_instanceseg2d.instance_ids.flatten()))
+    assert np.array_equal(np.unique(test_instanceseg2d.instance_ids.flatten()),
+                          np.unique(target_instanceseg2d.instance_ids.flatten()))
+    # assert np.array_equal(test_instanceseg2d.instance_ids, target_instanceseg2d.instance_ids)
 
 def test_camera_depth(camera_frame_pair):
     """Depth data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_depth = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
     target_depth = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
+    # TODO migrate path
+    pixel_percent_difference = diff_images(test_depth.depth, target_depth.depth,
+                                           f"test_images\\depth_comparison_images\\{test_camera_frame.sensor_name}",
+                                           f"depth_diff_{test_camera_frame.frame_id}.png",
+                                           save_images=True)
+    assert pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD
     assert np.array_equal(test_depth.depth, target_depth.depth)
 
 class BoundingBoxErrorType(Enum):
