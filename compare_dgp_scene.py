@@ -77,7 +77,6 @@ class Conf:
         else:
             self.print_help_prologue()
 
-    # TODO This is running every test twice
     def pytest_generate_tests(self, metafunc):
         # Let's parameterize the fixture `frame_pair` by all frames in the datasets
         if 'frame_pair' in metafunc.fixturenames:
@@ -195,10 +194,8 @@ def test_camera_rgb(camera_frame_pair):
 
 def test_camera_bbox2d(camera_frame_pair):
     """Max difference allowed between boxes """
-    max_x_y_pixel_difference = 15  # Define how the size of the pixel box used to search for a matching box
-    max_percentage_size_difference = 5  # Define max percentage difference in size # TODO change to min union percentage
-    min_box_size = 500
-    min_h_w = 5
+    min_box_size = 110
+    minimum_iou = 0.75
 
     # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
@@ -213,8 +210,8 @@ def test_camera_bbox2d(camera_frame_pair):
     target_bbox2d_boxes = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D).boxes
     
     """Filter by pixel size"""
-    test_bbox2d_boxes = [x for x in test_bbox2d_boxes if x.area > min_box_size and x.width > min_h_w and x.height > min_h_w]
-    target_bbox2d_boxes = [x for x in target_bbox2d_boxes if x.area > min_box_size and x.width > min_h_w and x.height > min_h_w]
+    test_bbox2d_boxes = [x for x in test_bbox2d_boxes if x.area > min_box_size]
+    target_bbox2d_boxes = [x for x in target_bbox2d_boxes if x.area > min_box_size]
 
     # Check that we have the same number of bounding boxes
     if len(test_bbox2d_boxes) != len(target_bbox2d_boxes):
@@ -223,38 +220,35 @@ def test_camera_bbox2d(camera_frame_pair):
             "The length of bounding boxes is not equal. There are {} target boxes while the test has {}".
             format(len(target_bbox2d_boxes), len(test_bbox2d_boxes)))
 
-    """ Sort all test bounding boxes. Store by x,y tuple for key. We then use the target boxes to do a look up
-    # If we find more than one boxes find the best match in terms of size
-    # Then perform a deep comparison of the boxes"""
-    test_boxes_by_x_y = dict()
-    for test_box in test_bbox2d_boxes:
-        test_boxes_by_x_y[(test_box.x, test_box.y)] = test_box
-
-    # For each target bounding box try and match it to a test
-    test_target_match_pair = dict()
+    #Find best match by IOU
+    matched_test_box_instance_ids = set()
+    test_instnace_id_target_match_pair = dict()
     for target_box in target_bbox2d_boxes:
-        # Try to find any boxes that match with the max_x_y_pixel_difference range
-        found_boxes = locate_2d_bounding_boxes_by_xy(target_box, test_boxes_by_x_y, max_x_y_pixel_difference)
-        if len(found_boxes) == 0:
-            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is ".format(target_box, target_box.area))
-            continue
-        best_match = find_closest_box_by_size_and_class_id(target_box, found_boxes, max_percentage_size_difference)
-        if best_match == None:
-            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is ".format(target_box, target_box.area))
+        best_iou = 0
+        best_match = None
+        for test_box in test_bbox2d_boxes:
+            if (target_box.class_id == test_box.class_id):
+                iou = calculate_iou(target_box,test_box)
+                if (iou > best_iou):
+                    best_iou = iou
+                    best_match = test_box
+        if best_match == None or target_box.class_id != best_match.class_id or best_iou < minimum_iou: # TODO add minimum IOU
+            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is {}".format(target_box, target_box.area))
             continue
 
         # Compare the best match test bbox and target bbox
-        best_match_key = (best_match.x, best_match.y)
+        best_match_key = str(best_match.instance_id)
         # Check if we have already this test box with another target box
-        if test_target_match_pair.get(best_match_key, -1) != -1:
-            other_target_box = test_target_match_pair.get(best_match_key)
+        if test_instnace_id_target_match_pair.get(best_match_key, -1) != -1:
+            other_target_box = test_instnace_id_target_match_pair.get(best_match_key)
             test_matches_two_targets.append(
                 "The following test box {} is the cloest match for the two target boxes {} and {}".format(best_match,
                                                                                                           target_box,
                                                                                                           other_target_box))
             continue
 
-        test_target_match_pair[best_match_key] = target_box  # Add new pair
+        test_instnace_id_target_match_pair[best_match_key] = target_box  # Add new pair
+        matched_test_box_instance_ids.add(best_match.instance_id)
 
         # Compare all sorted attributes
         attribute_errors = []
@@ -271,57 +265,63 @@ def test_camera_bbox2d(camera_frame_pair):
             test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors {}".format(best_match,target_box, attribute_errors))
 
     """Report an errors for every test bounding box that does not have a target pair"""
-    # copy dict then remove all keys that are in test_matched_boxes
-    unmatched_test_boxes = test_boxes_by_x_y.copy()
-    for key in test_target_match_pair.keys():
-        unmatched_test_boxes.pop(key)
-    for box in unmatched_test_boxes.values():
-        if box.area != 0:
-            no_target_box_for_test.append("Could not find a match for the test bounding box {}".format(box))
-
-    data = []
-    for i in test_bbox2d_boxes:
-        data.append(i.area)
-    data.sort()
-    data = data[1:-2] # remove first and last item
-    mean = np.mean(data)
-    std = np.std(data)
+    for test_box in test_bbox2d_boxes:
+        if test_box.instance_id not in matched_test_box_instance_ids:
+            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Area is {}. Attributes {}".format(test_box, test_box.area, test_box.attributes))
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
-    number_target_boxes = len(target_bbox2d_boxes)
-    number_test_boxes = len(test_bbox2d_boxes)
-    boxes_matched = len(test_target_match_pair)
-    percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
-    percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
-    percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes, number_target_boxes) * 100
-
-    print("There are {} general errors.\n"
-          "There are {} test boxes. {:3.2f}% could be matched\n"
-          "There are {} target boxes. {:3.2f}% could be matched\n"
-          "Out of {} matched boxes. {:3.2f}% have attribute mismatches\n"
-          .format(len(general_errors), number_test_boxes, percentage_test_boxes_matched, number_target_boxes,
-                  percentage_target_boxes_matched, boxes_matched, percentage_of_matched_boxes_with_attribute_mismatch))
-
-
     all_errors = general_errors + no_test_box_for_target + no_target_box_for_test + test_matches_two_targets + test_target_attribute_mismatch
     if len(all_errors) != 0:
-        print("General errors:")
-        for i in general_errors:
-            print(i)
-        print("\nMissing test box errors:")
-        for i in no_test_box_for_target:
-            print(i)
-        print("\nMissing target box errors:")
-        for i in no_target_box_for_test:
-            print(i)
-        print("\nAttribute mismatch box errors:")
-        for i in test_target_attribute_mismatch:
-            print(i)
-        print("\nTest box matches two targets boxes errors:")
-        for i in test_matches_two_targets:
-            print(i)
+        number_target_boxes = len(target_bbox2d_boxes)
+        number_test_boxes = len(test_bbox2d_boxes)
+        boxes_matched = len(test_instnace_id_target_match_pair)
+        percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
+        percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
+        percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes, number_target_boxes) * 100
+
+        # Stats
+        print("There are {} general errors.\n"
+              "There are {} test boxes. {:3.2f}% could be matched\n"
+              "There are {} target boxes. {:3.2f}% could be matched\n"
+              "There are {} test boxes that matched two target boxes\n"
+              "Out of {} matched boxes. {:3.2f}% have attribute mismatches\n"
+              .format(len(general_errors), number_test_boxes, percentage_test_boxes_matched, number_target_boxes,
+                      percentage_target_boxes_matched, len(test_matches_two_targets), boxes_matched, percentage_of_matched_boxes_with_attribute_mismatch))
+
+        # Report errors
+        report_errors("General errors:", general_errors)
+        report_errors("No test box test for target box errors:", no_test_box_for_target)
+        report_errors("No target box for test box errors:", no_target_box_for_test)
+        report_errors("Following test box matched two target boxes", test_matches_two_targets)
+        report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
         assert False
+
+
+def calculate_iou(target_box, test_box):
+    # determine the (x, y)-coordinates of the intersection rectangle
+    xA = max(target_box.x_min, test_box.x_min)
+    yA = max(target_box.y_min, test_box.y_min)
+    xB = min(target_box.x_max, test_box.x_max)
+    yB = min(target_box.y_max, test_box.y_max)
+    # compute the area of intersection rectangle
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+    # compute the area of both the prediction and ground-truthrectangles
+    boxAArea = target_box.area
+    boxBArea = test_box.area
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+    return iou
+
+def report_errors(error_section_message, errors):
+    if len(errors) == 0:
+        return
+    print(error_section_message)
+    for i in errors:
+        print(i)
+
 
 def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribute_errors):
     test_box_attributes = test_box.attributes
@@ -343,36 +343,6 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
     if (test_box_attributes.get(key) != target_box_attributes.get(key)):
         attribute_errors.append("The key {} is not equal. Test key value {}. Target key value {}".format(key_name, test_box, target_box, test_box_attributes.get(key), target_box_attributes.get(key)))
         return
-
-
-
-# TODO migrate to union / intersection instead
-def find_closest_box_by_size_and_class_id(target_box, found_boxes, max_percentage_size_difference):
-    # At least one box found in the required pixel range
-    # Find best match and perform a deep comparison
-    best_match = None
-    best_percentage_match_difference = 100
-    target_box_size = target_box.area
-    for test_box in found_boxes:
-        percentage_difference = abs(target_box_size - test_box.area) / target_box_size * 100
-        # Find the bbox that is the closest match in terms of size
-        if (target_box.class_id == test_box.class_id
-                and (percentage_difference <= max_percentage_size_difference)
-                and percentage_difference < best_percentage_match_difference):
-            best_percentage_match_difference = percentage_difference
-            best_match = test_box
-    return best_match
-
-
-def locate_2d_bounding_boxes_by_xy(target_box, test_boxes_by_x_y, max_x_y_pixel_difference):
-    found_boxes = []
-    for x in range(-max_x_y_pixel_difference, max_x_y_pixel_difference + 1):  # Search 5 pixels either side
-        for y in range(-max_x_y_pixel_difference, max_x_y_pixel_difference + 1):
-            coordiantes = (target_box.x + x, target_box.y + y)
-            matched_box = test_boxes_by_x_y.get(coordiantes, -1)
-            if (matched_box != -1):
-                found_boxes.append(copy.deepcopy(matched_box))
-    return found_boxes
 
 
 def test_camera_bbox3d(camera_frame_pair):
@@ -406,8 +376,11 @@ def test_camera_bbox3d(camera_frame_pair):
             format(len(number_non_zero_boxes), len(test_bbox3d_boxes)))
 
     # Find the closest 3d bound box with the same semantic id and compare
+    # TODO migrate to 3d IOU https://pytorch3d.org/docs/iou3d
     test_target_match_pair = dict()
+    matched_test_box_instance_ids = set()
     for target_box in target_bbox3d_boxes:
+        # TODO migrate this to 3d IOU  comparison
         best_match = None
         min_distance = 1000
         target_box_area = target_box.width * target_box.height * target_box.length
@@ -437,6 +410,7 @@ def test_camera_bbox3d(camera_frame_pair):
             continue
 
         test_target_match_pair[best_match_key] = target_box  # Add new pair
+        matched_test_box_instance_ids.add(best_match.instance_id)
         # Compare all sorted attributes
         attribute_errors = []
         compare_attribute_by_key(best_match, target_box, "brake_light", False, attribute_errors)
@@ -449,47 +423,38 @@ def test_camera_bbox3d(camera_frame_pair):
             test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors {}".format(best_match,target_box, attribute_errors))
 
     """Report an errors for every test bounding box that does not have a target pair"""
-    # copy dict then remove all keys that are in test_matched_boxes
     for test_box in test_bbox3d_boxes:
-        if (test_box.instance_id not in test_target_match_pair.keys()):
-            no_target_box_for_test.append("Could not find a match for the test bounding box {}, Volume {}".format(test_box, test_box.volume))
+        if test_box.instance_id not in matched_test_box_instance_ids:
+            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Area is {}. Attributes {}".format(test_box, test_box.area, test_box.attributes))
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
-    number_target_boxes = len(target_bbox3d_boxes)
-    number_test_boxes = len(test_bbox3d_boxes)
-    boxes_matched = len(test_target_match_pair)
-    percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
-    percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
-    percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes, number_target_boxes) * 100
-
-    print("There are {} general errors.\n"
-          "There are {} test boxes. {:3.2f}% could be matched\n"
-          "There are {} target boxes. {:3.2f}% could be matched\n"
-          "Out of {} matched boxes. {:3.2f}% have attribute mismatches\n"
-          .format(len(general_errors), number_test_boxes, percentage_test_boxes_matched, number_target_boxes,
-                  percentage_target_boxes_matched, boxes_matched, percentage_of_matched_boxes_with_attribute_mismatch))
-
-
     all_errors = general_errors + no_test_box_for_target + no_target_box_for_test + test_matches_two_targets + test_target_attribute_mismatch
     if len(all_errors) != 0:
-        print("General errors:")
-        for i in general_errors:
-            print(i)
-        print("\nMissing test box errors:")
-        for i in no_test_box_for_target:
-            print(i)
-        print("\nMissing target box errors:")
-        for i in no_target_box_for_test:
-            print(i)
-        print("\nAttribute mismatch box errors:")
-        for i in test_target_attribute_mismatch:
-            print(i)
-        print("\nTest box matches two targets boxes errors:")
-        for i in test_matches_two_targets:
-            print(i)
+        number_target_boxes = len(target_bbox3d_boxes)
+        number_test_boxes = len(test_bbox3d_boxes)
+        boxes_matched = len(test_target_match_pair)
+        percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
+        percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
+        percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes,
+                                                                                  number_target_boxes) * 100
+        # Stats
+        print("There are {} general errors.\n"
+              "There are {} test boxes. {:3.2f}% could be matched\n"
+              "There are {} target boxes. {:3.2f}% could be matched\n"
+              "There are {} test boxes that matched two target boxes\n"
+              "Out of {} matched boxes. {:3.2f}% have attribute mismatches\n"
+              .format(len(general_errors), number_test_boxes, percentage_test_boxes_matched, number_target_boxes,
+                      percentage_target_boxes_matched, len(test_matches_two_targets), boxes_matched,
+                      percentage_of_matched_boxes_with_attribute_mismatch))
+
+        # Error messages
+        report_errors("General errors:", general_errors)
+        report_errors("No test box test for target box errors:", no_test_box_for_target)
+        report_errors("No target box for test box errors:", no_target_box_for_test)
+        report_errors("Following test box matched two target boxes", test_matches_two_targets)
+        report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
         assert False
-
 
 
 
