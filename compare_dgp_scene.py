@@ -359,24 +359,6 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
         return
 
 
-def find_cube_center(bounding_box):
-    x = 0
-    y = 0
-    z = 0
-    for vert in bounding_box.vertices:
-        x += vert[0]
-        y += vert[1]
-        z += vert[2]
-    x = x / 8
-    y = y / 8
-    x = x / 8
-    return x, y, z
-
-def distance_between_points_3d(point1, point2):
-
-    return sqrt((point1[0]-point2[0])**2+(point1[1]-point2[1])**2+(point1[2]-point2[2])**2)
-
-
 def difference_between_vertices(target_box, test_box):
     total_diff = 0
     for i in range(0,8):
