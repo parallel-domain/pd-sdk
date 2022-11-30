@@ -1,11 +1,10 @@
-import copy
 import sys
 from enum import Enum
 from typing import Tuple
-import statistics
 
 import pytest
 import numpy as np
+from math import sqrt
 
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.model.annotation import AnnotationTypes
@@ -18,6 +17,10 @@ RGB_PIXEL_DIFF_THRESHOLD = 5
 DEPTH_PIXEL_DIFF_THRESHOLD = 5
 INST_SEG_PIXEL_DIFF_THRESHOLD = 5
 SEM_SEG_PIXEL_DIFF_THRESHOLD = 5
+MIN_2D_BBOX_BOX_SIZE = 110
+MIN_2D_BBOX_IOU = 0.75
+MIN_3D_BBOX_VOLUME = 0 # Increasing to 2 hugely reduces errors
+MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
 
 
 class Conf:
@@ -207,10 +210,6 @@ def test_camera_rgb(camera_frame_pair):
 
 
 def test_camera_bbox2d(camera_frame_pair):
-    """Max difference allowed between boxes """
-    min_box_size = 110
-    minimum_iou = 0.75
-
     # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
     no_test_box_for_target = []
@@ -224,8 +223,8 @@ def test_camera_bbox2d(camera_frame_pair):
     target_bbox2d_boxes = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes2D).boxes
     
     """Filter by pixel size"""
-    test_bbox2d_boxes = [x for x in test_bbox2d_boxes if x.area > min_box_size]
-    target_bbox2d_boxes = [x for x in target_bbox2d_boxes if x.area > min_box_size]
+    test_bbox2d_boxes = [x for x in test_bbox2d_boxes if x.area > MIN_2D_BBOX_BOX_SIZE]
+    target_bbox2d_boxes = [x for x in target_bbox2d_boxes if x.area > MIN_2D_BBOX_BOX_SIZE]
 
     # Check that we have the same number of bounding boxes
     if len(test_bbox2d_boxes) != len(target_bbox2d_boxes):
@@ -246,7 +245,7 @@ def test_camera_bbox2d(camera_frame_pair):
                 if (iou > best_iou):
                     best_iou = iou
                     best_match = test_box
-        if best_match == None or target_box.class_id != best_match.class_id or best_iou < minimum_iou: # TODO add minimum IOU
+        if best_match == None or target_box.class_id != best_match.class_id or best_iou < MIN_2D_BBOX_IOU: # TODO add minimum IOU
             no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is {}".format(target_box, target_box.area))
             continue
 
@@ -320,7 +319,7 @@ def calculate_iou(target_box, test_box):
     yB = min(target_box.y_max, test_box.y_max)
     # compute the area of intersection rectangle
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
-    # compute the area of both the prediction and ground-truthrectangles
+    # compute the area of both the prediction and ground-truth rectangles
     boxAArea = target_box.area
     boxBArea = test_box.area
     # compute the intersection over union by taking the intersection
@@ -332,6 +331,7 @@ def calculate_iou(target_box, test_box):
 def report_errors(error_section_message, errors):
     if len(errors) == 0:
         return
+    print()
     print(error_section_message)
     for i in errors:
         print(i)
@@ -359,11 +359,34 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
         return
 
 
+def find_cube_center(bounding_box):
+    x = 0
+    y = 0
+    z = 0
+    for vert in bounding_box.vertices:
+        x += vert[0]
+        y += vert[1]
+        z += vert[2]
+    x = x / 8
+    y = y / 8
+    x = x / 8
+    return x, y, z
+
+def distance_between_points_3d(point1, point2):
+
+    return sqrt((point1[0]-point2[0])**2+(point1[1]-point2[1])**2+(point1[2]-point2[2])**2)
+
+
+def difference_between_vertices(target_box, test_box):
+    total_diff = 0
+    for i in range(0,8):
+        a = target_box.vertices[i]
+        b = test_box.vertices[i]
+        for n in range(0,3):
+            total_diff += sqrt((a[n] - b[n])**2)
+    return total_diff
+
 def test_camera_bbox3d(camera_frame_pair):
-    # Set high level diff variables
-    max_translation_distance = 10  # Define how the size of the pixel box used to search for a matching box
-    max_percentage_size_difference = 10  # Define max percentage difference in size
-    min_volume = 1
 
     # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
@@ -377,9 +400,12 @@ def test_camera_bbox3d(camera_frame_pair):
     test_bbox3d_boxes = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes
     target_bbox3d_boxes = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes
 
+    pre_filter_no_of_test_boxes = len([x for x in test_bbox3d_boxes if x.attributes.get("truncation", -1) != 1])
+    pre_filter_no_of_target_boxes = len([x for x in target_bbox3d_boxes if x.attributes.get("truncation", -1) != 1])
+
     """Filter by min volume """
-    test_bbox3d_boxes = [x for x in test_bbox3d_boxes if x.volume > min_volume and x.attributes.get("truncation", -1) != 1]
-    target_bbox3d_boxes = [x for x in target_bbox3d_boxes if x.volume > min_volume and x.attributes.get("truncation", -1) != 1]
+    test_bbox3d_boxes = [x for x in test_bbox3d_boxes if x.volume > MIN_3D_BBOX_VOLUME and x.attributes.get("truncation", -1) != 1]
+    target_bbox3d_boxes = [x for x in target_bbox3d_boxes if x.volume > MIN_3D_BBOX_VOLUME and x.attributes.get("truncation", -1) != 1]
 
     # Check that we have the same number of bounding boxes
     number_non_zero_boxes = [x for x in target_bbox3d_boxes if x.num_points != 0]
@@ -389,23 +415,19 @@ def test_camera_bbox3d(camera_frame_pair):
             "The length of bounding boxes is not equal. There are {} target boxes while the test has {}".
             format(len(number_non_zero_boxes), len(test_bbox3d_boxes)))
 
-    # Find the closest 3d bound box with the same semantic id and compare
-    # TODO migrate to 3d IOU https://pytorch3d.org/docs/iou3d
+    # Find the closest 3d bound box with the same semantic id, compute the center for each and fine the min distance
     test_target_match_pair = dict()
     matched_test_box_instance_ids = set()
     for target_box in target_bbox3d_boxes:
-        # TODO migrate this to 3d IOU  comparison
         best_match = None
         min_distance = 1000
-        target_box_area = target_box.width * target_box.height * target_box.length
         for test_box in test_bbox3d_boxes:
-            if (target_box.class_id != test_box.class_id):
+            if (test_box.class_id != target_box.class_id):
                 continue
-            translation_distance = abs(target_box.pose.translation[0] - test_box.pose.translation[0]) + abs(target_box.pose.translation[1] - test_box.pose.translation[1]) + abs(target_box.pose.translation[2] - test_box.pose.translation[2])
-            test_box_area = test_box.width * test_box.height * test_box.length
-            percentage_area_diff = abs(test_box_area - target_box_area) / test_box_area * 100
-            if (translation_distance < max_translation_distance and translation_distance< min_distance and percentage_area_diff < max_percentage_size_difference):
-                min_distance = translation_distance
+            d = difference_between_vertices(target_box, test_box)
+
+            if (d < min_distance  and d < MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE):
+                min_distance = d
                 best_match = test_box
 
         if best_match == None:
@@ -439,7 +461,7 @@ def test_camera_bbox3d(camera_frame_pair):
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox3d_boxes:
         if test_box.instance_id not in matched_test_box_instance_ids:
-            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Area is {}. Attributes {}".format(test_box, test_box.area, test_box.attributes))
+            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Volume is {}. Attributes {}".format(test_box, test_box.volume, test_box.attributes))
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
     all_errors = general_errors + no_test_box_for_target + no_target_box_for_test + test_matches_two_targets + test_target_attribute_mismatch
@@ -452,6 +474,7 @@ def test_camera_bbox3d(camera_frame_pair):
         percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes,
                                                                                   number_target_boxes) * 100
         # Stats
+        print("There was {} test and {} target boxes before filtering".format(pre_filter_no_of_test_boxes,pre_filter_no_of_target_boxes))
         print("There are {} general errors.\n"
               "There are {} test boxes. {:3.2f}% could be matched\n"
               "There are {} target boxes. {:3.2f}% could be matched\n"
@@ -466,7 +489,7 @@ def test_camera_bbox3d(camera_frame_pair):
         report_errors("No test box test for target box errors:", no_test_box_for_target)
         report_errors("No target box for test box errors:", no_target_box_for_test)
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
-        report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
+        # report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
         assert False
 
