@@ -42,7 +42,7 @@ class Conf:
         sys.stdout.write("This script compares two DGP datasets and reports differences between them.\n")
         sys.stdout.write("\n")
         sys.stdout.write("Example command:\n")
-        sys.stdout.write("\tpython compare_dgp_scene.py --test-dataset /path/to/test/dataset --target-dataset /path/to/target/dataset --test-scene scene_000000 -v\n")
+        sys.stdout.write("\tpython compare_dgp_scene.py --test-dataset /path/to/test/dataset --target-dataset /path/to/target/dataset --test-scene scene_000000 --output-dir 'test_results' -v\n")
         sys.stdout.write("\n")
         sys.stdout.write("The tests are named according to their annotation, frame and sensor as follows:\n")
         sys.stdout.write("\ttest_<annotation>[f<frame#>-<sensor_name>]\n")
@@ -78,6 +78,8 @@ class Conf:
                 raise Exception("--target-dataset option is required")
             if not test_scene_name:
                 raise Exception("--test-scene option is required")
+            if not config.getoption("--output-dir"):
+                raise Exception("--output-dir option is required")
             target_scene_name = target_scene_name or test_scene_name
 
             self.test_decoder = DGPDatasetDecoder(dataset_path=test_dataset_path)
