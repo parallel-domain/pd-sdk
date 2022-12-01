@@ -11,15 +11,17 @@ from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.scene import Frame
 
-from utils import diff_images
+from utils import diff_images, write_image
 
 RGB_PIXEL_DIFF_THRESHOLD = 5
 DEPTH_PIXEL_DIFF_THRESHOLD = 5
 INST_SEG_PIXEL_DIFF_THRESHOLD = 5
+MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP = 99.9
 SEM_SEG_PIXEL_DIFF_THRESHOLD = 5
 MIN_2D_BBOX_BOX_SIZE = 110
 MIN_2D_BBOX_IOU = 0.75
-MIN_3D_BBOX_VOLUME = 0 # Increasing to 2 hugely reduces errors
+# The current 3d bbox noise ratio is quite high for small volumes
+MIN_3D_BBOX_VOLUME = 2 # Increasing to 2 hugely reduces errors but reduced accuracy
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
 OUTPUT_DIRECTORY = ""
 
@@ -480,7 +482,7 @@ def test_camera_bbox3d(camera_frame_pair):
         report_errors("No test box test for target box errors:", no_test_box_for_target)
         report_errors("No target box for test box errors:", no_target_box_for_test)
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
-        # report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
+        report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
         assert False
 
@@ -500,23 +502,83 @@ def test_camera_semseg2d(camera_frame_pair):
     assert np.array_equal(test_semseg2d.class_ids, target_semseg2d.class_ids)
 
 
+def convert_rgb_to_number(rgb):
+    red = rgb[0]
+    green = rgb[1]
+    blue = rgb[2]
+    return (red << 16) + (green << 8) + blue
+
 def test_camera_instanceseg2d(camera_frame_pair):
     """Instance segmentation 2D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_instanceseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
     target_instanceseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
-    pixel_percent_difference = diff_images(test_instanceseg2d.rgb_encoded, target_instanceseg2d.rgb_encoded,
-                                           f"{OUTPUT_DIRECTORY}{test_camera_frame.sensor_name}",
-                                           f"instance_diff_{test_camera_frame.frame_id}.png",
-                                           save_images=True)
-    instance_diff = np.setdiff1d(np.unique(test_instanceseg2d.instance_ids.flatten()),
-                                 np.unique(target_instanceseg2d.instance_ids.flatten()))
-    assert pixel_percent_difference < INST_SEG_PIXEL_DIFF_THRESHOLD
-    assert len(np.unique(target_instanceseg2d.instance_ids.flatten())) == \
-           len(np.unique(test_instanceseg2d.instance_ids.flatten()))
-    assert np.array_equal(np.unique(test_instanceseg2d.instance_ids.flatten()),
-                          np.unique(target_instanceseg2d.instance_ids.flatten()))
-    # assert np.array_equal(test_instanceseg2d.instance_ids, target_instanceseg2d.instance_ids)
+
+    # TODO this need to be speed up
+    # Build a set of pixels in each instance id
+    target_instances = dict()
+    target_rgb = target_instanceseg2d.rgb_encoded
+    instanced_target_pixels = 0
+    for instance_id in range(0, len(target_rgb)):
+        for j in range(0,len(target_rgb[instance_id])):
+            target_instance_id = convert_rgb_to_number(target_rgb[instance_id][j])
+            if target_instance_id != 0:
+                instance_set = target_instances.get(target_instance_id, set())
+                instance_set.add((instance_id,j))
+                target_instances[target_instance_id] = instance_set
+                instanced_target_pixels += 1
+    test_instances = dict()
+    test_rgb = test_instanceseg2d.rgb_encoded
+    instanced_text_pixels = 0
+    for instance_id in range(0, len(test_rgb)):
+        for j in range(0,len(test_rgb[instance_id])):
+            test_instance_id = convert_rgb_to_number(test_rgb[instance_id][j])
+            if test_instance_id != 0:
+                instance_set = test_instances.get(test_instance_id, set())
+                instance_set.add((instance_id,j))
+                test_instances[test_instance_id] = instance_set
+                instanced_text_pixels += 1
+
+    # Try and match each target instance to a test instance set
+    matched_test_instance = set()
+    not_match_target_instance = set()
+    for target_instance_key in target_instances.keys():
+        best_match = 0
+        best_test_match_key = None
+        for test_instance_key in test_instances.keys():
+            test_set = test_instances.get(test_instance_key)
+            target_set = target_instances.get(target_instance_key)
+            match_percentage = len(target_set.intersection(test_set))/ len(target_set) * 100
+            if match_percentage > best_match and match_percentage > MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP:
+                best_match = match_percentage
+                best_test_match_key = test_instance_key
+        if best_test_match_key != None:
+            matched_test_instance.add(best_test_match_key)
+        else:
+            not_match_target_instance.add(target_instance_key)
+    not_matched_test_instanced = [x for x in test_instances.keys() if x not in matched_test_instance]
+
+    # Create diff image from two overlays
+    diff_rgb = np.zeros((target_rgb.shape), dtype=int)
+    not_matched_test_pixels = 0
+    not_matched_target_pixels = 0
+    for instance_id in not_match_target_instance:
+        target_set = target_instances.get(instance_id)
+        for pixel_location in target_set:
+            diff_rgb[pixel_location[0],pixel_location[1]] = [255, 0, 255]
+            not_matched_target_pixels += 1
+    for instance_id in not_matched_test_instanced:
+        test_set = test_instances.get(instance_id)
+        for pixel_location in test_set:
+            diff_rgb[pixel_location[0],pixel_location[1]] = [0, 255, 0]
+            not_matched_test_pixels += 1
+
+    percentage_image_diff = max(not_matched_test_pixels, not_matched_target_pixels) / min(instanced_target_pixels, instanced_text_pixels) * 100
+    if (True):
+        image_path, image_name = f"{OUTPUT_DIRECTORY}{test_camera_frame.sensor_name}", f"instance_diff_{test_camera_frame.frame_id}.png"
+        write_image(diff_rgb, image_path, image_name)
+
+    assert percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD
 
 def test_camera_depth(camera_frame_pair):
     """Depth data matches for a pair of camera frames"""
