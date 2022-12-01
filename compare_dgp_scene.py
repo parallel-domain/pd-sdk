@@ -101,8 +101,8 @@ class Conf:
                                 f"and target scene ({num_frames_target_scene})")
             metafunc.parametrize(
                 'frame_pair',
-                zip(self.test_scene.frames[0:1], self.target_scene.frames[0:1]),
-                ids=[f"f{f.frame_id}" for f in self.test_scene.frames[0:1]]
+                zip(self.test_scene.frames, self.target_scene.frames),
+                ids=[f"f{f.frame_id}" for f in self.test_scene.frames]
             )
         # Let's parameterize the fixture `camera_name` by all camera names in the datasets
         if 'camera_name' in metafunc.fixturenames:
