@@ -283,7 +283,7 @@ def test_camera_bbox2d(camera_frame_pair):
         compare_attribute_by_key(best_match, target_box, "visibility", True, attribute_errors)
 
         if (len(attribute_errors) != 0):
-            test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors {}".format(best_match,target_box, attribute_errors))
+            test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors:\n\t{}".format(best_match,target_box, "\n\t".join(attribute_errors)))
 
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox2d_boxes:
@@ -349,21 +349,22 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
     test_box_attributes = test_box.attributes
     target_box_attributes = target_box.attributes
     key_name = key
-    if (is_in_user_data):
+    if is_in_user_data:
         test_box_attributes = test_box.attributes["user_data"]
         target_box_attributes = target_box.attributes["user_data"]
         key_name = "user_data/" + key
 
     # Check if exists in both
-    if (test_box_attributes.get(key, -1) == -1 and target_box_attributes.get(key,-1) == -1):
-        return # attribute is not relevant for this type
-    if (target_box_attributes.get(key,-1) == -1):
-        return # Key is not in target so ignore for now
-    if (test_box_attributes.get(key, -1) == -1):
-        attribute_errors.append("The key {} could not be found in test bounding box".format(key_name, test_box))
+    test_value = test_box_attributes.get(key)
+    target_value = target_box_attributes.get(key)
+    if target_value is None:
         return
-    if (test_box_attributes.get(key) != target_box_attributes.get(key)):
-        attribute_errors.append("The key {} is not equal. Test key value {}. Target key value {}".format(key_name, test_box, target_box, test_box_attributes.get(key), target_box_attributes.get(key)))
+    if test_value is None:
+        attribute_errors.append(f"The key {key_name} could not be found in test bounding box {test_box}")
+        return
+    if isinstance(target_value, float) and not np.isclose(test_value, target_value) or \
+            test_value != target_value:
+        attribute_errors.append(f"The key {key_name} ({type(test_value).__name__}) is not equal. Test value {test_box_attributes.get(key)}. Target value {target_box_attributes.get(key)}")
         return
 
 
@@ -446,7 +447,7 @@ def test_camera_bbox3d(camera_frame_pair):
         compare_attribute_by_key(best_match, target_box, "occlusion", False, attribute_errors)
 
         if (len(attribute_errors) != 0):
-            test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors {}".format(best_match,target_box, attribute_errors))
+            test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors:\n\t{}".format(best_match,target_box, "\n\t".join(attribute_errors)))
 
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox3d_boxes:
