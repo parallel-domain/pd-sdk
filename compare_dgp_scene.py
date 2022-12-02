@@ -21,7 +21,7 @@ SEM_SEG_PIXEL_DIFF_THRESHOLD = 5
 MIN_2D_BBOX_BOX_SIZE = 110
 MIN_2D_BBOX_IOU = 0.75
 # The current 3d bbox noise ratio is quite high for small volumes
-MIN_3D_BBOX_VOLUME = 2  # Increasing to 2 hugely reduces errors but reduced accuracy
+MIN_3D_BBOX_VOLUME = 0.5 # Increasing to 2 hugely reduces errors but reduced accuracy
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
 OUTPUT_DIRECTORY = ""
 
@@ -378,8 +378,7 @@ def difference_between_vertices(target_box, test_box):
     for i in range(0, 8):
         a = target_box.vertices[i]
         b = test_box.vertices[i]
-        for n in range(0, 3):
-            total_diff += sqrt((a[n] - b[n]) ** 2)
+        total_diff += (sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))) * 2 # Punish further distances
     return total_diff
 
 def test_camera_bbox3d(camera_frame_pair):
