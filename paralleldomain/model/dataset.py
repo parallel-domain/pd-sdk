@@ -169,80 +169,104 @@ class Dataset:
         sensor_names: Optional[Iterable[SensorName]] = None,
         frame_ids: Optional[Iterable[FrameId]] = None,
         scene_names: Optional[Iterable[SceneName]] = None,
+        ordered: bool = True,
+        concurrent: bool = False,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+        random_seed: int = 42,
+        only_cameras: bool = False,
+        only_radars: bool = False,
+        only_lidars: bool = False,
     ) -> Generator[SensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yield all sensor frames from the scenes with the given names.
         If None is passed for scenes_names all scenes in this dataset are used. Same for sensor_names and frame_ids.
         None means all available will be returned.
         """
-        if scene_names is None:
-            scene_names = self.unordered_scene_names
-        for scene_name in scene_names:
-            scene = self.get_unordered_scene(scene_name=scene_name)
-            yield from scene.get_sensor_frames(sensor_names=sensor_names, frame_ids=frame_ids)
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(
+            ordered=ordered,
+            concurrent=concurrent,
+            sensor_names=sensor_names,
+            frame_ids=frame_ids,
+            only_cameras=only_cameras,
+            only_lidars=only_lidars,
+            only_radars=only_radars,
+            max_queue_size=max_queue_size,
+            max_workers=max_workers,
+            random_seed=random_seed,
+            scene_names=scene_names,
+        ):
+            yield sensor_frame
 
     @property
     def camera_frames(self) -> Generator[CameraSensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yields all CameraSensorFrames of all the unordered scenes in this dataset.
         """
-        for scene in self.unordered_scenes.values():
-            yield from scene.camera_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_cameras=True):
+            yield sensor_frame
 
     @property
     def camera_names(self) -> Set[SensorName]:
         """
         Returns the names of all camera sensors across all scenes in this dataset.
         """
-        names = set()
-        for scene in self.unordered_scenes.values():
-            names.update(scene.camera_names)
-        return names
+        stage = self.scene_pipeline(ordered=False, concurrent=True)
+        stage = pypeln.thread.flat_map(lambda scene: scene.camera_names, stage, maxsize=8, workers=5)
+
+        names = list()
+        for camera_names in stage:
+            names.extend(camera_names)
+        return set(names)
 
     @property
     def lidar_frames(self) -> Generator[LidarSensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yields all LidarSensorFrames of all the unordered scenes in this dataset.
         """
-        for scene in self.unordered_scenes.values():
-            yield from scene.lidar_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_lidars=True):
+            yield sensor_frame
 
     @property
     def lidar_names(self) -> Set[SensorName]:
         """
         Returns the names of all lidar sensors across all scenes in this dataset.
         """
-        names = set()
-        for scene in self.unordered_scenes.values():
-            names.update(scene.lidar_names)
-        return names
+        stage = self.scene_pipeline(ordered=False, concurrent=True)
+        stage = pypeln.thread.flat_map(lambda scene: scene.lidar_names, stage, maxsize=8, workers=5)
+
+        names = list()
+        for lidar_names in stage:
+            names.extend(lidar_names)
+        return set(names)
 
     @property
     def radar_frames(self) -> Generator[RadarSensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yields all RadarSensorFrames of all the unordered scenes in this dataset.
         """
-        for scene in self.unordered_scenes.values():
-            yield from scene.radar_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_radars=True):
+            yield sensor_frame
 
     @property
     def radar_names(self) -> Set[SensorName]:
         """
         Returns the names of all Radar sensors across all scenes in this dataset.
         """
-        names = set()
-        for scene in self.unordered_scenes.values():
-            names.update(scene.radar_names)
-        return names
+        stage = self.scene_pipeline(ordered=False, concurrent=True)
+        stage = pypeln.thread.flat_map(lambda scene: scene.radar_names, stage, maxsize=8, workers=5)
+
+        names = list()
+        for radar_names in stage:
+            names.extend(radar_names)
+        return set(names)
 
     @property
     def sensor_frames(self) -> Generator[SensorFrame[Optional[datetime]], None, None]:
         """
         Returns a generator that yields all SensorFrames (Lidar and Camera) of all the unordered scenes in this dataset.
         """
-        yield from self.camera_frames
-        yield from self.lidar_frames
-        yield from self.radar_frames
+        yield from self.sensor_frame_pipeline(ordered=True)
 
     @property
     def number_of_camera_frames(self) -> int:
@@ -351,6 +375,9 @@ class Dataset:
         only_ordered_scenes: bool = False,
         max_queue_size: int = 8,
         max_workers: int = 4,
+        only_cameras: bool = False,
+        only_radars: bool = False,
+        only_lidars: bool = False,
     ) -> Generator[Tuple[SensorFrame[Optional[datetime]], Frame, Union[UnorderedScene, Scene]], None, None]:
         """
         Returns a generator that yields tuples of SensorFrame, Frame, Scene from the dataset.
@@ -385,6 +412,9 @@ class Dataset:
                 max_queue_size=max_queue_size,
                 ordered=ordered,
                 concurrent=concurrent,
+                only_cameras=only_cameras,
+                only_radars=only_radars,
+                only_lidars=only_lidars,
             )
 
         stage = runenv.flat_map(map_scenes, stage, maxsize=max_queue_size, workers=max_workers)

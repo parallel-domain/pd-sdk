@@ -3,6 +3,8 @@ from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Tuple, Type, TypeVar, Union
 
+import pypeln
+
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.map.map import Map
@@ -201,25 +203,40 @@ class UnorderedScene(Generic[TDateTime]):
         frame_ids: Optional[Iterable[FrameId]] = None,
         ordered: bool = True,
         concurrent: bool = False,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+        random_seed: int = 42,
+        only_cameras: bool = False,
+        only_radars: bool = False,
+        only_lidars: bool = False,
     ) -> Generator[SensorFrame[TDateTime], None, None]:
         for sensor_frame, _, _ in self.sensor_frame_pipeline(
-            ordered=ordered, concurrent=concurrent, sensor_names=sensor_names, frame_ids=frame_ids
+            ordered=ordered,
+            concurrent=concurrent,
+            sensor_names=sensor_names,
+            frame_ids=frame_ids,
+            only_cameras=only_cameras,
+            only_lidars=only_lidars,
+            only_radars=only_radars,
+            max_queue_size=max_queue_size,
+            max_workers=max_workers,
+            random_seed=random_seed,
         ):
             yield sensor_frame
 
     @property
     def camera_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.camera_names):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_cameras=True):
             yield sensor_frame
 
     @property
     def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.lidar_names):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_lidars=True):
             yield sensor_frame
 
     @property
     def radar_frames(self) -> Generator[RadarSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.radar_names):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_radars=True):
             yield sensor_frame
 
     @property
@@ -276,7 +293,6 @@ class UnorderedScene(Generic[TDateTime]):
         max_queue_size: int = 8,
         max_workers: int = 4,
     ) -> Generator[Frame[TDateTime], None, None]:
-        import pypeln
 
         runenv = pypeln.sync
         if concurrent:
@@ -303,8 +319,6 @@ class UnorderedScene(Generic[TDateTime]):
         max_queue_size: int = 8,
         max_workers: int = 4,
     ) -> Generator[Frame[TDateTime], None, None]:
-        import pypeln
-
         runenv = pypeln.sync
         if concurrent:
             if ordered:
@@ -330,8 +344,17 @@ class UnorderedScene(Generic[TDateTime]):
         sensor_names: Optional[Iterable[SensorName]] = None,
         max_queue_size: int = 8,
         max_workers: int = 4,
+        only_cameras: bool = False,
+        only_radars: bool = False,
+        only_lidars: bool = False,
     ) -> Generator[Tuple[SensorFrame[Optional[datetime]], Frame], None, None]:
-        import pypeln
+        just_one = only_cameras ^ only_radars ^ only_lidars
+        all_false = not (only_cameras or only_radars or only_lidars)
+        if not just_one and not all_false:
+            raise ValueError(
+                "You can onlt set one of only_cameras or only_radars or "
+                "only_lidars to a value to filter a certain sensor type!"
+            )
 
         runenv = pypeln.sync
         if not ordered:
@@ -345,7 +368,14 @@ class UnorderedScene(Generic[TDateTime]):
         )
 
         def map_frame(frame: Frame[TDateTime]):
-            used_sensor_names = frame.sensor_names
+            if only_cameras:
+                used_sensor_names = frame.camera_names
+            elif only_lidars:
+                used_sensor_names = frame.lidar_names
+            elif only_radars:
+                used_sensor_names = frame.radar_names
+            else:
+                used_sensor_names = frame.sensor_names
             used_sensor_names = [name for name in used_sensor_names if sensor_names is None or name in sensor_names]
             for name in used_sensor_names:
                 yield frame.get_sensor(sensor_name=name), frame, self
