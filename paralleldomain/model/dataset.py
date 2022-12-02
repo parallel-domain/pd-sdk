@@ -1,7 +1,9 @@
+import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Generator, Iterable, List, Optional, Set, TypeVar, Union
+from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Set, Tuple, TypeVar, Union
 
+from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
@@ -12,6 +14,8 @@ except ImportError:
     from typing_extensions import Protocol  # type: ignore
 
 import logging
+
+import pypeln
 
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.scene import Scene
@@ -85,6 +89,7 @@ class Dataset:
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
         self._number_of_radar_frames = None
+        self._number_of_sensor_frames = None
 
     @property
     def unordered_scene_names(self) -> List[SceneName]:
@@ -243,26 +248,144 @@ class Dataset:
     def number_of_camera_frames(self) -> int:
         if self._number_of_camera_frames is None:
             self._number_of_camera_frames = 0
-            for scene in self.unordered_scenes.values():
-                self._number_of_camera_frames += scene.number_of_camera_frames
+            stage = pypeln.sync.from_iterable(self.scene_pipeline(ordered=False, concurrent=True))
+            stage = pypeln.thread.flat_map(lambda scene: scene.number_of_camera_frames, stage, maxsize=8, workers=4)
+
+            for cnt in stage:
+                self._number_of_camera_frames += cnt
         return self._number_of_camera_frames
 
     @property
     def number_of_lidar_frames(self) -> int:
         if self._number_of_lidar_frames is None:
             self._number_of_lidar_frames = 0
-            for scene in self.unordered_scenes.values():
-                self._number_of_lidar_frames += scene.number_of_lidar_frames
+            stage = pypeln.sync.from_iterable(self.scene_pipeline(ordered=False, concurrent=True))
+            stage = pypeln.thread.map(lambda scene: scene.number_of_lidar_frames, stage, maxsize=8, workers=4)
+
+            for cnt in stage:
+                self._number_of_lidar_frames += cnt
         return self._number_of_lidar_frames
 
     @property
     def number_of_radar_frames(self) -> int:
         if self._number_of_radar_frames is None:
             self._number_of_radar_frames = 0
-            for scene in self.unordered_scenes.values():
-                self._number_of_radar_frames += scene.number_of_radar_frames
+            stage = pypeln.sync.from_iterable(self.scene_pipeline(ordered=False, concurrent=True))
+            stage = pypeln.thread.map(lambda scene: scene.number_of_radar_frames, stage, maxsize=8, workers=4)
+
+            for cnt in stage:
+                self._number_of_radar_frames += cnt
         return self._number_of_radar_frames
 
     @property
     def number_of_sensor_frames(self) -> int:
-        return self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames
+        if self._number_of_sensor_frames is None:
+            if (
+                self._number_of_radar_frames is not None
+                and self._number_of_radar_frames is not None
+                and self._number_of_radar_frames is not None
+            ):
+                self._number_of_sensor_frames = (
+                    self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames
+                )
+            else:
+                self._number_of_sensor_frames = 0
+                stage = pypeln.sync.from_iterable(self.scene_pipeline(ordered=False, concurrent=True))
+                stage = pypeln.thread.map(lambda scene: scene.number_of_sensor_frames, stage, maxsize=8, workers=4)
+
+                for cnt in stage:
+                    self._number_of_sensor_frames += cnt
+        return self._number_of_sensor_frames
+
+    def scene_pipeline(
+        self,
+        ordered: bool = True,
+        concurrent: bool = False,
+        endless_loop: bool = False,
+        random_seed: int = 42,
+        scene_names: Optional[List[SceneName]] = None,
+        only_ordered_scenes: bool = False,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+    ) -> Generator[Union[UnorderedScene, Scene], None, None]:
+
+        """
+        Returns a generator that yield all scenes from the dataset with the given names.
+        If None is passed for scenes_names all scenes in this dataset are returned.
+        """
+        runenv = pypeln.sync
+        if concurrent:
+            if ordered:
+                raise ValueError("Order can not be guaranteed in concurrent mode!")
+            runenv = pypeln.thread
+
+        def _source_loop():
+            source_state = random.Random(random_seed)
+            used_scene_names = self.scene_names if only_ordered_scenes else self.unordered_scene_names
+            used_scene_names = [name for name in used_scene_names if scene_names is None or name in scene_names]
+            epoch = 0
+            while endless_loop or epoch == 0:
+                epoch += 1
+                if not ordered:
+                    source_state.shuffle(used_scene_names)
+                yield from used_scene_names
+
+        def _scene_decoding(scene_name: SceneName) -> Union[UnorderedScene, Scene]:
+            if only_ordered_scenes:
+                scene = self.get_scene(scene_name=scene_name)
+            else:
+                scene = self.get_unordered_scene(scene_name=scene_name)
+            return scene
+
+        yield from runenv.map(_scene_decoding, _source_loop(), maxsize=max_queue_size, workers=max_workers)
+
+    def sensor_frame_pipeline(
+        self,
+        ordered: bool = True,
+        concurrent: bool = False,
+        endless_loop: bool = False,
+        random_seed: int = 42,
+        scene_names: Optional[List[SceneName]] = None,
+        frame_ids: Optional[Iterable[FrameId]] = None,
+        sensor_names: Optional[Iterable[SensorName]] = None,
+        only_ordered_scenes: bool = False,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+    ) -> Generator[Tuple[SensorFrame[Optional[datetime]], Frame, Union[UnorderedScene, Scene]], None, None]:
+        """
+        Returns a generator that yields tuples of SensorFrame, Frame, Scene from the dataset.
+        It can also be configured to only return certain scenes, frames, sensors.
+        By setting ordered = False the data is returned a randomized order.
+        By setting concurrent = True threads are used to speed up the generator.
+
+        You can use this as a quick acces to sensor frames to laod images, annotations etc. and feed those to
+        your models or to encode the sensor frames into another data format.
+        """
+        runenv = pypeln.sync
+        if concurrent:
+            if ordered:
+                raise ValueError("Order can not be guaranteed in concurrent mode!")
+            runenv = pypeln.thread
+
+        stage = self.scene_pipeline(
+            ordered=ordered,
+            concurrent=concurrent,
+            endless_loop=endless_loop,
+            random_seed=random_seed,
+            scene_names=scene_names,
+            only_ordered_scenes=only_ordered_scenes,
+        )
+
+        def map_scenes(scene: Union[UnorderedScene, Scene]):
+            yield from scene.sensor_frame_pipeline(
+                frame_ids=frame_ids,
+                sensor_names=sensor_names,
+                random_seed=random_seed,
+                max_workers=max_workers,
+                max_queue_size=max_queue_size,
+                ordered=ordered,
+                concurrent=concurrent,
+            )
+
+        stage = runenv.flat_map(map_scenes, stage, maxsize=max_queue_size, workers=max_workers)
+        yield from pypeln.sync.to_iterable(stage, maxsize=max_queue_size)

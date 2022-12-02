@@ -1,6 +1,7 @@
+import random
 from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Tuple, Type, TypeVar, Union
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -93,6 +94,7 @@ class UnorderedScene(Generic[TDateTime]):
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
         self._number_of_radar_frames = None
+        self._number_of_sensor_frames = None
 
     @property
     def name(self) -> str:
@@ -147,15 +149,15 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
-        return (self.get_camera_sensor(camera_name=camera_name) for camera_name in self.camera_names)
+        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.camera_names)
 
     @property
     def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
-        return (self.get_lidar_sensor(lidar_name=lidar_name) for lidar_name in self.lidar_names)
+        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.lidar_names)
 
     @property
     def radars(self) -> Generator[RadarSensor[TDateTime], None, None]:
-        return (self.get_radar_sensor(radar_name=radar_name) for radar_name in self.radar_names)
+        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.radar_names)
 
     def get_sensor(
         self, sensor_name: SensorName
@@ -194,66 +196,158 @@ class UnorderedScene(Generic[TDateTime]):
         return self.class_maps[annotation_type]
 
     def get_sensor_frames(
-        self, sensor_names: Optional[Iterable[SensorName]] = None, frame_ids: Optional[Iterable[FrameId]] = None
+        self,
+        sensor_names: Optional[Iterable[SensorName]] = None,
+        frame_ids: Optional[Iterable[FrameId]] = None,
+        ordered: bool = True,
+        concurrent: bool = False,
     ) -> Generator[SensorFrame[TDateTime], None, None]:
-        if sensor_names is None:
-            sensor_names = self.sensor_names
-        else:
-            sensor_names = set(sensor_names).intersection(set(self.sensor_names))
-        for sensor_name in sensor_names:
-            sensor = self.get_sensor(sensor_name=sensor_name)
-            if frame_ids is None:
-                sensor_frame_ids = sensor.frame_ids
-            else:
-                sensor_frame_ids = frame_ids
-            for frame_id in sensor_frame_ids:
-                yield sensor.get_frame(frame_id=frame_id)
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(
+            ordered=ordered, concurrent=concurrent, sensor_names=sensor_names, frame_ids=frame_ids
+        ):
+            yield sensor_frame
 
     @property
     def camera_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
-        for camera in self.cameras:
-            yield from camera.sensor_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.camera_names):
+            yield sensor_frame
 
     @property
     def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
-        for lidar in self.lidars:
-            yield from lidar.sensor_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.lidar_names):
+            yield sensor_frame
 
     @property
     def radar_frames(self) -> Generator[RadarSensorFrame[TDateTime], None, None]:
-        for radar in self.radars:
-            yield from radar.sensor_frames
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, sensor_names=self.radar_names):
+            yield sensor_frame
 
     @property
     def sensor_frames(self) -> Generator[SensorFrame[TDateTime], None, None]:
-        yield from self.camera_frames
-        yield from self.lidar_frames
-        yield from self.radar_frames
+        yield from self.sensor_frame_pipeline(ordered=True)
 
     @property
     def number_of_camera_frames(self) -> int:
         if self._number_of_camera_frames is None:
             self._number_of_camera_frames = 0
-            for camera in self.cameras:
-                self._number_of_camera_frames += len(camera.frame_ids)
+            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+                self._number_of_camera_frames += len(frame.camera_names)
         return self._number_of_camera_frames
 
     @property
     def number_of_lidar_frames(self) -> int:
         if self._number_of_lidar_frames is None:
             self._number_of_lidar_frames = 0
-            for lidar in self.lidars:
-                self._number_of_lidar_frames += len(lidar.frame_ids)
+            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+                self._number_of_lidar_frames += len(frame.lidar_names)
         return self._number_of_lidar_frames
 
     @property
     def number_of_radar_frames(self) -> int:
         if self._number_of_radar_frames is None:
             self._number_of_radar_frames = 0
-            for radar in self.radars:
-                self._number_of_radar_frames += len(radar.frame_ids)
+            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+                self._number_of_radar_frames += len(frame.radar_names)
         return self._number_of_radar_frames
 
     @property
     def number_of_sensor_frames(self) -> int:
-        return self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames
+        if self._number_of_sensor_frames is None:
+            if (
+                self._number_of_radar_frames is not None
+                and self._number_of_radar_frames is not None
+                and self._number_of_radar_frames is not None
+            ):
+                self._number_of_sensor_frames = (
+                    self.number_of_lidar_frames + self.number_of_camera_frames + self.number_of_radar_frames
+                )
+            else:
+                self._number_of_sensor_frames = 0
+                for frame in self.frame_pipeline(ordered=False, concurrent=True):
+                    self._number_of_sensor_frames += len(frame.sensor_names)
+        return self._number_of_sensor_frames
+
+    def frame_pipeline(
+        self,
+        ordered: bool = True,
+        concurrent: bool = False,
+        random_seed: int = 42,
+        frame_ids: Optional[Iterable[FrameId]] = None,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+    ) -> Generator[Frame[TDateTime], None, None]:
+        import pypeln
+
+        runenv = pypeln.sync
+        if concurrent:
+            if ordered:
+                raise ValueError("Order can not be guaranteed in concurrent mode!")
+
+            runenv = pypeln.thread
+
+        source_state = random.Random(random_seed)
+        used_fids = [fid for fid in self.frame_ids if frame_ids is None or fid in frame_ids]
+        if not ordered:
+            source_state.shuffle(used_fids)
+
+        yield from runenv.map(
+            lambda fid: self.get_frame(frame_id=fid), used_fids, maxsize=max_queue_size, workers=max_workers
+        )
+
+    def sensor_pipeline(
+        self,
+        ordered: bool = True,
+        concurrent: bool = False,
+        random_seed: int = 42,
+        sensor_names: Optional[Iterable[SensorName]] = None,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+    ) -> Generator[Frame[TDateTime], None, None]:
+        import pypeln
+
+        runenv = pypeln.sync
+        if concurrent:
+            if ordered:
+                raise ValueError("Order can not be guaranteed in concurrent mode!")
+
+            runenv = pypeln.thread
+
+        source_state = random.Random(random_seed)
+        used_sensors = [name for name in self.sensor_names if sensor_names is None or name in sensor_names]
+        if not ordered:
+            source_state.shuffle(used_sensors)
+
+        yield from runenv.map(
+            lambda name: self.get_sensor(sensor_name=name), used_sensors, maxsize=max_queue_size, workers=max_workers
+        )
+
+    def sensor_frame_pipeline(
+        self,
+        ordered: bool = True,
+        concurrent: bool = False,
+        random_seed: int = 42,
+        frame_ids: Optional[Iterable[FrameId]] = None,
+        sensor_names: Optional[Iterable[SensorName]] = None,
+        max_queue_size: int = 8,
+        max_workers: int = 4,
+    ) -> Generator[Tuple[SensorFrame[Optional[datetime]], Frame], None, None]:
+        import pypeln
+
+        runenv = pypeln.sync
+        if not ordered:
+            runenv = pypeln.thread
+
+        stage = self.frame_pipeline(
+            ordered=ordered,
+            concurrent=concurrent,
+            random_seed=random_seed,
+            frame_ids=frame_ids,
+        )
+
+        def map_frame(frame: Frame[TDateTime]):
+            used_sensor_names = frame.sensor_names
+            used_sensor_names = [name for name in used_sensor_names if sensor_names is None or name in sensor_names]
+            for name in used_sensor_names:
+                yield frame.get_sensor(sensor_name=name), frame, self
+
+        yield from runenv.flat_map(map_frame, stage, maxsize=max_queue_size, workers=max_workers)
