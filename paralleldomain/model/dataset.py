@@ -249,7 +249,7 @@ class Dataset:
         if self._number_of_camera_frames is None:
             self._number_of_camera_frames = 0
             stage = pypeln.sync.from_iterable(self.scene_pipeline(ordered=False, concurrent=True))
-            stage = pypeln.thread.flat_map(lambda scene: scene.number_of_camera_frames, stage, maxsize=8, workers=4)
+            stage = pypeln.thread.map(lambda scene: scene.number_of_camera_frames, stage, maxsize=8, workers=4)
 
             for cnt in stage:
                 self._number_of_camera_frames += cnt

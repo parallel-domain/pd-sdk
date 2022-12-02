@@ -62,3 +62,15 @@ class TestDatasetSensors:
         for frame in sensor_frames:
             assert frame is not None
             assert isinstance(frame, CameraSensorFrame) or isinstance(frame, LidarSensorFrame)
+
+    def test_radar_frame_counts_dont_crash(self, dataset: Dataset):
+        num_radar_sensors = dataset.number_of_radar_frames
+        assert num_radar_sensors >= 0
+
+    def test_lidar_frame_counts_dont_crash(self, dataset: Dataset):
+        num_lidar_sensors = dataset.number_of_lidar_frames
+        assert num_lidar_sensors >= 0
+
+    def test_camera_frame_counts_dont_crash(self, dataset: Dataset):
+        num_camera_sensors = dataset.number_of_camera_frames
+        assert num_camera_sensors >= 0
