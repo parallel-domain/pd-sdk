@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 import numpy as np
 from math import sqrt
+from pathlib import Path
 
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
 from paralleldomain.model.annotation import AnnotationTypes
@@ -22,7 +23,6 @@ MIN_2D_BBOX_BOX_SIZE = 110
 MIN_2D_BBOX_IOU = 0.75
 MIN_3D_BBOX_VOLUME = 0.1
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
-OUTPUT_DIRECTORY = ""
 
 
 class Conf:
@@ -58,6 +58,10 @@ class Conf:
         sys.stdout.write("\t\t-k [f8\n")
         sys.stdout.write("\tRun all tests for a specific sensor:\n")
         sys.stdout.write("\t\t-k Rear]\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("To generate an HTML test report, add following parameters:\n")
+        sys.stdout.write("\t--html=test-results.html --capture=tee-sys\n")
+        sys.stdout.write("\n")
         sys.exit(0)
 
     def pytest_addoption(self, parser):
@@ -117,11 +121,14 @@ class Conf:
         if 'scene_pair' in metafunc.fixturenames:
             metafunc.parametrize('scene_pair', [(self.test_scene, self.target_scene)], ids=['scene'])
 
-@pytest.fixture(autouse=True, scope='session')
-def cmd_param(pytestconfig):
-    path = pytestconfig.getoption("--output-dir")
-    global OUTPUT_DIRECTORY
-    OUTPUT_DIRECTORY = path
+
+@pytest.fixture(scope='session')
+def output_dir(pytestconfig):
+    path = Path(pytestconfig.getoption("--output-dir"))
+    if path.exists():
+        pytest.exit(f"Output dir {path} already exists, please specify a different one")
+    path.mkdir(parents=True)
+    return path
 
 
 @pytest.fixture(scope='session')
@@ -205,13 +212,13 @@ def test_camera_model(camera_frame_pair):
     assert test_pass
 
 
-def test_camera_rgb(camera_frame_pair):
+def test_camera_rgb(camera_frame_pair, output_dir):
     """RGB data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_image, target_image = test_camera_frame.image, target_camera_frame.image
     pixel_percent_difference = diff_images(test_image.rgb,
                                            target_image.rgb,
-                                           f"{OUTPUT_DIRECTORY}{test_camera_frame.sensor_name}",
+                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
                                            f"rgb_diff_{test_camera_frame.frame_id}.png",
                                            save_images=True)
     assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
@@ -488,13 +495,13 @@ def test_camera_bbox3d(camera_frame_pair):
         assert False
 
 
-def test_camera_semseg2d(camera_frame_pair):
+def test_camera_semseg2d(camera_frame_pair, output_dir):
     """Semantic segmentation 2D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_semseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
     target_semseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
     pixel_percent_difference = diff_images(test_semseg2d.rgb_encoded, target_semseg2d.rgb_encoded,
-                                           f"{OUTPUT_DIRECTORY}{test_camera_frame.sensor_name}",
+                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
                                            f"semantic_diff_{test_camera_frame.frame_id}.png",
                                            save_images=True)
     class_diff = np.setdiff1d(np.unique(test_semseg2d.class_ids.flatten()),
@@ -546,7 +553,7 @@ def map_test_to_target(test_instances, test_instanceseg_2d_arr, target_instances
     return test_to_target_map, unmatched_test_instances, unmatched_target_instances
 
 
-def test_camera_instanceseg2d(camera_frame_pair):
+def test_camera_instanceseg2d(camera_frame_pair, output_dir):
     """Instance segmentation 2D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_instanceseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.InstanceSegmentation2D)
@@ -575,18 +582,18 @@ def test_camera_instanceseg2d(camera_frame_pair):
     percentage_image_diff = max(not_matched_test_pixels, not_matched_target_pixels) / min(instanced_target_pixels,
                                                                                           instanced_test_pixels) * 100
     if True:
-        image_path, image_name = f"{OUTPUT_DIRECTORY}\\{test_camera_frame.sensor_name}", f"instance_diff_{test_camera_frame.frame_id}.png"
+        image_path, image_name = f"{str(output_dir / test_camera_frame.sensor_name)}", f"instance_diff_{test_camera_frame.frame_id}.png"
         write_image(test_image_copy, image_path, image_name)
 
     assert percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD
 
-def test_camera_depth(camera_frame_pair):
+def test_camera_depth(camera_frame_pair, output_dir):
     """Depth data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_depth = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
     target_depth = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
     pixel_percent_difference = diff_images(test_depth.depth, target_depth.depth,
-                                           f"{OUTPUT_DIRECTORY}{test_camera_frame.sensor_name}",
+                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
                                            f"depth_diff_{test_camera_frame.frame_id}.png",
                                            save_images=True)
     assert pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD
