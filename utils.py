@@ -6,15 +6,12 @@ PIXEL_DIFF_THRESHOLD = 7
 DIFF_PIXEL_COLOUR = [255, 0, 255]
 
 
-def diff_images(test_image: np.array, target_image: np.array, img_path: str, img_file_name: str, save_images: bool):
+def diff_images(test_image: np.array, target_image: np.array) -> (float, np.array):
     diff, test_image_copy = format_image(test_image, target_image)
     diff_mask = np.where(diff > PIXEL_DIFF_THRESHOLD)
     test_image_copy[diff_mask] = DIFF_PIXEL_COLOUR
     pixel_percent_difference = (len(diff_mask[0]) / diff.size) * 100
-    if save_images:
-        write_image(test_image_copy, img_path, img_file_name)
-    return pixel_percent_difference
-
+    return pixel_percent_difference, test_image_copy
 
 def diff_instance_seg(test_image: np.array, target_image: np.array):
     pass
