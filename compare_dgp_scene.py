@@ -14,12 +14,12 @@ from paralleldomain.model.scene import Frame
 
 from utils import diff_images, write_image
 
-RGB_PIXEL_DIFF_THRESHOLD = 5
-DEPTH_PIXEL_DIFF_THRESHOLD = 5
-INST_SEG_PIXEL_DIFF_THRESHOLD = 5
-MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP = 99.9
-SEM_SEG_PIXEL_DIFF_THRESHOLD = 5
-MIN_2D_BBOX_BOX_SIZE = 110
+RGB_PIXEL_DIFF_THRESHOLD = 5 # RGB images have more noise
+DEPTH_PIXEL_DIFF_THRESHOLD = 2
+INST_SEG_PIXEL_DIFF_THRESHOLD = 2
+MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP = 99.5
+SEM_SEG_PIXEL_DIFF_THRESHOLD = 2
+MIN_2D_BBOX_BOX_SIZE = 10
 MIN_2D_BBOX_IOU = 0.75
 MIN_3D_BBOX_VOLUME = 0.1
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
@@ -85,6 +85,10 @@ class Conf:
                 raise Exception("--test-scene option is required")
             if not config.getoption("--output-dir"):
                 raise Exception("--output-dir option is required")
+            # Validate output dir or exit
+            path = Path(config.getoption("--output-dir"))
+            if path.exists():
+                pytest.exit(f"Output dir {path} already exists, please specify a different one")
             target_scene_name = target_scene_name or test_scene_name
 
             self.test_decoder = DGPDatasetDecoder(dataset_path=test_dataset_path)
@@ -125,8 +129,6 @@ class Conf:
 @pytest.fixture(scope='session')
 def output_dir(pytestconfig):
     path = Path(pytestconfig.getoption("--output-dir"))
-    if path.exists():
-        pytest.exit(f"Output dir {path} already exists, please specify a different one")
     path.mkdir(parents=True)
     return path
 
@@ -216,14 +218,18 @@ def test_camera_rgb(camera_frame_pair, output_dir):
     """RGB data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_image, target_image = test_camera_frame.image, target_camera_frame.image
-    pixel_percent_difference = diff_images(test_image.rgb,
-                                           target_image.rgb,
-                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
-                                           f"rgb_diff_{test_camera_frame.frame_id}.png",
-                                           save_images=True)
-    assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
     assert test_image.height == target_image.height
     assert test_image.width == target_image.width
+
+    file_path = f"{str(output_dir / test_camera_frame.sensor_name)}"
+    file_name = f"rgb_diff_{test_camera_frame.frame_id}.png"
+    pixel_percent_difference, diff_image = diff_images(test_image.rgb,target_image.rgb)
+
+    # TODO we know veg and traffics lights arecausing some RGB differences
+    # This could could be accounted for and allow the diff threshold to be lowered
+    if not pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD:
+        write_image(diff_image, file_path, file_name)
+        assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
 
 
 def test_camera_bbox2d(camera_frame_pair):
@@ -325,7 +331,7 @@ def test_camera_bbox2d(camera_frame_pair):
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
         report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
-        assert False
+        assert len(all_errors) == 0
 
 
 def calculate_iou(target_box, test_box):
@@ -492,7 +498,7 @@ def test_camera_bbox3d(camera_frame_pair):
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
         report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
-        assert False
+        assert len(all_errors) == 0
 
 
 def test_camera_semseg2d(camera_frame_pair, output_dir):
@@ -500,21 +506,17 @@ def test_camera_semseg2d(camera_frame_pair, output_dir):
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_semseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
     target_semseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-    pixel_percent_difference = diff_images(test_semseg2d.rgb_encoded, target_semseg2d.rgb_encoded,
-                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
-                                           f"semantic_diff_{test_camera_frame.frame_id}.png",
-                                           save_images=True)
+    # TODO more indepth class  reporting
     class_diff = np.setdiff1d(np.unique(test_semseg2d.class_ids.flatten()),
                               np.unique(target_semseg2d.class_ids.flatten()))
-    assert pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD
-    assert np.array_equal(test_semseg2d.class_ids, target_semseg2d.class_ids)
 
+    file_path = f"{str(output_dir / test_camera_frame.sensor_name)}"
+    file_name = f"semantic_diff_{test_camera_frame.frame_id}.png"
+    pixel_percent_difference, diff_image = diff_images(test_semseg2d.rgb_encoded, target_semseg2d.rgb_encoded)
 
-def convert_rgb_to_number(rgb):
-    red = rgb[0]
-    green = rgb[1]
-    blue = rgb[2]
-    return (red << 16) + (green << 8) + blue
+    if not pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD:
+        write_image(diff_image, file_path, file_name)
+        assert pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD
 
 
 def get_instance_dicts(instance_set_2d):
@@ -579,25 +581,27 @@ def test_camera_instanceseg2d(camera_frame_pair, output_dir):
     not_matched_target_pixels = sum([len(target_instances[inst_id][0]) for inst_id in unmatched_target_instances])
     instanced_target_pixels = len(np.nonzero(target_instanceseg2d.instance_ids)[0])
     instanced_test_pixels = len(np.nonzero(test_instanceseg2d.instance_ids)[0])
-    percentage_image_diff = max(not_matched_test_pixels, not_matched_target_pixels) / min(instanced_target_pixels,
-                                                                                          instanced_test_pixels) * 100
-    if True:
+    percentage_image_diff = max(not_matched_test_pixels / instanced_test_pixels, not_matched_target_pixels /instanced_target_pixels) * 100
+
+    if not percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD:
         image_path, image_name = f"{str(output_dir / test_camera_frame.sensor_name)}", f"instance_diff_{test_camera_frame.frame_id}.png"
         write_image(test_image_copy, image_path, image_name)
+        assert percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD
 
-    assert percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD
 
 def test_camera_depth(camera_frame_pair, output_dir):
     """Depth data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_depth = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
     target_depth = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.Depth)
-    pixel_percent_difference = diff_images(test_depth.depth, target_depth.depth,
-                                           f"{str(output_dir / test_camera_frame.sensor_name)}",
-                                           f"depth_diff_{test_camera_frame.frame_id}.png",
-                                           save_images=True)
-    assert pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD
-    assert np.array_equal(test_depth.depth, target_depth.depth)
+
+    file_path = f"{str(output_dir / test_camera_frame.sensor_name)}"
+    file_name = f"depth_diff_{test_camera_frame.frame_id}.png"
+    pixel_percent_difference, diff_image = diff_images(test_depth.depth, target_depth.depth)
+
+    if not pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD:
+        write_image(diff_image, file_path, file_name)
+        assert pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD
 
 class BoundingBoxErrorType(Enum):
     GENERAL_ERROR = 1
