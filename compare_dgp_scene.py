@@ -21,8 +21,10 @@ MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP = 99.5
 SEM_SEG_PIXEL_DIFF_THRESHOLD = 2
 MIN_2D_BBOX_BOX_SIZE = 10
 MIN_2D_BBOX_IOU = 0.75
+MIN_2D_BBOX_PERCENT_SIZE_DIFF = 5
 MIN_3D_BBOX_VOLUME = 0.1
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
+MIN_3D_BBOX_PERCENT_VOLUME_DIFF = 5
 
 
 class Conf:
@@ -239,6 +241,7 @@ def test_camera_bbox2d(camera_frame_pair):
     no_target_box_for_test = []
     test_matches_two_targets = []
     test_target_attribute_mismatch = []
+    test_target_match_different_sizes = []
 
     """Bbox2D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
@@ -258,7 +261,8 @@ def test_camera_bbox2d(camera_frame_pair):
 
     #Find best match by IOU
     matched_test_box_instance_ids = set()
-    test_instnace_id_target_match_pair = dict()
+    test_instance_id_target_match_pair = dict()
+    test_target_match_pair = []
     for target_box in target_bbox2d_boxes:
         best_iou = 0
         best_match = None
@@ -275,15 +279,16 @@ def test_camera_bbox2d(camera_frame_pair):
         # Compare the best match test bbox and target bbox
         best_match_key = str(best_match.instance_id)
         # Check if we have already this test box with another target box
-        if test_instnace_id_target_match_pair.get(best_match_key, -1) != -1:
-            other_target_box = test_instnace_id_target_match_pair.get(best_match_key)
+        if test_instance_id_target_match_pair.get(best_match_key, -1) != -1:
+            other_target_box = test_instance_id_target_match_pair.get(best_match_key)
             test_matches_two_targets.append(
                 "The following test box {} is the cloest match for the two target boxes {} and {}".format(best_match,
                                                                                                           target_box,
                                                                                                           other_target_box))
             continue
 
-        test_instnace_id_target_match_pair[best_match_key] = target_box  # Add new pair
+        test_instance_id_target_match_pair[best_match_key] = target_box  # Add new pair
+        test_target_match_pair.append((best_match, target_box)) # Add to array
         matched_test_box_instance_ids.add(best_match.instance_id)
 
         # Compare all sorted attributes
@@ -300,6 +305,13 @@ def test_camera_bbox2d(camera_frame_pair):
         if (len(attribute_errors) != 0):
             test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors:\n\t{}".format(best_match,target_box, "\n\t".join(attribute_errors)))
 
+    """Collect errors where a test - target pair are sizes are not within a threshold"""
+    for test_box, target_box in test_target_match_pair:
+        percent_diff = abs(test_box.area - target_box.area) / min(test_box.area, target_box.area) * 100
+        if percent_diff > MIN_2D_BBOX_PERCENT_SIZE_DIFF:
+            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {}  with a abs percent diff {}".format(test_box.class_id, target_box.class_id, test_box.area, target_box.area, percent_diff))
+
+
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox2d_boxes:
         if test_box.instance_id not in matched_test_box_instance_ids:
@@ -310,7 +322,7 @@ def test_camera_bbox2d(camera_frame_pair):
     if len(all_errors) != 0:
         number_target_boxes = len(target_bbox2d_boxes)
         number_test_boxes = len(test_bbox2d_boxes)
-        boxes_matched = len(test_instnace_id_target_match_pair)
+        boxes_matched = len(test_instance_id_target_match_pair)
         percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
         percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
         percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes, number_target_boxes) * 100
@@ -328,6 +340,7 @@ def test_camera_bbox2d(camera_frame_pair):
         report_errors("General errors:", general_errors)
         report_errors("No test box test for target box errors:", no_test_box_for_target)
         report_errors("No target box for test box errors:", no_target_box_for_test)
+        report_errors("Boxes has size difference outside threshold:", test_target_match_different_sizes)
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
         report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
@@ -401,6 +414,7 @@ def test_camera_bbox3d(camera_frame_pair):
     no_target_box_for_test = []
     test_matches_two_targets = []
     test_target_attribute_mismatch = []
+    test_target_match_different_sizes = []
 
     """Bbox3D data matches for a pair of camera frames"""
     test_camera_frame, target_camera_frame = camera_frame_pair
@@ -423,8 +437,9 @@ def test_camera_bbox3d(camera_frame_pair):
             format(len(number_non_zero_boxes), len(test_bbox3d_boxes)))
 
     # Find the closest 3d bound box with the same semantic id, compute the center for each and fine the min distance
-    test_target_match_pair = dict()
+    test_instance_id_target_match_pair = dict()
     matched_test_box_instance_ids = set()
+    test_target_match_pair = []
     for target_box in target_bbox3d_boxes:
         best_match = None
         min_distance = 1000
@@ -444,15 +459,17 @@ def test_camera_bbox3d(camera_frame_pair):
         # Compare the best match test bbox and target bbox
         best_match_key = best_match.instance_id
         # Check if we have already this test box with another target box
-        if test_target_match_pair.get(best_match_key, -1) != -1:
-            other_target_box = test_target_match_pair.get(best_match_key)
+        if test_instance_id_target_match_pair.get(best_match_key, -1) != -1:
+            other_target_box = test_instance_id_target_match_pair.get(best_match_key)
             test_matches_two_targets.append(
                 "The following test box {} is the closest match for the two target boxes {} and {}".format(best_match,
                                                                                                           target_box,
                                                                                                           other_target_box))
             continue
 
-        test_target_match_pair[best_match_key] = target_box  # Add new pair
+        test_instance_id_target_match_pair[best_match_key] = target_box  # Add new pair
+        test_target_match_pair.append((best_match, target_box))  # Add to array
+
         matched_test_box_instance_ids.add(best_match.instance_id)
         # Compare all sorted attributes
         attribute_errors = []
@@ -465,6 +482,14 @@ def test_camera_bbox3d(camera_frame_pair):
         if (len(attribute_errors) != 0):
             test_target_attribute_mismatch.append("The test bounding box {} and target bounding box {} had the following attribute errors:\n\t{}".format(best_match,target_box, "\n\t".join(attribute_errors)))
 
+
+    """Collect errors where a test - target pair are sizes are not within a threshold"""
+    for test_box, target_box in test_target_match_pair:
+        percent_diff = abs(test_box.volume - target_box.volume) / min(test_box.volume, target_box.volume) * 100
+        if percent_diff > MIN_3D_BBOX_PERCENT_VOLUME_DIFF:
+            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {} with a abs percent diff {}".format(test_box.class_id, target_box.class_id, test_box.volume, target_box.volume, percent_diff))
+
+
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox3d_boxes:
         if test_box.instance_id not in matched_test_box_instance_ids:
@@ -475,7 +500,7 @@ def test_camera_bbox3d(camera_frame_pair):
     if len(all_errors) != 0:
         number_target_boxes = len(target_bbox3d_boxes)
         number_test_boxes = len(test_bbox3d_boxes)
-        boxes_matched = len(test_target_match_pair)
+        boxes_matched = len(test_instance_id_target_match_pair)
         percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
         percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
         percentage_of_matched_boxes_with_attribute_mismatch = boxes_matched / max(number_test_boxes,
@@ -495,6 +520,7 @@ def test_camera_bbox3d(camera_frame_pair):
         report_errors("General errors:", general_errors)
         report_errors("No test box test for target box errors:", no_test_box_for_target)
         report_errors("No target box for test box errors:", no_target_box_for_test)
+        report_errors("Boxes has size difference outside threshold:", test_target_match_different_sizes)
         report_errors("Following test box matched two target boxes", test_matches_two_targets)
         report_errors("Attribute mismatch box errors:", test_target_attribute_mismatch)
 
