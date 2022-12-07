@@ -21,6 +21,7 @@ MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP = 99.5
 SEM_SEG_PIXEL_DIFF_THRESHOLD = 2
 MIN_2D_BBOX_BOX_SIZE = 10
 MIN_2D_BBOX_IOU = 0.75
+MIN_PIXEL_SIZE_FOR_STRICTNESS = 150
 MIN_2D_BBOX_PERCENT_SIZE_DIFF = 5
 MIN_3D_BBOX_VOLUME = 0.1
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
@@ -233,7 +234,7 @@ def test_camera_rgb(camera_frame_pair, output_dir):
         write_image(diff_image, file_path, file_name)
         assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
 
-
+# TODO add coverage for duplciate boxes in test set
 def test_camera_bbox2d(camera_frame_pair):
     # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
@@ -272,8 +273,12 @@ def test_camera_bbox2d(camera_frame_pair):
                 if (iou > best_iou):
                     best_iou = iou
                     best_match = test_box
-        if best_match == None or target_box.class_id != best_match.class_id or best_iou < MIN_2D_BBOX_IOU:
-            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is {}".format(target_box, target_box.area))
+        if target_box.area > MIN_PIXEL_SIZE_FOR_STRICTNESS:
+            less_then_minimum_iou = best_iou > MIN_2D_BBOX_IOU
+        else:
+            less_then_minimum_iou = best_iou > (MIN_2D_BBOX_IOU / 2)
+        if best_match == None or target_box.class_id != best_match.class_id or not less_then_minimum_iou:
+            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Areas is {}.".format(target_box, target_box.area))
             continue
 
         # Compare the best match test bbox and target bbox
@@ -308,14 +313,14 @@ def test_camera_bbox2d(camera_frame_pair):
     """Collect errors where a test - target pair are sizes are not within a threshold"""
     for test_box, target_box in test_target_match_pair:
         percent_diff = abs(test_box.area - target_box.area) / min(test_box.area, target_box.area) * 100
-        if percent_diff > MIN_2D_BBOX_PERCENT_SIZE_DIFF:
-            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {}  with a abs percent diff {}".format(test_box.class_id, target_box.class_id, test_box.area, target_box.area, percent_diff))
+        if min(test_box.area, target_box.area) > MIN_PIXEL_SIZE_FOR_STRICTNESS and percent_diff > MIN_2D_BBOX_PERCENT_SIZE_DIFF:
+            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {}  with a abs percent diff {}. Class id {}".format(test_box.instance_id, target_box.instance_id, test_box.area, target_box.area, percent_diff, test_box.class_id))
 
 
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox2d_boxes:
         if test_box.instance_id not in matched_test_box_instance_ids:
-            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Area is {}. Attributes {}".format(test_box, test_box.area, test_box.attributes))
+            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Area is {}.".format(test_box, test_box.area))
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
     all_errors = general_errors + no_test_box_for_target + no_target_box_for_test + test_matches_two_targets + test_target_attribute_mismatch
@@ -356,8 +361,8 @@ def calculate_iou(target_box, test_box):
     # compute the area of intersection rectangle
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
     # compute the area of both the prediction and ground-truth rectangles
-    boxAArea = target_box.area
-    boxBArea = test_box.area
+    boxAArea = (target_box.width + 1) * (target_box.height + 1)
+    boxBArea = (test_box.width + 1) * (test_box.height + 1)
     # compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
     # areas - the interesection area
@@ -389,7 +394,7 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
     if target_value is None:
         return
     if test_value is None:
-        attribute_errors.append(f"The key {key_name} could not be found in test bounding box {test_box}")
+        attribute_errors.append(f"The key {key_name} could not be found in test bounding box {test_box.instance_id} but was in target box {target_box.instance_id}")
         return
     if isinstance(target_value, float) and not np.isclose(test_value, target_value) or \
             test_value != target_value:
@@ -406,6 +411,7 @@ def difference_between_vertices(target_box, test_box):
         total_diff += (sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))) * 2 # Punish further distances
     return total_diff
 
+# TODO need test coverage for duplicate boxes in the test set
 def test_camera_bbox3d(camera_frame_pair):
 
     # TODO improve error reporting // Should we collect errors by type?
@@ -421,11 +427,11 @@ def test_camera_bbox3d(camera_frame_pair):
     test_bbox3d_boxes = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes
     target_bbox3d_boxes = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes
 
-    pre_filter_no_of_test_boxes = len([x for x in test_bbox3d_boxes if x.attributes.get("truncation", -1) != 1])
+    pre_filter_no_of_test_boxes = len([x for x in test_bbox3d_boxes])
     pre_filter_no_of_target_boxes = len([x for x in target_bbox3d_boxes if x.attributes.get("truncation", -1) != 1])
 
     """Filter by min volume """
-    test_bbox3d_boxes = [x for x in test_bbox3d_boxes if x.volume > MIN_3D_BBOX_VOLUME and x.attributes.get("truncation", -1) != 1]
+    test_bbox3d_boxes = [x for x in test_bbox3d_boxes if x.volume > MIN_3D_BBOX_VOLUME]
     target_bbox3d_boxes = [x for x in target_bbox3d_boxes if x.volume > MIN_3D_BBOX_VOLUME and x.attributes.get("truncation", -1) != 1]
 
     # Check that we have the same number of bounding boxes
@@ -453,7 +459,7 @@ def test_camera_bbox3d(camera_frame_pair):
                 best_match = test_box
 
         if best_match == None:
-            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Volume {}".format(target_box, target_box.volume))
+            no_test_box_for_target.append("Could not find a match for the target bounding box {}, Volume {}.".format(target_box, target_box.volume))
             continue
 
         # Compare the best match test bbox and target bbox
@@ -487,13 +493,13 @@ def test_camera_bbox3d(camera_frame_pair):
     for test_box, target_box in test_target_match_pair:
         percent_diff = abs(test_box.volume - target_box.volume) / min(test_box.volume, target_box.volume) * 100
         if percent_diff > MIN_3D_BBOX_PERCENT_VOLUME_DIFF:
-            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {} with a abs percent diff {}".format(test_box.class_id, target_box.class_id, test_box.volume, target_box.volume, percent_diff))
+            test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {} with a abs percent diff {}. Class id {}".format(test_box.instance_id, target_box.instance_id, test_box.volume, target_box.volume, percent_diff, test_box.class_id))
 
 
     """Report an errors for every test bounding box that does not have a target pair"""
     for test_box in test_bbox3d_boxes:
         if test_box.instance_id not in matched_test_box_instance_ids:
-            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Volume is {}. Attributes {}".format(test_box, test_box.volume, test_box.attributes))
+            no_target_box_for_test.append("Could not find a match for the test bounding box {}. Volume is {}.".format(test_box, test_box.volume))
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
     all_errors = general_errors + no_test_box_for_target + no_target_box_for_test + test_matches_two_targets + test_target_attribute_mismatch
@@ -596,7 +602,7 @@ def test_camera_instanceseg2d(camera_frame_pair, output_dir):
                                                                                                   test_instanceseg_2d_arr,
                                                                                                   target_instances,
                                                                                                   target_instanceseg_2d_arr)
-
+    # Highlight pixel in target but not test
     test_image_copy = np.zeros(test_instanceseg2d.rgb_encoded.shape)
     for inst in unmatched_target_instances:
         test_image_copy[target_instances[inst]] = [255, 0, 255]
