@@ -8,6 +8,7 @@ import os
 PIXEL_DIFF_THRESHOLD = 7
 DIFF_PIXEL_COLOUR = [255, 0, 255]
 
+
 def diff_images(test_image: np.array, target_image: np.array) -> (float, np.array):
     diff, test_image_copy = format_image(test_image, target_image)
     diff_mask = np.where(diff > PIXEL_DIFF_THRESHOLD)
@@ -39,6 +40,7 @@ def write_image(img: np.array, img_path: str, img_file_name: str):
     if not os.path.exists(final_directory):
         os.makedirs(final_directory)
     cv2.imwrite(os.path.join(img_path, img_file_name), img)
+
 
 def calculate_iou(target_box, test_box):
     # determine the (x, y)-coordinates of the intersection rectangle
@@ -82,12 +84,14 @@ def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribu
     if target_value is None:
         return
     if test_value is None:
-        attribute_errors.append(f"The key {key_name} could not be found in test bounding box {test_box.instance_id} but was in target box {target_box.instance_id}")
-        return
-    if isinstance(target_value, float) and not np.isclose(test_value, target_value) or \
-            test_value != target_value:
         attribute_errors.append(
-            f"The key {key_name} ({type(test_value).__name__}) is not equal. Test value {test_box_attributes.get(key)}. Target value {target_box_attributes.get(key)}")
+            f"The key {key_name} could not be found in test bounding box {test_box.instance_id} but was in target box {target_box.instance_id}"
+        )
+        return
+    if isinstance(target_value, float) and not np.isclose(test_value, target_value) or test_value != target_value:
+        attribute_errors.append(
+            f"The key {key_name} ({type(test_value).__name__}) is not equal. Test value {test_box_attributes.get(key)}. Target value {target_box_attributes.get(key)}"
+        )
         return
 
 
@@ -96,7 +100,9 @@ def difference_between_vertices(target_box, test_box):
     for i in range(0, 8):
         a = target_box.vertices[i]
         b = test_box.vertices[i]
-        total_diff += (sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))) * 2 # Punish further distances
+        total_diff += (
+            sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))
+        ) * 2  # Punish further distances
     return total_diff
 
 
@@ -105,29 +111,39 @@ def get_instance_dicts(instance_set_2d):
     if 0 in instance_ids:
         instance_ids = np.delete(instance_ids, 0)
     instance_dict = dict()
-    arr_2d = instance_set_2d.instance_ids.reshape(instance_set_2d.instance_ids.shape[0],
-                                                  instance_set_2d.instance_ids.shape[1])
+    arr_2d = instance_set_2d.instance_ids.reshape(
+        instance_set_2d.instance_ids.shape[0], instance_set_2d.instance_ids.shape[1]
+    )
     for inst_id in instance_ids:
         instance_dict[inst_id] = np.where(arr_2d == inst_id)
     return instance_dict, arr_2d
 
 
-def map_test_to_target(test_instances, test_instanceseg_2d_arr, target_instances, target_instanceseg_2d_arr, min_instanced_object_percentage_overlap):
+def map_test_to_target(
+    test_instances,
+    test_instanceseg_2d_arr,
+    target_instances,
+    target_instanceseg_2d_arr,
+    min_instanced_object_percentage_overlap,
+):
     test_to_target_map = dict()
     unmatched_test_instances = []
     for test_inst_id, test_mask in test_instances.items():
         target_inst_id = np.bincount(target_instanceseg_2d_arr[test_mask]).argmax()
         if target_inst_id != 0:
-            overlap_percent_target = \
-                np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]])[
-                    test_inst_id] / np.sum(
-                    np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]]))
+            overlap_percent_target = np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]])[
+                test_inst_id
+            ] / np.sum(np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]]))
         else:
             overlap_percent_target = 0
         overlap_percent_test = np.bincount(target_instanceseg_2d_arr[test_mask])[target_inst_id] / np.sum(
-            np.bincount(target_instanceseg_2d_arr[test_mask]))
-        if target_inst_id != 0 and (overlap_percent_test * 100) >= min_instanced_object_percentage_overlap \
-                and (overlap_percent_target * 100) >= min_instanced_object_percentage_overlap:
+            np.bincount(target_instanceseg_2d_arr[test_mask])
+        )
+        if (
+            target_inst_id != 0
+            and (overlap_percent_test * 100) >= min_instanced_object_percentage_overlap
+            and (overlap_percent_target * 100) >= min_instanced_object_percentage_overlap
+        ):
             test_to_target_map[test_inst_id] = target_inst_id
         else:
             unmatched_test_instances.append(test_inst_id)
