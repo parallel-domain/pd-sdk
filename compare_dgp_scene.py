@@ -343,8 +343,8 @@ def test_camera_bbox2d(camera_frame_pair):
     for test_box, target_box in test_target_match_pair:
         percent_diff = abs(test_box.area - target_box.area) / min(test_box.area, target_box.area) * 100
         if (
-                min(test_box.area, target_box.area) > MIN_PIXEL_SIZE_FOR_STRICTNESS
-                and percent_diff > MAX_2D_BBOX_PERCENT_SIZE_DIFF
+            min(test_box.area, target_box.area) > MIN_PIXEL_SIZE_FOR_STRICTNESS
+            and percent_diff > MAX_2D_BBOX_PERCENT_SIZE_DIFF
         ):
             test_target_match_different_sizes.append(
                 "The test box {} and target box {} have different sizes of {} and {}  with a abs percent diff {}. Class id {}".format(
@@ -366,11 +366,11 @@ def test_camera_bbox2d(camera_frame_pair):
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
     all_errors = (
-            general_errors
-            + no_test_box_for_target
-            + no_target_box_for_test
-            + test_matches_two_targets
-            + test_target_attribute_mismatch
+        general_errors
+        + no_test_box_for_target
+        + no_target_box_for_test
+        + test_matches_two_targets
+        + test_target_attribute_mismatch
     )
     if len(all_errors) != 0:
         number_target_boxes = len(target_bbox2d_boxes)
@@ -379,7 +379,7 @@ def test_camera_bbox2d(camera_frame_pair):
         percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
         percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
         percentage_of_matched_boxes_with_attribute_mismatch = (
-                boxes_matched / max(number_test_boxes, number_target_boxes) * 100
+            boxes_matched / max(number_test_boxes, number_target_boxes) * 100
         )
 
         # Stats
@@ -521,11 +521,11 @@ def test_camera_bbox3d(camera_frame_pair):
 
     """If a high enough percentage of bounding boxes from test / target are found consider the test passed"""
     all_errors = (
-            general_errors
-            + no_test_box_for_target
-            + no_target_box_for_test
-            + test_matches_two_targets
-            + test_target_attribute_mismatch
+        general_errors
+        + no_test_box_for_target
+        + no_target_box_for_test
+        + test_matches_two_targets
+        + test_target_attribute_mismatch
     )
     if len(all_errors) != 0:
         number_target_boxes = len(target_bbox3d_boxes)
@@ -534,7 +534,7 @@ def test_camera_bbox3d(camera_frame_pair):
         percentage_test_boxes_matched = boxes_matched / number_test_boxes * 100
         percentage_target_boxes_matched = boxes_matched / number_target_boxes * 100
         percentage_of_matched_boxes_with_attribute_mismatch = (
-                boxes_matched / max(number_test_boxes, number_target_boxes) * 100
+            boxes_matched / max(number_test_boxes, number_target_boxes) * 100
         )
         # Stats
         print(
@@ -618,8 +618,7 @@ def test_camera_instanceseg2d(camera_frame_pair, output_dir):
     instanced_target_pixels = len(np.nonzero(target_instanceseg2d.instance_ids)[0])
     instanced_test_pixels = len(np.nonzero(test_instanceseg2d.instance_ids)[0])
     percentage_image_diff = (
-            max(not_matched_test_pixels / instanced_test_pixels,
-                not_matched_target_pixels / instanced_target_pixels) * 100
+        max(not_matched_test_pixels / instanced_test_pixels, not_matched_target_pixels / instanced_target_pixels) * 100
     )
 
     if not percentage_image_diff < INST_SEG_PIXEL_DIFF_THRESHOLD:
