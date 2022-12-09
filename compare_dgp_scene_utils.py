@@ -13,6 +13,7 @@ def diff_images(test_image: np.array, target_image: np.array) -> (float, np.arra
     pixel_percent_difference = (len(diff_mask[0]) / diff.size) * 100
     return pixel_percent_difference, test_image_copy
 
+
 def diff_instance_seg(test_image: np.array, target_image: np.array):
     pass
 
@@ -36,4 +37,3 @@ def write_image(img: np.array, img_path: str, img_file_name: str):
     if not os.path.exists(final_directory):
         os.makedirs(final_directory)
     cv2.imwrite(os.path.join(img_path, img_file_name), img)
-

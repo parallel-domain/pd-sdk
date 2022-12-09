@@ -31,7 +31,7 @@ setup(
             "types-ujson",
             "types-cachetools",
             "pre-commit>=2.13.0,<3.0.0",
-            "pytest-html"
+            "pytest-html",
         ],
     },
     zip_safe=False,
