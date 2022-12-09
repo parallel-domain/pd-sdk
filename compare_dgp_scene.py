@@ -1,10 +1,8 @@
 import sys
-from enum import Enum
 from typing import Tuple
 
 import pytest
 import numpy as np
-from math import sqrt
 from pathlib import Path
 
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder
@@ -12,8 +10,11 @@ from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.scene import Frame
 
-from utils import diff_images, write_image
+from compare_dgp_scene_utils import diff_images, write_image, calculate_iou, report_errors, compare_attribute_by_key, \
+    difference_between_vertices, get_instance_dicts, map_test_to_target
 
+# Configuration parameters
+# Please update the readme if adding / removing any of these parameters
 RGB_PIXEL_DIFF_THRESHOLD = 5 # RGB images have more noise
 DEPTH_PIXEL_DIFF_THRESHOLD = 2
 INST_SEG_PIXEL_DIFF_THRESHOLD = 2
@@ -22,10 +23,10 @@ SEM_SEG_PIXEL_DIFF_THRESHOLD = 2
 MIN_2D_BBOX_BOX_SIZE = 10
 MIN_2D_BBOX_IOU = 0.75
 MIN_PIXEL_SIZE_FOR_STRICTNESS = 150
-MIN_2D_BBOX_PERCENT_SIZE_DIFF = 5
+MAX_2D_BBOX_PERCENT_SIZE_DIFF = 5
 MIN_3D_BBOX_VOLUME = 0.1
 MIN_3D_BBOX_BETWEEN_VERTS_DISTANCE = 200
-MIN_3D_BBOX_PERCENT_VOLUME_DIFF = 5
+MAX_3D_BBOX_PERCENT_VOLUME_DIFF = 5
 
 
 class Conf:
@@ -228,15 +229,13 @@ def test_camera_rgb(camera_frame_pair, output_dir):
     file_name = f"rgb_diff_{test_camera_frame.frame_id}.png"
     pixel_percent_difference, diff_image = diff_images(test_image.rgb,target_image.rgb)
 
-    # TODO we know veg and traffics lights arecausing some RGB differences
-    # This could could be accounted for and allow the diff threshold to be lowered
+    # TODO we know veg and traffics lights are causing some RGB differences
+    # This could be accounted for and allow the diff threshold to be lowered
     if not pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD:
         write_image(diff_image, file_path, file_name)
         assert pixel_percent_difference < RGB_PIXEL_DIFF_THRESHOLD
 
-# TODO add coverage for duplciate boxes in test set
 def test_camera_bbox2d(camera_frame_pair):
-    # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
     no_test_box_for_target = []
     no_target_box_for_test = []
@@ -255,7 +254,6 @@ def test_camera_bbox2d(camera_frame_pair):
 
     # Check that we have the same number of bounding boxes
     if len(test_bbox2d_boxes) != len(target_bbox2d_boxes):
-        # TODO migrate to error class
         general_errors.append(
             "The length of bounding boxes is not equal. There are {} target boxes while the test has {}".
             format(len(target_bbox2d_boxes), len(test_bbox2d_boxes)))
@@ -269,7 +267,7 @@ def test_camera_bbox2d(camera_frame_pair):
         best_match = None
         for test_box in test_bbox2d_boxes:
             if (target_box.class_id == test_box.class_id):
-                iou = calculate_iou(target_box,test_box)
+                iou = calculate_iou(target_box, test_box)
                 if (iou > best_iou):
                     best_iou = iou
                     best_match = test_box
@@ -313,7 +311,7 @@ def test_camera_bbox2d(camera_frame_pair):
     """Collect errors where a test - target pair are sizes are not within a threshold"""
     for test_box, target_box in test_target_match_pair:
         percent_diff = abs(test_box.area - target_box.area) / min(test_box.area, target_box.area) * 100
-        if min(test_box.area, target_box.area) > MIN_PIXEL_SIZE_FOR_STRICTNESS and percent_diff > MIN_2D_BBOX_PERCENT_SIZE_DIFF:
+        if min(test_box.area, target_box.area) > MIN_PIXEL_SIZE_FOR_STRICTNESS and percent_diff > MAX_2D_BBOX_PERCENT_SIZE_DIFF:
             test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {}  with a abs percent diff {}. Class id {}".format(test_box.instance_id, target_box.instance_id, test_box.area, target_box.area, percent_diff, test_box.class_id))
 
 
@@ -352,69 +350,8 @@ def test_camera_bbox2d(camera_frame_pair):
         assert len(all_errors) == 0
 
 
-def calculate_iou(target_box, test_box):
-    # determine the (x, y)-coordinates of the intersection rectangle
-    xA = max(target_box.x_min, test_box.x_min)
-    yA = max(target_box.y_min, test_box.y_min)
-    xB = min(target_box.x_max, test_box.x_max)
-    yB = min(target_box.y_max, test_box.y_max)
-    # compute the area of intersection rectangle
-    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
-    # compute the area of both the prediction and ground-truth rectangles
-    boxAArea = (target_box.width + 1) * (target_box.height + 1)
-    boxBArea = (test_box.width + 1) * (test_box.height + 1)
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
-    return iou
-
-
-def report_errors(error_section_message, errors):
-    if len(errors) == 0:
-        return
-    print()
-    print(error_section_message)
-    for i in errors:
-        print(i)
-
-
-def compare_attribute_by_key(test_box, target_box, key, is_in_user_data, attribute_errors):
-    test_box_attributes = test_box.attributes
-    target_box_attributes = target_box.attributes
-    key_name = key
-    if is_in_user_data:
-        test_box_attributes = test_box.attributes["user_data"]
-        target_box_attributes = target_box.attributes["user_data"]
-        key_name = "user_data/" + key
-
-    # Check if exists in both
-    test_value = test_box_attributes.get(key)
-    target_value = target_box_attributes.get(key)
-    if target_value is None:
-        return
-    if test_value is None:
-        attribute_errors.append(f"The key {key_name} could not be found in test bounding box {test_box.instance_id} but was in target box {target_box.instance_id}")
-        return
-    if isinstance(target_value, float) and not np.isclose(test_value, target_value) or \
-            test_value != target_value:
-        attribute_errors.append(
-            f"The key {key_name} ({type(test_value).__name__}) is not equal. Test value {test_box_attributes.get(key)}. Target value {target_box_attributes.get(key)}")
-        return
-
-
-def difference_between_vertices(target_box, test_box):
-    total_diff = 0
-    for i in range(0, 8):
-        a = target_box.vertices[i]
-        b = test_box.vertices[i]
-        total_diff += (sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))) * 2 # Punish further distances
-    return total_diff
-
-# TODO need test coverage for duplicate boxes in the test set
 def test_camera_bbox3d(camera_frame_pair):
 
-    # TODO improve error reporting // Should we collect errors by type?
     general_errors = []
     no_test_box_for_target = []
     no_target_box_for_test = []
@@ -437,7 +374,6 @@ def test_camera_bbox3d(camera_frame_pair):
     # Check that we have the same number of bounding boxes
     number_non_zero_boxes = [x for x in target_bbox3d_boxes if x.num_points != 0]
     if len(test_bbox3d_boxes) != len(number_non_zero_boxes):
-        # TODO migrate to error class
         general_errors.append(
             "The length of bounding boxes is not equal. There are {} target boxes while the test has {}".
             format(len(number_non_zero_boxes), len(test_bbox3d_boxes)))
@@ -492,7 +428,7 @@ def test_camera_bbox3d(camera_frame_pair):
     """Collect errors where a test - target pair are sizes are not within a threshold"""
     for test_box, target_box in test_target_match_pair:
         percent_diff = abs(test_box.volume - target_box.volume) / min(test_box.volume, target_box.volume) * 100
-        if percent_diff > MIN_3D_BBOX_PERCENT_VOLUME_DIFF:
+        if percent_diff > MAX_3D_BBOX_PERCENT_VOLUME_DIFF:
             test_target_match_different_sizes.append("The test box {} and target box {} have different sizes of {} and {} with a abs percent diff {}. Class id {}".format(test_box.instance_id, target_box.instance_id, test_box.volume, target_box.volume, percent_diff, test_box.class_id))
 
 
@@ -538,7 +474,6 @@ def test_camera_semseg2d(camera_frame_pair, output_dir):
     test_camera_frame, target_camera_frame = camera_frame_pair
     test_semseg2d = test_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
     target_semseg2d = target_camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
-    # TODO more indepth class  reporting
     class_diff = np.setdiff1d(np.unique(test_semseg2d.class_ids.flatten()),
                               np.unique(target_semseg2d.class_ids.flatten()))
 
@@ -549,42 +484,6 @@ def test_camera_semseg2d(camera_frame_pair, output_dir):
     if not pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD:
         write_image(diff_image, file_path, file_name)
         assert pixel_percent_difference < SEM_SEG_PIXEL_DIFF_THRESHOLD
-
-
-def get_instance_dicts(instance_set_2d):
-    instance_ids = np.unique(instance_set_2d.instance_ids.flatten())
-    if 0 in instance_ids:
-        instance_ids = np.delete(instance_ids, 0)
-    instance_dict = dict()
-    arr_2d = instance_set_2d.instance_ids.reshape(instance_set_2d.instance_ids.shape[0],
-                                                  instance_set_2d.instance_ids.shape[1])
-    for inst_id in instance_ids:
-        instance_dict[inst_id] = np.where(arr_2d == inst_id)
-    return instance_dict, arr_2d
-
-
-def map_test_to_target(test_instances, test_instanceseg_2d_arr, target_instances, target_instanceseg_2d_arr):
-    test_to_target_map = dict()
-    unmatched_test_instances = []
-    for test_inst_id, test_mask in test_instances.items():
-        target_inst_id = np.bincount(target_instanceseg_2d_arr[test_mask]).argmax()
-        if target_inst_id != 0:
-            overlap_percent_target = \
-                np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]])[
-                    test_inst_id] / np.sum(
-                    np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]]))
-        else:
-            overlap_percent_target = 0
-        overlap_percent_test = np.bincount(target_instanceseg_2d_arr[test_mask])[target_inst_id] / np.sum(
-            np.bincount(target_instanceseg_2d_arr[test_mask]))
-        if target_inst_id != 0 and (overlap_percent_test * 100) >= MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP \
-                and (overlap_percent_target * 100) >= MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP:
-            test_to_target_map[test_inst_id] = target_inst_id
-        else:
-            unmatched_test_instances.append(test_inst_id)
-    unmatched_target_instances = list(set(target_instances.keys()).symmetric_difference(test_to_target_map.values()))
-
-    return test_to_target_map, unmatched_test_instances, unmatched_target_instances
 
 
 def test_camera_instanceseg2d(camera_frame_pair, output_dir):
@@ -601,7 +500,8 @@ def test_camera_instanceseg2d(camera_frame_pair, output_dir):
     test_to_target_map, unmatched_test_instances, unmatched_target_instances = map_test_to_target(test_instances,
                                                                                                   test_instanceseg_2d_arr,
                                                                                                   target_instances,
-                                                                                                  target_instanceseg_2d_arr)
+                                                                                                  target_instanceseg_2d_arr,
+                                                                                                  MIN_INSTANCED_OBJECT_PERCENTAGE_OVERLAP)
     # Highlight pixel in target but not test
     test_image_copy = np.zeros(test_instanceseg2d.rgb_encoded.shape)
     for inst in unmatched_target_instances:
@@ -634,22 +534,6 @@ def test_camera_depth(camera_frame_pair, output_dir):
     if not pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD:
         write_image(diff_image, file_path, file_name)
         assert pixel_percent_difference < DEPTH_PIXEL_DIFF_THRESHOLD
-
-class BoundingBoxErrorType(Enum):
-    GENERAL_ERROR = 1
-    TEST_MISSING_FROM_TARGET = 2
-    TARGET_MISSING_FROM_TEST = 3
-    TEST_MATCHES_MULTIPLE_TARGETS = 4
-    TEST_TARGET_ATTRIBUTES_ARE_MISMATCHED = 5
-
-
-class BoundingBoxCompareError:
-    def __int__(self, errorType: BoundingBoxErrorType, errorMessage: str):
-        pass
-
-    def generate_error(self) -> str:
-        # TODO generate an error based on error types
-        pass
 
 
 def cli():
