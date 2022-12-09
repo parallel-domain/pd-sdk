@@ -101,8 +101,8 @@ def difference_between_vertices(target_box, test_box):
         a = target_box.vertices[i]
         b = test_box.vertices[i]
         total_diff += (
-            sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))
-        ) * 2  # Punish further distances
+                          sqrt(((a[0] - b[0]) ** 2) + ((a[1] - b[1]) ** 2) + ((a[2] - b[2]) ** 2))
+                      ) * 2  # Punish further distances
     return total_diff
 
 
@@ -120,11 +120,11 @@ def get_instance_dicts(instance_set_2d):
 
 
 def map_test_to_target(
-    test_instances,
-    test_instanceseg_2d_arr,
-    target_instances,
-    target_instanceseg_2d_arr,
-    min_instanced_object_percentage_overlap,
+        test_instances,
+        test_instanceseg_2d_arr,
+        target_instances,
+        target_instanceseg_2d_arr,
+        min_instanced_object_percentage_overlap,
 ):
     test_to_target_map = dict()
     unmatched_test_instances = []
@@ -132,17 +132,17 @@ def map_test_to_target(
         target_inst_id = np.bincount(target_instanceseg_2d_arr[test_mask]).argmax()
         if target_inst_id != 0:
             overlap_percent_target = np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]])[
-                test_inst_id
-            ] / np.sum(np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]]))
+                                         test_inst_id
+                                     ] / np.sum(np.bincount(test_instanceseg_2d_arr[target_instances[target_inst_id]]))
         else:
             overlap_percent_target = 0
         overlap_percent_test = np.bincount(target_instanceseg_2d_arr[test_mask])[target_inst_id] / np.sum(
             np.bincount(target_instanceseg_2d_arr[test_mask])
         )
         if (
-            target_inst_id != 0
-            and (overlap_percent_test * 100) >= min_instanced_object_percentage_overlap
-            and (overlap_percent_target * 100) >= min_instanced_object_percentage_overlap
+                target_inst_id != 0
+                and (overlap_percent_test * 100) >= min_instanced_object_percentage_overlap
+                and (overlap_percent_target * 100) >= min_instanced_object_percentage_overlap
         ):
             test_to_target_map[test_inst_id] = target_inst_id
         else:
