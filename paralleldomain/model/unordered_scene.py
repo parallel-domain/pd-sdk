@@ -8,6 +8,7 @@ import pypeln
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.map.map import Map
+from paralleldomain.utilities.generator_shuffle import nested_generator_round_robin_draw
 
 try:
     from typing import Protocol
@@ -151,15 +152,15 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
-        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.camera_names)
+        yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.camera_names)
 
     @property
     def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
-        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.lidar_names)
+        yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.lidar_names)
 
     @property
     def radars(self) -> Generator[RadarSensor[TDateTime], None, None]:
-        yield from self.sensor_pipeline(ordered=True, concurrent=False, sensor_names=self.radar_names)
+        yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.radar_names)
 
     def get_sensor(
         self, sensor_name: SensorName
@@ -201,7 +202,7 @@ class UnorderedScene(Generic[TDateTime]):
         self,
         sensor_names: Optional[Iterable[SensorName]] = None,
         frame_ids: Optional[Iterable[FrameId]] = None,
-        ordered: bool = True,
+        shuffle: bool = False,
         concurrent: bool = False,
         max_queue_size: int = 8,
         max_workers: int = 4,
@@ -211,7 +212,7 @@ class UnorderedScene(Generic[TDateTime]):
         only_lidars: bool = False,
     ) -> Generator[SensorFrame[TDateTime], None, None]:
         for sensor_frame, _, _ in self.sensor_frame_pipeline(
-            ordered=ordered,
+            shuffle=shuffle,
             concurrent=concurrent,
             sensor_names=sensor_names,
             frame_ids=frame_ids,
@@ -226,28 +227,28 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def camera_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_cameras=True):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(shuffle=False, only_cameras=True):
             yield sensor_frame
 
     @property
     def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_lidars=True):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(shuffle=False, only_lidars=True):
             yield sensor_frame
 
     @property
     def radar_frames(self) -> Generator[RadarSensorFrame[TDateTime], None, None]:
-        for sensor_frame, _, _ in self.sensor_frame_pipeline(ordered=True, only_radars=True):
+        for sensor_frame, _, _ in self.sensor_frame_pipeline(shuffle=False, only_radars=True):
             yield sensor_frame
 
     @property
     def sensor_frames(self) -> Generator[SensorFrame[TDateTime], None, None]:
-        yield from self.sensor_frame_pipeline(ordered=True)
+        yield from self.sensor_frame_pipeline(shuffle=False)
 
     @property
     def number_of_camera_frames(self) -> int:
         if self._number_of_camera_frames is None:
             self._number_of_camera_frames = 0
-            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+            for frame in self.frame_pipeline(shuffle=True, concurrent=True):
                 self._number_of_camera_frames += len(frame.camera_names)
         return self._number_of_camera_frames
 
@@ -255,7 +256,7 @@ class UnorderedScene(Generic[TDateTime]):
     def number_of_lidar_frames(self) -> int:
         if self._number_of_lidar_frames is None:
             self._number_of_lidar_frames = 0
-            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+            for frame in self.frame_pipeline(shuffle=True, concurrent=True):
                 self._number_of_lidar_frames += len(frame.lidar_names)
         return self._number_of_lidar_frames
 
@@ -263,7 +264,7 @@ class UnorderedScene(Generic[TDateTime]):
     def number_of_radar_frames(self) -> int:
         if self._number_of_radar_frames is None:
             self._number_of_radar_frames = 0
-            for frame in self.frame_pipeline(ordered=False, concurrent=True):
+            for frame in self.frame_pipeline(shuffle=True, concurrent=True):
                 self._number_of_radar_frames += len(frame.radar_names)
         return self._number_of_radar_frames
 
@@ -280,13 +281,13 @@ class UnorderedScene(Generic[TDateTime]):
                 )
             else:
                 self._number_of_sensor_frames = 0
-                for frame in self.frame_pipeline(ordered=False, concurrent=True):
+                for frame in self.frame_pipeline(shuffle=True, concurrent=True):
                     self._number_of_sensor_frames += len(frame.sensor_names)
         return self._number_of_sensor_frames
 
     def frame_pipeline(
         self,
-        ordered: bool = True,
+        shuffle: bool = False,
         concurrent: bool = False,
         random_seed: int = 42,
         frame_ids: Optional[Iterable[FrameId]] = None,
@@ -296,14 +297,14 @@ class UnorderedScene(Generic[TDateTime]):
 
         runenv = pypeln.sync
         if concurrent:
-            if ordered:
+            if not shuffle:
                 raise ValueError("Order can not be guaranteed in concurrent mode!")
 
             runenv = pypeln.thread
 
         source_state = random.Random(random_seed)
         used_fids = [fid for fid in self.frame_ids if frame_ids is None or fid in frame_ids]
-        if not ordered:
+        if shuffle:
             source_state.shuffle(used_fids)
 
         yield from runenv.map(
@@ -312,7 +313,7 @@ class UnorderedScene(Generic[TDateTime]):
 
     def sensor_pipeline(
         self,
-        ordered: bool = True,
+        shuffle: bool = False,
         concurrent: bool = False,
         random_seed: int = 42,
         sensor_names: Optional[Iterable[SensorName]] = None,
@@ -321,14 +322,14 @@ class UnorderedScene(Generic[TDateTime]):
     ) -> Generator[Frame[TDateTime], None, None]:
         runenv = pypeln.sync
         if concurrent:
-            if ordered:
+            if not shuffle:
                 raise ValueError("Order can not be guaranteed in concurrent mode!")
 
             runenv = pypeln.thread
 
         source_state = random.Random(random_seed)
         used_sensors = [name for name in self.sensor_names if sensor_names is None or name in sensor_names]
-        if not ordered:
+        if shuffle:
             source_state.shuffle(used_sensors)
 
         yield from runenv.map(
@@ -337,7 +338,8 @@ class UnorderedScene(Generic[TDateTime]):
 
     def sensor_frame_pipeline(
         self,
-        ordered: bool = True,
+        shuffle: bool = False,
+        fast_shuffle: bool = False,
         concurrent: bool = False,
         random_seed: int = 42,
         frame_ids: Optional[Iterable[FrameId]] = None,
@@ -357,11 +359,12 @@ class UnorderedScene(Generic[TDateTime]):
             )
 
         runenv = pypeln.sync
-        if not ordered:
+        if shuffle:
             runenv = pypeln.thread
+        source_state = random.Random(random_seed)
 
         stage = self.frame_pipeline(
-            ordered=ordered,
+            shuffle=shuffle,
             concurrent=concurrent,
             random_seed=random_seed,
             frame_ids=frame_ids,
@@ -377,7 +380,14 @@ class UnorderedScene(Generic[TDateTime]):
             else:
                 used_sensor_names = frame.sensor_names
             used_sensor_names = [name for name in used_sensor_names if sensor_names is None or name in sensor_names]
+            if shuffle:
+                source_state.shuffle(used_sensor_names)
             for name in used_sensor_names:
                 yield frame.get_sensor(sensor_name=name), frame, self
 
-        yield from runenv.flat_map(map_frame, stage, maxsize=max_queue_size, workers=max_workers)
+        if not shuffle or (shuffle and fast_shuffle):
+            yield from runenv.flat_map(map_frame, stage, maxsize=max_queue_size, workers=max_workers)
+        else:
+            yield from nested_generator_round_robin_draw(
+                source_generator=stage, nested_generator_factory=map_frame, endless_loop=False, random_seed=random_seed
+            )
