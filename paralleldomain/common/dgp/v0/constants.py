@@ -19,8 +19,10 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "8": AnnotationTypes.OpticalFlow,
     "9": AnnotationTypes.SceneFlow,
     "10": AnnotationTypes.SurfaceNormals2D,
+    "11": AnnotationTypes.OpticalFlow,  # backward
     "12": AnnotationTypes.Albedo2D,
     "13": AnnotationTypes.MaterialProperties2D,
+    "14": AnnotationTypes.SceneFlow,  # backward
     "15": AnnotationTypes.MaterialProperties3D,
 }
 

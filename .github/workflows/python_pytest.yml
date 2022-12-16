@@ -36,3 +36,11 @@ jobs:
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
           DGP_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose
         shell: bash
+        env:
+          CITYSCAPES_PATH_ENV: '${{ secrets.CITYSCAPES_PATH_ENV }}'
+          FLYING_CHAIRS_DATASET_PATH_ENV: '${{ secrets.FLYING_CHAIRS_DATASET_PATH_ENV }}'
+          GTA5_PATH_ENV: '${{ secrets.GTA5_PATH_ENV }}'
+          KITTI_FLOW_DATASET_PATH_ENV: '${{ secrets.KITTI_FLOW_DATASET_PATH_ENV }}'
+          NUIMAGES_PATH_ENV: '${{ secrets.NUIMAGES_PATH_ENV }}'
+          NUSCENES_MINI_PATH_ENV: '${{ secrets.NUSCENES_MINI_PATH_ENV }}'
+          NUSCENES_TRAINVAL_PATH_ENV: '${{ secrets.NUSCENES_TRAINVAL_PATH_ENV }}'
