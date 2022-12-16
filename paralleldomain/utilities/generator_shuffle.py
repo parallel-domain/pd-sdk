@@ -5,7 +5,7 @@ A = TypeVar("A")
 B = TypeVar("B")
 
 
-def nested_generator_round_robin_draw(
+def nested_generator_random_draw(
     source_generator: Generator[A, None, None],
     nested_generator_factory: Callable[[A], Generator[B, None, None]],
     endless_loop: bool,

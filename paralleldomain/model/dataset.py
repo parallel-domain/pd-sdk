@@ -7,7 +7,7 @@ from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.generator_shuffle import nested_generator_round_robin_draw
+from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
 try:
     from typing import Protocol
@@ -464,7 +464,7 @@ class Dataset:
             stage = runenv.flat_map(map_scenes, stage, maxsize=max_queue_size, workers=max_workers)
             yield from pypeln.sync.to_iterable(stage, maxsize=max_queue_size)
         else:
-            yield from nested_generator_round_robin_draw(
+            yield from nested_generator_random_draw(
                 source_generator=stage,
                 nested_generator_factory=map_scenes,
                 endless_loop=endless_loop,

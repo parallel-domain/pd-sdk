@@ -8,7 +8,7 @@ import pypeln
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.map.map import Map
-from paralleldomain.utilities.generator_shuffle import nested_generator_round_robin_draw
+from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
 try:
     from typing import Protocol
@@ -388,6 +388,6 @@ class UnorderedScene(Generic[TDateTime]):
         if not shuffle or (shuffle and fast_shuffle):
             yield from runenv.flat_map(map_frame, stage, maxsize=max_queue_size, workers=max_workers)
         else:
-            yield from nested_generator_round_robin_draw(
+            yield from nested_generator_random_draw(
                 source_generator=stage, nested_generator_factory=map_frame, endless_loop=False, random_seed=random_seed
             )
