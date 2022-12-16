@@ -2,7 +2,7 @@ import abc
 from datetime import datetime
 from functools import lru_cache
 from json import JSONDecodeError
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import ujson
@@ -467,9 +467,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return instance_ids
 
-    def _decode_scene_flow(
-        self, scene_name: str, annotation_identifier: str, files: Literal["motion_vectors", "backwards_motion_vectors"]
-    ) -> np.ndarray:
+    def _decode_scene_flow(self, scene_name: str, annotation_identifier: str, files: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
         return read_npz(path=annotation_path, files=files)
 
