@@ -1,5 +1,7 @@
 from paralleldomain.model.annotation.albedo_2d import Albedo2D
 from paralleldomain.model.annotation.annotation_types import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation.backward_optical_flow import BackwardOpticalFlow
+from paralleldomain.model.annotation.backward_scene_flow import BackwardSceneFlow
 from paralleldomain.model.annotation.bounding_box_2d import BoundingBox2D, BoundingBoxes2D
 from paralleldomain.model.annotation.bounding_box_3d import BoundingBox3D, BoundingBoxes3D
 from paralleldomain.model.annotation.common import Annotation

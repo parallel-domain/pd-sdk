@@ -1,6 +1,8 @@
 from typing import Type
 
 from paralleldomain.model.annotation.albedo_2d import Albedo2D
+from paralleldomain.model.annotation.backward_optical_flow import BackwardOpticalFlow
+from paralleldomain.model.annotation.backward_scene_flow import BackwardSceneFlow
 from paralleldomain.model.annotation.bounding_box_2d import BoundingBoxes2D
 from paralleldomain.model.annotation.bounding_box_3d import BoundingBoxes3D
 from paralleldomain.model.annotation.common import Annotation
@@ -81,10 +83,12 @@ class AnnotationTypes:
     SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D  # noqa: F811
     InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D  # noqa: F811
     OpticalFlow: Type[OpticalFlow] = OpticalFlow  # noqa: F811
+    BackwardOpticalFlow: Type[BackwardOpticalFlow] = BackwardOpticalFlow  # noqa: F811
     Depth: Type[Depth] = Depth  # noqa: F811
     SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D  # noqa: F811
     SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D  # noqa: F811
     SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
+    BackwardSceneFlow: Type[BackwardSceneFlow] = BackwardSceneFlow  # noqa: F811
     MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
     MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
     Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811

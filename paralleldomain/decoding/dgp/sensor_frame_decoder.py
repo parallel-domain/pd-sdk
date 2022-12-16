@@ -9,7 +9,7 @@ import numpy as np
 import ujson
 from pyquaternion import Quaternion
 
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, TransformType
+from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP, DGP_TO_INTERNAL_CS, DirectoryName, TransformType
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -36,6 +36,8 @@ from paralleldomain.model.annotation import (
     Albedo2D,
     Annotation,
     AnnotationType,
+    BackwardOpticalFlow,
+    BackwardSceneFlow,
     BoundingBox2D,
     BoundingBox3D,
     BoundingBoxes2D,
@@ -220,18 +222,20 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(annotation_type, OpticalFlow):
-            forward_vectors, backward_vectors = self._decode_optical_flow(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
-            return OpticalFlow(vectors=forward_vectors, backward_vectors=backward_vectors)
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return OpticalFlow(vectors=vectors)
+        elif issubclass(annotation_type, BackwardOpticalFlow):
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return BackwardOpticalFlow(vectors=vectors)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
         elif issubclass(annotation_type, SceneFlow):
-            forward_vectors, backward_vectors = self._decode_scene_flow(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
-            return SceneFlow(vectors=forward_vectors, backward_vectors=backward_vectors)
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SceneFlow(vectors=vectors)
+        elif issubclass(annotation_type, BackwardSceneFlow):
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return BackwardSceneFlow(vectors=vectors)
         elif issubclass(annotation_type, SurfaceNormals3D):
             normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
             return SurfaceNormals3D(normals=normals)
@@ -388,36 +392,16 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return class_ids
 
-    def _decode_optical_flow(
-        self, scene_name: str, annotation_identifier: str
-    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-        if "back_motion_vectors_2d" in annotation_identifier:
-            forward_annotation_path = (
-                self._dataset_path
-                / scene_name
-                / annotation_identifier.replace("back_motion_vectors_2d", "motion_vectors_2d")
-            )
-            back_annotation_path = self._dataset_path / scene_name / annotation_identifier
-        else:
-            forward_annotation_path = self._dataset_path / scene_name / annotation_identifier
-            back_annotation_path = (
-                self._dataset_path
-                / scene_name
-                / annotation_identifier.replace("motion_vectors_2d", "back_motion_vectors_2d")
-            )
+    def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
 
-        def read_flow_file(path: AnyPath) -> np.ndarray:
-            image_data = read_image(path=path)
-            image_data = image_data.astype(int)
-            height, width = image_data.shape[0:2]
-            vectors = image_data[..., [0, 2]] + (image_data[..., [1, 3]] << 8)
-            vectors = (vectors / 65535.0 - 0.5) * [width, height] * 2
-            return vectors
+        image_data = read_image(path=annotation_path)
+        image_data = image_data.astype(int)
+        height, width = image_data.shape[0:2]
+        vectors = image_data[..., [0, 2]] + (image_data[..., [1, 3]] << 8)
+        vectors = (vectors / 65535.0 - 0.5) * [width, height] * 2
 
-        forward_vectors = read_flow_file(path=forward_annotation_path) if forward_annotation_path.exists() else None
-        backward_vectors = read_flow_file(path=back_annotation_path) if back_annotation_path.exists() else None
-
-        return forward_vectors, backward_vectors
+        return vectors
 
     def _decode_albedo_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
@@ -444,31 +428,13 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return instance_ids
 
     def _decode_scene_flow(
-        self, scene_name: str, annotation_identifier: str
-    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-        if "back_motion_vectors_3d" in annotation_identifier:
-            forward_annotation_path = (
-                self._dataset_path
-                / scene_name
-                / annotation_identifier.replace("back_motion_vectors_3d", "motion_vectors_3d")
-            )
-            back_annotation_path = self._dataset_path / scene_name / annotation_identifier
-        else:
-            forward_annotation_path = self._dataset_path / scene_name / annotation_identifier
-            back_annotation_path = (
-                self._dataset_path
-                / scene_name
-                / annotation_identifier.replace("motion_vectors_3d", "back_motion_vectors_3d")
-            )
+        self, scene_name: str, annotation_identifier: str, files: str = "motion_vectors"
+    ) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / annotation_identifier
 
-        forward_vectors = (
-            read_npz(path=forward_annotation_path, files="motion_vectors") if forward_annotation_path.exists() else None
-        )
-        backward_vectors = (
-            read_npz(path=back_annotation_path, files="motion_vectors") if back_annotation_path.exists() else None
-        )
+        vectors = read_npz(path=annotation_path, files=files)
 
-        return forward_vectors, backward_vectors
+        return vectors
 
     def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier

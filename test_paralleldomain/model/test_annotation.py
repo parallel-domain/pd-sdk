@@ -247,52 +247,45 @@ class TestSensorFrame:
     # Add test set with backwards optical flow
     @pytest.mark.skip
     def test_backward_optical_flow(self, scene: Scene, dataset: Dataset):
-        if AnnotationTypes.OpticalFlow not in scene.available_annotation_types:
+        if AnnotationTypes.BackwardOpticalFlow not in scene.available_annotation_types:
             return
 
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[1])
         camera_sensor = next(iter(frame.camera_frames))
 
-        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
-        assert flow.backward_vectors is not None
+        assert AnnotationTypes.BackwardOpticalFlow in camera_sensor.available_annotation_types
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardOpticalFlow)
         assert flow.vectors is not None
         image = camera_sensor.image.rgb
         assert flow.vectors.shape[2] == 2
         assert image.shape[:2] == flow.vectors.shape[:2]
-        assert flow.backward_vectors.shape[2] == 2
-        assert image.shape[:2] == flow.backward_vectors.shape[:2]
 
         frame = scene.get_frame(frame_id=frame_ids[0])
         camera_sensor = next(iter(frame.camera_frames))
-        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
-        assert flow.backward_vectors is None
-        assert flow.vectors is not None
+        assert AnnotationTypes.BackwardOpticalFlow not in camera_sensor.available_annotation_types
 
         frame = scene.get_frame(frame_id=frame_ids[-1])
         camera_sensor = next(iter(frame.camera_frames))
-        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.OpticalFlow)
-        assert flow.backward_vectors is not None
+        assert AnnotationTypes.BackwardOpticalFlow in camera_sensor.available_annotation_types
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardOpticalFlow)
         assert flow.vectors is None
 
     # Add test set with backwards scene flow
     @pytest.mark.skip
     def test_backward_scene_flow(self, scene: Scene, dataset: Dataset):
-        if AnnotationTypes.SceneFlow not in scene.available_annotation_types:
+        if AnnotationTypes.BackwardSceneFlow not in scene.available_annotation_types:
             return
 
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[1])
         lidar_sensor = next(iter(frame.lidar_frames))
 
-        flow = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.SceneFlow)
-        assert flow.backward_vectors is not None
+        flow = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardSceneFlow)
         assert flow.vectors is not None
         cloud = lidar_sensor.point_cloud.xyz
         assert flow.vectors.shape[1] == 3
         assert cloud.shape[0] == flow.vectors.shape[0]
-        assert flow.backward_vectors.shape[1] == 3
-        assert cloud.shape[0] == flow.backward_vectors.shape[0]
 
     """
     @pytest.skip
