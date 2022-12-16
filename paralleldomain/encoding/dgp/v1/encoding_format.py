@@ -1,5 +1,7 @@
 from typing import Any, Optional
 
+from paralleldomain.encoding.dgp.v1.format.backward_optical_flow import BackwardOpticalFlowDGPV1Mixin
+from paralleldomain.encoding.dgp.v1.format.backward_scene_flow import BackwardSceneFlowDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.bounding_box_2d import BoundingBox2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.bounding_box_3d import BoundingBox3DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.camera_image import CameraDGPV1Mixin
@@ -38,11 +40,13 @@ class DGPV1EncodingFormat(
     InstanceSegmentation2DDGPV1Mixin,
     InstanceSegmentation3DDGPV1Mixin,
     OpticalFlowDGPV1Mixin,
+    BackwardOpticalFlowDGPV1Mixin,
     PointCloudDGPV1Mixin,
     Point2DDGPV1Mixin,
     Polygons2DDGPV1Mixin,
     Polyline2DDGPV1Mixin,
     SceneFlowDGPV1Mixin,
+    BackwardSceneFlowDGPV1Mixin,
     SemanticSegmentation2DDGPV1Mixin,
     SemanticSegmentation3DDGPV1Mixin,
     SurfaceNormals2DDGPV1Mixin,
@@ -140,6 +144,13 @@ class DGPV1EncodingFormat(
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
             )
+        elif data_type == AnnotationTypes.BackwardOpticalFlow:
+            self.save_backward_optical_flow_and_write_state(
+                data=data,
+                pipeline_item=pipeline_item,
+                scene_output_path=scene_output_path,
+                sim_offset=self.sim_offset,
+            )
         elif data_type == PointCloud:
             self.save_point_cloud_and_write_state(
                 data=data,
@@ -173,6 +184,13 @@ class DGPV1EncodingFormat(
             )
         elif data_type == AnnotationTypes.SceneFlow:
             self.save_scene_flow_and_write_state(
+                data=data,
+                pipeline_item=pipeline_item,
+                scene_output_path=scene_output_path,
+                sim_offset=self.sim_offset,
+            )
+        elif data_type == AnnotationTypes.SceneFlow:
+            self.save_backward_scene_flow_and_write_state(
                 data=data,
                 pipeline_item=pipeline_item,
                 scene_output_path=scene_output_path,

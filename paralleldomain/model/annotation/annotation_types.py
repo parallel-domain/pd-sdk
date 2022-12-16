@@ -39,10 +39,12 @@ class AnnotationTypes:
         SemanticSegmentation3D
         InstanceSegmentation3D
         OpticalFlow
+        BackwardOpticalFlow
         Depth
         SurfaceNormals3D
         SurfaceNormals2D
         SceneFlow
+        BackwardSceneFlow
         MaterialProperties2D
         MaterialProperties3D
         Albedo2D
@@ -50,7 +52,6 @@ class AnnotationTypes:
         Polygons2D
         Polylines2D
         PointCaches
-        BaseColor
 
     Examples:
         Access 2D Bounding Box annotations for a camera frame:
