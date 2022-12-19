@@ -775,6 +775,7 @@ class DGPSceneEncoder(SceneEncoder):
                 "9": self._process_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.SceneFlow in lidar_frame.available_annotation_types
                 and AnnotationTypes.SceneFlow in self._annotation_types
+                and not last_frame
                 else None,
                 "14": self._process_back_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.BackwardSceneFlow in lidar_frame.available_annotation_types

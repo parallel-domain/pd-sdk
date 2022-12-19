@@ -4,10 +4,13 @@ from tempfile import TemporaryDirectory
 from typing import Dict, Union
 from uuid import uuid4
 
+import numpy as np
+
 from paralleldomain.common.dgp.v1 import annotations_pb2
 from paralleldomain.encoding.pipeline_encoder import PipelineItem, ScenePipelineItem
 from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.mask import encode_2int16_as_rgba8
 
 CUSTOM_FORMAT_KEY = "dgp_v1_data"
 ANNOTATIONS_KEY = "annotations"
@@ -70,3 +73,13 @@ class CommonDGPV1FormatMixin:
                 CLASS_MAPS_KEY: dict(),
                 SCENE_DATA_KEY: dict(),
             }
+
+
+def encode_flow_vectors(vectors: np.ndarray) -> np.ndarray:
+    height, width = vectors.shape[0:2]
+    vectors = vectors / 2
+    vectors = vectors / [width, height]
+    vectors = vectors + 0.5
+    vectors = vectors * 65535.0
+    vectors = vectors.astype(np.int)
+    return encode_2int16_as_rgba8(vectors)
