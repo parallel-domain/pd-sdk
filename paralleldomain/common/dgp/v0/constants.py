@@ -19,8 +19,10 @@ ANNOTATION_TYPE_MAP: Dict[str, Type[Annotation]] = {
     "8": AnnotationTypes.OpticalFlow,
     "9": AnnotationTypes.SceneFlow,
     "10": AnnotationTypes.SurfaceNormals2D,
+    "11": AnnotationTypes.BackwardOpticalFlow,
     "12": AnnotationTypes.Albedo2D,
     "13": AnnotationTypes.MaterialProperties2D,
+    "14": AnnotationTypes.BackwardSceneFlow,
     "15": AnnotationTypes.MaterialProperties3D,
 }
 
@@ -47,9 +49,11 @@ class DirectoryName:
     INSTANCE_SEGMENTATION_2D: str = "instance_segmentation_2d"
     INSTANCE_SEGMENTATION_3D: str = "instance_segmentation_3d"
     MATERIAL_PROPERTIES_2D: str = "roughness_metallic_specular"
-    MATERIAL_PROPERTIES_3D: str = "material_properties_3d"
+    MATERIAL_PROPERTIES_3D: str = "surface_properties_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
     MOTION_VECTORS_3D: str = "motion_vectors_3d"
+    BACK_MOTION_VECTORS_2D: str = "back_motion_vectors_2d"
+    BACK_MOTION_VECTORS_3D: str = "back_motion_vectors_3d"
     ONTOLOGY: str = "ontology"
     POINT_CLOUD: str = "point_cloud"
     RGB: str = "rgb"

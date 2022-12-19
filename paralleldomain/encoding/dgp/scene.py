@@ -347,6 +347,47 @@ class DGPSceneEncoder(SceneEncoder):
         encoded_normals = ((surface_normals.normals * 0.5 + 0.5) * 255).astype(np.uint8)
         return self._run_async(func=fsio.write_png, obj=encoded_normals, path=output_path)
 
+    def _process_back_motion_vectors_2d(
+        self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = True
+    ) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.BackwardOpticalFlow)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.BACK_MOTION_VECTORS_2D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_back_motion_vectors_2d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_back_motion_vectors_2d(self, sensor_frame: CameraSensorFrame[datetime], output_path: AnyPath) -> Future:
+        back_optical_flow = sensor_frame.get_annotations(AnnotationTypes.BackwardOpticalFlow)
+        mask_out = OpticalFlowTransformer.transform(mask=back_optical_flow.vectors)
+
+        return self._run_async(func=fsio.write_png, obj=mask_out, path=output_path)
+
+    def _process_back_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], fs_copy: bool = True) -> Future:
+        input_path = sensor_frame.get_file_path(FilePathedDataType.BackwardSceneFlow)
+        file_name = (
+            f"{self._timestamp_for_sensorframe(sensor_frame=sensor_frame):018d}.png"
+            if input_path is None
+            else input_path.name
+        )
+        output_path = self._output_path / DirectoryName.BACK_MOTION_VECTORS_3D / sensor_frame.sensor_name / file_name
+
+        if fs_copy and input_path is not None:
+            return self._run_async(func=fsio.copy_file, source=input_path, target=output_path)
+        else:
+            return self._encode_back_motion_vectors_3d(sensor_frame=sensor_frame, output_path=output_path)
+
+    def _encode_back_motion_vectors_3d(self, sensor_frame: LidarSensorFrame[datetime], output_path: AnyPath) -> Future:
+        back_scene_flow = sensor_frame.get_annotations(AnnotationTypes.BackwardSceneFlow)
+
+        return self._run_async(func=fsio.write_npz, obj=dict(motion_vectors=back_scene_flow.vectors), path=output_path)
+
     def _process_albedo_2d(self, sensor_frame: CameraSensorFrame[datetime], fs_copy: bool = True) -> Future:
         input_path = sensor_frame.get_file_path(FilePathedDataType.Albedo2D)
         file_name = (
@@ -652,7 +693,11 @@ class DGPSceneEncoder(SceneEncoder):
         return lidar_name, {sd.id.index: sd for sd in scene_data_dtos}
 
     def _encode_camera_frame(
-        self, frame_id: str, camera_frame: CameraSensorFrame[datetime], last_frame: Optional[bool] = False
+        self,
+        frame_id: str,
+        camera_frame: CameraSensorFrame[datetime],
+        last_frame: Optional[bool] = False,
+        first_frame: Optional[bool] = False,
     ) -> Tuple[str, Dict[str, Dict[str, Future]]]:
         return frame_id, dict(
             annotations={
@@ -685,6 +730,11 @@ class DGPSceneEncoder(SceneEncoder):
                 if AnnotationTypes.SurfaceNormals2D in camera_frame.available_annotation_types
                 and AnnotationTypes.SurfaceNormals2D in self._annotation_types
                 else None,
+                "11": self._process_back_motion_vectors_2d(sensor_frame=camera_frame, fs_copy=True)
+                if AnnotationTypes.BackwardOpticalFlow in camera_frame.available_annotation_types
+                and AnnotationTypes.BackwardOpticalFlow in self._annotation_types
+                and not first_frame
+                else None,
                 "12": self._process_albedo_2d(sensor_frame=camera_frame, fs_copy=True)
                 if AnnotationTypes.Albedo2D in camera_frame.available_annotation_types
                 and AnnotationTypes.Albedo2D in self._annotation_types
@@ -700,7 +750,11 @@ class DGPSceneEncoder(SceneEncoder):
         )
 
     def _encode_lidar_frame(
-        self, frame_id: str, lidar_frame: LidarSensorFrame[datetime], last_frame: Optional[bool] = False
+        self,
+        frame_id: str,
+        lidar_frame: LidarSensorFrame[datetime],
+        last_frame: Optional[bool] = False,
+        first_frame: Optional[bool] = False,
     ) -> Tuple[str, Dict[str, Dict[str, Future]]]:
         return frame_id, dict(
             annotations={
@@ -729,6 +783,11 @@ class DGPSceneEncoder(SceneEncoder):
                 and AnnotationTypes.SceneFlow in self._annotation_types
                 and not last_frame
                 else None,
+                "14": self._process_back_motion_vectors_3d(sensor_frame=lidar_frame, fs_copy=True)
+                if AnnotationTypes.BackwardSceneFlow in lidar_frame.available_annotation_types
+                and AnnotationTypes.BackwardSceneFlow in self._annotation_types
+                and not first_frame
+                else None,
                 "15": self._process_material_properties_3d(sensor_frame=lidar_frame, fs_copy=True)
                 if AnnotationTypes.MaterialProperties3D in lidar_frame.available_annotation_types
                 and AnnotationTypes.MaterialProperties3D in self._annotation_types
@@ -747,6 +806,7 @@ class DGPSceneEncoder(SceneEncoder):
                     frame_id=fid,
                     camera_frame=self._scene.get_frame(fid).get_camera(camera_name=camera_name),
                     last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
+                    first_frame=(frame_ids.index(fid) == 0),
                 ),
                 frame_id,
             )
@@ -767,6 +827,7 @@ class DGPSceneEncoder(SceneEncoder):
                     frame_id=fid,
                     lidar_frame=self._scene.get_frame(fid).get_lidar(lidar_name=lidar_name),
                     last_frame=(frame_ids.index(fid) == (len(frame_ids) - 1)),
+                    first_frame=(frame_ids.index(fid) == 0),
                 ),
                 frame_id,
             )
@@ -975,8 +1036,12 @@ class DGPSceneEncoder(SceneEncoder):
                     (self._output_path / DirectoryName.SURFACE_NORMALS_2D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
-                if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
-                    (self._output_path / DirectoryName.SURFACE_NORMALS_3D / camera_name).mkdir(
+                if AnnotationTypes.BackwardOpticalFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.BACK_MOTION_VECTORS_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.MaterialProperties2D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_2D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
                 if AnnotationTypes.Albedo2D in self._annotation_types:
@@ -1009,5 +1074,13 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.MaterialProperties3D in self._annotation_types:
                     (self._output_path / DirectoryName.MATERIAL_PROPERTIES_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.BackwardSceneFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.BACK_MOTION_VECTORS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SceneFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.MOTION_VECTORS_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )

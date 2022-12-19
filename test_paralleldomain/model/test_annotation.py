@@ -208,6 +208,29 @@ class TestSensorFrame:
         assert props.roughness.shape[2] == 3
         assert len(np.unique(props.roughness)) > 10
 
+    # Add test set with material_properties_3d
+    @pytest.mark.skip
+    def test_material_properties_3d_loading(self, scene: Scene, dataset: Dataset):
+        lidar_sensor_frame = next(scene.lidar_frames)
+        assert lidar_sensor_frame is not None
+        assert AnnotationTypes.MaterialProperties3D in lidar_sensor_frame.available_annotation_types
+
+        props = lidar_sensor_frame.get_annotations(annotation_type=AnnotationTypes.MaterialProperties3D)
+        assert props is not None
+        cloud = lidar_sensor_frame.point_cloud.xyz
+        assert props.roughness.shape[0] == cloud.shape[0]
+        assert props.roughness.shape[1] == 1
+        assert props.material_ids.shape[0] == cloud.shape[0]
+        assert props.material_ids.shape[1] == 1
+        assert props.metallic.shape[0] == cloud.shape[0]
+        assert props.metallic.shape[1] == 1
+        assert props.specular.shape[0] == cloud.shape[0]
+        assert props.specular.shape[1] == 1
+        assert props.emissive.shape[0] == cloud.shape[0]
+        assert props.emissive.shape[1] == 1
+        assert props.opacity.shape[0] == cloud.shape[0]
+        assert props.opacity.shape[1] == 1
+
     def test_image_coordinates(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
 
@@ -220,6 +243,49 @@ class TestSensorFrame:
         for y in range(rgb.shape[0]):
             for x in range(rgb.shape[1]):
                 assert np.all(coordinates[y, x] == np.array([y, x]))
+
+    # Add test set with backwards optical flow
+    @pytest.mark.skip
+    def test_backward_optical_flow(self, scene: Scene, dataset: Dataset):
+        if AnnotationTypes.BackwardOpticalFlow not in scene.available_annotation_types:
+            return
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[1])
+        camera_sensor = next(iter(frame.camera_frames))
+
+        assert AnnotationTypes.BackwardOpticalFlow in camera_sensor.available_annotation_types
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardOpticalFlow)
+        assert flow.vectors is not None
+        image = camera_sensor.image.rgb
+        assert flow.vectors.shape[2] == 2
+        assert image.shape[:2] == flow.vectors.shape[:2]
+
+        frame = scene.get_frame(frame_id=frame_ids[0])
+        camera_sensor = next(iter(frame.camera_frames))
+        assert AnnotationTypes.BackwardOpticalFlow not in camera_sensor.available_annotation_types
+
+        frame = scene.get_frame(frame_id=frame_ids[-1])
+        camera_sensor = next(iter(frame.camera_frames))
+        assert AnnotationTypes.BackwardOpticalFlow in camera_sensor.available_annotation_types
+        flow = camera_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardOpticalFlow)
+        assert flow.vectors is None
+
+    # Add test set with backwards scene flow
+    @pytest.mark.skip
+    def test_backward_scene_flow(self, scene: Scene, dataset: Dataset):
+        if AnnotationTypes.BackwardSceneFlow not in scene.available_annotation_types:
+            return
+
+        frame_ids = scene.frame_ids
+        frame = scene.get_frame(frame_id=frame_ids[1])
+        lidar_sensor = next(iter(frame.lidar_frames))
+
+        flow = lidar_sensor.get_annotations(annotation_type=AnnotationTypes.BackwardSceneFlow)
+        assert flow.vectors is not None
+        cloud = lidar_sensor.point_cloud.xyz
+        assert flow.vectors.shape[1] == 3
+        assert cloud.shape[0] == flow.vectors.shape[0]
 
     """
     @pytest.skip

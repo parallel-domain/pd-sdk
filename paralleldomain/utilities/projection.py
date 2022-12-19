@@ -35,7 +35,7 @@ class DistortionLookupTable(DistortionLookup, np.ndarray):
         Returns:
             Distortion lookup table to be used with projection functions using distortion model `pd_fisheye`.
         """
-        data_sorted = data[np.argsort(data[:, 0])].astype(np.float)
+        data_sorted = data[np.argsort(data[:, 0])].astype(float)
         if data_sorted[:, 0].max() < math.pi:
             extrapolated_alpha = (math.pi - data_sorted[-2, 0]) / (data_sorted[-1, 0] - data_sorted[-2, 0])
             extrapolated_theta_d = data_sorted[-2, 1] + extrapolated_alpha * (data_sorted[-1, 1] - data_sorted[-2, 1])
@@ -107,11 +107,11 @@ def project_points_3d_to_2d(
         not valid (e.g., for undistorted pinhole cameras), filtering needs to be applied by the calling function.
     """
 
-    k_matrix = k_matrix.reshape(3, 3).astype(np.float)
-    points_3d = points_3d.reshape(-1, 3).astype(np.float)
+    k_matrix = k_matrix.reshape(3, 3).astype(float)
+    points_3d = points_3d.reshape(-1, 3).astype(float)
 
     if distortion_parameters is not None:
-        distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float)
+        distortion_parameters = distortion_parameters.reshape(1, -1).astype(float)
 
     if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:
         uv, _ = cv2.projectPoints(
@@ -175,12 +175,12 @@ def project_points_2d_to_3d(
         A matrix with dimensions (nx3) containing the point projections in 3D using the provided depth mask.
     """
 
-    k_matrix = k_matrix.reshape(3, 3).astype(np.float)
-    points_2d = points_2d.reshape(-1, 2).astype(np.float)
+    k_matrix = k_matrix.reshape(3, 3).astype(float)
+    points_2d = points_2d.reshape(-1, 2).astype(float)
 
     # Uncomment when OpenCV with distortion reprojection is being implemented
     # if distortion_parameters is not None:
-    #     distortion_parameters = distortion_parameters.reshape(1, -1).astype(np.float)
+    #     distortion_parameters = distortion_parameters.reshape(1, -1).astype(float)
 
     depth_for_points_2d = lookup_values(mask=depth, x=points_2d[:, 0], y=points_2d[:, 1], interpolate=interpolate)
     if camera_model == CAMERA_MODEL_OPENCV_PINHOLE:

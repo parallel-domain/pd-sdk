@@ -25,6 +25,9 @@ ANNOTATION_TYPE_MAP: Dict[int, Type[Annotation]] = {
     16: AnnotationTypes.Points3D,
     17: AnnotationTypes.Polylines3D,
     18: AnnotationTypes.Polygons3D,
+    95: AnnotationTypes.MaterialProperties3D,
+    96: AnnotationTypes.BackwardOpticalFlow,
+    97: AnnotationTypes.BackwardSceneFlow,
     98: AnnotationTypes.Albedo2D,  # DGPv0 12
     99: AnnotationTypes.MaterialProperties2D,  # DGPv0 13
 }
@@ -159,7 +162,9 @@ class DirectoryName:
     MATERIAL_PROPERTIES_2D: str = "roughness_metallic_specular"
     MATERIAL_PROPERTIES_3D: str = "material_properties_3d"
     MOTION_VECTORS_2D: str = "motion_vectors_2d"
-    MOTION_VECTORS_3D: str = "motion_vectors_3d"
+    MOTION_VECTORS_3D: str = "surface_properties_3d"
+    BACK_MOTION_VECTORS_2D: str = "back_motion_vectors_2d"
+    BACK_MOTION_VECTORS_3D: str = "back_motion_vectors_3d"
     ONTOLOGY: str = "ontology"
     POINT_CLOUD: str = "point_cloud"
     POLYGON_2D: str = "polygon_2d"
