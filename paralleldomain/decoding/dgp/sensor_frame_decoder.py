@@ -36,6 +36,8 @@ from paralleldomain.model.annotation import (
     Albedo2D,
     Annotation,
     AnnotationType,
+    BackwardOpticalFlow,
+    BackwardSceneFlow,
     BoundingBox2D,
     BoundingBox3D,
     BoundingBoxes2D,
@@ -220,14 +222,20 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(annotation_type, OpticalFlow):
-            flow_vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
-            return OpticalFlow(vectors=flow_vectors)
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return OpticalFlow(vectors=vectors)
+        elif issubclass(annotation_type, BackwardOpticalFlow):
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return BackwardOpticalFlow(vectors=vectors)
         elif issubclass(annotation_type, Depth):
             depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
             return Depth(depth=depth_mask)
         elif issubclass(annotation_type, SceneFlow):
-            flow = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
-            return SceneFlow(vectors=flow)
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return SceneFlow(vectors=vectors)
+        elif issubclass(annotation_type, BackwardSceneFlow):
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            return BackwardSceneFlow(vectors=vectors)
         elif issubclass(annotation_type, SurfaceNormals3D):
             normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
             return SurfaceNormals3D(normals=normals)
@@ -386,6 +394,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
+
         image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         height, width = image_data.shape[0:2]
@@ -418,9 +427,13 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return instance_ids
 
-    def _decode_scene_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
+    def _decode_scene_flow(
+        self, scene_name: str, annotation_identifier: str, files: str = "motion_vectors"
+    ) -> np.ndarray:
         annotation_path = self._dataset_path / scene_name / annotation_identifier
-        vectors = read_npz(path=annotation_path, files="motion_vectors")
+
+        vectors = read_npz(path=annotation_path, files=files)
+
         return vectors
 
     def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
@@ -432,7 +445,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         annotation_path = self._dataset_path / scene_name / annotation_identifier
 
         encoded_norms = read_png(path=annotation_path)[..., :3]
-        encoded_norms_f = encoded_norms.astype(np.float)
+        encoded_norms_f = encoded_norms.astype(float)
         decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
         decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 

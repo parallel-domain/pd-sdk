@@ -8,15 +8,15 @@ from paralleldomain.encoding.dgp.v1.format.common import (
     encode_flow_vectors,
 )
 from paralleldomain.encoding.pipeline_encoder import PipelineItem
-from paralleldomain.model.annotation import AnnotationTypes, OpticalFlow
+from paralleldomain.model.annotation import AnnotationTypes, BackwardOpticalFlow
 from paralleldomain.utilities import fsio
 from paralleldomain.utilities.any_path import AnyPath
 
 
-class OpticalFlowDGPV1Mixin(CommonDGPV1FormatMixin):
-    def save_optical_flow_and_write_state(
+class BackwardOpticalFlowDGPV1Mixin(CommonDGPV1FormatMixin):
+    def save_backward_optical_flow_and_write_state(
         self,
-        data: Union[OpticalFlow, AnyPath],
+        data: Union[BackwardOpticalFlow, AnyPath],
         pipeline_item: PipelineItem,
         scene_output_path: AnyPath,
         sim_offset: float,
@@ -32,7 +32,7 @@ class OpticalFlowDGPV1Mixin(CommonDGPV1FormatMixin):
             target_sensor_name=pipeline_item.target_sensor_name,
             timestamp=pipeline_item.sensor_frame.date_time,
             file_suffix=file_suffix,
-            directory_name=DirectoryName.MOTION_VECTORS_2D,
+            directory_name=DirectoryName.BACK_MOTION_VECTORS_2D,
             scene_output_path=scene_output_path,
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -16,7 +16,7 @@ from paralleldomain.decoding.flying_things.common import (
     get_scene_folder,
 )
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, OpticalFlow
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BackwardOpticalFlow, OpticalFlow
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
@@ -121,22 +121,17 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
     ) -> T:
         if issubclass(annotation_type, OpticalFlow):
-            flow_vectors, backward_flow_vectors = self._decode_optical_flow(
-                sensor_name=sensor_name, annotation_identifier=identifier, frame_id=frame_id
-            )
-            return OpticalFlow(vectors=flow_vectors, backward_vectors=backward_flow_vectors)
+            vectors = self._decode_optical_flow(sensor_name=sensor_name, frame_id=frame_id, forward=True)
+            return OpticalFlow(vectors=vectors)
+        if issubclass(annotation_type, BackwardOpticalFlow):
+            vectors = self._decode_optical_flow(sensor_name=sensor_name, frame_id=frame_id, forward=False)
+            return BackwardOpticalFlow(vectors=vectors)
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
-    def _decode_optical_flow(
-        self, sensor_name: SensorName, frame_id: FrameId, annotation_identifier: str
-    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-        forward_flow_file_path = self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=True)
-        backward_flow_file_path = self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=False)
-
-        back_flow = read_flow(file_path=backward_flow_file_path) if backward_flow_file_path.exists() else None
-        flow = read_flow(file_path=forward_flow_file_path) if forward_flow_file_path.exists() else None
-        return flow, back_flow
+    def _decode_optical_flow(self, sensor_name: SensorName, frame_id: FrameId, forward: bool) -> np.ndarray:
+        flow_file_path = self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=forward)
+        return read_flow(file_path=flow_file_path)
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         if issubclass(data_type, OpticalFlow):
