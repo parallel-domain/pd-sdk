@@ -36,14 +36,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Download  & Test with pytest
-        env:
-          CITYSCAPES_PATH_ENV: ${{ secrets.CITYSCAPES_PATH_ENV }}
-          FLYING_CHAIRS_DATASET_PATH_ENV: ${{ secrets.FLYING_CHAIRS_DATASET_PATH_ENV }}
-          GTA5_PATH_ENV: ${{ secrets.GTA5_PATH_ENV }}
-          KITTI_FLOW_DATASET_PATH_ENV: ${{ secrets.KITTI_FLOW_DATASET_PATH_ENV }}
-          NUIMAGES_PATH_ENV: ${{ secrets.NUIMAGES_PATH_ENV }}
-          NUSCENES_MINI_PATH_ENV: ${{ secrets.NUSCENES_MINI_PATH_ENV }}
-          NUSCENES_TRAINVAL_PATH_ENV: ${{ secrets.NUSCENES_TRAINVAL_PATH_ENV }}
+#        env:
+#          CITYSCAPES_PATH_ENV: ${{ secrets.CITYSCAPES_PATH_ENV }}
+#          FLYING_CHAIRS_DATASET_PATH_ENV: ${{ secrets.FLYING_CHAIRS_DATASET_PATH_ENV }}
+#          GTA5_PATH_ENV: ${{ secrets.GTA5_PATH_ENV }}
+#          KITTI_FLOW_DATASET_PATH_ENV: ${{ secrets.KITTI_FLOW_DATASET_PATH_ENV }}
+#          NUIMAGES_PATH_ENV: ${{ secrets.NUIMAGES_PATH_ENV }}
+#          NUSCENES_MINI_PATH_ENV: ${{ secrets.NUSCENES_MINI_PATH_ENV }}
+#          NUSCENES_TRAINVAL_PATH_ENV: ${{ secrets.NUSCENES_TRAINVAL_PATH_ENV }}
         run: |
           LOCAL_DATASET_PATH=$(mktemp -d)
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
