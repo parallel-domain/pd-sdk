@@ -34,6 +34,7 @@ class OpticalFlowTransformer(MaskTransformer):
         mask /= 2 * np.array([width, height])
         mask += 0.5
         mask_2int16 = (mask * 65535).astype(np.uint16)
+
         return encode_2int16_as_rgba8(mask_2int16)
 
 

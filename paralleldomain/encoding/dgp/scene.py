@@ -10,7 +10,13 @@ from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 import numpy as np
 
 from paralleldomain import Scene
-from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP_INV, DATETIME_FORMAT, POINT_FORMAT, DirectoryName
+from paralleldomain.common.dgp.v0.constants import (
+    ANNOTATION_TYPE_MAP_INV,
+    DATETIME_FORMAT,
+    NON_DGP_ANNOTATIONS,
+    POINT_FORMAT,
+    DirectoryName,
+)
 from paralleldomain.common.dgp.v0.dtos import (
     AnnotationsBoundingBox2DDTO,
     AnnotationsBoundingBox3DDTO,
@@ -844,6 +850,8 @@ class DGPSceneEncoder(SceneEncoder):
             ANNOTATION_TYPE_MAP_INV[a_type]: OntologyFileDTO.from_class_map(class_map=self._scene.get_class_map(a_type))
             for a_type in self._annotation_types
             if a_type is not Annotation  # equiv: not implemented, yet!
+            and a_type in self._scene.available_annotation_types
+            and a_type not in NON_DGP_ANNOTATIONS
         }
 
         output_path = self._output_path / DirectoryName.ONTOLOGY / ".json"
@@ -1036,6 +1044,12 @@ class DGPSceneEncoder(SceneEncoder):
                     (self._output_path / DirectoryName.MATERIAL_PROPERTIES_2D / camera_name).mkdir(
                         exist_ok=True, parents=True
                     )
+                if AnnotationTypes.Albedo2D in self._annotation_types:
+                    (self._output_path / DirectoryName.ALBEDO_2D / camera_name).mkdir(exist_ok=True, parents=True)
+                if AnnotationTypes.MaterialProperties2D in self._annotation_types:
+                    (self._output_path / DirectoryName.MATERIAL_PROPERTIES_2D / camera_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
             for lidar_name in self._lidar_names:
                 (self._output_path / DirectoryName.POINT_CLOUD / lidar_name).mkdir(exist_ok=True, parents=True)
                 if AnnotationTypes.BoundingBoxes3D in self._annotation_types:
@@ -1052,6 +1066,10 @@ class DGPSceneEncoder(SceneEncoder):
                     )
                 if AnnotationTypes.SurfaceNormals3D in self._annotation_types:
                     (self._output_path / DirectoryName.SURFACE_NORMALS_3D / lidar_name).mkdir(
+                        exist_ok=True, parents=True
+                    )
+                if AnnotationTypes.SceneFlow in self._annotation_types:
+                    (self._output_path / DirectoryName.MOTION_VECTORS_3D / lidar_name).mkdir(
                         exist_ok=True, parents=True
                     )
                 if AnnotationTypes.MaterialProperties3D in self._annotation_types:
