@@ -445,7 +445,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         annotation_path = self._dataset_path / scene_name / annotation_identifier
 
         encoded_norms = read_png(path=annotation_path)[..., :3]
-        encoded_norms_f = encoded_norms.astype(np.float)
+        encoded_norms_f = encoded_norms.astype(float)
         decoded_norms = ((encoded_norms_f / 255) - 0.5) * 2
         decoded_norms = decoded_norms / np.linalg.norm(decoded_norms, axis=-1, keepdims=True)
 
