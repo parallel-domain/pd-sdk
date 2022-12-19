@@ -329,6 +329,16 @@
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.BackwardOpticalFlow">
+<span class="sig-name descname"><span class="pre">BackwardOpticalFlow</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.BackwardOpticalFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.backward_optical_flow.BackwardOpticalFlow]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.Depth">
 <span class="sig-name descname"><span class="pre">Depth</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.Depth" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -364,6 +374,16 @@
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Type[<a class="reference internal" href="#paralleldomain.model.annotation.scene_flow.SceneFlow" title="paralleldomain.model.annotation.scene_flow.SceneFlow">paralleldomain.model.annotation.scene_flow.SceneFlow</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.BackwardSceneFlow">
+<span class="sig-name descname"><span class="pre">BackwardSceneFlow</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.BackwardSceneFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.backward_scene_flow.BackwardSceneFlow]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -438,11 +458,6 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="paralleldomain.model.annotation.AnnotationTypes.BaseColor">
-<span class="sig-name descname"><span class="pre">BaseColor</span></span><a class="headerlink" href="#paralleldomain.model.annotation.AnnotationTypes.BaseColor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <p class="rubric">Examples</p>
 <p>Access 2D Bounding Box annotations for a camera frame:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">camera_frame</span><span class="p">:</span> <span class="n">SensorFrame</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># get any camera&#39;s SensorFrame</span>
@@ -473,14 +488,17 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x</span></code></a></p></li>
-<li><p><strong>y</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y</span></code></a></p></li>
-<li><p><strong>width</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width</span></code></a></p></li>
-<li><p><strong>height</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes</span></code></a></p></li>
+<li><p><strong>x</strong> (<em>paralleldomain.model.geometry.bounding_box_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x</span></code></a></p></li>
+<li><p><strong>y</strong> (<em>paralleldomain.model.geometry.bounding_box_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y</span></code></a></p></li>
+<li><p><strong>width</strong> (<em>paralleldomain.model.geometry.bounding_box_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width</span></code></a></p></li>
+<li><p><strong>height</strong> (<em>paralleldomain.model.geometry.bounding_box_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes" title="paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -833,15 +851,18 @@ but with extended <cite>source_box</cite> dimensions merged into it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pose</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose</span></code></a></p></li>
-<li><p><strong>length</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length</span></code></a></p></li>
-<li><p><strong>width</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width</span></code></a></p></li>
-<li><p><strong>height</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id</span></code></a></p></li>
-<li><p><strong>num_points</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes</span></code></a></p></li>
+<li><p><strong>pose</strong> (<a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><em>paralleldomain.utilities.transformation.Transformation</em></a>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose</span></code></a></p></li>
+<li><p><strong>length</strong> (<em>paralleldomain.model.geometry.bounding_box_3d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length</span></code></a></p></li>
+<li><p><strong>width</strong> (<em>paralleldomain.model.geometry.bounding_box_3d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width</span></code></a></p></li>
+<li><p><strong>height</strong> (<em>paralleldomain.model.geometry.bounding_box_3d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id</span></code></a></p></li>
+<li><p><strong>num_points</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1337,11 +1358,14 @@ The second axis contains the instance ID for each point as <cite>int</cite>.</p>
 
 <span class="target" id="module-paralleldomain.model.annotation.optical_flow"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.optical_flow.OpticalFlow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OpticalFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OpticalFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents an Optical Flow mask for a camera image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vectors</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors" title="paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vectors</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors" title="paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors</span></code></a></p></li>
+<li><p><strong>valid_mask</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask" title="paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -1355,6 +1379,18 @@ camera image. The third axis contains the x and y offset to the pixels coordinat
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask">
+<span class="sig-name descname"><span class="pre">valid_mask</span></span><a class="headerlink" href="#paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(H X W)</cite> with values {0,1}. 1 indicates a pixel with a valid flow label in the
+vectors attribute. 0 indicates no groundtruth flow at that pixel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1393,12 +1429,15 @@ fast retrieval of absolute pixel coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.x" title="paralleldomain.model.annotation.point_2d.Point2D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.x</span></code></a></p></li>
-<li><p><strong>y</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.y" title="paralleldomain.model.annotation.point_2d.Point2D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.y</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.class_id" title="paralleldomain.model.annotation.point_2d.Point2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.instance_id" title="paralleldomain.model.annotation.point_2d.Point2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.attributes" title="paralleldomain.model.annotation.point_2d.Point2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.attributes</span></code></a></p></li>
+<li><p><strong>x</strong> (<em>paralleldomain.model.geometry.point_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.x" title="paralleldomain.model.annotation.point_2d.Point2D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.x</span></code></a></p></li>
+<li><p><strong>y</strong> (<em>paralleldomain.model.geometry.point_2d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.y" title="paralleldomain.model.annotation.point_2d.Point2D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.y</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.class_id" title="paralleldomain.model.annotation.point_2d.Point2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.instance_id" title="paralleldomain.model.annotation.point_2d.Point2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_2d.Point2D.attributes" title="paralleldomain.model.annotation.point_2d.Point2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_2d.Point2D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1498,12 +1537,16 @@ If unknown defaults to -1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.x" title="paralleldomain.model.annotation.point_3d.Point3D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.x</span></code></a></p></li>
-<li><p><strong>y</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.y" title="paralleldomain.model.annotation.point_3d.Point3D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.y</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.class_id" title="paralleldomain.model.annotation.point_3d.Point3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.instance_id" title="paralleldomain.model.annotation.point_3d.Point3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.attributes" title="paralleldomain.model.annotation.point_3d.Point3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.attributes</span></code></a></p></li>
+<li><p><strong>x</strong> (<em>paralleldomain.model.geometry.point_3d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.x" title="paralleldomain.model.annotation.point_3d.Point3D.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.x</span></code></a></p></li>
+<li><p><strong>y</strong> (<em>paralleldomain.model.geometry.point_3d.T</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.y" title="paralleldomain.model.annotation.point_3d.Point3D.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.y</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.class_id" title="paralleldomain.model.annotation.point_3d.Point3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.instance_id" title="paralleldomain.model.annotation.point_3d.Point3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.point_3d.Point3D.attributes" title="paralleldomain.model.annotation.point_3d.Point3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.point_3d.Point3D.attributes</span></code></a></p></li>
+<li><p><strong>z</strong> (<em>paralleldomain.model.geometry.point_3d.T</em>) – </p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1679,11 +1722,14 @@ other instance annotation types, e.g., <code class="xref py py-obj docutils lite
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.lines" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.lines</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes</span></code></a></p></li>
+<li><p><strong>lines</strong> (<em>List</em><em>[</em><a class="reference internal" href="geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry" title="paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry"><em>paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_2d.T</em><em>]</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.lines" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.lines</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes" title="paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1778,11 +1824,14 @@ If unknown defaults to -1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.lines" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.lines</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes</span></code></a></p></li>
+<li><p><strong>lines</strong> (<em>List</em><em>[</em><a class="reference internal" href="geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry" title="paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry"><em>paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_3d.T</em><em>]</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.lines" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.lines</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes" title="paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1877,12 +1926,16 @@ If unknown defaults to -1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.start" title="paralleldomain.model.annotation.polyline_2d.Line2D.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.start</span></code></a></p></li>
-<li><p><strong>end</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.end" title="paralleldomain.model.annotation.polyline_2d.Line2D.end"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.end</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.class_id" title="paralleldomain.model.annotation.polyline_2d.Line2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.instance_id" title="paralleldomain.model.annotation.polyline_2d.Line2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.attributes" title="paralleldomain.model.annotation.polyline_2d.Line2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.attributes</span></code></a></p></li>
+<li><p><strong>start</strong> (<a class="reference internal" href="geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_2d.T</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.start" title="paralleldomain.model.annotation.polyline_2d.Line2D.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.start</span></code></a></p></li>
+<li><p><strong>end</strong> (<a class="reference internal" href="geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry" title="paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><em>paralleldomain.model.geometry.point_2d.Point2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_2d.T</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.end" title="paralleldomain.model.annotation.polyline_2d.Line2D.end"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.end</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.class_id" title="paralleldomain.model.annotation.polyline_2d.Line2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.instance_id" title="paralleldomain.model.annotation.polyline_2d.Line2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Line2D.attributes" title="paralleldomain.model.annotation.polyline_2d.Line2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Line2D.attributes</span></code></a></p></li>
+<li><p><strong>directed</strong> (<em>bool</em>) – </p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -2017,11 +2070,14 @@ See: <a class="reference external" href="https://stackoverflow.com/questions/563
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.lines" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.lines</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes</span></code></a></p></li>
+<li><p><strong>lines</strong> (<em>List</em><em>[</em><a class="reference internal" href="geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry" title="paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry"><em>paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_2d.T</em><em>]</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.lines" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.lines</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes" title="paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -2116,12 +2172,16 @@ If unknown defaults to -1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.start" title="paralleldomain.model.annotation.polyline_3d.Line3D.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.start</span></code></a></p></li>
-<li><p><strong>end</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.end" title="paralleldomain.model.annotation.polyline_3d.Line3D.end"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.end</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.class_id" title="paralleldomain.model.annotation.polyline_3d.Line3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.instance_id" title="paralleldomain.model.annotation.polyline_3d.Line3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.attributes" title="paralleldomain.model.annotation.polyline_3d.Line3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.attributes</span></code></a></p></li>
+<li><p><strong>start</strong> (<a class="reference internal" href="geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry" title="paralleldomain.model.geometry.point_3d.Point3DBaseGeometry"><em>paralleldomain.model.geometry.point_3d.Point3DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_3d.T</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.start" title="paralleldomain.model.annotation.polyline_3d.Line3D.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.start</span></code></a></p></li>
+<li><p><strong>end</strong> (<a class="reference internal" href="geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry" title="paralleldomain.model.geometry.point_3d.Point3DBaseGeometry"><em>paralleldomain.model.geometry.point_3d.Point3DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_3d.T</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.end" title="paralleldomain.model.annotation.polyline_3d.Line3D.end"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.end</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.class_id" title="paralleldomain.model.annotation.polyline_3d.Line3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.instance_id" title="paralleldomain.model.annotation.polyline_3d.Line3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Line3D.attributes" title="paralleldomain.model.annotation.polyline_3d.Line3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Line3D.attributes</span></code></a></p></li>
+<li><p><strong>directed</strong> (<em>bool</em>) – </p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -2229,11 +2289,14 @@ If unknown defaults to -1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lines</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.lines" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.lines</span></code></a></p></li>
-<li><p><strong>class_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id</span></code></a></p></li>
-<li><p><strong>instance_id</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id</span></code></a></p></li>
-<li><p><strong>attributes</strong> – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes</span></code></a></p></li>
+<li><p><strong>lines</strong> (<em>List</em><em>[</em><a class="reference internal" href="geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry" title="paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry"><em>paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry</em></a><em>[</em><em>paralleldomain.model.geometry.polyline_3d.T</em><em>]</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.lines" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.lines"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.lines</span></code></a></p></li>
+<li><p><strong>class_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> (<em>int</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id</span></code></a></p></li>
+<li><p><strong>attributes</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes" title="paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes</span></code></a></p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -2323,11 +2386,14 @@ If unknown defaults to -1.</p>
 
 <span class="target" id="module-paralleldomain.model.annotation.scene_flow"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.scene_flow.SceneFlow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SceneFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.scene_flow.SceneFlow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents an Scene Flow mask for a point cloud.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SceneFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vectors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.annotation.scene_flow.SceneFlow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a Scene Flow mask for a point cloud.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vectors</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.scene_flow.SceneFlow.vectors" title="paralleldomain.model.annotation.scene_flow.SceneFlow.vectors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.scene_flow.SceneFlow.vectors</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vectors</strong> (<em>numpy.ndarray</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.scene_flow.SceneFlow.vectors" title="paralleldomain.model.annotation.scene_flow.SceneFlow.vectors"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.scene_flow.SceneFlow.vectors</span></code></a></p></li>
+<li><p><strong>valid_mask</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – <a class="reference internal" href="#paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask" title="paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask"><code class="xref py py-attr docutils literal notranslate"><span class="pre">paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask</span></code></a></p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -2336,12 +2402,24 @@ If unknown defaults to -1.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="paralleldomain.model.annotation.scene_flow.SceneFlow.vectors">
 <span class="sig-name descname"><span class="pre">vectors</span></span><a class="headerlink" href="#paralleldomain.model.annotation.scene_flow.SceneFlow.vectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matrix of shape <cite>(N x 3)</cite>, , where <cite>N</cite> is the number of points of the corresponding
+<dd><p>Matrix of shape <cite>(N x 3)</cite>, where <cite>N</cite> is the number of points of the corresponding
 point cloud. The second axis contains the x, y and z offset to the position the sampled point will be at
 in the next frame. Note: This exact position might not be sampled by a Lidar in the next frame!</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask">
+<span class="sig-name descname"><span class="pre">valid_mask</span></span><a class="headerlink" href="#paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix of shape <cite>(N X 1)</cite> with values {0,1}. 1 indicates a point with a valid flow label in the
+vectors attribute. 0 indicates no groundtruth flow at that pixel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Optional[numpy.ndarray]</p>
 </dd>
 </dl>
 </dd></dl>

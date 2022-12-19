@@ -315,7 +315,16 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.SensorFrameDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TDateTime</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.extrinsic">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">paralleldomain.model.sensor.SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.extrinsic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
@@ -391,7 +400,16 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.LidarSensorFrameDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TDateTime</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transformation from ego to sensor coordinate system</p>
@@ -462,7 +480,16 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RadarSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol" title="paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol"><em>paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol</em></a><em>[</em><em>paralleldomain.model.sensor.TDateTime</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transformation from ego to sensor coordinate system</p>
@@ -533,7 +560,16 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraSensorFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="py property">
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.CameraSensorFrameDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TDateTime</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">paralleldomain.utilities.transformation.Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transformation from ego to sensor coordinate system</p>
@@ -604,22 +640,54 @@ as described in the
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.Sensor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Sensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.Sensor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.SensorDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TSensorFrameType</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CameraSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.SensorDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TSensorFrameType</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LidarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.SensorDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TSensorFrameType</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RadarSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>decoder</strong> (<em>paralleldomain.model.sensor.SensorDecoderProtocol</em><em>[</em><em>paralleldomain.model.sensor.TSensorFrameType</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose">
@@ -1049,6 +1117,16 @@ e.g., annotation data, images and point clouds.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.BackwardOpticalFlow">
+<span class="sig-name descname"><span class="pre">BackwardOpticalFlow</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.BackwardOpticalFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.backward_optical_flow.BackwardOpticalFlow]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.Depth">
 <span class="sig-name descname"><span class="pre">Depth</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.Depth" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -1084,6 +1162,16 @@ e.g., annotation data, images and point clouds.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Type[<a class="reference internal" href="annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow" title="paralleldomain.model.annotation.scene_flow.SceneFlow">paralleldomain.model.annotation.scene_flow.SceneFlow</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.FilePathedDataType.BackwardSceneFlow">
+<span class="sig-name descname"><span class="pre">BackwardSceneFlow</span></span><a class="headerlink" href="#paralleldomain.model.sensor.FilePathedDataType.BackwardSceneFlow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Type[paralleldomain.model.annotation.backward_scene_flow.BackwardSceneFlow]</p>
 </dd>
 </dl>
 </dd></dl>

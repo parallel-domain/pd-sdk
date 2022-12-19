@@ -463,8 +463,8 @@ scenes and hence will also include all scenes (Scenes that have sensor frames wi
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.get_sensor_frames">
-<span class="sig-name descname"><span class="pre">get_sensor_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a generator that yield all sensor frames from the scenes with the given names.
+<span class="sig-name descname"><span class="pre">get_sensor_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_cameras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_radars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_lidars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all sensor frames from the scenes with the given names.
 If None is passed for scenes_names all scenes in this dataset are used. Same for sensor_names and frame_ids.
 None means all available will be returned.</p>
 <dl class="field-list simple">
@@ -476,6 +476,15 @@ None means all available will be returned.</p>
 <li><p><strong>sensor_names</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
 <li><p><strong>frame_ids</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
 <li><p><strong>scene_names</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>shuffle</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>fast_shuffle</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>concurrent</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>max_queue_size</strong> (<em>int</em>) – </p></li>
+<li><p><strong>max_workers</strong> (<em>int</em>) – </p></li>
+<li><p><strong>random_seed</strong> (<em>int</em>) – </p></li>
+<li><p><strong>only_cameras</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>only_radars</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>only_lidars</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -554,6 +563,64 @@ None means all available will be returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.scene_pipeline">
+<span class="sig-name descname"><span class="pre">scene_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endless_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_ordered_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.scene_pipeline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all scenes from the dataset with the given names.
+If None is passed for scenes_names all scenes in this dataset are returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code>, <a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a>], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>shuffle</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>concurrent</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>endless_loop</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>random_seed</strong> (<em>int</em>) – </p></li>
+<li><p><strong>scene_names</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>only_ordered_scenes</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>max_queue_size</strong> (<em>int</em>) – </p></li>
+<li><p><strong>max_workers</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.sensor_frame_pipeline">
+<span class="sig-name descname"><span class="pre">sensor_frame_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endless_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_ordered_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_cameras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_radars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_lidars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields tuples of SensorFrame, Frame, Scene from the dataset.
+It can also be configured to only return certain scenes, frames, sensors.
+By setting shuffle = True the data is returned a randomized order.
+By setting concurrent = True threads are used to speed up the generator.</p>
+<p>You can use this as quick access to sensor frames to load images, annotations etc. and feed those to
+your models or to encode the sensor frames into another data format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code>, <a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a>]], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>shuffle</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>fast_shuffle</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>concurrent</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>endless_loop</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>random_seed</strong> (<em>int</em>) – </p></li>
+<li><p><strong>scene_names</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>frame_ids</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>sensor_names</strong> (<em>Optional</em><em>[</em><em>Iterable</em><em>[</em><em>str</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>only_ordered_scenes</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>max_queue_size</strong> (<em>int</em>) – </p></li>
+<li><p><strong>max_workers</strong> (<em>int</em>) – </p></li>
+<li><p><strong>only_cameras</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>only_radars</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>only_lidars</strong> (<em>bool</em>) – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
