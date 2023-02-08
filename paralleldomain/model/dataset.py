@@ -372,7 +372,6 @@ class Dataset:
         max_queue_size: int = 8,
         max_workers: int = 4,
     ) -> Generator[Union[UnorderedScene, Scene], None, None]:
-
         """
         Returns a generator that yields all scenes from the dataset with the given names.
         If None is passed for scenes_names all scenes in this dataset are returned.
