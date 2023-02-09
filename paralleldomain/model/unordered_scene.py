@@ -294,7 +294,6 @@ class UnorderedScene(Generic[TDateTime]):
         max_queue_size: int = 8,
         max_workers: int = 4,
     ) -> Generator[Frame[TDateTime], None, None]:
-
         runenv = pypeln.sync
         if concurrent:
             if not shuffle:

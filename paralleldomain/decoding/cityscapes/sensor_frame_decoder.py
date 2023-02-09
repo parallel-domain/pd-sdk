@@ -68,7 +68,6 @@ class CityscapesCameraSensorFrameDecoder(CameraSensorFrameDecoder[None]):
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
-
         img_suffix = "_leftImg8bit"
         seg_map_suffix = "_gtFine_labelIds"
         # seg_map_suffix = "_gtFine_labelTrainIds"
