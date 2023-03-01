@@ -374,7 +374,6 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         return calib_dto_extrinsic
 
     def encode_camera_intrinsic(self, sensor_frame: CameraSensorFrame) -> geometry_pb2.CameraIntrinsics:
-
         intr = sensor_frame.intrinsic
         calib_dto_intrinsic = geometry_pb2.CameraIntrinsics(
             fx=intr.fx,
