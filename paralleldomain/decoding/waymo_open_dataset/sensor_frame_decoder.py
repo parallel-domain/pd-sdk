@@ -12,7 +12,7 @@ from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_CAMERA_NAME_TO_INDEX,
     WaymoFileAccessMixin,
     decode_class_maps,
-    get_cached_pre_calcualted_scene_to_has_segmentation,
+    get_cached_pre_calculated_scene_to_has_segmentation,
 )
 from paralleldomain.model.annotation import (
     AnnotationType,
@@ -74,7 +74,7 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         if self.use_precalculated_maps and self.split_name == "training":
-            has_segmentation = get_cached_pre_calcualted_scene_to_has_segmentation(
+            has_segmentation = get_cached_pre_calculated_scene_to_has_segmentation(
                 lazy_load_cache=self.lazy_load_cache,
                 dataset_name=self.dataset_name,
                 scene_name=self.scene_name,
