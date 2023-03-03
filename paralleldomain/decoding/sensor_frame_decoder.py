@@ -198,13 +198,8 @@ class CameraSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         pass
 
     def _decode_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
-        lut_csv_path = self._dataset_path / self.scene_name / "calibration" / f"{sensor_name}.csv"
         if sensor_name in self.settings.distortion_lookups:
             return self.settings.distortion_lookups[sensor_name]
-        elif lut_csv_path.exists():
-            with lut_csv_path.open() as f:
-                lut = np.loadtxt(f, delimiter=",", dtype="float")
-            return DistortionLookupTable.from_ndarray(lut)
         return None
 
     @abc.abstractmethod
