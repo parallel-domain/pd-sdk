@@ -15,7 +15,10 @@ from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_INDEX_TO_LIDAR_NAME,
     WaymoFileAccessMixin,
 )
-from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import WaymoOpenDatasetCameraSensorFrameDecoder
+from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import (
+    WaymoOpenDatasetCameraSensorFrameDecoder,
+    WaymoOpenDatasetLidarSensorFrameDecoder,
+)
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -72,12 +75,19 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
-        raise NotImplementedError()
+        return WaymoOpenDatasetLidarSensorFrameDecoder(
+            dataset_name=self.dataset_name,
+            scene_name=self.scene_name,
+            dataset_path=self.dataset_path,
+            settings=self.settings,
+            use_precalculated_maps=self.use_precalculated_maps,
+            split_name=self.split_name,
+        )
 
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[datetime]:
-        raise NotImplementedError()
+        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("This dataset has no radar data!")
