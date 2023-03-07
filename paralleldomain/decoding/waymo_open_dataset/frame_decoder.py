@@ -10,7 +10,11 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     LidarSensorFrameDecoder,
     RadarSensorFrameDecoder,
 )
-from paralleldomain.decoding.waymo_open_dataset.common import WAYMO_INDEX_TO_CAMERA_NAME, WaymoFileAccessMixin
+from paralleldomain.decoding.waymo_open_dataset.common import (
+    WAYMO_INDEX_TO_CAMERA_NAME,
+    WAYMO_INDEX_TO_LIDAR_NAME,
+    WaymoFileAccessMixin,
+)
 from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import WaymoOpenDatasetCameraSensorFrameDecoder
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
@@ -45,7 +49,8 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         return [WAYMO_INDEX_TO_CAMERA_NAME[img.name] for img in record.images]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        raise NotImplementedError()
+        record = self.get_record_at(frame_id=frame_id)
+        return [WAYMO_INDEX_TO_LIDAR_NAME[laser.name] for laser in record.lasers]
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         record = self.get_record_at(frame_id=frame_id)

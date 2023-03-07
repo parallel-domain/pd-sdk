@@ -1,5 +1,6 @@
 import json
 import struct
+from functools import partial
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
@@ -55,6 +56,16 @@ WAYMO_INDEX_TO_CAMERA_NAME = {
 
 WAYMO_CAMERA_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_CAMERA_NAME.items()}
 
+WAYMO_INDEX_TO_LIDAR_NAME = {
+    1: "TOP",
+    2: "FRONT",
+    3: "SIDE_LEFT",
+    4: "SIDE_RIGHT",
+    5: "REAR",
+}
+
+WAYMO_LIDAR_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_LIDAR_NAME.items()}
+
 
 def get_record_iterator(
     record_path: AnyPath, read_frame: bool
@@ -99,24 +110,24 @@ def get_record_at(record_path: AnyPath, frame_id: FrameId) -> Optional[dataset_p
         return frame
 
 
-def load_pre_calcualted_scene_to_id_map(split_name: str) -> Dict[SceneName, List[Dict[str, Any]]]:
+def load_pre_calculated_scene_to_id_map(split_name: str) -> Dict[SceneName, List[Dict[str, Any]]]:
     file_path = AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_scenes_to_frame_info.json"
     with file_path.open("r") as fp:
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_scene_to_frame_info(
+def get_cached_pre_calculated_scene_to_frame_info(
     lazy_load_cache: LazyLoadCache, dataset_name: str, split_name: str
 ) -> Dict[SceneName, List[Dict[str, Any]]]:
     _unique_cache_key = create_cache_key(dataset_name=dataset_name, extra=f"{split_name}scene_to_fid")
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_scene_to_id_map,
+        loader=partial(load_pre_calculated_scene_to_id_map, split_name=split_name),
     )
     return id_map
 
 
-def load_pre_calcualted_scene_to_has_segmentation(split_name: str) -> Dict[str, bool]:
+def load_pre_calculated_scene_to_has_segmentation(split_name: str) -> Dict[str, bool]:
     file_path = (
         AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_sensor_frame_to_has_segmentation.json"
     )
@@ -124,7 +135,7 @@ def load_pre_calcualted_scene_to_has_segmentation(split_name: str) -> Dict[str, 
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_scene_to_has_segmentation(
+def get_cached_pre_calculated_scene_to_has_segmentation(
     lazy_load_cache: LazyLoadCache,
     dataset_name: str,
     scene_name: SceneName,
@@ -137,7 +148,7 @@ def get_cached_pre_calcualted_scene_to_has_segmentation(
     )
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_scene_to_has_segmentation,
+        loader=partial(load_pre_calculated_scene_to_has_segmentation, split_name=split_name),
     )
     key = f"{scene_name}-{frame_id}-{sensor_name}"
     if key in id_map:

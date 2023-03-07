@@ -80,6 +80,7 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
                 scene_name=self.scene_name,
                 sensor_name=sensor_name,
                 frame_id=frame_id,
+                split_name=self.split_name,
             )
             if has_segmentation:
                 return {
