@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import lru_cache
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
 
@@ -7,16 +8,27 @@ import imagesize
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
+from paralleldomain.decoding.sensor_frame_decoder import (
+    CameraSensorFrameDecoder,
+    F,
+    LidarSensorFrameDecoder,
+    SensorFrameDecoder,
+)
 from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_CAMERA_NAME_TO_INDEX,
     WaymoFileAccessMixin,
     decode_class_maps,
     get_cached_pre_calculated_scene_to_has_segmentation,
 )
+from paralleldomain.decoding.waymo_open_dataset.frame_utils import (
+    convert_range_image_to_point_cloud,
+    parse_range_image_and_camera_projection,
+)
 from paralleldomain.model.annotation import (
     AnnotationType,
     AnnotationTypes,
+    BoundingBox3D,
+    BoundingBoxes3D,
     InstanceSegmentation2D,
     SemanticSegmentation2D,
 )
@@ -30,7 +42,7 @@ from paralleldomain.utilities.fsio import read_image_bytes, read_json
 T = TypeVar("T")
 
 
-class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], WaymoFileAccessMixin):
+class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFileAccessMixin):
     def __init__(
         self,
         dataset_name: str,
@@ -48,24 +60,24 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         self.split_name = split_name
         self.use_precalculated_maps = use_precalculated_maps
 
-    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        return SensorIntrinsic()
+    # def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
+    #     return SensorIntrinsic()
 
-    def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        img = self.get_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
-        return img.shape[0], img.shape[1], 3
+    # def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+    #     img = self.get_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
+    #     return img.shape[0], img.shape[1], 3
 
-    def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-        record = self.get_record_at(frame_id=frame_id)
+    # def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    #     record = self.get_record_at(frame_id=frame_id)
 
-        cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
-        cam_data = record.images[cam_index]
+    #     cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+    #     cam_data = record.images[cam_index]
 
-        image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
+    #     image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
 
-        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
-        concatenated = np.concatenate([image_data, ones], axis=-1)
-        return concatenated
+    #     ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
+    #     concatenated = np.concatenate([image_data, ones], axis=-1)
+    #     return concatenated
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()
@@ -127,6 +139,9 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         if issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_isntance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
             return InstanceSegmentation2D(instance_ids=instance_ids)
+        if issubclass(annotation_type, BoundingBoxes3D):
+            boxes = self._decode_bounding_boxes_3d(sensor_name=sensor_name, frame_id=frame_id)
+            return BoundingBoxes3D(boxes=boxes)
         else:
             raise NotImplementedError(f"{annotation_type} is not supported!")
 
@@ -162,5 +177,129 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         _, instance_label = np.divmod(panoptic_label, panoptic_label_divisor)
         return np.expand_dims(instance_label, -1).astype(int)
 
+    # TODO: Fill in
+    def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
+        record = self.get_record_at(frame_id=frame_id)
+        # TODO: Should we separate LiDAR scanners? The bboxes are not split out by scanner but the point cloud is.
+
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         return None
+
+
+class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], WaymoOpenDatasetSensorFrameDecoder):
+    def __init__(
+        self,
+        dataset_name: str,
+        scene_name: SceneName,
+        dataset_path: AnyPath,
+        settings: DecoderSettings,
+        use_precalculated_maps: bool,
+        split_name: str,
+    ):
+        self._dataset_path = dataset_path
+        LidarSensorFrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
+        WaymoOpenDatasetSensorFrameDecoder.__init__(
+            self=self,
+            dataset_name=dataset_name,
+            scene_name=scene_name,
+            dataset_path=self._dataset_path,
+            settings=settings,
+            use_precalculated_maps=use_precalculated_maps,
+            split_name=split_name,
+        )
+        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
+
+        def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            """
+            NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
+            """
+            record = self.get_record_at(frame_id=frame_id)
+            # Range image to point cloud processing
+            (range_images, camera_projections, _, range_image_top_pose) = parse_range_image_and_camera_projection(
+                record
+            )
+
+            # Point Cloud Conversion and Viz
+            # points, cp_points = frame_utils.convert_range_image_to_point_cloud(
+            points, cp_points = convert_range_image_to_point_cloud(
+                record, range_images, camera_projections, range_image_top_pose
+            )
+            # points_ri2, cp_points_ri2 = frame_utils.convert_range_image_to_point_cloud(
+            points_ri2, cp_points_ri2 = convert_range_image_to_point_cloud(
+                record, range_images, camera_projections, range_image_top_pose, ri_index=1
+            )
+
+        def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+            return len(data)
+
+        def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+            return data[:, :3]
+
+        def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            """
+            NuScenes point cloud does not have RGB values, so returns np.ndarray of zeros .
+            """
+            cloud_size = self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
+            return np.zeros([cloud_size, 3])
+
+        def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+            return data[:, 3].reshape(-1, 1)
+
+        def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
+
+        def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+            return data[:, 4]
+
+        def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+            return None
+
+
+class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], WaymoOpenDatasetSensorFrameDecoder):
+    def __init__(
+        self,
+        dataset_name: str,
+        scene_name: SceneName,
+        dataset_path: AnyPath,
+        settings: DecoderSettings,
+        use_precalculated_maps: bool,
+        split_name: str,
+    ):
+        CameraSensorFrameDecoder.__init__(
+            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+        )
+        WaymoOpenDatasetSensorFrameDecoder.__init__(
+            self=self,
+            dataset_name=dataset_name,
+            scene_name=scene_name,
+            dataset_path=dataset_path,
+            settings=settings,
+            use_precalculated_maps=use_precalculated_maps,
+            split_name=split_name,
+        )
+        self._dataset_path = dataset_path
+        self.split_name = split_name
+        self.use_precalculated_maps = use_precalculated_maps
+
+    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
+        return SensorIntrinsic()
+
+    def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+        img = self.get_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
+        return img.shape[0], img.shape[1], 3
+
+    def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+        record = self.get_record_at(frame_id=frame_id)
+
+        cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+        cam_data = record.images[cam_index]
+
+        image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
+
+        ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
+        concatenated = np.concatenate([image_data, ones], axis=-1)
+        return concatenated

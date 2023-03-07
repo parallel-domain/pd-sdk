@@ -26,15 +26,11 @@ def parse_range_image_and_camera_projection(frame: dataset_pb2.Frame) -> ParsedF
     Returns:
       range_images: A dict of {laser_name,
         [range_image_first_return, range_image_second_return]}.
-      camera_projections: A dict of {laser_name,
-        [camera_projection_from_first_return,
-        camera_projection_from_second_return]}.
       seg_labels: segmentation labels, a dict of {laser_name,
         [seg_label_first_return, seg_label_second_return]}
       range_image_top_pose: range image pixel pose for top lidar.
     """
     range_images = {}
-    camera_projections = {}
     seg_labels = {}
     range_image_top_pose = None
     for laser in frame.lasers:
@@ -49,11 +45,6 @@ def parse_range_image_and_camera_projection(frame: dataset_pb2.Frame) -> ParsedF
                 range_image_top_pose = dataset_pb2.MatrixFloat()
                 range_image_top_pose.ParseFromString(bytearray(range_image_top_pose_str_tensor))
 
-            camera_projection_str_tensor = zlib.decompress(laser.ri_return1.camera_projection_compressed)
-            cp = dataset_pb2.MatrixInt32()
-            cp.ParseFromString(bytearray(camera_projection_str_tensor))
-            camera_projections[laser.name] = [cp]
-
             if len(laser.ri_return1.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
                 seg_label_str_tensor = zlib.decompress(laser.ri_return1.segmentation_label_compressed)
                 seg_label = dataset_pb2.MatrixInt32()
@@ -65,17 +56,12 @@ def parse_range_image_and_camera_projection(frame: dataset_pb2.Frame) -> ParsedF
             ri.ParseFromString(bytearray(range_image_str_tensor))
             range_images[laser.name].append(ri)
 
-            camera_projection_str_tensor = zlib.decompress(laser.ri_return2.camera_projection_compressed)
-            cp = dataset_pb2.MatrixInt32()
-            cp.ParseFromString(bytearray(camera_projection_str_tensor))
-            camera_projections[laser.name].append(cp)
-
             if len(laser.ri_return2.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
                 seg_label_str_tensor = zlib.decompress(laser.ri_return2.segmentation_label_compressed)
                 seg_label = dataset_pb2.MatrixInt32()
                 seg_label.ParseFromString(bytearray(seg_label_str_tensor))
                 seg_labels[laser.name].append(seg_label)
-    return range_images, camera_projections, seg_labels, range_image_top_pose
+    return range_images, seg_labels, range_image_top_pose
 
 
 def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index=0, keep_polar_features=False):
@@ -152,17 +138,15 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
 
 
 def convert_range_image_to_point_cloud(
-    frame, range_images, camera_projections, range_image_top_pose, ri_index=0, keep_polar_features=False
+    frame, range_images, range_image_top_pose, ri_index=0, keep_polar_features=False
 ):
     """Convert range images to point cloud.
+    Note: camera projection points were removed from this function but were present in Waymo Open Dataset version.
 
     Args:
       frame: open dataset frame
       range_images: A dict of {laser_name, [range_image_first_return,
         range_image_second_return]}.
-      camera_projections: A dict of {laser_name,
-        [camera_projection_from_first_return,
-        camera_projection_from_second_return]}.
       range_image_top_pose: range image pixel pose for top lidar.
       ri_index: 0 for the first return, 1 for the second return.
       keep_polar_features: If true, keep the features from the polar range image
@@ -172,12 +156,9 @@ def convert_range_image_to_point_cloud(
     Returns:
       points: {[N, 3]} list of 3d lidar points of length 5 (number of lidars).
         (NOTE: Will be {[N, 6]} if keep_polar_features is true.
-      cp_points: {[N, 6]} list of camera projections of length 5
-        (number of lidars).
     """
     calibrations = sorted(frame.context.laser_calibrations, key=lambda c: c.name)
     points = []
-    cp_points = []
 
     cartesian_range_images = convert_range_image_to_cartesian(
         frame, range_images, range_image_top_pose, ri_index, keep_polar_features
@@ -191,13 +172,9 @@ def convert_range_image_to_point_cloud(
         range_image_cartesian = cartesian_range_images[c.name]
         points_tensor = range_image_cartesian[range_image_mask]
 
-        cp = camera_projections[c.name][ri_index]
-        cp_tensor = np.asarray(cp.data).reshape(cp.shape.dims)
-        cp_points_tensor = cp_tensor[range_image_mask]
         points.append(points_tensor)
-        cp_points.append(cp_points_tensor)
 
-    return points, cp_points
+    return points
 
 
 def get_rotation_matrix(roll, pitch, yaw, name=None):
