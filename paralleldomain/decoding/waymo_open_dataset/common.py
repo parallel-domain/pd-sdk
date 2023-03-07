@@ -156,6 +156,9 @@ def get_cached_pre_calculated_scene_to_has_segmentation(
     return False
 
 
+# TODO: May need get_cached_pre_calculated_scene_to_has_point_cloud, not sure yet
+
+
 class WaymoFileAccessMixin(LazyLoadPropertyMixin):
     def __init__(self, record_path: AnyPath):
         self.record_path = record_path

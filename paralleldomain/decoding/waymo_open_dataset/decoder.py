@@ -8,12 +8,17 @@ from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateT
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.waymo_open_dataset.common import (
+    WAYMO_INDEX_TO_CAMERA_NAME,
+    WAYMO_INDEX_TO_LIDAR_NAME,
     decode_class_maps,
     get_cached_pre_calculated_scene_to_frame_info,
     get_record_iterator,
 )
 from paralleldomain.decoding.waymo_open_dataset.frame_decoder import WaymoOpenDatasetFrameDecoder
-from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import WaymoOpenDatasetCameraSensorDecoder
+from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import (
+    WaymoOpenDatasetCameraSensorDecoder,
+    WaymoOpenDatasetLidarSensorDecoder,
+)
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -123,10 +128,10 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return self.get_camera_names(scene_name=scene_name)
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return ["FRONT", "FRONT_LEFT", "FRONT_RIGHT", "SIDE_LEFT", "SIDE_RIGHT"]
+        return list(WAYMO_INDEX_TO_CAMERA_NAME.values())[1:]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        raise NotImplementedError()
+        return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()
@@ -146,7 +151,14 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[datetime]:
-        raise ValueError("Directory decoder does not support lidar data!")
+        return WaymoOpenDatasetLidarSensorDecoder(
+            dataset_name=self.dataset_name,
+            dataset_path=self._dataset_path,
+            scene_name=scene_name,
+            settings=self.settings,
+            split_name=self.split_name,
+            use_precalculated_maps=self.use_precalculated_maps,
+        )
 
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
