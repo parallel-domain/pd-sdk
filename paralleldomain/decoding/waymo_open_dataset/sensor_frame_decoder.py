@@ -60,25 +60,6 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         self.split_name = split_name
         self.use_precalculated_maps = use_precalculated_maps
 
-    # def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-    #     return SensorIntrinsic()
-
-    # def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-    #     img = self.get_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
-    #     return img.shape[0], img.shape[1], 3
-
-    # def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
-    #     record = self.get_record_at(frame_id=frame_id)
-
-    #     cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
-    #     cam_data = record.images[cam_index]
-
-    #     image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
-
-    #     ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
-    #     concatenated = np.concatenate([image_data, ones], axis=-1)
-    #     return concatenated
-
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()
 
@@ -209,54 +190,60 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         )
         self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
-        def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            """
-            NuScenes .pcd.bin schema is [x,y,z,intensity,ring_index]
-            """
-            record = self.get_record_at(frame_id=frame_id)
-            # Range image to point cloud processing
-            (range_images, camera_projections, _, range_image_top_pose) = parse_range_image_and_camera_projection(
-                record
-            )
+    # TODO: Add include_second_returns boolean
+    # TODO: Add intensity
+    # TODO: Add ring index
+    def _decode_point_cloud_data(self, frame_id: FrameId, sensor_name: SensorName = "lidar") -> Optional[np.ndarray]:
+        """
+        Waymo record.lasers schema is [range, intensity, and elongation, x, y, z]
+        """
+        record = self.get_record_at(frame_id=frame_id)
+        # Range image to point cloud processing
+        (range_images, _, range_image_top_pose) = parse_range_image_and_camera_projection(record)
 
-            # Point Cloud Conversion and Viz
-            # points, cp_points = frame_utils.convert_range_image_to_point_cloud(
-            points, cp_points = convert_range_image_to_point_cloud(
-                record, range_images, camera_projections, range_image_top_pose
-            )
-            # points_ri2, cp_points_ri2 = frame_utils.convert_range_image_to_point_cloud(
-            points_ri2, cp_points_ri2 = convert_range_image_to_point_cloud(
-                record, range_images, camera_projections, range_image_top_pose, ri_index=1
-            )
+        # Point Cloud Conversion and Viz
+        points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
+        points_ri2 = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose, ri_index=1)
+        # 3d points in vehicle frame.
+        points_all = np.concatenate(points, axis=0)
+        points_all_ri2 = np.concatenate(points_ri2, axis=0)
 
-        def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
-            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-            return len(data)
+        include_second_returns = True  # Pull this flag out
+        if include_second_returns:
+            return np.concatenate([points_all, points_all_ri2], axis=0)
+        else:
+            return points_all
 
-        def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-            return data[:, :3]
+    def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return len(data)
 
-        def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            """
-            NuScenes point cloud does not have RGB values, so returns np.ndarray of zeros .
-            """
-            cloud_size = self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
-            return np.zeros([cloud_size, 3])
+    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return data[:, :3]
 
-        def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-            return data[:, 3].reshape(-1, 1)
+    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        """
+        Waymo Open Dataset point cloud does not have RGB values, so returns np.ndarray of zeros .
+        """
+        cloud_size = self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id)
+        return np.zeros([cloud_size, 3])
 
-        def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
+    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        # data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        # return data[:, 3].reshape(-1, 1)
+        raise NotImplementedError("Currently not decoding intensity for Waymo Open Dataset.")
 
-        def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-            return data[:, 4]
+    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        # return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
+        raise NotImplementedError("Currently not decoding timestamps for Waymo Open Dataset.")
 
-        def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-            return None
+    # TODO: Replace with decode_point_cloud_laser_index
+    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        raise NotImplementedError("No ring data for Waymo Open Dataset.")
+
+    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
 
 
 class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], WaymoOpenDatasetSensorFrameDecoder):

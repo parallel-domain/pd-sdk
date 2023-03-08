@@ -76,7 +76,11 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
+            available_annotation_types=[
+                AnnotationTypes.SemanticSegmentation2D,
+                AnnotationTypes.InstanceSegmentation2D,
+                AnnotationTypes.BoundingBoxes3D,
+            ],
             custom_attributes=dict(),
         )
 
@@ -131,7 +135,8 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return list(WAYMO_INDEX_TO_CAMERA_NAME.values())[1:]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
+        return ["lidar"]
+        # return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()

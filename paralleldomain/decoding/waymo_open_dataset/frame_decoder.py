@@ -45,15 +45,18 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         raise ValueError("Loading from directory does not support ego pose!")
 
     def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
-        return self.get_camera_names(frame_id=frame_id)
+        cam_names = self.get_camera_names(frame_id=frame_id)
+        lidar_names = self.get_lidar_names(frame_id=frame_id)
+        return cam_names + lidar_names
 
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
         record = self.get_record_at(frame_id=frame_id)
         return [WAYMO_INDEX_TO_CAMERA_NAME[img.name] for img in record.images]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        record = self.get_record_at(frame_id=frame_id)
-        return [WAYMO_INDEX_TO_LIDAR_NAME[laser.name] for laser in record.lasers]
+        # record = self.get_record_at(frame_id=frame_id)
+        # return [WAYMO_INDEX_TO_LIDAR_NAME[laser.name] for laser in record.lasers]
+        return ["lidar"]
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         record = self.get_record_at(frame_id=frame_id)
@@ -93,12 +96,12 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         raise ValueError("This dataset has no radar data!")
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
-        raise ValueError("his dataset has no radar data!")
+        raise ValueError("This dataset has no radar data!")
 
     def _decode_radar_sensor_frame(
         self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> RadarSensorFrame[TDateTime]:
-        raise ValueError("his dataset has no radar data!")
+        raise ValueError("This dataset has no radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         record = self.get_record_at(frame_id=frame_id)
