@@ -38,6 +38,7 @@ from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, Sensor
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image_bytes, read_json
+from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 
@@ -66,6 +67,7 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
+        available_annotations = {AnnotationTypes.BoundingBoxes3D: f"{frame_id}"}
         if self.use_precalculated_maps and self.split_name == "training":
             has_segmentation = get_cached_pre_calculated_scene_to_has_segmentation(
                 lazy_load_cache=self.lazy_load_cache,
@@ -76,23 +78,25 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
                 split_name=self.split_name,
             )
             if has_segmentation:
-                return {
-                    AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
-                    AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
-                }
-            else:
-                return dict()
+                available_annotations.update(
+                    {
+                        AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
+                        AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
+                    }
+                )
+        else:
+            record = self.get_record_at(frame_id=frame_id)
 
-        record = self.get_record_at(frame_id=frame_id)
-
-        cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
-        cam_data = record.images[cam_index]
-        if cam_data.camera_segmentation_label.panoptic_label:
-            return {
-                AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
-                AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
-            }
-        return dict()
+            cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+            cam_data = record.images[cam_index]
+            if cam_data.camera_segmentation_label.panoptic_label:
+                available_annotations.update(
+                    {
+                        AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
+                        AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
+                    }
+                )
+        return available_annotations
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         record = self.get_record_at(frame_id=frame_id)
@@ -118,7 +122,7 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
             class_ids = self._decode_semantic_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
             return SemanticSegmentation2D(class_ids=class_ids)
         if issubclass(annotation_type, InstanceSegmentation2D):
-            instance_ids = self._decode_isntance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
+            instance_ids = self._decode_instance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
             return InstanceSegmentation2D(instance_ids=instance_ids)
         if issubclass(annotation_type, BoundingBoxes3D):
             boxes = self._decode_bounding_boxes_3d(sensor_name=sensor_name, frame_id=frame_id)
@@ -142,7 +146,7 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         segmentation_label, _ = np.divmod(panoptic_label, panoptic_label_divisor)
         return np.expand_dims(segmentation_label, -1).astype(int)
 
-    def _decode_isntance_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_instance_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         record = self.get_record_at(frame_id=frame_id)
 
         cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
@@ -158,10 +162,39 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         _, instance_label = np.divmod(panoptic_label, panoptic_label_divisor)
         return np.expand_dims(instance_label, -1).astype(int)
 
-    # TODO: Fill in
+    # TODO: Double check boxes in visualizer
     def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
+        boxes = list()
         record = self.get_record_at(frame_id=frame_id)
-        # TODO: Should we separate LiDAR scanners? The bboxes are not split out by scanner but the point cloud is.
+        """
+        From Waymo Open Dataset utils.keypoint_data:
+        heading: The heading of the bounding box (in radians). It is a float tensor
+            with shape [B]. Boxes are axis aligned in 2D, so it is None for camera
+            bounding boxes. For 3D boxes the heading is the angle required to rotate
+            +x to the surface normal of the box front face. It is normalized to [-pi,
+            pi).
+        """
+        for i, raw_box in enumerate(record.laser_labels):
+            pose = Transformation.from_euler_angles(
+                angles=[0, 0, raw_box.box.heading],
+                order="xyz",
+                degrees=False,
+                translation=[raw_box.box.center_x, raw_box.box.center_y, raw_box.box.center_z],
+            )
+
+            boxes.append(
+                BoundingBox3D(
+                    pose=pose,
+                    length=raw_box.box.length,  # x-axis
+                    width=raw_box.box.width,  # y-axis
+                    height=raw_box.box.height,  # z-axis
+                    class_id=raw_box.type,
+                    instance_id=i,
+                    num_points=raw_box.num_lidar_points_in_box,
+                    attributes={},  # Can add metadata here
+                )
+            )
+        return boxes
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
         return None

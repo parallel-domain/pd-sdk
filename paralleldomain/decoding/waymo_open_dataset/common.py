@@ -173,7 +173,15 @@ class WaymoFileAccessMixin(LazyLoadPropertyMixin):
         )
 
 
-WAYMO_CLASSES = [
+WAYMO_BBOX3D_CLASSES = {
+    0: "unknown",
+    1: "vehicle",
+    2: "pedestrian",
+    3: "sign",
+    4: "cyclist",
+}
+
+WAYMO_SEMSEG_CLASSES = [
     ClassDetail(
         name="UNDEFINED",
         id=cs_pb2.CameraSegmentation.TYPE_UNDEFINED,
@@ -352,4 +360,4 @@ WAYMO_CLASSES = [
 
 
 def decode_class_maps() -> Dict[AnnotationType, ClassMap]:
-    return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_CLASSES)}
+    return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_SEMSEG_CLASSES)}
