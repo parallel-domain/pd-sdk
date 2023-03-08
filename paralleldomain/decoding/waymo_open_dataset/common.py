@@ -56,6 +56,8 @@ WAYMO_INDEX_TO_CAMERA_NAME = {
 
 WAYMO_CAMERA_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_CAMERA_NAME.items()}
 
+WAYMO_USE_ALL_LIDAR_NAME = "all"
+
 WAYMO_INDEX_TO_LIDAR_NAME = {
     1: "TOP",
     2: "FRONT",
@@ -154,9 +156,6 @@ def get_cached_pre_calculated_scene_to_has_segmentation(
     if key in id_map:
         return id_map[key]
     return False
-
-
-# TODO: May need get_cached_pre_calculated_scene_to_has_point_cloud, not sure yet
 
 
 class WaymoFileAccessMixin(LazyLoadPropertyMixin):

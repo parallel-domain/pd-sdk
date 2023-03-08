@@ -37,6 +37,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         split_name: str,
         settings: Optional[DecoderSettings] = None,
         use_precalculated_maps: bool = True,
+        use_all_lidar: bool = True,
         **kwargs,
     ):
         self._init_kwargs = dict(
@@ -47,6 +48,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
         self.split_name = split_name
+        self.use_all_lidar = use_all_lidar
         self.use_precalculated_maps = use_precalculated_maps
         dataset_name = f"Waymo Open Dataset - {split_name}"
         super().__init__(dataset_name=dataset_name, settings=settings, **kwargs)
@@ -58,6 +60,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
             settings=self.settings,
             split_name=self.split_name,
             use_precalculated_maps=self.use_precalculated_maps,
+            use_all_lidar=self.use_all_lidar,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -103,8 +106,10 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         settings: DecoderSettings,
         use_precalculated_maps: bool,
         split_name: str,
+        use_all_lidar: bool,
     ):
         self.split_name = split_name
+        self.use_all_lidar = use_all_lidar
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.use_precalculated_maps = use_precalculated_maps
         super().__init__(dataset_name=dataset_name, settings=settings)
@@ -132,11 +137,13 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return self.get_camera_names(scene_name=scene_name)
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return list(WAYMO_INDEX_TO_CAMERA_NAME.values())[1:]
+        return list(WAYMO_INDEX_TO_CAMERA_NAME.values())
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return ["lidar"]
-        # return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
+        if self.use_all_lidar:
+            return ["lidar"]
+        else:
+            return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()

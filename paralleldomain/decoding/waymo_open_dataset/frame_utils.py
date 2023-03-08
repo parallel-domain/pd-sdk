@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
+from paralleldomain.decoding.waymo_open_dataset.common import WAYMO_LIDAR_NAME_TO_INDEX, WAYMO_USE_ALL_LIDAR_NAME
+
 # from waymo_open_dataset import dataset_pb2
 from paralleldomain.decoding.waymo_open_dataset.protos import dataset_pb2
 
@@ -17,11 +19,46 @@ The only adjustment was the removal of the dependency on tensorflow, replaced wi
 """
 
 
-def parse_range_image_and_camera_projection(frame: dataset_pb2.Frame) -> ParsedFrame:
+def parse_single_lidar_scanner(
+    laser: dataset_pb2.Laser, range_images: Dict, seg_labels: Dict, range_image_top_pose: dataset_pb2.MatrixFloat
+) -> Tuple[Dict, Dict, dataset_pb2.MatrixFloat]:
+    if len(laser.ri_return1.range_image_compressed) > 0:  # pylint: disable=g-explicit-length-test
+        range_image_str_tensor = zlib.decompress(laser.ri_return1.range_image_compressed)
+        ri = dataset_pb2.MatrixFloat()
+        ri.ParseFromString(bytearray(range_image_str_tensor))
+        range_images[laser.name] = [ri]
+
+        if laser.name == dataset_pb2.LaserName.TOP:
+            range_image_top_pose_str_tensor = zlib.decompress(laser.ri_return1.range_image_pose_compressed)
+            range_image_top_pose = dataset_pb2.MatrixFloat()
+            range_image_top_pose.ParseFromString(bytearray(range_image_top_pose_str_tensor))
+
+        if len(laser.ri_return1.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
+            seg_label_str_tensor = zlib.decompress(laser.ri_return1.segmentation_label_compressed)
+            seg_label = dataset_pb2.MatrixInt32()
+            seg_label.ParseFromString(bytearray(seg_label_str_tensor))
+            seg_labels[laser.name] = [seg_label]
+    if len(laser.ri_return2.range_image_compressed) > 0:  # pylint: disable=g-explicit-length-test
+        range_image_str_tensor = zlib.decompress(laser.ri_return2.range_image_compressed)
+        ri = dataset_pb2.MatrixFloat()
+        ri.ParseFromString(bytearray(range_image_str_tensor))
+        range_images[laser.name].append(ri)
+
+        if len(laser.ri_return2.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
+            seg_label_str_tensor = zlib.decompress(laser.ri_return2.segmentation_label_compressed)
+            seg_label = dataset_pb2.MatrixInt32()
+            seg_label.ParseFromString(bytearray(seg_label_str_tensor))
+            seg_labels[laser.name].append(seg_label)
+    return range_images, seg_labels, range_image_top_pose
+
+
+def parse_range_image_and_camera_projection(
+    record: dataset_pb2.Frame, sensor_name: str = WAYMO_USE_ALL_LIDAR_NAME
+) -> Tuple[Dict, Dict, dataset_pb2.MatrixFloat]:
     """Parse range images and camera projections given a frame.
 
     Args:
-      frame: open dataset frame proto
+      record: open dataset frame proto
 
     Returns:
       range_images: A dict of {laser_name,
@@ -33,34 +70,25 @@ def parse_range_image_and_camera_projection(frame: dataset_pb2.Frame) -> ParsedF
     range_images = {}
     seg_labels = {}
     range_image_top_pose = None
-    for laser in frame.lasers:
-        if len(laser.ri_return1.range_image_compressed) > 0:  # pylint: disable=g-explicit-length-test
-            range_image_str_tensor = zlib.decompress(laser.ri_return1.range_image_compressed)
-            ri = dataset_pb2.MatrixFloat()
-            ri.ParseFromString(bytearray(range_image_str_tensor))
-            range_images[laser.name] = [ri]
-
-            if laser.name == dataset_pb2.LaserName.TOP:
-                range_image_top_pose_str_tensor = zlib.decompress(laser.ri_return1.range_image_pose_compressed)
-                range_image_top_pose = dataset_pb2.MatrixFloat()
-                range_image_top_pose.ParseFromString(bytearray(range_image_top_pose_str_tensor))
-
-            if len(laser.ri_return1.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
-                seg_label_str_tensor = zlib.decompress(laser.ri_return1.segmentation_label_compressed)
-                seg_label = dataset_pb2.MatrixInt32()
-                seg_label.ParseFromString(bytearray(seg_label_str_tensor))
-                seg_labels[laser.name] = [seg_label]
-        if len(laser.ri_return2.range_image_compressed) > 0:  # pylint: disable=g-explicit-length-test
-            range_image_str_tensor = zlib.decompress(laser.ri_return2.range_image_compressed)
-            ri = dataset_pb2.MatrixFloat()
-            ri.ParseFromString(bytearray(range_image_str_tensor))
-            range_images[laser.name].append(ri)
-
-            if len(laser.ri_return2.segmentation_label_compressed) > 0:  # pylint: disable=g-explicit-length-test
-                seg_label_str_tensor = zlib.decompress(laser.ri_return2.segmentation_label_compressed)
-                seg_label = dataset_pb2.MatrixInt32()
-                seg_label.ParseFromString(bytearray(seg_label_str_tensor))
-                seg_labels[laser.name].append(seg_label)
+    if sensor_name == WAYMO_USE_ALL_LIDAR_NAME:
+        # Loop through all 5 laser scanners
+        for laser in record.lasers:
+            range_images, seg_labels, range_image_top_pose = parse_single_lidar_scanner(
+                laser=laser, range_images=range_images, seg_labels=seg_labels, range_image_top_pose=range_image_top_pose
+            )
+    elif sensor_name in WAYMO_LIDAR_NAME_TO_INDEX:
+        # Only parse the sensor_name scanner
+        sensor_ix = (
+            WAYMO_LIDAR_NAME_TO_INDEX[sensor_name] - 1
+        )  # Sensor indices are indexed from 1 but the record.lasers is a list indexed from 0.
+        laser = record.lasers[sensor_ix]
+        range_images, seg_labels, range_image_top_pose = parse_single_lidar_scanner(
+            laser=laser, range_images=range_images, seg_labels=seg_labels, range_image_top_pose=range_image_top_pose
+        )
+    else:
+        raise KeyError(
+            f"sensor_name {sensor_name} not available in WAYMO_LIDAR_NAME_TO_INDEX: {WAYMO_LIDAR_NAME_TO_INDEX.keys()}"
+        )
     return range_images, seg_labels, range_image_top_pose
 
 

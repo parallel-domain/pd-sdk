@@ -16,6 +16,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
 )
 from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_CAMERA_NAME_TO_INDEX,
+    WAYMO_USE_ALL_LIDAR_NAME,
     WaymoFileAccessMixin,
     decode_class_maps,
     get_cached_pre_calculated_scene_to_has_segmentation,
@@ -226,13 +227,17 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
     # TODO: Add include_second_returns boolean
     # TODO: Add intensity
     # TODO: Add ring index
-    def _decode_point_cloud_data(self, frame_id: FrameId, sensor_name: SensorName = "lidar") -> Optional[np.ndarray]:
+    def _decode_point_cloud_data(
+        self, frame_id: FrameId, sensor_name: SensorName = WAYMO_USE_ALL_LIDAR_NAME
+    ) -> Optional[np.ndarray]:
         """
         Waymo record.lasers schema is [range, intensity, and elongation, x, y, z]
         """
         record = self.get_record_at(frame_id=frame_id)
         # Range image to point cloud processing
-        (range_images, _, range_image_top_pose) = parse_range_image_and_camera_projection(record)
+        (range_images, _, range_image_top_pose) = parse_range_image_and_camera_projection(
+            record=record, sensor_name=sensor_name
+        )
 
         # Point Cloud Conversion and Viz
         points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
