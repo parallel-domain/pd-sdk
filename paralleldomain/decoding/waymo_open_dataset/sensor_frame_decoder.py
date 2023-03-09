@@ -240,8 +240,12 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         )
 
         # Point Cloud Conversion and Viz
-        points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
-        points_ri2 = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose, ri_index=1)
+        points = convert_range_image_to_point_cloud(
+            record, range_images, range_image_top_pose, keep_polar_features=True
+        )
+        points_ri2 = convert_range_image_to_point_cloud(
+            record, range_images, range_image_top_pose, ri_index=1, keep_polar_features=True
+        )
         # 3d points in vehicle frame.
         points_all = np.concatenate(points, axis=0)
         points_all_ri2 = np.concatenate(points_ri2, axis=0)

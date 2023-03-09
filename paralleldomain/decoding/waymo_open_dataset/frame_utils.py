@@ -92,7 +92,7 @@ def parse_range_image_and_camera_projection(
     return range_images, seg_labels, range_image_top_pose
 
 
-def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index=0, keep_polar_features=False):
+def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index=0, keep_intensity=False):
     """Convert range images from polar coordinates to Cartesian coordinates.
 
     Args:
@@ -101,14 +101,13 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
         range_image_second_return]}.
       range_image_top_pose: range image pixel pose for top lidar.
       ri_index: 0 for the first return, 1 for the second return.
-      keep_polar_features: If true, keep the features from the polar range image
-        (i.e. range, intensity, and elongation) as the first features in the
-        output range image.
+      keep_intensity: If true, keep the intensity from the polar range image
+        as the first features in the output range image.
 
     Returns:
       dict of {laser_name, (H, W, D)} range images in Cartesian coordinates. D
-        will be 3 if keep_polar_features is False (x, y, z) and 6 if
-        keep_polar_features is True (range, intensity, elongation, x, y, z).
+        will be 3 if keep_intensity is False (x, y, z) and 6 if
+        keep_intensity is True (intensity, x, y, z).
     """
     cartesian_range_images = {}
     frame_pose = np.reshape(np.array(frame.pose.transform), [4, 4])
@@ -154,20 +153,19 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
 
         range_image_cartesian = np.squeeze(range_image_cartesian, axis=0)
 
-        if keep_polar_features:
-            # If we want to keep the polar coordinate features of range, intensity,
-            # and elongation, concatenate them to be the initial dimensions of the
-            # returned Cartesian range image.
-            range_image_cartesian = np.concat([range_image_tensor[..., 0:3], range_image_cartesian], axis=-1)
+        if keep_intensity:
+            # Note: we are not currently keeping range or elongation, which are available at this point.
+            # range_image_tensor columns are [range, intensity, elongation,x,y,z]
+            # If we want to keep intensity, concatenate them to be the
+            # initial dimensions of the returned Cartesian range image.
+            range_image_cartesian = np.concatenate([range_image_tensor[..., 1:2], range_image_cartesian], axis=-1)
 
         cartesian_range_images[c.name] = range_image_cartesian
 
     return cartesian_range_images
 
 
-def convert_range_image_to_point_cloud(
-    frame, range_images, range_image_top_pose, ri_index=0, keep_polar_features=False
-):
+def convert_range_image_to_point_cloud(frame, range_images, range_image_top_pose, ri_index=0, keep_intensity=False):
     """Convert range images to point cloud.
     Note: camera projection points were removed from this function but were present in Waymo Open Dataset version.
 
@@ -177,19 +175,19 @@ def convert_range_image_to_point_cloud(
         range_image_second_return]}.
       range_image_top_pose: range image pixel pose for top lidar.
       ri_index: 0 for the first return, 1 for the second return.
-      keep_polar_features: If true, keep the features from the polar range image
+      keep_intensity: If true, keep the features from the polar range image
         (i.e. range, intensity, and elongation) as the first features in the
         output range image.
 
     Returns:
       points: {[N, 3]} list of 3d lidar points of length 5 (number of lidars).
-        (NOTE: Will be {[N, 6]} if keep_polar_features is true.
+        (NOTE: Will be {[N, 6]} if keep_intensity is true.
     """
     calibrations = sorted(frame.context.laser_calibrations, key=lambda c: c.name)
     points = []
 
     cartesian_range_images = convert_range_image_to_cartesian(
-        frame, range_images, range_image_top_pose, ri_index, keep_polar_features
+        frame, range_images, range_image_top_pose, ri_index, keep_intensity
     )
 
     for c in calibrations:
