@@ -231,7 +231,12 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         self, frame_id: FrameId, sensor_name: SensorName = WAYMO_USE_ALL_LIDAR_NAME
     ) -> Optional[np.ndarray]:
         """
-        Waymo record.lasers schema is [range, intensity, and elongation, x, y, z]
+        Waymo record.lasers schema is [intensity, elongation, x, y, z]
+        Elongation :
+        Lidar elongation refers to the elongation of the pulse beyond its nominal width.
+        Returns with long pulse elongation, for example, indicate that the laser reflection
+        is potentially smeared or refracted, such that the return pulse is elongated in time.
+        (Source: https://patrick-llgc.github.io/Learning-Deep-Learning/paper_notes/waymo_dataset.html)
         """
         record = self.get_record_at(frame_id=frame_id)
         # Range image to point cloud processing
@@ -240,12 +245,8 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         )
 
         # Point Cloud Conversion and Viz
-        points = convert_range_image_to_point_cloud(
-            record, range_images, range_image_top_pose, keep_polar_features=True
-        )
-        points_ri2 = convert_range_image_to_point_cloud(
-            record, range_images, range_image_top_pose, ri_index=1, keep_polar_features=True
-        )
+        points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
+        points_ri2 = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose, ri_index=1)
         # 3d points in vehicle frame.
         points_all = np.concatenate(points, axis=0)
         points_all_ri2 = np.concatenate(points_ri2, axis=0)
