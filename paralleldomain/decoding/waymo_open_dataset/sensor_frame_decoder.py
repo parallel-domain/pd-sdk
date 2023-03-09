@@ -263,7 +263,7 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
 
     def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, :3]
+        return data[:, 2:]
 
     def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
@@ -273,17 +273,14 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         return np.zeros([cloud_size, 3])
 
     def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        # data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        # return data[:, 3].reshape(-1, 1)
-        raise NotImplementedError("Currently not decoding intensity for Waymo Open Dataset.")
+        data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
+        return data[:, 1]
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        # return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
-        raise NotImplementedError("Currently not decoding timestamps for Waymo Open Dataset.")
+        return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
 
-    # TODO: Replace with decode_point_cloud_laser_index
     def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        raise NotImplementedError("No ring data for Waymo Open Dataset.")
+        return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
 
     def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return None
