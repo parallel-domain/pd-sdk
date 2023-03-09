@@ -229,7 +229,7 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         self, frame_id: FrameId, sensor_name: SensorName = WAYMO_USE_ALL_LIDAR_NAME
     ) -> Optional[np.ndarray]:
         """
-        Waymo record.lasers schema is [intensity, elongation, x, y, z]
+        Waymo record.lasers schema is [x, y, z, intensity, elongation]
         Elongation :
         Lidar elongation refers to the elongation of the pulse beyond its nominal width.
         Returns with long pulse elongation, for example, indicate that the laser reflection
@@ -261,7 +261,7 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
 
     def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, 2:]
+        return data[:, :3]
 
     def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
@@ -272,7 +272,7 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
 
     def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
-        return data[:, 1]
+        return data[:, 3]
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))

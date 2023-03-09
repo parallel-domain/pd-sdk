@@ -104,7 +104,7 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
 
     Returns:
       dict of {laser_name, (H, W, D)} range images in Cartesian coordinates.
-        5 fields are [intensity, elongation, x, y, z]
+        5 fields are [x, y, z, intensity, elongation]
     """
     cartesian_range_images = {}
     frame_pose = np.reshape(np.array(frame.pose.transform), [4, 4])
@@ -151,7 +151,7 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
         range_image_cartesian = np.squeeze(range_image_cartesian, axis=0)
 
         # Note: we are not currently keeping range because it's repetitive with x,y,z., but it is available here
-        range_image_cartesian = np.concatenate([range_image_tensor[..., 1:3], range_image_cartesian], axis=-1)
+        range_image_cartesian = np.concatenate([range_image_cartesian, range_image_tensor[..., 1:3]], axis=-1)
 
         cartesian_range_images[c.name] = range_image_cartesian
 
@@ -171,7 +171,7 @@ def convert_range_image_to_point_cloud(frame, range_images, range_image_top_pose
 
     Returns:
       points: {[N, 5]} list of 3d lidar points of length 5 (number of lidars).
-        5 fields are [intensity, elongation, x, y, z]
+        5 fields are [x, y, z, intensity, elongation]
     """
     calibrations = sorted(frame.context.laser_calibrations, key=lambda c: c.name)
     points = []
