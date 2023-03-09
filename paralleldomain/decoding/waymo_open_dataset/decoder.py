@@ -10,6 +10,7 @@ from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSen
 from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_INDEX_TO_CAMERA_NAME,
     WAYMO_INDEX_TO_LIDAR_NAME,
+    WAYMO_USE_ALL_LIDAR_NAME,
     decode_class_maps,
     get_cached_pre_calculated_scene_to_frame_info,
     get_record_iterator,
@@ -134,14 +135,16 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return set(frame_ids)
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self.get_camera_names(scene_name=scene_name)
+        cam_names = self.get_camera_names(scene_name=scene_name)
+        lidar_names = self.get_lidar_names(scene_name=scene_name)
+        return cam_names + lidar_names
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
         return list(WAYMO_INDEX_TO_CAMERA_NAME.values())
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         if self.use_all_lidar:
-            return ["lidar"]
+            return [WAYMO_USE_ALL_LIDAR_NAME]
         else:
             return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
 
