@@ -35,10 +35,12 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         settings: DecoderSettings,
         use_precalculated_maps: bool,
         split_name: str,
+        use_all_lidar: bool,
     ):
         FrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         WaymoFileAccessMixin.__init__(self=self, record_path=dataset_path / scene_name)
         self.split_name = split_name
+        self.use_all_lidar = use_all_lidar
         self.use_precalculated_maps = use_precalculated_maps
         self.dataset_path = dataset_path
 

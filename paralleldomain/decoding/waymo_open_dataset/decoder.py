@@ -185,6 +185,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
             settings=self.settings,
             use_precalculated_maps=self.use_precalculated_maps,
             split_name=self.split_name,
+            use_all_lidar=self.use_all_lidar,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
