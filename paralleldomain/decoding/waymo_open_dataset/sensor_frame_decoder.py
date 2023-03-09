@@ -103,13 +103,6 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         record = self.get_record_at(frame_id=frame_id)
         return dict(stats=record.context.stats, name=record.context.name, timestamp_micros=record.timestamp_micros)
 
-    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        record = self.get_record_at(frame_id=frame_id)
-
-        cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
-        cam_data = record.images[cam_index]
-        return datetime.fromtimestamp(cam_data.camera_trigger_time)
-
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         return SensorExtrinsic.from_transformation_matrix(np.eye(4))
 
@@ -224,9 +217,14 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         )
         self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
+    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
+        # Lidar timestamp is timestamp of the first top LiDAR scan within this frame.
+        # Will not match exactly the datetime for camera sensor frames or the ego pose,
+        # Both of which should align roughly in the middle of the lidar sensor frame.
+        record = self.get_record_at(frame_id=frame_id)
+        return datetime.fromtimestamp(record.timestamp_micros / 1e6)
+
     # TODO: Add include_second_returns boolean
-    # TODO: Add intensity
-    # TODO: Add ring index
     def _decode_point_cloud_data(
         self, frame_id: FrameId, sensor_name: SensorName = WAYMO_USE_ALL_LIDAR_NAME
     ) -> Optional[np.ndarray]:
@@ -311,6 +309,15 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         self._dataset_path = dataset_path
         self.split_name = split_name
         self.use_precalculated_maps = use_precalculated_maps
+
+    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
+        # Camera timestamp is camera shutter time, which will not match exactly the datetime
+        # for the lidar sensor frame, since lidar scanning is not instantaneous.
+        record = self.get_record_at(frame_id=frame_id)
+
+        cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+        cam_data = record.images[cam_index]
+        return datetime.fromtimestamp(cam_data.camera_trigger_time)
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         return SensorIntrinsic()
