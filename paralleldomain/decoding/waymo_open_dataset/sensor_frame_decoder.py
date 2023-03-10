@@ -203,8 +203,10 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         settings: DecoderSettings,
         use_precalculated_maps: bool,
         split_name: str,
+        include_second_returns: bool,
     ):
         self._dataset_path = dataset_path
+        self.include_second_returns = include_second_returns
         LidarSensorFrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         WaymoOpenDatasetSensorFrameDecoder.__init__(
             self=self,

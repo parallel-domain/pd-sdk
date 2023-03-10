@@ -39,6 +39,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         settings: Optional[DecoderSettings] = None,
         use_precalculated_maps: bool = True,
         use_all_lidar: bool = True,
+        include_second_returns: bool = True,
         **kwargs,
     ):
         self._init_kwargs = dict(
@@ -50,6 +51,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
         self.split_name = split_name
         self.use_all_lidar = use_all_lidar
+        self.include_second_returns = include_second_returns
         self.use_precalculated_maps = use_precalculated_maps
         dataset_name = f"Waymo Open Dataset - {split_name}"
         super().__init__(dataset_name=dataset_name, settings=settings, **kwargs)
@@ -62,6 +64,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
             split_name=self.split_name,
             use_precalculated_maps=self.use_precalculated_maps,
             use_all_lidar=self.use_all_lidar,
+            include_second_returns=self.include_second_returns,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -107,9 +110,11 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         settings: DecoderSettings,
         use_precalculated_maps: bool,
         split_name: str,
+        include_second_returns: bool,
         use_all_lidar: bool,
     ):
         self.split_name = split_name
+        self.include_second_returns = include_second_returns
         self.use_all_lidar = use_all_lidar
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.use_precalculated_maps = use_precalculated_maps
@@ -173,6 +178,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
             settings=self.settings,
             split_name=self.split_name,
             use_precalculated_maps=self.use_precalculated_maps,
+            include_second_returns=self.include_second_returns,
         )
 
     def _create_frame_decoder(
@@ -186,6 +192,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
             use_precalculated_maps=self.use_precalculated_maps,
             split_name=self.split_name,
             use_all_lidar=self.use_all_lidar,
+            include_second_returns=self.include_second_returns,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
