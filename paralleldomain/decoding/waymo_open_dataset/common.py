@@ -60,6 +60,7 @@ WAYMO_CAMERA_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_CAMERA_NAME.items(
 WAYMO_USE_ALL_LIDAR_NAME = "all"
 
 WAYMO_INDEX_TO_LIDAR_NAME = {
+    0: "UNKNOWN",
     1: "TOP",
     2: "FRONT",
     3: "SIDE_LEFT",
@@ -378,7 +379,7 @@ WAYMO_3DBB_CLASSES = [
         meta=dict(),
     ),
     ClassDetail(
-        name="SIGNT",
+        name="SIGN",
         id=3,
         instanced=True,
         meta=dict(),
