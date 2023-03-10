@@ -6,6 +6,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.waymo_open_dataset.protos import camera_segmentation_pb2 as cs_pb2
 from paralleldomain.decoding.waymo_open_dataset.protos import dataset_pb2
+from paralleldomain.decoding.waymo_open_dataset.protos import label_pb2 as label_pb2
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -357,6 +358,42 @@ WAYMO_SEMSEG_CLASSES = [
     ),
 ]
 
+WAYMO_3DBB_CLASSES = [
+    ClassDetail(
+        name="UNDEFINED",
+        id=0,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="VEHICLE",
+        id=1,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="PEDESTRIAN",
+        id=2,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="SIGNT",
+        id=3,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="CYCLIST",
+        id=4,
+        instanced=True,
+        meta=dict(),
+    ),
+]
+
 
 def decode_class_maps() -> Dict[AnnotationType, ClassMap]:
-    return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_SEMSEG_CLASSES)}
+    return {
+        AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_SEMSEG_CLASSES),
+        AnnotationTypes.BoundingBoxes3D: ClassMap(classes=WAYMO_3DBB_CLASSES),
+    }
