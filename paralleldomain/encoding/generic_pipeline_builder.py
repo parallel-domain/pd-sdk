@@ -182,7 +182,6 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
     ):
-
         self.pipeline_item_type = pipeline_item_type
         self.workers = workers
         self.max_in_queue_size = max_in_queue_size

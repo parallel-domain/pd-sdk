@@ -137,7 +137,6 @@ class UMDDecoder(MapDecoder):
     def decode_lane_segments(self) -> Dict[LaneSegmentId, LaneSegment]:
         segments = dict()
         for lane_segment_id, lane_segment in self.map_umd.lane_segments.items():
-
             reference_line = self.map_umd.edges[lane_segment.reference_line]
             reference_points = np.array([(p.x, p.y) for p in reference_line.points])
 
