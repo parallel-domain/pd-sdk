@@ -9,7 +9,6 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_INDEX_TO_CAMERA_NAME,
-    WAYMO_INDEX_TO_LIDAR_NAME,
     WAYMO_USE_ALL_LIDAR_NAME,
     decode_class_maps,
     get_cached_pre_calculated_scene_to_frame_info,
@@ -38,7 +37,6 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         split_name: str,
         settings: Optional[DecoderSettings] = None,
         use_precalculated_maps: bool = True,
-        use_all_lidar: bool = True,
         include_second_returns: bool = True,
         **kwargs,
     ):
@@ -50,7 +48,6 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
         self.split_name = split_name
-        self.use_all_lidar = use_all_lidar
         self.include_second_returns = include_second_returns
         self.use_precalculated_maps = use_precalculated_maps
         dataset_name = f"Waymo Open Dataset - {split_name}"
@@ -63,7 +60,6 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
             settings=self.settings,
             split_name=self.split_name,
             use_precalculated_maps=self.use_precalculated_maps,
-            use_all_lidar=self.use_all_lidar,
             include_second_returns=self.include_second_returns,
         )
 
@@ -111,11 +107,9 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         use_precalculated_maps: bool,
         split_name: str,
         include_second_returns: bool,
-        use_all_lidar: bool,
     ):
         self.split_name = split_name
         self.include_second_returns = include_second_returns
-        self.use_all_lidar = use_all_lidar
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.use_precalculated_maps = use_precalculated_maps
         super().__init__(dataset_name=dataset_name, settings=settings)
@@ -148,10 +142,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return list(WAYMO_INDEX_TO_CAMERA_NAME.values())
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        if self.use_all_lidar:
-            return [WAYMO_USE_ALL_LIDAR_NAME]
-        else:
-            return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
+        return [WAYMO_USE_ALL_LIDAR_NAME]
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()
@@ -191,7 +182,6 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
             settings=self.settings,
             use_precalculated_maps=self.use_precalculated_maps,
             split_name=self.split_name,
-            use_all_lidar=self.use_all_lidar,
             include_second_returns=self.include_second_returns,
         )
 

@@ -76,18 +76,9 @@ def parse_range_image_and_camera_projection(
             range_images, seg_labels, range_image_top_pose = parse_single_lidar_scanner(
                 laser=laser, range_images=range_images, seg_labels=seg_labels, range_image_top_pose=range_image_top_pose
             )
-    elif sensor_name in WAYMO_LIDAR_NAME_TO_INDEX:
-        # Only parse the sensor_name scanner
-        sensor_ix = (
-            WAYMO_LIDAR_NAME_TO_INDEX[sensor_name] - 1
-        )  # Sensor indices are indexed from 1 but the record.lasers is a list indexed from 0.
-        laser = record.lasers[sensor_ix]
-        range_images, seg_labels, range_image_top_pose = parse_single_lidar_scanner(
-            laser=laser, range_images=range_images, seg_labels=seg_labels, range_image_top_pose=range_image_top_pose
-        )
     else:
         raise KeyError(
-            f"sensor_name {sensor_name} not available in WAYMO_LIDAR_NAME_TO_INDEX: {WAYMO_LIDAR_NAME_TO_INDEX.keys()}"
+            f"For Waymo Open Dataset, all LiDAR sensors are combined. Single sensors are not currently supported."
         )
     return range_images, seg_labels, range_image_top_pose
 
@@ -150,7 +141,7 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
 
         range_image_cartesian = np.squeeze(range_image_cartesian, axis=0)
 
-        # Note: we are not currently keeping range because it's repetitive with x,y,z., but it is available here
+        # Note: not currently keeping range because it's repetitive with x,y,z., but it is available here
         range_image_cartesian = np.concatenate([range_image_cartesian, range_image_tensor[..., 1:3]], axis=-1)
 
         cartesian_range_images[c.name] = range_image_cartesian
@@ -177,7 +168,6 @@ def convert_range_image_to_point_cloud(frame, range_images, range_image_top_pose
     points = []
 
     cartesian_range_images = convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index)
-
     for c in calibrations:
         range_image = range_images[c.name][ri_index]
         range_image_tensor = np.asarray(range_image.data).reshape(range_image.shape.dims)

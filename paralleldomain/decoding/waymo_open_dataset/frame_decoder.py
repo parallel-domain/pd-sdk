@@ -12,7 +12,6 @@ from paralleldomain.decoding.sensor_frame_decoder import (
 )
 from paralleldomain.decoding.waymo_open_dataset.common import (
     WAYMO_INDEX_TO_CAMERA_NAME,
-    WAYMO_INDEX_TO_LIDAR_NAME,
     WAYMO_USE_ALL_LIDAR_NAME,
     WaymoFileAccessMixin,
 )
@@ -36,13 +35,11 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         use_precalculated_maps: bool,
         split_name: str,
         include_second_returns: bool,
-        use_all_lidar: bool,
     ):
         FrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
         WaymoFileAccessMixin.__init__(self=self, record_path=dataset_path / scene_name)
         self.split_name = split_name
         self.include_second_returns = include_second_returns
-        self.use_all_lidar = use_all_lidar
         self.use_precalculated_maps = use_precalculated_maps
         self.dataset_path = dataset_path
 
@@ -59,10 +56,7 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
         return [WAYMO_INDEX_TO_CAMERA_NAME[img.name] for img in record.images]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        if self.use_all_lidar:
-            return [WAYMO_USE_ALL_LIDAR_NAME]
-        else:
-            return list(WAYMO_INDEX_TO_LIDAR_NAME.values())
+        return [WAYMO_USE_ALL_LIDAR_NAME]
 
     def _decode_datetime(self, frame_id: FrameId) -> datetime:
         record = self.get_record_at(frame_id=frame_id)
