@@ -87,16 +87,16 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
                 )
         else:
             record = self.get_record_at(frame_id=frame_id)
-
-            cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
-            cam_data = record.images[cam_index]
-            if cam_data.camera_segmentation_label.panoptic_label:
-                available_annotations.update(
-                    {
-                        AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
-                        AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
-                    }
-                )
+            if isinstance(self, WaymoOpenDatasetCameraSensorFrameDecoder):
+                cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+                cam_data = record.images[cam_index]
+                if cam_data.camera_segmentation_label.panoptic_label:
+                    available_annotations.update(
+                        {
+                            AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
+                            AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
+                        }
+                    )
         return available_annotations
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
@@ -156,7 +156,6 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         _, instance_label = np.divmod(panoptic_label, panoptic_label_divisor)
         return np.expand_dims(instance_label, -1).astype(int)
 
-    # TODO: Double check boxes in visualizer
     def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
         boxes = list()
         record = self.get_record_at(frame_id=frame_id)
