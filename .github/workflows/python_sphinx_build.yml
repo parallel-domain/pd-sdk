@@ -13,7 +13,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install pandoc
           python -m pip install --upgrade pip
-          python -m pip install -e .
+          python -m pip install -e ".[data_lab]"
           python -m pip install -r docs/requirements.txt
           sphinx-build -b html docs/source docs/build --keep-going -W
       - uses: actions/upload-artifact@v1
