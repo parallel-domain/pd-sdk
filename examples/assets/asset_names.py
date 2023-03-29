@@ -1,10 +1,9 @@
-import click
-from typing import Iterator
-from pd.internal.assets.asset_registry import InfoSegmentation, UtilSegmentationCategoriesPanoptic
-from pd.assets import init_asset_registry_version
-import pd.management
 import os
+from typing import Iterator
 
+import pd.management
+from pd.assets import init_asset_registry_version
+from pd.internal.assets.asset_registry import InfoSegmentation, UtilSegmentationCategoriesPanoptic
 
 IG_VERSION = "v2-nightly"
 CLASS_NAME = "Debris"
@@ -36,11 +35,11 @@ def get_all_assets_in_class(class_name: str) -> Iterator[str]:
         yield obj.name
 
 
-## Print out all assets
+# Print out all assets
 # for name in get_all_asset_names():
 #     print(name)
 
-## Print out all classes
+# Print out all classes
 # for name in get_all_class_names():
 #     print(name)
 

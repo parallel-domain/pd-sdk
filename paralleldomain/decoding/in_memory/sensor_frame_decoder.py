@@ -1,32 +1,21 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import (
-    Tuple,
-    Union,
-    TypeVar,
-    Generic,
-    Any,
-    Dict,
-    Optional,
-    Type,
-)
+from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
-from paralleldomain.decoding.sensor_frame_decoder import (
-    F,
-    T,
-)
-from paralleldomain.model.annotation import *
+
+from paralleldomain.decoding.sensor_frame_decoder import F, T
+from paralleldomain.model.annotation import Annotation, AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.sensor import (
     CameraSensorFrame,
-    RadarSensorFrame,
     LidarSensorFrame,
-    SensorPose,
+    RadarSensorFrame,
     SensorExtrinsic,
     SensorIntrinsic,
+    SensorPose,
 )
-from paralleldomain.model.type_aliases import FrameId, SensorName, SceneName, AnnotationIdentifier
+from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookup
 

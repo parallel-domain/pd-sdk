@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="2.0.0-alpha.3",
+    version="2.0.0-alpha.4",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
