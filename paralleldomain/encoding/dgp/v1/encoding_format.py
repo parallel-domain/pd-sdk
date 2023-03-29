@@ -21,7 +21,7 @@ from paralleldomain.encoding.dgp.v1.format.semantic_segmentation_2d import Seman
 from paralleldomain.encoding.dgp.v1.format.semantic_segmentation_3d import SemanticSegmentation3DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.surface_normals_2d import SurfaceNormals2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.surface_normals_3d import SurfaceNormals3DDGPV1Mixin
-from paralleldomain.encoding.pipeline_encoder import DataType, EncodingFormat, ScenePipelineItem, SensorDataTypes
+from paralleldomain.encoding.pipeline_encoder import DataType, EncodingFormat, ScenePipelineItem
 from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
@@ -56,8 +56,8 @@ class DGPV1EncodingFormat(
     def __init__(
         self,
         dataset_output_path: AnyPath,
-        target_dataset_name: Optional[str],
-        inplace: bool,
+        target_dataset_name: Optional[str] = None,
+        inplace: bool = False,
         sim_offset: float = 0.01 * 5,
         encode_to_binary: bool = False,
     ):
@@ -66,7 +66,7 @@ class DGPV1EncodingFormat(
         self.inplace = inplace
         self.target_dataset_name = target_dataset_name
         self.sim_offset = sim_offset
-        self.dataset_output_path = dataset_output_path
+        self.dataset_output_path = AnyPath(dataset_output_path)
 
     def supports_copy(self, pipeline_item: ScenePipelineItem, data_type: DataType, data_path: AnyPath):
         suffix = data_path.suffix
@@ -245,3 +245,7 @@ class DGPV1EncodingFormat(
             target_dataset_name=self.target_dataset_name,
             save_binary=self.encode_to_binary,
         )
+
+    @staticmethod
+    def get_format() -> str:
+        return "dgpv1"

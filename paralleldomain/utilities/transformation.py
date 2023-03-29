@@ -61,6 +61,16 @@ class Transformation:
             transform = self.transformation_matrix @ other.transformation_matrix
             return Transformation.from_transformation_matrix(mat=transform)
         elif isinstance(other, np.ndarray):
+            if (len(other.shape) == 1 and other.shape[0] == 3) or (len(other.shape) == 2 and other.shape[1] == 3):
+                if len(other.shape) == 2 and other.shape[1] == 3:
+                    other = np.concatenate([other, np.ones_like(other[:, :1])], -1)
+                    transform = self.transformation_matrix @ other.T
+                    return transform[:3, :].T
+                else:
+                    other = np.expand_dims(np.array([*other, 1.0]), 1)
+                    transform = self.transformation_matrix @ other
+                    return transform[:3, 0]
+
             transform = self.transformation_matrix @ other
             return transform
         else:
@@ -166,16 +176,52 @@ class Transformation:
         return T_inv
 
     @classmethod
-    def from_transformation_matrix(cls, mat: np.ndarray) -> "Transformation":
+    def from_transformation_matrix(cls, mat: np.ndarray, approximate_orthogonal: bool = False) -> "Transformation":
         """Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)
 
         Args:
             mat: Transformation matrix as described in :attr:`~.Transformation.transformation_matrix`
+            approximate_orthogonal: When set to `True`, non-orthogonal matrices will be approximate to their closest
+                orthogonal representation. Default: `False`.
 
         Returns:
             Instance of :obj:`Transformation` with provided parameters.
         """
-        quat = Quaternion(matrix=mat)
+        if approximate_orthogonal:
+            # Implemented after `scipy.spatial.transform.rotation.from_matrix()`
+            decision = np.zeros(shape=(4,))
+
+            decision[0] = mat[0, 0]
+            decision[1] = mat[1, 1]
+            decision[2] = mat[2, 2]
+            decision[3] = mat[0, 0] + mat[1, 1] + mat[2, 2]
+            choice = np.argmax(decision)
+
+            quat_coefficients = np.zeros(shape=(4,))
+
+            if choice != 3:
+                i = choice
+                j = (i + 1) % 3
+                k = (j + 1) % 3
+
+                quat_coefficients[i] = 1 - decision[3] + 2 * mat[i, i]
+                quat_coefficients[j] = mat[j, i] + mat[i, j]
+                quat_coefficients[k] = mat[k, i] + mat[i, k]
+                quat_coefficients[3] = mat[k, j] - mat[j, k]
+            else:
+                quat_coefficients[0] = mat[2, 1] - mat[1, 2]
+                quat_coefficients[1] = mat[0, 2] - mat[2, 0]
+                quat_coefficients[2] = mat[1, 0] - mat[0, 1]
+                quat_coefficients[3] = 1 + decision[3]
+
+            quat_coefficients = quat_coefficients / np.linalg.norm(quat_coefficients)
+
+            quat = Quaternion(
+                x=quat_coefficients[0], y=quat_coefficients[1], z=quat_coefficients[2], w=quat_coefficients[3]
+            )
+        else:
+            quat = Quaternion(matrix=mat)
+
         translation = mat[:3, 3]
         return cls(quaternion=quat, translation=translation)
 
@@ -210,7 +256,7 @@ class Transformation:
         cls,
         angles: Union[np.ndarray, List[float]],
         order: str,
-        translation: Optional[np.ndarray] = None,
+        translation: Optional[Union[np.ndarray, List[float]]] = None,
         degrees: bool = False,
     ) -> "Transformation":
         """Creates a transformation object from euler angles and optionally translation (default: (0,0,0))
@@ -226,6 +272,8 @@ class Transformation:
         """
         if translation is None:
             translation = np.array([0.0, 0.0, 0.0])
+        elif isinstance(translation, list):
+            translation = np.array(translation)
         if degrees:
             angles = np.deg2rad(angles)
 

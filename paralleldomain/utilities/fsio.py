@@ -155,7 +155,6 @@ def read_flo(path: AnyPath):
     Reads optical flow files in the .flo format. Notably used for Flying Chairs:
     https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs"""
     with path.open(mode="rb") as fp:
-
         header = fp.read(4)
         if header.decode("utf-8") != "PIEH":
             raise Exception("Flow file header does not contain PIEH")

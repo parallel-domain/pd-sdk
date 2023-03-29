@@ -8,7 +8,7 @@ except ImportError:
 
 from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
-from paralleldomain.model.type_aliases import FrameId, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
@@ -44,6 +44,14 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
     def get_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
         pass
 
+    @property
+    def dataset_name(self) -> str:
+        pass
+
+    @property
+    def scene_name(self) -> SceneName:
+        pass
+
 
 class Frame(Generic[TDateTime]):
     def __init__(
@@ -53,6 +61,14 @@ class Frame(Generic[TDateTime]):
     ):
         self._decoder = decoder
         self._frame_id = frame_id
+
+    @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
+
+    @property
+    def scene_name(self) -> SceneName:
+        return self._decoder.scene_name
 
     @property
     def frame_id(self) -> FrameId:

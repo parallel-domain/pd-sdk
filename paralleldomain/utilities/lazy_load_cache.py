@@ -176,6 +176,11 @@ class LazyLoadCache(Cache):
         except CacheEmptyException:
             pass
 
+    def clear_prefix(self, prefix: str):
+        keys = [k for k in self._Cache__data.keys() if isinstance(k, str) and k.startswith(prefix)]
+        for k in keys:
+            self.pop(k)
+
     def __update(self, key):
         try:
             self.__order.move_to_end(key)

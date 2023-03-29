@@ -207,7 +207,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             box_list = []
             for box_dto in dto.annotations:
-
                 # Decode generic attributes from and handle json encoded values
                 attr_decoded = _decode_attributes(attributes=box_dto.attributes)
                 # Read "iscrowd" and move them to attribute section in model

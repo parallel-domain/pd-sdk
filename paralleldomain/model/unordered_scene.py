@@ -7,7 +7,6 @@ import pypeln
 
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.map.map import Map
 from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
 try:
@@ -72,7 +71,7 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_radar_sensor(self, scene_name: SceneName, radar_name: SensorName) -> RadarSensor[TDateTime]:
         pass
 
-    def get_map(self, scene_name: SceneName) -> Optional[Map]:
+    def clear_from_cache(self, scene_name: SceneName):
         pass
 
 
@@ -102,10 +101,6 @@ class UnorderedScene(Generic[TDateTime]):
     @property
     def name(self) -> str:
         return self._name
-
-    @property
-    def map(self) -> Optional[Map]:
-        return self._decoder.get_map(scene_name=self._name)
 
     @property
     def description(self) -> str:
@@ -294,7 +289,6 @@ class UnorderedScene(Generic[TDateTime]):
         max_queue_size: int = 8,
         max_workers: int = 4,
     ) -> Generator[Frame[TDateTime], None, None]:
-
         runenv = pypeln.sync
         if concurrent:
             if not shuffle:
@@ -391,3 +385,6 @@ class UnorderedScene(Generic[TDateTime]):
             yield from nested_generator_random_draw(
                 source_generator=stage, nested_generator_factory=map_frame, endless_loop=False, random_seed=random_seed
             )
+
+    def clear_from_cache(self):
+        self._decoder.clear_from_cache(scene_name=self.name)

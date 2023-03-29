@@ -2,12 +2,18 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Dict, Generator, Generic, Iterable, List, Optional, Type, Union
+from typing import Any, Callable, Dict, Generator, Generic, Iterable, List, Literal, Optional, Type, Union
 
 import pypeln
 
 from paralleldomain.decoding.helper import decode_dataset
-from paralleldomain.encoding.pipeline_encoder import EncoderStep, EncodingFormat, PipelineBuilder, TPipelineItem
+from paralleldomain.encoding.pipeline_encoder import (
+    NAME_TO_RUNENV,
+    EncoderStep,
+    EncodingFormat,
+    PipelineBuilder,
+    TPipelineItem,
+)
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -19,7 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 class GenericSceneAggregator(Generic[TPipelineItem], EncoderStep):
-    def __init__(self, encoding_format: EncodingFormat[TPipelineItem]):
+    def __init__(
+        self, encoding_format: EncodingFormat[TPipelineItem], run_env: Literal["thread", "process", "sync"] = "thread"
+    ):
         self.encoding_format = encoding_format
 
         self.total_scenes = -1
@@ -28,11 +36,12 @@ class GenericSceneAggregator(Generic[TPipelineItem], EncoderStep):
         self.total_frames = -1
         self.seen_frames_per_scene: Dict[str, int] = defaultdict(lambda: 0)
         self.total_frames_per_scene: Dict[str, int] = defaultdict(lambda: -1)
+        self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
 
     def apply(self, input_stage: Iterable[Any]) -> Iterable[Any]:
         stage = input_stage
-        stage = pypeln.thread.map(f=self.encode_scene, stage=stage, workers=1, maxsize=4)
-        stage = pypeln.thread.map(f=self.encode_dataset, stage=stage, workers=1, maxsize=1)
+        stage = self.run_env.map(f=self.encode_scene, stage=stage, workers=1, maxsize=4)
+        stage = self.run_env.map(f=self.encode_dataset, stage=stage, workers=1, maxsize=1)
         return stage
 
     def encode_scene(self, pipeline_item: TPipelineItem) -> TPipelineItem:
@@ -90,6 +99,7 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
         should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
         workers: int = 1,
         in_queue_size: int = 1,
+        run_env: Literal["thread", "process", "sync"] = "thread",
     ):
         self.copy_data_types = copy_data_types
         self.should_copy_callbacks = should_copy_callbacks
@@ -97,6 +107,7 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
         self.in_queue_size = in_queue_size
         self.workers = workers
         self.fs_copy = fs_copy
+        self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
 
     def encode_frame_data(
         self,
@@ -149,7 +160,7 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
             callback = should_copy
             if self.should_copy_callbacks is not None and data_type in self.should_copy_callbacks:
                 callback = self.should_copy_callbacks[data_type]
-            stage = pypeln.thread.map(
+            stage = self.run_env.map(
                 f=partial(self.encode_frame_data, data_type=data_type, should_copy=callback),
                 stage=stage,
                 workers=self.workers,
@@ -181,8 +192,8 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         fs_copy: bool = True,
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
+        run_env: Literal["thread", "process", "sync"] = "thread",
     ):
-
         self.pipeline_item_type = pipeline_item_type
         self.workers = workers
         self.max_in_queue_size = max_in_queue_size
@@ -193,6 +204,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         self.allowed_frames = allowed_frames
         self.output_path = output_path
         self.sensor_names = sensor_names
+        self.run_env = run_env
 
         if decoder_kwargs is None:
             decoder_kwargs = dict()
@@ -232,6 +244,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
                     fs_copy=self.fs_copy,
                     workers=self.workers,
                     in_queue_size=self.max_in_queue_size,
+                    run_env=self.run_env,
                 )
             )
         if self.custom_encoder_steps is not None:
@@ -239,7 +252,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
                 encoder_steps.append(custom_step)
 
         if self.scene_aggregator is None:
-            encoder_steps.append(GenericSceneAggregator(encoding_format=encoding_format))
+            encoder_steps.append(GenericSceneAggregator(encoding_format=encoding_format, run_env=self.run_env))
         else:
             encoder_steps.append(self.scene_aggregator)
         return encoder_steps

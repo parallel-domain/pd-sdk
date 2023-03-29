@@ -554,3 +554,26 @@ class SensorIntrinsic:
             return None
         else:
             raise NotImplementedError(f"No distortion parameters implemented for camera model {self.camera_model}")
+
+    def __matmul__(self, other: np.ndarray) -> np.ndarray:
+        if isinstance(other, np.ndarray):
+            ori_shape = other.shape
+            needs_transpose = False
+            if len(other.shape) != 2:
+                ori_shape = other.shape
+                if ori_shape[0] == 3:
+                    reshaped_other = other.reshape(3, -1)
+                elif ori_shape[-1] == 3:
+                    needs_transpose = True
+                    reshaped_other = other.reshape(-1, 3).T
+                else:
+                    raise ValueError(f"unsupported shape {ori_shape}! First or last dim has to be 3!")
+            else:
+                reshaped_other = other
+
+            projected = self.camera_matrix @ reshaped_other
+            if needs_transpose:
+                projected = projected.T
+            return projected.reshape(ori_shape)
+        else:
+            raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4xn numpy array!")

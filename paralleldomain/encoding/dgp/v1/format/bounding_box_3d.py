@@ -25,7 +25,6 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
         sim_offset: float,
         save_binary: bool,
     ):
-
         output_path = self.get_file_output_path(
             scene_reference_timestamp=pipeline_item.scene_reference_timestamp,
             sim_offset=sim_offset,

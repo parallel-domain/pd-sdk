@@ -18,9 +18,7 @@ from paralleldomain.decoding.dgp.v1.sensor_decoder import (
     DGPLidarSensorDecoder,
     DGPRadarSensorDecoder,
 )
-from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.decoding.umd.map_decoder import UMDDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -263,13 +261,3 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _sample_by_index(self, scene_name: str) -> Dict[str, sample_pb2.Sample]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {str(s.id.index): s for s in dto.samples}
-
-    def _create_map_decoder(self, scene_name: SceneName, dataset_name: str) -> Optional[MapDecoder]:
-        if self._umd_map_path is not None:
-            return UMDDecoder(
-                umd_file_path=self._umd_map_path,
-                dataset_name=dataset_name,
-                scene_name=scene_name,
-                settings=self.settings,
-            )
-        return None

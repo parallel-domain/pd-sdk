@@ -172,7 +172,6 @@ class TestSensorFrame:
 
     @pytest.mark.skip
     def test_albedo_2d_loading(self, scene: Scene, dataset: Dataset):
-
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
 
@@ -191,7 +190,6 @@ class TestSensorFrame:
 
     @pytest.mark.skip
     def test_material_properties_2d_loading(self, scene: Scene, dataset: Dataset):
-
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
 

@@ -179,7 +179,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             box_list = []
             for box_dto in dto.annotations:
-
                 attr_parsed = {"iscrowd": box_dto.iscrowd}
                 for k, v in box_dto.attributes.items():
                     try:
