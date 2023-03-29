@@ -75,9 +75,16 @@ Public classes / methods / properties are annotated with Docstrings. The compile
 
 ## Testing
 Before running `pytest` you need to make sure to have its package installed. If you followed the Developer Setup, `pytest` should be already available.
-If you haven't followed the Developer Setup or are unsure, just run
+If you haven't followed the Developer Setup or are unsure, just run:
+
+For OS X / Linux users:
 ```bash
-pip install -e .[dev, data_lab]
+pip install -e ".[dev,data_lab]"
+```
+
+For Windows users:
+```powershell
+pip install -e .[dev,data_lab]
 ```
 
 Go to the root folder of your pd-sdk repo and run:
