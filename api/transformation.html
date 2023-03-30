@@ -91,20 +91,17 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#quick-start">Quick Start</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#developers">Developers</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../getting_started.html#tests">Tests</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../getting_started.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#example-load-and-visualize-data">Example: Load and visualize data</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#id1">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#tutorials">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#id2">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#id3">Tutorials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../getting_started.html#api-reference">API Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
@@ -228,31 +225,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="module-paralleldomain.utilities.transformation">
+  <div class="section" id="module-paralleldomain.utilities.transformation">
 <span id="paralleldomain-utilities-transformation"></span><h1>paralleldomain.utilities.transformation<a class="headerlink" href="#module-paralleldomain.utilities.transformation" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.utilities.transformation.Transformation">
@@ -386,11 +359,15 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.transformation.Transformation.from_transformation_matrix">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_transformation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximate_orthogonal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Transformation object from an homogeneous transformation matrix of shape (4,4)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mat</strong> (<em>numpy.ndarray</em>) – Transformation matrix as described in <a class="reference internal" href="#paralleldomain.utilities.transformation.Transformation.transformation_matrix" title="paralleldomain.utilities.transformation.Transformation.transformation_matrix"><code class="xref py py-attr docutils literal notranslate"><span class="pre">transformation_matrix</span></code></a></p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mat</strong> (<em>numpy.ndarray</em>) – Transformation matrix as described in <a class="reference internal" href="#paralleldomain.utilities.transformation.Transformation.transformation_matrix" title="paralleldomain.utilities.transformation.Transformation.transformation_matrix"><code class="xref py py-attr docutils literal notranslate"><span class="pre">transformation_matrix</span></code></a></p></li>
+<li><p><strong>approximate_orthogonal</strong> (<em>bool</em>) – When set to <cite>True</cite>, non-orthogonal matrices will be approximate to their closest
+orthogonal representation. Default: <cite>False</cite>.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Instance of <a class="reference internal" href="#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code></a> with provided parameters.</p>
@@ -430,7 +407,7 @@ rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>angles</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – Ordered euler angles array with length 3</p></li>
-<li><p><strong>translation</strong> (<em>Optional</em><em>[</em><em>numpy.ndarray</em><em>]</em>) – Translation vector in order <cite>(x,y,z)</cite>. Default: <cite>[0,0,0]</cite></p></li>
+<li><p><strong>translation</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em><em>]</em>) – Translation vector in order <cite>(x,y,z)</cite>. Default: <cite>[0,0,0]</cite></p></li>
 <li><p><strong>order</strong> (<em>str</em>) – Defines the axes rotation order. Use lower case for extrinsic rotation, upper case for intrinsic
 rotation. Ex: <cite>xyz</cite>, <cite>ZYX</cite>, <cite>xzx</cite>.</p></li>
 <li><p><strong>degrees</strong> (<em>bool</em>) – Defines if euler angles are provided in degrees instead of radians. Default: <cite>False</cite></p></li>

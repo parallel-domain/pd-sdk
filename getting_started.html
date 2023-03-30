@@ -91,20 +91,17 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#developers">Developers</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#tests">Tests</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-load-and-visualize-data">Example: Load and visualize data</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#tutorials">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Tutorials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
@@ -228,119 +225,109 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="parallel-domain-sdk">
+  <div class="section" id="parallel-domain-sdk">
 <span id="getting-started"></span><h1>Parallel Domain SDK<a class="headerlink" href="#parallel-domain-sdk" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p><a class="reference external" href="https://parallel-domain.github.io/pd-sdk/index.html">**Documentation**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html">**Documentation -&gt; Tutorials**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/api/dataset.html">**Documentation -&gt; API Reference**</a></p>
+</div></blockquote>
+<p>Supported Python Versions: <strong>3.7</strong> | <strong>3.8</strong> | <strong>3.9</strong></p>
+<div class="section" id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>For more detailed instructions see <a class="reference external" href="INSTALL.md">here</a>. For default installation run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install <span class="s2">&quot;paralleldomain @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain&quot;</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain’s synthetic data as Python objects.</p>
-<p>The PD SDK can decode different data formats into its Python objects, including <a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a> format as well as <a class="reference external" href="https://www.cityscapes-dataset.com/dataset-overview/">CityScapes</a>, <a class="reference external" href="https://www.nuscenes.org/nuimages">NuImages</a> and <a class="reference external" href="https://www.nuscenes.org/nuscenes">NuScenes</a> (more public dataset formats will be supported in the future).
-Currently, local file system and s3 buckets are supported as dataset locations for decoding.</p>
-<p>In order to support diffrent data formats PD SDK uses dataset format specific Decoders that are tasked with converting the respective dataset format into the PD SDK common Python objects (aka model classes).
-To support this the model is designed to represent an arbitrary sensor rig that collects sequential or non-sequential data that may be annotated with different annotations.
-PD SDK follows the principal of lazy loading data, meaning that any data is loaded as late as possible to ensure quick browsing through datasets. Furthermore PD SDK contains an encoding module tasked with saving model classes into specific dataset formats.
-This can be useful if you have an existing data pipeline that works on a certain format and you want to convert a dataset to this format to be compatible with your infrastructure.</p>
+<p>The PD SDK can also decode different data formats into its common Python object represenation (more public dataset formats will be supported in the future):</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a></p></li>
+<li><p><a class="reference external" href="https://www.cityscapes-dataset.com/dataset-overview/">CityScapes</a></p></li>
+<li><p><a class="reference external" href="https://www.nuscenes.org/nuimages">NuImages</a></p></li>
+<li><p><a class="reference external" href="https://www.nuscenes.org/nuscenes">NuScenes</a></p></li>
+<li><p><a class="reference external" href="https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html">Flying Chairs</a></p></li>
+<li><p><a class="reference external" href="https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html">Flying Things</a></p></li>
+<li><p><a class="reference external" href="https://download.visinf.tu-darmstadt.de/data/from_games/">GTA5 / Playing for Data</a></p></li>
+<li><p><a class="reference external" href="https://www.cvlibs.net/datasets/kitti/eval_stereo_flow.php?benchmark=flow">KITTI Optical Flow</a></p></li>
+</ul>
+<p>Currently, local file system and s3 buckets are supported as dataset locations for decoding. See <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/any_path/index.html">AnyPath</a> documentation for our file system abstraction.</p>
 <p>The two main use cases PD SDK is designed for are:</p>
 <ul class="simple">
 <li><p>to load data in ML data pipelines from local or cloud storage directly into RAM.</p></li>
-<li><p>to encode data into different dataset formats. Currently it’s possible to convert into DGP format from DGP, CityScapes, NuImages and NuScenes.</p></li>
+<li><p>to encode data into different dataset formats. Currently it’s possible to convert into DGP and DGPv1 format.</p></li>
 </ul>
-</div>
-<div class="section" id="quick-start">
-<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
-<p>To use the PD SDK, you can simply install it using <code class="docutils literal notranslate"><span class="pre">pip</span></code> in your Python environment. Activate your Python environment before-hand, if wanted.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone latest PD SDK release</span>
-$ git clone https://github.com/parallel-domain/pd-sdk.git
-
-<span class="c1"># Change directory</span>
-$ <span class="nb">cd</span> pd-sdk
-
-<span class="c1"># Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`</span>
-$ <span class="nb">export</span> <span class="nv">MAKEFLAGS</span><span class="o">=</span><span class="s2">&quot;-j</span><span class="k">$(</span>nproc<span class="k">)</span><span class="s2">&quot;</span>
-
-<span class="c1"># Install PD SDK from local clone</span>
-$ pip install .
+<p>More details on the <a class="reference external" href="paralleldomain/ARCHITECTURE.md">**Architecture**</a> of PD SDK can be found <a class="reference external" href="paralleldomain/ARCHITECTURE.md">here</a>.</p>
+<div class="section" id="example-load-and-visualize-data">
+<h3>Example: Load and visualize data<a class="headerlink" href="#example-load-and-visualize-data" title="Permalink to this headline">¶</a></h3>
+<p>To run <code class="docutils literal notranslate"><span class="pre">show_sensor_frame</span></code> you need to install the visualization dependencies with (See our <a class="reference external" href="INSTALL.md">Istnall Instruvtions</a> for more install options):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install <span class="s2">&quot;paralleldomain[visualization] @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain&quot;</span>
 </pre></div>
 </div>
-<hr class="docutils" />
-<p><strong>Supported Python Versions:</strong></p>
-<ul class="simple">
-<li><p>Python3.7</p></li>
-<li><p>Python3.8</p></li>
-<li><p>Python3.9</p></li>
-</ul>
-<hr class="docutils" />
-<div class="section" id="developers">
-<h3>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h3>
-<p>If you are looking to extend or debug the PD SDK, use the following install procedure.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone latest PD SDK release</span>
-$ git clone git@github.com:parallel-domain/pd-sdk.git
+<p>Then you can decode a dataset at a given local or s3 path using the <code class="docutils literal notranslate"><span class="pre">decode_dataset</span></code> method.
+To have quick access to all sensor frames in a dataset you can use the <code class="docutils literal notranslate"><span class="pre">sensor_frame_pipeline</span></code> method of a dataset.
+It will yield all the sensor frames of a dataset in order. So the outer loop will be scenes, then frames and then
+sensors in each frame.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.helper</span> <span class="kn">import</span> <span class="n">decode_dataset</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">AnnotationTypes</span>
+<span class="kn">from</span> <span class="nn">paralleldomain.visualization.sensor_frame_viewer</span> <span class="kn">import</span> <span class="n">show_sensor_frame</span>
 
-<span class="c1"># Change directory</span>
-$ <span class="nb">cd</span> pd-sdk
+<span class="n">pd_dataset</span> <span class="o">=</span> <span class="n">decode_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="o">=</span><span class="s2">&quot;s3://bucket/with/dgp/dataset&quot;</span><span class="p">,</span> <span class="n">dataset_format</span><span class="o">=</span><span class="s2">&quot;dgp&quot;</span><span class="p">)</span>
 
-<span class="c1"># Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`</span>
-$ <span class="nb">export</span> <span class="nv">MAKEFLAGS</span><span class="o">=</span><span class="s2">&quot;-j</span><span class="k">$(</span>nproc<span class="k">)</span><span class="s2">&quot;</span>
-
-<span class="c1"># Install PD SDK from local clone with developer dependencies</span>
-$ pip install -e .<span class="o">[</span>dev<span class="o">]</span>
+<span class="k">for</span> <span class="n">sensor_frame</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">pd_dataset</span><span class="o">.</span><span class="n">sensor_frame_pipeline</span><span class="p">():</span>
+    <span class="n">show_sensor_frame</span><span class="p">(</span>
+        <span class="n">sensor_frame</span><span class="o">=</span><span class="n">camera_frame</span><span class="p">,</span>
+        <span class="n">annotations_to_show</span><span class="o">=</span><span class="p">[</span><span class="n">AnnotationTypes</span><span class="o">.</span><span class="n">BoundingBoxes2D</span><span class="p">],</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
-<p>To make code contributions more stream-lined, we provide local <a class="reference external" href="https://pre-commit.com/">pre-commit hooks</a> that check / adapt to the PD SDK style guidelines automatically on commit.
-It is optional to set those up, but it helps to keep all code in the same style.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># within local PD SDK directory</span>
-$ pre-commit install
-</pre></div>
-</div>
-<p>After setting up pre-commit hooks, every file in a commit will be checked by a number of hooks. If any of the hooks fail, the commit is rejected. Fortunately, most of the hooks are auto-correcting, so they edit
-the files per the style guidelines and you can just commit again. Only <code class="docutils literal notranslate"><span class="pre">flake8</span></code> lint errors can just be solved by human editing.</p>
-<div class="section" id="tests">
-<h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h4>
-<p>Tests can be executed using <code class="docutils literal notranslate"><span class="pre">pytest</span></code> and providing a location to a DGP dataset which should be used during the test run.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># within local PD SDK directory - set env variable DATASET_PATH to a local or s3 location.</span>
-$ <span class="nv">DATASET_PATH</span><span class="o">=</span>/data/test_dataset pytest .
-</pre></div>
+<p>For more examples make sure to check out our <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html">**Tutorials**</a>!</p>
 </div>
 </div>
-<div class="section" id="documentation">
-<h4>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h4>
-<p>You can find more details about adding to and building PD SDK’s documentation in <code class="docutils literal notranslate"><span class="pre">docs/README.md</span></code></p>
-</div>
-</div>
-</div>
-<div class="section" id="id1">
-<h2>Documentation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="tutorials">
-<h3>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h2>Documentation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Tutorials<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <p>There are several tutorials available covering common use cases. Those can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; Tutorials</a>.
 In case you are missing an important tutorial, feel free to request it via a Github Issue or create a PR, in case you have written one already yourself.</p>
 </div>
 <div class="section" id="api-reference">
 <h3>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h3>
 <p>Public classes / methods / properties are annotated with Docstrings. The compiled API Reference can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; API Reference</a></p>
+</div>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>Before running <code class="docutils literal notranslate"><span class="pre">pytest</span></code> you need to make sure to have its package installed. If you followed the Developer Setup, <code class="docutils literal notranslate"><span class="pre">pytest</span></code> should be already available.
+If you haven’t followed the Developer Setup or are unsure, just run:</p>
+<p>For OS X / Linux users:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -e <span class="s2">&quot;.[dev,data_lab]&quot;</span>
+</pre></div>
+</div>
+<p>For Windows users:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="p">.</span><span class="no">[dev,data_lab]</span>
+</pre></div>
+</div>
+<p>Go to the root folder of your pd-sdk repo and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest test_paralleldomain
+</pre></div>
+</div>
+<p>If you’d like to run tests for Data Lab, make sure that your PD_CLIENT_ORG_ENV and PD_CLIENT_STEP_API_KEY_ENV are set.
+Otherwise those tests will be skipped.</p>
+<p>For OS X / Linux users:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">PD_CLIENT_STEP_API_KEY_ENV</span><span class="o">=</span><span class="s2">&quot;my api key&quot;</span>
+<span class="nb">export</span> <span class="nv">PD_CLIENT_ORG_ENV</span><span class="o">=</span><span class="s2">&quot;paralleldomain&quot;</span>
+</pre></div>
+</div>
+<p>For Windows users:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nv">$env:PD_CLIENT_STEP_API_KEY_ENV</span><span class="p">=</span><span class="s2">&quot;my api key&quot;</span>
+<span class="nv">$env:PD_CLIENT_ORG_ENV</span><span class="p">=</span><span class="s2">&quot;paralleldomain&quot;</span>
+</pre></div>
+</div>
+<p>You can run just Data Lab related test by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest test_paralleldomain/data_lab/
+</pre></div>
 </div>
 </div>
 </div>
