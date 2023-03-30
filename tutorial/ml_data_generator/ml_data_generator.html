@@ -1,96 +1,51 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Data loader for a Segmentation model &mdash; Parallel Domain SDK  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/nbsphinx-code-cells.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/nbsphinx-code-cells.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="paralleldomain.model.dataset" href="../../api/dataset.html" />
     <link rel="prev" title="ML Data Generator" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../index.html" class="icon icon-home"> Parallel Domain SDK
           
-
-          
+          <a href="../../index.html" class="icon icon-home">
+            Parallel Domain SDK
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Parallel Domain SDK</a><ul>
@@ -151,87 +106,690 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../api/dataset.html">paralleldomain.model.dataset</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/scene.html">paralleldomain.model.scene</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/sensor.html">paralleldomain.model.sensor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/annotation.html">paralleldomain.model.annotation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/geometry.html">paralleldomain.model.geometry</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/any_path.html">paralleldomain.utilities.any_path</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/transformation.html">paralleldomain.utilities.transformation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/projection.html">paralleldomain.utilities.projection</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/mask.html">paralleldomain.utilities.mask</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api/os.html">paralleldomain.utilities.os</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/dataset.html">paralleldomain.model.dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.get_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_scene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.get_sensor_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.get_sensor_frames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.scene_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_types"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.camera_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.camera_names"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.decoder_init_kwargs"><code class="docutils literal notranslate"><span class="pre">Dataset.decoder_init_kwargs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.format"><code class="docutils literal notranslate"><span class="pre">Dataset.format</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.lidar_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_frames</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.lidar_names"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.metadata"><code class="docutils literal notranslate"><span class="pre">Dataset.metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.name"><code class="docutils literal notranslate"><span class="pre">Dataset.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.path"><code class="docutils literal notranslate"><span class="pre">Dataset.path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.radar_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_frames</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.radar_names"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.scene_names"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.scenes"><code class="docutils literal notranslate"><span class="pre">Dataset.scenes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.sensor_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frames</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.unordered_scene_names"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scene_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.unordered_scenes"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scenes</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/scene.html">paralleldomain.model.scene</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/scene.html#paralleldomain.model.scene.Scene"><code class="docutils literal notranslate"><span class="pre">Scene</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/scene.html#paralleldomain.model.scene.Scene.frame_ids"><code class="docutils literal notranslate"><span class="pre">Scene.frame_ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/scene.html#paralleldomain.model.scene.Scene.frames"><code class="docutils literal notranslate"><span class="pre">Scene.frames</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/sensor.html">paralleldomain.model.sensor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraModel"><code class="docutils literal notranslate"><span class="pre">CameraModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraModel.OPENCV_PINHOLE"><code class="docutils literal notranslate"><span class="pre">CameraModel.OPENCV_PINHOLE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraModel.OPENCV_FISHEYE"><code class="docutils literal notranslate"><span class="pre">CameraModel.OPENCV_FISHEYE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraModel.PD_FISHEYE"><code class="docutils literal notranslate"><span class="pre">CameraModel.PD_FISHEYE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraModel.PD_ORTHOGRAPHIC"><code class="docutils literal notranslate"><span class="pre">CameraModel.PD_ORTHOGRAPHIC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensor"><code class="docutils literal notranslate"><span class="pre">CameraSensor</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.ego_to_sensor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.ego_to_world"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.ego_to_world</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.extrinsic"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.extrinsic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.pose"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.sensor_to_ego"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.sensor_to_ego</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.CameraSensorFrame.world_to_ego"><code class="docutils literal notranslate"><span class="pre">CameraSensorFrame.world_to_ego</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensor"><code class="docutils literal notranslate"><span class="pre">LidarSensor</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.ego_to_sensor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.ego_to_world"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.ego_to_world</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.extrinsic"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.extrinsic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.pose"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.sensor_to_ego"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.sensor_to_ego</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.LidarSensorFrame.world_to_ego"><code class="docutils literal notranslate"><span class="pre">LidarSensorFrame.world_to_ego</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensor"><code class="docutils literal notranslate"><span class="pre">RadarSensor</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.ego_to_sensor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.ego_to_world"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.ego_to_world</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.extrinsic"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.extrinsic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.pose"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.sensor_to_ego"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.sensor_to_ego</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrame.world_to_ego"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrame.world_to_ego</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol"><code class="docutils literal notranslate"><span class="pre">RadarSensorFrameDecoderProtocol</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.Sensor"><code class="docutils literal notranslate"><span class="pre">Sensor</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorDecoderProtocol"><code class="docutils literal notranslate"><span class="pre">SensorDecoderProtocol</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.as_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.inverse"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.inverse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.quaternion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.rotation"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.rotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.transformation_matrix</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.translation"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.translation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame"><code class="docutils literal notranslate"><span class="pre">SensorFrame</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.ego_to_sensor"><code class="docutils literal notranslate"><span class="pre">SensorFrame.ego_to_sensor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.ego_to_world"><code class="docutils literal notranslate"><span class="pre">SensorFrame.ego_to_world</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.extrinsic"><code class="docutils literal notranslate"><span class="pre">SensorFrame.extrinsic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.pose"><code class="docutils literal notranslate"><span class="pre">SensorFrame.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.sensor_to_ego"><code class="docutils literal notranslate"><span class="pre">SensorFrame.sensor_to_ego</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorFrame.world_to_ego"><code class="docutils literal notranslate"><span class="pre">SensorFrame.world_to_ego</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose"><code class="docutils literal notranslate"><span class="pre">SensorPose</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.as_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.inverse"><code class="docutils literal notranslate"><span class="pre">SensorPose.inverse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorPose.quaternion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.rotation"><code class="docutils literal notranslate"><span class="pre">SensorPose.rotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorPose.transformation_matrix</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.SensorPose.translation"><code class="docutils literal notranslate"><span class="pre">SensorPose.translation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.BoundingBoxes2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.BoundingBoxes3D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.BoundingBoxes3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.SemanticSegmentation2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.InstanceSegmentation2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.SemanticSegmentation3D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.SemanticSegmentation3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.InstanceSegmentation3D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.InstanceSegmentation3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.OpticalFlow"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.OpticalFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.BackwardOpticalFlow"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.BackwardOpticalFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Depth"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Depth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals3D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.SurfaceNormals3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.SurfaceNormals2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.SurfaceNormals2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.SceneFlow"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.SceneFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.BackwardSceneFlow"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.BackwardSceneFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.MaterialProperties2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.MaterialProperties2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.MaterialProperties3D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.MaterialProperties3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Albedo2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Albedo2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Points2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Points2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Polygons2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Polygons2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Polylines2D"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Polylines2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.Image"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.Image</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/sensor.html#paralleldomain.model.sensor.FilePathedDataType.PointCloud"><code class="docutils literal notranslate"><span class="pre">FilePathedDataType.PointCloud</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/annotation.html">paralleldomain.model.annotation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.BoundingBoxes2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BoundingBoxes3D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.BoundingBoxes3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.SemanticSegmentation2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.InstanceSegmentation2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SemanticSegmentation3D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.SemanticSegmentation3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.InstanceSegmentation3D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.InstanceSegmentation3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.OpticalFlow"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.OpticalFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BackwardOpticalFlow"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.BackwardOpticalFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Depth"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.Depth</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals3D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.SurfaceNormals3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SurfaceNormals2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.SurfaceNormals2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.SceneFlow"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.SceneFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.BackwardSceneFlow"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.BackwardSceneFlow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.MaterialProperties2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.MaterialProperties3D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.MaterialProperties3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Albedo2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.Albedo2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Points2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.Points2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Polygons2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.Polygons2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.Polylines2D"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.Polylines2D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.AnnotationTypes.PointCaches"><code class="docutils literal notranslate"><span class="pre">AnnotationTypes.PointCaches</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.height</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.include_point"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.include_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.include_points"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.include_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.area"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.area</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox2D.vertices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.boxes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_box_by_instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_box_by_instance_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_key"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_boxes_by_attribute_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_value"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_boxes_by_attribute_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_attribute_values"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_boxes_by_attribute_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_boxes_by_class_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.get_boxes_by_class_ids"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.get_boxes_by_class_ids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes2D.merge_boxes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.height</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.num_points</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.faces"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.faces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.vertices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.volume"><code class="docutils literal notranslate"><span class="pre">BoundingBox3D.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.boxes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_box_by_instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_box_by_instance_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_key"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_boxes_by_attribute_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_value"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_boxes_by_attribute_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_attribute_values"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_boxes_by_attribute_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_boxes_by_class_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.get_boxes_by_class_ids"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.get_boxes_by_class_ids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBoxes3D.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBoxes3D.merge_boxes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.depth.Depth"><code class="docutils literal notranslate"><span class="pre">Depth</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.depth.Depth.depth"><code class="docutils literal notranslate"><span class="pre">Depth.depth</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.instance_ids"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation2D.instance_ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.get_instance"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation2D.get_instance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.get_instances"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation2D.get_instances()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.rgb_encoded"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation2D.rgb_encoded</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.instance_segmentation_3d.InstanceSegmentation3D.instance_ids"><code class="docutils literal notranslate"><span class="pre">InstanceSegmentation3D.instance_ids</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow"><code class="docutils literal notranslate"><span class="pre">OpticalFlow</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow.vectors"><code class="docutils literal notranslate"><span class="pre">OpticalFlow.vectors</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.optical_flow.OpticalFlow.valid_mask"><code class="docutils literal notranslate"><span class="pre">OpticalFlow.valid_mask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D"><code class="docutils literal notranslate"><span class="pre">Point2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.x"><code class="docutils literal notranslate"><span class="pre">Point2D.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.y"><code class="docutils literal notranslate"><span class="pre">Point2D.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.class_id"><code class="docutils literal notranslate"><span class="pre">Point2D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.instance_id"><code class="docutils literal notranslate"><span class="pre">Point2D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.attributes"><code class="docutils literal notranslate"><span class="pre">Point2D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Point2D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point2D.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Points2D"><code class="docutils literal notranslate"><span class="pre">Points2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_2d.Points2D.points"><code class="docutils literal notranslate"><span class="pre">Points2D.points</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D"><code class="docutils literal notranslate"><span class="pre">Point3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.x"><code class="docutils literal notranslate"><span class="pre">Point3D.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.y"><code class="docutils literal notranslate"><span class="pre">Point3D.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.class_id"><code class="docutils literal notranslate"><span class="pre">Point3D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.instance_id"><code class="docutils literal notranslate"><span class="pre">Point3D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.attributes"><code class="docutils literal notranslate"><span class="pre">Point3D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Point3D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point3D.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Points3D"><code class="docutils literal notranslate"><span class="pre">Points3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_3d.Points3D.points"><code class="docutils literal notranslate"><span class="pre">Points3D.points</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache"><code class="docutils literal notranslate"><span class="pre">PointCache</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache.instance_id"><code class="docutils literal notranslate"><span class="pre">PointCache.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCache.components"><code class="docutils literal notranslate"><span class="pre">PointCache.components</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches"><code class="docutils literal notranslate"><span class="pre">PointCaches</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches.instance_id"><code class="docutils literal notranslate"><span class="pre">PointCaches.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.point_cache.PointCaches.components"><code class="docutils literal notranslate"><span class="pre">PointCaches.components</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D"><code class="docutils literal notranslate"><span class="pre">Polygon2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.lines"><code class="docutils literal notranslate"><span class="pre">Polygon2D.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id"><code class="docutils literal notranslate"><span class="pre">Polygon2D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id"><code class="docutils literal notranslate"><span class="pre">Polygon2D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes"><code class="docutils literal notranslate"><span class="pre">Polygon2D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon2D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygon2D.length"><code class="docutils literal notranslate"><span class="pre">Polygon2D.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygons2D"><code class="docutils literal notranslate"><span class="pre">Polygons2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_2d.Polygons2D.polygons"><code class="docutils literal notranslate"><span class="pre">Polygons2D.polygons</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D"><code class="docutils literal notranslate"><span class="pre">Polygon3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.lines"><code class="docutils literal notranslate"><span class="pre">Polygon3D.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id"><code class="docutils literal notranslate"><span class="pre">Polygon3D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id"><code class="docutils literal notranslate"><span class="pre">Polygon3D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes"><code class="docutils literal notranslate"><span class="pre">Polygon3D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon3D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygon3D.length"><code class="docutils literal notranslate"><span class="pre">Polygon3D.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygons3D"><code class="docutils literal notranslate"><span class="pre">Polygons3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polygon_3d.Polygons3D.polygons"><code class="docutils literal notranslate"><span class="pre">Polygons3D.polygons</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D"><code class="docutils literal notranslate"><span class="pre">Line2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.start"><code class="docutils literal notranslate"><span class="pre">Line2D.start</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.end"><code class="docutils literal notranslate"><span class="pre">Line2D.end</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.directed"><code class="docutils literal notranslate"><span class="pre">Line2D.directed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.class_id"><code class="docutils literal notranslate"><span class="pre">Line2D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.instance_id"><code class="docutils literal notranslate"><span class="pre">Line2D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.attributes"><code class="docutils literal notranslate"><span class="pre">Line2D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.intersects_at"><code class="docutils literal notranslate"><span class="pre">Line2D.intersects_at()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line2D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.direction"><code class="docutils literal notranslate"><span class="pre">Line2D.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.length"><code class="docutils literal notranslate"><span class="pre">Line2D.length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Line2D.slope"><code class="docutils literal notranslate"><span class="pre">Line2D.slope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D"><code class="docutils literal notranslate"><span class="pre">Polyline2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.lines"><code class="docutils literal notranslate"><span class="pre">Polyline2D.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id"><code class="docutils literal notranslate"><span class="pre">Polyline2D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id"><code class="docutils literal notranslate"><span class="pre">Polyline2D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes"><code class="docutils literal notranslate"><span class="pre">Polyline2D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline2D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polyline2D.length"><code class="docutils literal notranslate"><span class="pre">Polyline2D.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polylines2D"><code class="docutils literal notranslate"><span class="pre">Polylines2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_2d.Polylines2D.polylines"><code class="docutils literal notranslate"><span class="pre">Polylines2D.polylines</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D"><code class="docutils literal notranslate"><span class="pre">Line3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.start"><code class="docutils literal notranslate"><span class="pre">Line3D.start</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.end"><code class="docutils literal notranslate"><span class="pre">Line3D.end</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.directed"><code class="docutils literal notranslate"><span class="pre">Line3D.directed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.class_id"><code class="docutils literal notranslate"><span class="pre">Line3D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.instance_id"><code class="docutils literal notranslate"><span class="pre">Line3D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.attributes"><code class="docutils literal notranslate"><span class="pre">Line3D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line3D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.direction"><code class="docutils literal notranslate"><span class="pre">Line3D.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Line3D.length"><code class="docutils literal notranslate"><span class="pre">Line3D.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D"><code class="docutils literal notranslate"><span class="pre">Polyline3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.lines"><code class="docutils literal notranslate"><span class="pre">Polyline3D.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.class_id"><code class="docutils literal notranslate"><span class="pre">Polyline3D.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.instance_id"><code class="docutils literal notranslate"><span class="pre">Polyline3D.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.attributes"><code class="docutils literal notranslate"><span class="pre">Polyline3D.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline3D.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polyline3D.length"><code class="docutils literal notranslate"><span class="pre">Polyline3D.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polylines3D"><code class="docutils literal notranslate"><span class="pre">Polylines3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.polyline_3d.Polylines3D.polylines"><code class="docutils literal notranslate"><span class="pre">Polylines3D.polylines</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow"><code class="docutils literal notranslate"><span class="pre">SceneFlow</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow.vectors"><code class="docutils literal notranslate"><span class="pre">SceneFlow.vectors</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.scene_flow.SceneFlow.valid_mask"><code class="docutils literal notranslate"><span class="pre">SceneFlow.valid_mask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.class_ids"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation2D.class_ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.get_class_mask"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation2D.get_class_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.get_classes_mask"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation2D.get_classes_mask()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.rgb_encoded"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation2D.rgb_encoded</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D.class_ids"><code class="docutils literal notranslate"><span class="pre">SemanticSegmentation3D.class_ids</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D"><code class="docutils literal notranslate"><span class="pre">SurfaceNormals2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.surface_normals_2d.SurfaceNormals2D.normals"><code class="docutils literal notranslate"><span class="pre">SurfaceNormals2D.normals</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D"><code class="docutils literal notranslate"><span class="pre">SurfaceNormals3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.surface_normals_3d.SurfaceNormals3D.normals"><code class="docutils literal notranslate"><span class="pre">SurfaceNormals3D.normals</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D"><code class="docutils literal notranslate"><span class="pre">MaterialProperties2D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_2d.MaterialProperties2D.roughness"><code class="docutils literal notranslate"><span class="pre">MaterialProperties2D.roughness</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.material_ids"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.material_ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.roughness"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.specular"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.specular</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.emissive"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.emissive</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.opacity"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.opacity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/annotation.html#paralleldomain.model.annotation.material_properties_3d.MaterialProperties3D.flag"><code class="docutils literal notranslate"><span class="pre">MaterialProperties3D.flag</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/geometry.html">paralleldomain.model.geometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.x"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.y"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.width"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.height"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.height</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.include_point"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.include_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.include_points"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.include_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.area"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.area</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DBaseGeometry.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DBaseGeometry.vertices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.include_point"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.include_point()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.include_points"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.include_points()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.area"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.area</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_2d.BoundingBox2DGeometry.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox2DGeometry.vertices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.pose</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.height</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.num_points</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.faces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.vertices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.merge_boxes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.edges</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.faces</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.vertices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.x"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.y"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point2DBaseGeometry.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DGeometry"><code class="docutils literal notranslate"><span class="pre">Point2DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_2d.Point2DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point2DGeometry.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.x"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.x</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.y"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.y</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.z"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.z</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point3DBaseGeometry.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DGeometry"><code class="docutils literal notranslate"><span class="pre">Point3DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.point_3d.Point3DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Point3DGeometry.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.lines"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polygon2DBaseGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry"><code class="docutils literal notranslate"><span class="pre">Polygon2DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon2DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_2d.Polygon2DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polygon2DGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.lines"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polygon3DBaseGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry"><code class="docutils literal notranslate"><span class="pre">Polygon3DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polygon3DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polygon_3d.Polygon3DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polygon3DGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.CollinearLinesException"><code class="docutils literal notranslate"><span class="pre">CollinearLinesException</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.CollinearLinesException.with_traceback"><code class="docutils literal notranslate"><span class="pre">CollinearLinesException.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.start"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.start</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.end"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.end</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.directed"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.directed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.class_id"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.class_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.instance_id"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.instance_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.attributes"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.attributes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.intersects_at"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.intersects_at()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.direction"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DBaseGeometry.slope"><code class="docutils literal notranslate"><span class="pre">Line2DBaseGeometry.slope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.intersects_at"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry.intersects_at()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.direction"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry.length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Line2DGeometry.slope"><code class="docutils literal notranslate"><span class="pre">Line2DGeometry.slope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Polyline2DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.lines"><code class="docutils literal notranslate"><span class="pre">Polyline2DBaseGeometry.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline2DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polyline2DBaseGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry"><code class="docutils literal notranslate"><span class="pre">Polyline2DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline2DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_2d.Polyline2DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polyline2DGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.start"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry.start</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.end"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry.end</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.direction"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Line3DBaseGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry"><code class="docutils literal notranslate"><span class="pre">Line3DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Line3DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.direction"><code class="docutils literal notranslate"><span class="pre">Line3DGeometry.direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Line3DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Line3DGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry"><code class="docutils literal notranslate"><span class="pre">Polyline3DBaseGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.lines"><code class="docutils literal notranslate"><span class="pre">Polyline3DBaseGeometry.lines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline3DBaseGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DBaseGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polyline3DBaseGeometry.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry"><code class="docutils literal notranslate"><span class="pre">Polyline3DGeometry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry.to_numpy"><code class="docutils literal notranslate"><span class="pre">Polyline3DGeometry.to_numpy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/geometry.html#paralleldomain.model.geometry.polyline_3d.Polyline3DGeometry.length"><code class="docutils literal notranslate"><span class="pre">Polyline3DGeometry.length</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/data_lab/generators.html">paralleldomain.data_lab.generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.PositionRequest"><code class="docutils literal notranslate"><span class="pre">PositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.RoadPitchPositionRequest"><code class="docutils literal notranslate"><span class="pre">RoadPitchPositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.position_request.SpecialAgentTag"><code class="docutils literal notranslate"><span class="pre">SpecialAgentTag</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.spawn_data.AgentSpawnData"><code class="docutils literal notranslate"><span class="pre">AgentSpawnData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData"><code class="docutils literal notranslate"><span class="pre">VehicleSpawnData</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/any_path.html">paralleldomain.utilities.any_path</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath"><code class="docutils literal notranslate"><span class="pre">AnyPath</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.exists"><code class="docutils literal notranslate"><span class="pre">AnyPath.exists()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.glob"><code class="docutils literal notranslate"><span class="pre">AnyPath.glob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_absolute"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_absolute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_dir"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_fifo"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_fifo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_file"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_mount"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_mount()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_socket"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_socket()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.is_symlink"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_symlink()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.iterdir"><code class="docutils literal notranslate"><span class="pre">AnyPath.iterdir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.mkdir"><code class="docutils literal notranslate"><span class="pre">AnyPath.mkdir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.open"><code class="docutils literal notranslate"><span class="pre">AnyPath.open()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.owner"><code class="docutils literal notranslate"><span class="pre">AnyPath.owner()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.rename"><code class="docutils literal notranslate"><span class="pre">AnyPath.rename()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.replace"><code class="docutils literal notranslate"><span class="pre">AnyPath.replace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.rglob"><code class="docutils literal notranslate"><span class="pre">AnyPath.rglob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.rm"><code class="docutils literal notranslate"><span class="pre">AnyPath.rm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.rmdir"><code class="docutils literal notranslate"><span class="pre">AnyPath.rmdir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.samefile"><code class="docutils literal notranslate"><span class="pre">AnyPath.samefile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.stat"><code class="docutils literal notranslate"><span class="pre">AnyPath.stat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.touch"><code class="docutils literal notranslate"><span class="pre">AnyPath.touch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath.unlink"><code class="docutils literal notranslate"><span class="pre">AnyPath.unlink()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/transformation.html">paralleldomain.utilities.transformation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation"><code class="docutils literal notranslate"><span class="pre">Transformation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.as_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.from_euler_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">Transformation.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.inverse"><code class="docutils literal notranslate"><span class="pre">Transformation.inverse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.quaternion"><code class="docutils literal notranslate"><span class="pre">Transformation.quaternion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.rotation"><code class="docutils literal notranslate"><span class="pre">Transformation.rotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.transformation_matrix"><code class="docutils literal notranslate"><span class="pre">Transformation.transformation_matrix</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.translation"><code class="docutils literal notranslate"><span class="pre">Transformation.translation</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/geometry.html">paralleldomain.utilities.geometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/geometry.html#paralleldomain.utilities.geometry.interpolate_points"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/geometry.html#paralleldomain.utilities.geometry.is_point_in_polygon_2d"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/geometry.html#paralleldomain.utilities.geometry.simplify_polyline_2d"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/projection.html">paralleldomain.utilities.projection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/projection.html#paralleldomain.utilities.projection.DistortionLookupTable"><code class="docutils literal notranslate"><span class="pre">DistortionLookupTable</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/utilities/projection.html#paralleldomain.utilities.projection.DistortionLookupTable.from_ndarray"><code class="docutils literal notranslate"><span class="pre">DistortionLookupTable.from_ndarray()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/projection.html#paralleldomain.utilities.projection.points_2d_inside_image"><code class="docutils literal notranslate"><span class="pre">points_2d_inside_image()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/projection.html#paralleldomain.utilities.projection.project_points_2d_to_3d"><code class="docutils literal notranslate"><span class="pre">project_points_2d_to_3d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/projection.html#paralleldomain.utilities.projection.project_points_3d_to_2d"><code class="docutils literal notranslate"><span class="pre">project_points_3d_to_2d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/mask.html">paralleldomain.utilities.mask</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.boolean_mask_by_value"><code class="docutils literal notranslate"><span class="pre">boolean_mask_by_value()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.boolean_mask_by_values"><code class="docutils literal notranslate"><span class="pre">boolean_mask_by_values()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.encode_2int16_as_rgba8"><code class="docutils literal notranslate"><span class="pre">encode_2int16_as_rgba8()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.encode_int32_as_rgb8"><code class="docutils literal notranslate"><span class="pre">encode_int32_as_rgb8()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.encode_rgb8_as_int32"><code class="docutils literal notranslate"><span class="pre">encode_rgb8_as_int32()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.lookup_values"><code class="docutils literal notranslate"><span class="pre">lookup_values()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.replace_value"><code class="docutils literal notranslate"><span class="pre">replace_value()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/mask.html#paralleldomain.utilities.mask.replace_values"><code class="docutils literal notranslate"><span class="pre">replace_values()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/utilities/os.html">paralleldomain.utilities.os</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/os.html#paralleldomain.utilities.os.cpu_count"><code class="docutils literal notranslate"><span class="pre">cpu_count()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities/os.html#paralleldomain.utilities.os.is_container"><code class="docutils literal notranslate"><span class="pre">is_container()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">Parallel Domain SDK</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="index.html">ML Data Generator</a> &raquo;</li>
-        
-      <li>Data loader for a Segmentation model</li>
-    
-    
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">ML Data Generator</a></li>
+      <li class="breadcrumb-item active">Data loader for a Segmentation model</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../../_sources/tutorial/ml_data_generator/ml_data_generator.ipynb.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="Data-loader-for-a-Segmentation-model">
-<h1>Data loader for a Segmentation model<a class="headerlink" href="#Data-loader-for-a-Segmentation-model" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="Data-loader-for-a-Segmentation-model">
+<h1>Data loader for a Segmentation model<a class="headerlink" href="#Data-loader-for-a-Segmentation-model" title="Permalink to this heading"></a></h1>
 <p>Using the PD SDK within your data pipeline gives you a couple of advantages: - only one data loader is needed for all dataset formats supported by PD SDK - it’s easy to mix data from different dataset formats since the model representation is shared - it will work with datasets located locally or in s3 (this is also easily extendable to more cloud storage providers. See AnyPath)</p>
 <p>In the following snippet we show an example on how to create a generator that will yield you image + segmentation mask tuples using the PD SDK. This generator yields examples from a PD dgp dataset as well as from the NuImages train split.</p>
 <div class="nbinput nblast docutils container">
@@ -354,54 +912,37 @@
 <br/></pre></div>
 </div>
 </div>
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../../api/dataset.html" class="btn btn-neutral float-right" title="paralleldomain.model.dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="ML Data Generator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../api/dataset.html" class="btn btn-neutral float-right" title="paralleldomain.model.dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Parallel Domain.
-
-    </p>
+    <p>&#169; Copyright 2023, Parallel Domain.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
