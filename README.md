@@ -35,7 +35,7 @@ The two main use cases PD SDK is designed for are:
 More details on the [**Architecture**](paralleldomain/ARCHITECTURE.md) of PD SDK can be found [here](paralleldomain/ARCHITECTURE.md).
 
 ### Example: Load and visualize data
-To run ``show_sensor_frame`` you need to install the visualization dependencies with (See our [Istnall Instruvtions](INSTALL.md) for more install options):
+To run ``show_sensor_frame`` you need to install the visualization dependencies with (See our [Install Instructions](INSTALL.md) for more install options):
 
 ```bash
 pip install "paralleldomain[visualization] @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain"
