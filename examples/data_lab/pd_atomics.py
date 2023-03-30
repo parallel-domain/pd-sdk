@@ -135,6 +135,6 @@ data_lab.preview_scenario(
     frames_per_scene=100,
     show_image_for_n_seconds=1,
     sim_capture_rate=10,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:3001"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:3001"),
+    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:300X"),
+    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:300X"),
 )
