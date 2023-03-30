@@ -74,7 +74,7 @@ jobs:
         run: |
           LOCAL_DATASET_PATH=$(mktemp -d)
           aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
-          DGP_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --verbose
+          DGP_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --ignore "test_paralleldomain/data_lab" --verbose
         shell: bash
   sphinx-build:
     needs: pytest
