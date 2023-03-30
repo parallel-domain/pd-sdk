@@ -9,15 +9,12 @@ from paralleldomain.model.annotation.common import Annotation
 class MaterialProperties2D(Annotation):
     """Contains the Metallic/Specular roughness of each pixel per in the corresponding camera image.
 
-
-
     Args:
         roughness: :attr:`~.MetallicSpecularRoughness.roughness:`
 
     Attributes:
-        roughness:: Matrix of shape `(H X W x 3)`, , where `H` is the height and `W` is the width of corresponding
+        roughness: Matrix of shape `(H X W x 3)`, where `H` is the height and `W` is the width of corresponding
             camera image. The third axis contains the Metallic/Specular roughness of each pixel.
-
     """
 
     roughness: np.ndarray

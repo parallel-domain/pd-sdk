@@ -40,9 +40,11 @@ class Scene(UnorderedScene[datetime]):
 
     @property
     def frames(self) -> List[Frame]:
+        """Returns a list of :obj:`Frame` objects available in the scene."""
         return [self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids]
 
     @property
     def frame_ids(self) -> List[FrameId]:
+        """Returns a list of frame IDs available in the scene."""
         fids = list(self._decoder.get_frame_ids(scene_name=self.name))
         return sorted(fids, key=self._decoder.get_frame_id_to_date_time_map(scene_name=self.name).get)

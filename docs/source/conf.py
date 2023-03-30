@@ -21,7 +21,7 @@ print(os.getcwd())
 # -- Project information -----------------------------------------------------
 
 project = "Parallel Domain SDK"
-copyright = "2021, Parallel Domain"
+copyright = "2023, Parallel Domain"
 author = "Nisse Knudsen, Phillip Thomas"
 
 
@@ -31,10 +31,11 @@ author = "Nisse Knudsen, Phillip Thomas"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions: List[str] = [
+    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx_autodoc_typehints",
-    "sphinx.ext.napoleon",
-    "m2r2",  # .. mdinclude:: package
+    "sphinx_mdinclude",
+    # "m2r2",  # .. mdinclude:: package
     "sphinx_rtd_theme",
     "nbsphinx",
 ]
@@ -44,7 +45,7 @@ autoclass_content = "both"
 autodoc_inherit_docstrings = True
 set_type_checking_flag = True
 add_module_names = False
-autodoc_member_order = "bysource"
+autodoc_member_order = "groupwise"
 autodoc_typehints = "description"
 
 napoleon_google_docstring = True

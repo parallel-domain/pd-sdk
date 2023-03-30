@@ -1,3 +1,8 @@
 from pd.internal.proto.keystone.generated.wrapper import pd_unified_generator_pb2
 
-ParkedVehicleGeneratorParameters = pd_unified_generator_pb2.ParkedVehicleGeneratorParameters
+from paralleldomain.utilities import inherit_docs
+
+
+@inherit_docs
+class ParkedVehicleGeneratorParameters(pd_unified_generator_pb2.ParkedVehicleGeneratorParameters):
+    ...

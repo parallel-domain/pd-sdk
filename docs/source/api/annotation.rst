@@ -40,6 +40,7 @@ paralleldomain.model.annotation
 .. automodule:: paralleldomain.model.annotation.point_cache
     :members:
     :inherited-members:
+    :exclude-members: PointCachePointsDecoderProtocol
 
 .. automodule:: paralleldomain.model.annotation.polygon_2d
     :members:

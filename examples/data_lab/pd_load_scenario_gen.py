@@ -30,7 +30,11 @@ sensor_rig = SensorRig(
     ]
 )
 
-path = AnyPath(sys.argv[1])
+if len(sys.argv) > 1:
+    path = AnyPath(sys.argv[1])
+else:
+    path = AnyPath(r"/path/to/file.json")
+
 loaded_scenario = data_lab.Scenario.load_scenario(
     path,
     sensor_rig=sensor_rig,  # Optional: overwrite sensor rig from build-sim-state stage with a custom rig
@@ -39,8 +43,8 @@ loaded_scenario = data_lab.Scenario.load_scenario(
 AnyPath("out").mkdir(exist_ok=True)
 for frame, scene in data_lab.create_frame_stream(
     scenario=loaded_scenario,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:3004"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:3004"),
+    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:3001"),
+    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:3001"),
 ):
     for camera_frame in frame.camera_frames:
         write_png(

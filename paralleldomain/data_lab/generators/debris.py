@@ -9,8 +9,10 @@ from paralleldomain.data_lab.generators.position_request import (
     AbsolutePositionRequest,
     LaneSpawnPolicy,
 )
+from paralleldomain.utilities import inherit_docs
 
 
+@inherit_docs
 class DebrisGeneratorParameters(pd_unified_generator_pb2.DebrisGeneratorParameters):
     @classmethod
     def from_position_request(

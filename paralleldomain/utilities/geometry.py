@@ -40,6 +40,16 @@ def is_point_in_polygon_2d(
     point: Union[np.ndarray, List[float], Tuple[float, float]],
     include_edge: bool = True,
 ) -> bool:
+    """Checks if a point lies inside a polygon shape.
+
+    Args:
+        polygon: Array of consecutive points that form a polygon
+        point: 2D point coordinates to be tested if they lie in the specified polygon
+        include_edge: If point is considered inside if lying on the edge or not. Default: `True`
+
+    Returns:
+        `True` if point in polygon, otherwise `False,
+    """
     polygon = np.asarray(polygon).astype(np.float32)
     if polygon.ndim != 2 or polygon.shape[0] < 3 or polygon.shape[1] != 2:
         raise ValueError(
@@ -59,9 +69,20 @@ def is_point_in_polygon_2d(
 
 def simplify_polyline_2d(
     polyline: Union[np.ndarray, List[Union[List[float], Tuple[float, float]]]],
-    supporting_points_indices: List[int] = None,
+    supporting_points_indices: Optional[List[int]] = None,
     approximation_error: float = 0.1,
 ) -> np.ndarray:
+    """Takes a 2D polyline and simplifies its shape while allowing for a specified error.
+
+    Args:
+        polyline: 2D Polyline that should be simplified.
+        supporting_points_indices: An optional list of vertices of the polyline that need to be kept during
+            simplification.
+        approximation_error: The maximum error that's allowed to be introduced during simplification.
+
+    Returns:
+        A simplified version of the input polyline, or the input polyline if no simplification could be done.
+    """
     polyline = np.asarray(polyline)
     if polyline.ndim != 2 or polyline.shape[1] != 2:
         raise ValueError(f"""Expected np.ndarray of shape (N X 2) for `polyline`. Received {polyline.shape}.""")
