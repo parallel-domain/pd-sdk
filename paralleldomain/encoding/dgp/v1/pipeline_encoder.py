@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from paralleldomain.encoding.dgp.v1.encoding_format import DGPV1EncodingFormat
 from paralleldomain.encoding.generic_pipeline_builder import GenericPipelineBuilder
@@ -42,6 +42,7 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
         encode_to_binary: bool = False,
+        run_env: Literal["thread", "process", "sync"] = "thread",
     ) -> "DatasetPipelineEncoder":
         encoding_format = DGPV1EncodingFormat(
             dataset_output_path=output_path,
@@ -69,7 +70,8 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
             fs_copy=fs_copy,
             workers=workers,
             max_in_queue_size=max_in_queue_size,
+            run_env=run_env,
         )
         return DatasetPipelineEncoder.from_builder(
-            use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format
+            use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format, run_env=run_env
         )

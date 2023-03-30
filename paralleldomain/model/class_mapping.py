@@ -62,6 +62,18 @@ class ClassMap:
     def __len__(self):
         return len(self._class_id_to_class_detail)
 
+    def get_class_detail_from_name(self, class_name: str) -> Optional[ClassDetail]:
+        return next(
+            iter(
+                [
+                    self._class_id_to_class_detail[cid]
+                    for cid in self.class_ids
+                    if self._class_id_to_class_detail[cid].name == class_name
+                ]
+            ),
+            None,
+        )
+
     @staticmethod
     def from_id_label_dict(id_label_dict: Dict[int, str]) -> "ClassMap":
         return ClassMap(classes=[ClassDetail(id=k, name=v) for k, v in id_label_dict.items()])

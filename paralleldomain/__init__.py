@@ -1,2 +1,2 @@
-from .model.dataset import Dataset
-from .model.scene import Scene
+from paralleldomain.model.dataset import Dataset
+from paralleldomain.model.scene import Scene

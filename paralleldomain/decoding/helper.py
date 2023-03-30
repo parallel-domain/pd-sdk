@@ -40,6 +40,7 @@ def decode_dataset(
     settings: Optional[DecoderSettings] = None,
     **decoder_kwargs,
 ) -> Dataset:
+    dataset_path = AnyPath(dataset_path)
     decoder_type = next((dtype for dtype in known_decoders if dataset_format == dtype.get_format()), None)
     if decoder_type is not None:
         return decoder_type(

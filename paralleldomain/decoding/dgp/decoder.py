@@ -7,19 +7,17 @@ from typing import Any, Dict, List, Optional, Set, Union
 import iso8601
 
 from paralleldomain.common.dgp.v0.constants import ANNOTATION_TYPE_MAP
-from paralleldomain.common.dgp.v0.dtos import DatasetDTO, OntologyFileDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
+from paralleldomain.common.dgp.v0.dtos import DatasetDTO, SceneDataDTO, SceneDTO, SceneSampleDTO
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.dgp.common import decode_class_maps
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
-from paralleldomain.decoding.map_decoder import MapDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.decoding.umd.map_decoder import UMDDecoder
 from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_json
 from paralleldomain.utilities.transformation import Transformation
@@ -243,13 +241,3 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _sample_by_index(self, scene_name: str) -> Dict[str, SceneSampleDTO]:
         dto = self._decode_scene_dto(scene_name=scene_name)
         return {s.id.index: s for s in dto.samples}
-
-    def _create_map_decoder(self, scene_name: SceneName, dataset_name: str) -> Optional[MapDecoder]:
-        if self._umd_map_path is not None:
-            return UMDDecoder(
-                umd_file_path=self._umd_map_path,
-                dataset_name=dataset_name,
-                scene_name=scene_name,
-                settings=self.settings,
-            )
-        return None

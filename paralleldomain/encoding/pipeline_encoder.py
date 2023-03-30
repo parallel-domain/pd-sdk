@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, Iterable, List, Literal, Optional, Type, TypeVar, Union
 
 import pypeln
 from pypeln.utils import A, BaseStage, Undefined
@@ -43,6 +43,12 @@ logger.addHandler(_TqdmLoggingHandler())
 
 
 TSceneType = TypeVar("TSceneType", Scene, UnorderedScene)
+
+NAME_TO_RUNENV = {
+    "thread": pypeln.thread,
+    "process": pypeln.process,
+    "sync": pypeln.sync,
+}
 
 
 @dataclass
@@ -142,6 +148,11 @@ class EncodingFormat(Generic[TPipelineItem]):
     def save_dataset(self, pipeline_item: TPipelineItem, data: Any = None):
         pass
 
+    @staticmethod
+    @abstractmethod
+    def get_format() -> str:
+        pass
+
 
 class EncoderStep:
     @abstractmethod
@@ -170,10 +181,12 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         pipeline_builder: PipelineBuilder[TPipelineItem],
         encoding_format: EncodingFormat[TPipelineItem],
         use_tqdm: bool = True,
+        run_env: Literal["thread", "process", "sync"] = "thread",
     ):
         self.encoding_format = encoding_format
         self.pipeline_builder = pipeline_builder
         self.use_tqdm = use_tqdm
+        self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
 
     @staticmethod
     def build_pipeline(
@@ -189,7 +202,7 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         encoder_steps = self.pipeline_builder.build_encoder_steps(encoding_format=self.encoding_format)
         stage = self.build_pipeline(source_generator=stage, encoder_steps=encoder_steps)
 
-        stage = pypeln.thread.to_iterable(stage)
+        stage = self.run_env.to_iterable(stage)
         if self.use_tqdm:
             stage = tqdm(
                 stage,
@@ -206,6 +219,9 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         pipeline_builder: PipelineBuilder,
         encoding_format: EncodingFormat,
         use_tqdm: bool = True,
+        run_env: Literal["thread", "process", "sync"] = "thread",
         **kwargs,
     ) -> "DatasetPipelineEncoder":
-        return cls(use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format)
+        return cls(
+            use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format, run_env=run_env
+        )

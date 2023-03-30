@@ -21,3 +21,25 @@ def test_quaternion_transform_90_yaw_and_pitch_xyz(
     quat = source_coord.quaternion_from_rpy(yaw=yaw, pitch=pitch, roll=roll, degrees=True, order=order)
     rotated = quat.rotate(source)
     assert all(np.isclose(target, rotated))
+
+
+def test_direction_properties():
+    coords = CoordinateSystem("ULB")
+    assert np.allclose(coords.forward, np.array([0.0, 0.0, -1.0]))
+    assert np.allclose(coords.up, np.array([1.0, 0.0, 0.0]))
+    assert np.allclose(coords.left, np.array([0.0, 1.0, 0.0]))
+
+    coords = CoordinateSystem("LBU")
+    assert np.allclose(coords.forward, np.array([0.0, -1.0, 0.0]))
+    assert np.allclose(coords.up, np.array([0.0, 0.0, 1.0]))
+    assert np.allclose(coords.left, np.array([1.0, 0.0, 0.0]))
+
+    coords = CoordinateSystem("BRU")
+    assert np.allclose(coords.forward, np.array([-1.0, 0.0, 0.0]))
+    assert np.allclose(coords.up, np.array([0.0, 0.0, 1.0]))
+    assert np.allclose(coords.left, np.array([0.0, -1.0, 0.0]))
+
+    coords = CoordinateSystem("DFR")
+    assert np.allclose(coords.forward, np.array([0.0, 1.0, 0.0]))
+    assert np.allclose(coords.up, np.array([-1.0, 0.0, 0.0]))
+    assert np.allclose(coords.left, np.array([0.0, 0.0, -1.0]))

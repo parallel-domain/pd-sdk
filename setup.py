@@ -1,11 +1,8 @@
 from setuptools import find_packages, setup
 
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
-
 setup(
     name="paralleldomain",
-    version="0.8.0",
+    version="0.9.0",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -21,9 +18,36 @@ setup(
     },
     python_requires=">=3.7",
     long_description="Python SDK for ParallelDomain Datasets",
-    install_requires=requirements,
+    install_requires=[
+        "awscli>=1.0.0,<2.0.0",
+        "coloredlogs>=15.0.1,<16.0.0",
+        "cachetools>=4.2.2,<5.0.0",
+        "cgroupspy>=0.2.1,<1.0.0",
+        "dataclasses_json>=0.5.3,<1.0.0",
+        "humanize>=3.10.0,<5.0.0",
+        "iso8601>=0.1.16,<1.0.0",
+        "igraph>=0.9.8,<1.0.0",
+        "more-itertools>=8.11.0,<9.0.0",
+        "numpy>=1.19,<2.0",
+        "opencv-python-headless>=4.5.3.56,<5.0.0.0",
+        "protobuf>=3.20.1,<4.0.0",
+        "pyquaternion>=0.9.9,<1.0.0",
+        "transforms3d>=0.3.1,<1.0.0",
+        "typing-extensions>=3.6.6,<5.0.0.0",
+        "s3path==0.3.2",
+        "ujson>=5.1.0,<6.0.0",
+        "imagesize>=1.3.0,<1.4.0",
+        "pypeln>=0.4.9,<1.0.0",
+        "tqdm>=4.55.3,<5.0.0",
+        "Pillow>=6.2.1,<10.0.0",
+    ],
     include_package_data=True,
     extras_require={
+        "data_lab": [
+            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git",
+            "opencv-python>=4.5.3.56,<5.0.0.0",
+        ],
+        "visualization": ["opencv-python>=4.5.3.56,<5.0.0.0"],
         "dev": [
             "git-filter-repo>=2.34.0,<3.0.0",
             "pytest>=5.3.1,<6.0.0",
@@ -34,4 +58,5 @@ setup(
         ],
     },
     zip_safe=False,
+    entry_points={"console_scripts": ["pd-credentials-setup=paralleldomain.generation.credentials:main"]},
 )
