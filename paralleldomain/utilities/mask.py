@@ -4,20 +4,61 @@ import numpy as np
 
 
 def boolean_mask_by_value(mask: np.ndarray, value: int) -> np.ndarray:
+    """Returns a boolean mask where a specific value is inside the input mask.
+
+    Args:
+        mask: Array of shape (M x N x 1). All values must be of type `int`.
+        value: A single value to be masked as `True`
+
+    Returns:
+        Returns array of shape (M x N x 1).
+    """
     return boolean_mask_by_values(mask=mask, values=[value])
 
 
 def boolean_mask_by_values(mask: np.ndarray, values: List[int]) -> np.ndarray:
+    """Returns a boolean mask where specific values are inside the input mask.
+
+    Args:
+        mask: Array of shape (M x N x 1). All values must be of type `int`.
+        values: A list of values to be masked as `True`
+
+    Returns:
+        Returns array of shape (M x N x 1).
+    """
     return np.isin(mask, values)
 
 
 def replace_value(mask: np.ndarray, old_value: int, new_value: int) -> np.ndarray:
+    """Replaces values in a mask by a new value.
+
+    Args:
+        mask: Array of shape (M x N x 1). All values must be of type `int`.
+        old_value: Source value to be replaced.
+        new_value: Target value to be replaced with.
+
+    Returns:
+        Returns array of shape (M x N x 1).
+    """
     return replace_values(mask=mask, value_map={old_value: new_value})
 
 
 def replace_values(
     mask: np.ndarray, value_map: Dict[int, int], value_min: Union[int, None] = None, value_max: Union[int, None] = None
 ) -> np.ndarray:
+    """Replaces values in a mask by new values.
+
+    Args:
+        mask: Array of shape (M x N x 1). All values must be of type `int`.
+        value_map: Dictionary of source and target values. Source values will be replaced by target values.
+        value_min: If known beforehand, setting the minimum allowed value will make processing faster.
+            Otherwise, inferred by `mask`'s dtype.
+        value_max: If known beforehand, setting the maximum allowed value will make processing faster.
+            Otherwise, inferred by `mask`'s dtype.
+
+    Returns:
+        Returns array of shape (M x N x 1).
+    """
     index_substitutes = np.array(
         [
             value_map.get(item, item)
@@ -32,14 +73,40 @@ def replace_values(
 
 
 def encode_int32_as_rgb8(mask: np.ndarray) -> np.ndarray:
+    """Encodes a mask with 1 32-bit value in a mask with 3 8-bit values by truncating the highest 8 bits. Used to
+        convert a single value color representation into an RGB array.
+
+    Args:
+        mask: Array of shape (M x N x 1). Note: Values are assumed to be 32-bit integers.
+
+    Returns:
+        Returns array of shape (M x N x 4).
+    """
     return np.concatenate([mask & 0xFF, mask >> 8 & 0xFF, mask >> 16 & 0xFF], axis=-1).astype(np.uint8)
 
 
 def encode_rgb8_as_int32(mask: np.ndarray) -> np.ndarray:
+    """Encodes a mask with 3 8-bit values in a mask with 1 32-bit value. Used to convert an RGB array into a single
+        value color representation.
+
+    Args:
+        mask: Array of shape (M x N x 3). Note: Values are assumed to be 8-bit integers.
+
+    Returns:
+        Returns array of shape (M x N x 1).
+    """
     return (mask[..., 2:3] << 16) + (mask[..., 1:2] << 8) + mask[..., 0:1]
 
 
 def encode_2int16_as_rgba8(mask: np.ndarray) -> np.ndarray:
+    """Encodes a mask with 2 16-bit values in a mask with 4 8-bit values.
+
+    Args:
+        mask: Array of shape (M x N x 2). Note: Values are assumed to be 16-bit integers.
+
+    Returns:
+        Returns array of shape (M x N x 4).
+    """
     return np.concatenate(
         [mask[..., [0]] & 0xFF, mask[..., [0]] >> 8, mask[..., [1]] & 0xFF, mask[..., [1]] >> 8], axis=-1
     ).astype(np.uint8)

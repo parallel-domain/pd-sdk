@@ -3,17 +3,46 @@ from typing import Union
 from pd.internal.proto.keystone.generated.wrapper import pd_unified_generator_pb2
 
 from paralleldomain.data_lab.config.types import Float3, Float3x3
+from paralleldomain.utilities import inherit_docs
 from paralleldomain.utilities.transformation import Transformation
 
-SpecialAgentTag = pd_unified_generator_pb2.SpecialAgentTag
-RoadPitchPositionRequest = pd_unified_generator_pb2.RoadPitchPositionRequest
-PathTimeRelativePositionRequest = pd_unified_generator_pb2.PathTimeRelativePositionRequest
-LocationRelativePositionRequest = pd_unified_generator_pb2.LocationRelativePositionRequest
-LaneSpawnPolicy = pd_unified_generator_pb2.LaneSpawnPolicy
-PositionOfInterestPolicy = pd_unified_generator_pb2.PositionOfInterestPolicy
-JunctionSpawnPolicy = pd_unified_generator_pb2.JunctionSpawnPolicy
+
+@inherit_docs
+class SpecialAgentTag(pd_unified_generator_pb2.SpecialAgentTag):
+    ...
 
 
+@inherit_docs
+class RoadPitchPositionRequest(pd_unified_generator_pb2.RoadPitchPositionRequest):
+    ...
+
+
+@inherit_docs
+class PathTimeRelativePositionRequest(pd_unified_generator_pb2.PathTimeRelativePositionRequest):
+    ...
+
+
+@inherit_docs
+class LocationRelativePositionRequest(pd_unified_generator_pb2.LocationRelativePositionRequest):
+    ...
+
+
+@inherit_docs
+class LaneSpawnPolicy(pd_unified_generator_pb2.LaneSpawnPolicy):
+    ...
+
+
+@inherit_docs
+class PositionOfInterestPolicy(pd_unified_generator_pb2.PositionOfInterestPolicy):
+    ...
+
+
+@inherit_docs
+class JunctionSpawnPolicy(pd_unified_generator_pb2.JunctionSpawnPolicy):
+    ...
+
+
+@inherit_docs
 class AbsolutePositionRequest(pd_unified_generator_pb2.AbsolutePositionRequest):
     @classmethod
     def from_transformation(cls, transformation: Transformation) -> "AbsolutePositionRequest":
@@ -30,6 +59,7 @@ class AbsolutePositionRequest(pd_unified_generator_pb2.AbsolutePositionRequest):
         )
 
 
+@inherit_docs
 class PositionRequest(pd_unified_generator_pb2.PositionRequest):
     ...
 
