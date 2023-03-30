@@ -76,7 +76,8 @@ def simplify_polyline_2d(
 
     Args:
         polyline: 2D Polyline that should be simplified.
-        supporting_points_indices: An optional list of vertices of the polyline that need to be kept during simplification.
+        supporting_points_indices: An optional list of vertices of the polyline that need to be kept during
+            simplification.
         approximation_error: The maximum error that's allowed to be introduced during simplification.
 
     Returns:
