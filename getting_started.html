@@ -787,11 +787,11 @@
   <section id="parallel-domain-sdk">
 <span id="getting-started"></span><h1>Parallel Domain SDK<a class="headerlink" href="#parallel-domain-sdk" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://parallel-domain.github.io/pd-sdk/index.html">**Documentation**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html">**Documentation -&gt; Tutorials**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/api/dataset.html">**Documentation -&gt; API Reference**</a></p>
-<p>Supported Python Versions: <strong>3.7</strong> | <strong>3.8</strong> | <strong>3.9</strong></p>
+<p>Supported Python Versions: <strong>3.8</strong> | <strong>3.9</strong></p>
 <section id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this heading"></a></h2>
 <p>For more detailed instructions see <a class="reference external" href="INSTALL.md">here</a>. For default installation run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain&quot;</span>
 </pre></div>
 </div>
 </section>
@@ -819,7 +819,7 @@
 <section id="example-load-and-visualize-data">
 <h3>Example: Load and visualize data<a class="headerlink" href="#example-load-and-visualize-data" title="Permalink to this heading"></a></h3>
 <p>To run <code class="docutils literal notranslate"><span class="pre">show_sensor_frame</span></code> you need to install the visualization dependencies with (See our <a class="reference external" href="INSTALL.md">Istnall Instruvtions</a> for more install options):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain[visualization] @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain[visualization] @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain&quot;</span>
 </pre></div>
 </div>
 <p>Then you can decode a dataset at a given local or s3 path using the <code class="docutils literal notranslate"><span class="pre">decode_dataset</span></code> method.
