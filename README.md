@@ -7,7 +7,7 @@ Supported Python Versions: **3.7** | **3.8** | **3.9**
 For more detailed instructions see [here](INSTALL.md). For default installation run:
 
 ```bash
-pip install "paralleldomain @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain"
+pip install "paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain"
 ```
 
 
@@ -35,10 +35,10 @@ The two main use cases PD SDK is designed for are:
 More details on the [**Architecture**](paralleldomain/ARCHITECTURE.md) of PD SDK can be found [here](paralleldomain/ARCHITECTURE.md).
 
 ### Example: Load and visualize data
-To run ``show_sensor_frame`` you need to install the visualization dependencies with (See our [Istnall Instruvtions](INSTALL.md) for more install options):
+To run ``show_sensor_frame`` you need to install the visualization dependencies with (See our [Install Instructions](INSTALL.md) for more install options):
 
 ```bash
-pip install "paralleldomain[visualization] @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain"
+pip install "paralleldomain[visualization] @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain"
 ```
 Then you can decode a dataset at a given local or s3 path using the ``decode_dataset`` method.
 To have quick access to all sensor frames in a dataset you can use the ``sensor_frame_pipeline`` method of a dataset.
