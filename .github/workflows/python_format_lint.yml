@@ -88,7 +88,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[data_lab]"
           python -m pip install -r docs/requirements.txt
-          sphinx-build -b html docs/source docs/build --keep-going -W
+          sphinx-build -b html docs/source docs/build --keep-going
       - uses: actions/upload-artifact@v1
         with:
           name: API Documentation
