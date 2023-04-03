@@ -10,6 +10,7 @@ from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
+from paralleldomain.utilities.projection import DistortionLookupTable
 
 
 def class_maps_do_match(map_a: Dict[AnnotationType, ClassMap], map_b: Dict[AnnotationType, ClassMap]):
@@ -82,17 +83,21 @@ class TestSensorFrame:
         init_kwargs = decoder.get_decoder_init_kwargs()
         init_kwargs["settings"] = None
         no_lookup_decoder = decoder_cls(**init_kwargs)
-        datast = no_lookup_decoder.get_dataset()
-        sensor_frame = next(iter(datast.camera_frames))
+        dataset = no_lookup_decoder.get_dataset()
+        sensor_frame = next(iter(dataset.get_sensor_frames(sensor_names=["camera_front"])))
         distortion_lookup = sensor_frame.distortion_lookup
         assert distortion_lookup is None
+
+        sensor_frame = next(iter(dataset.get_sensor_frames(sensor_names=["camera_rear"])))
+        distortion_lookup = sensor_frame.distortion_lookup
+        assert isinstance(distortion_lookup, DistortionLookupTable)
+
         no_lookup_decoder.lazy_load_cache.clear()
         fake_loopup = mock.MagicMock()
-
         init_kwargs["settings"] = DecoderSettings(distortion_lookups={sensor_frame.sensor_name: fake_loopup})
         with_lookup_decoder = decoder_cls(**init_kwargs)
         dataset = with_lookup_decoder.get_dataset()
-        sensor_frame = next(iter(dataset.camera_frames))
+        sensor_frame = next(iter(dataset.get_sensor_frames(sensor_frame.sensor_name)))
         distortion_lookup = sensor_frame.distortion_lookup
         assert distortion_lookup == fake_loopup
 

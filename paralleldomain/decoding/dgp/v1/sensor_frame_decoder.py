@@ -724,8 +724,8 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             if lut_csv_path.exists():
                 with lut_csv_path.open() as f:
                     lut = np.loadtxt(f, delimiter=",", dtype="float")
-                return DistortionLookupTable.from_ndarray(lut)
-        return None
+                lookup = DistortionLookupTable.from_ndarray(lut)
+        return lookup
 
 
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
