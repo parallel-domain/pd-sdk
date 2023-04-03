@@ -8,12 +8,17 @@ from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateT
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.waymo_open_dataset.common import (
+    WAYMO_INDEX_TO_CAMERA_NAME,
+    WAYMO_USE_ALL_LIDAR_NAME,
     decode_class_maps,
-    get_cached_pre_calcualted_scene_to_frame_info,
+    get_cached_pre_calculated_scene_to_frame_info,
     get_record_iterator,
 )
 from paralleldomain.decoding.waymo_open_dataset.frame_decoder import WaymoOpenDatasetFrameDecoder
-from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import WaymoOpenDatasetCameraSensorDecoder
+from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import (
+    WaymoOpenDatasetCameraSensorDecoder,
+    WaymoOpenDatasetLidarSensorDecoder,
+)
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
@@ -32,6 +37,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         split_name: str,
         settings: Optional[DecoderSettings] = None,
         use_precalculated_maps: bool = True,
+        include_second_returns: bool = True,
         **kwargs,
     ):
         self._init_kwargs = dict(
@@ -42,6 +48,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
         )
         self._dataset_path: AnyPath = AnyPath(dataset_path) / split_name
         self.split_name = split_name
+        self.include_second_returns = include_second_returns
         self.use_precalculated_maps = use_precalculated_maps
         dataset_name = f"Waymo Open Dataset - {split_name}"
         super().__init__(dataset_name=dataset_name, settings=settings, **kwargs)
@@ -53,6 +60,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
             settings=self.settings,
             split_name=self.split_name,
             use_precalculated_maps=self.use_precalculated_maps,
+            include_second_returns=self.include_second_returns,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -60,7 +68,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
 
     def _decode_scene_names(self) -> List[SceneName]:
         if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
-            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+            id_map = get_cached_pre_calculated_scene_to_frame_info(
                 lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             return sorted(list(id_map.keys()))
@@ -71,7 +79,11 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
+            available_annotation_types=[
+                AnnotationTypes.SemanticSegmentation2D,
+                AnnotationTypes.InstanceSegmentation2D,
+                AnnotationTypes.BoundingBoxes3D,
+            ],
             custom_attributes=dict(),
         )
 
@@ -94,8 +106,10 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         settings: DecoderSettings,
         use_precalculated_maps: bool,
         split_name: str,
+        include_second_returns: bool,
     ):
         self.split_name = split_name
+        self.include_second_returns = include_second_returns
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         self.use_precalculated_maps = use_precalculated_maps
         super().__init__(dataset_name=dataset_name, settings=settings)
@@ -108,7 +122,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
         if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
-            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+            id_map = get_cached_pre_calculated_scene_to_frame_info(
                 lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             if scene_name in id_map:
@@ -120,13 +134,15 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         return set(frame_ids)
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self.get_camera_names(scene_name=scene_name)
+        cam_names = self.get_camera_names(scene_name=scene_name)
+        lidar_names = self.get_lidar_names(scene_name=scene_name)
+        return cam_names + lidar_names
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return ["FRONT", "FRONT_LEFT", "FRONT_RIGHT", "SIDE_LEFT", "SIDE_RIGHT"]
+        return list(WAYMO_INDEX_TO_CAMERA_NAME.values())
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        raise NotImplementedError()
+        return [WAYMO_USE_ALL_LIDAR_NAME]
 
     def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
         return decode_class_maps()
@@ -146,7 +162,15 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
     def _create_lidar_sensor_decoder(
         self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
     ) -> LidarSensorDecoder[datetime]:
-        raise ValueError("Directory decoder does not support lidar data!")
+        return WaymoOpenDatasetLidarSensorDecoder(
+            dataset_name=self.dataset_name,
+            dataset_path=self._dataset_path,
+            scene_name=scene_name,
+            settings=self.settings,
+            split_name=self.split_name,
+            use_precalculated_maps=self.use_precalculated_maps,
+            include_second_returns=self.include_second_returns,
+        )
 
     def _create_frame_decoder(
         self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
@@ -158,12 +182,13 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
             settings=self.settings,
             use_precalculated_maps=self.use_precalculated_maps,
             split_name=self.split_name,
+            include_second_returns=self.include_second_returns,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         frame_id_to_date_time_map = dict()
         if self.use_precalculated_maps and self.split_name in ["training", "validation"]:
-            id_map = get_cached_pre_calcualted_scene_to_frame_info(
+            id_map = get_cached_pre_calculated_scene_to_frame_info(
                 lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             for elem in id_map[scene_name]:

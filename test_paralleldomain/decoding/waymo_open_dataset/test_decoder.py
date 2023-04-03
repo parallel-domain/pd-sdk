@@ -4,10 +4,12 @@ import numpy as np
 import pytest
 
 from paralleldomain import Dataset
+from paralleldomain.decoding.waymo_open_dataset.common import WAYMO_USE_ALL_LIDAR_NAME
 from paralleldomain.decoding.waymo_open_dataset.decoder import WaymoOpenDatasetDecoder
-from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, BoundingBox3D, BoundingBoxes3D
 from paralleldomain.model.scene import UnorderedScene
-from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame
+from paralleldomain.model.sensor import CameraSensor, CameraSensorFrame, LidarSensor, LidarSensorFrame
+from paralleldomain.utilities.transformation import Transformation
 from test_paralleldomain.decoding.constants import WAYMO_OPEN_DATASET_PATH_ENV
 
 
@@ -21,7 +23,7 @@ def waymo_dataset_path() -> str:
 
 @pytest.fixture
 def waymo_train_dataset(waymo_dataset_path: str) -> Dataset:
-    decoder = WaymoOpenDatasetDecoder(dataset_path=waymo_dataset_path, split_name="training")
+    decoder = WaymoOpenDatasetDecoder(dataset_path=waymo_dataset_path, split_name="training", use_all_lidar=True)
     dataset = decoder.get_dataset()
     return dataset
 
@@ -45,14 +47,20 @@ def test_knows_all_frames(waymo_dataset_train_scene: UnorderedScene):
 
 def test_knows_all_cameras(waymo_dataset_train_scene: UnorderedScene):
     camera_names = waymo_dataset_train_scene.camera_names
-    assert len(camera_names) == 5
-    # names: front, front left, front right, side left, side right (https://waymo.com/open/data/perception/)
+    assert len(camera_names) == 6
+    # names: front, front left, front right, side left, side right, and unknown (https://waymo.com/open/data/perception/)
+
+
+def test_knows_all_lidar_aggregated(waymo_dataset_train_scene: UnorderedScene):
+    lidar_names = waymo_dataset_train_scene.lidar_names
+    assert len(lidar_names) == 1
+    # assert WAYMO_USE_ALL_LIDAR_NAME in lidar_names
 
 
 def test_decode_train_scene_names(waymo_train_dataset: Dataset):
     scene_names = waymo_train_dataset.scene_names
     unordered_scene_names = waymo_train_dataset.unordered_scene_names
-    assert len(scene_names) == 0
+    assert len(scene_names) == 798
     assert len(unordered_scene_names) == 798
     # assert len(scene_names) == 1000
 
@@ -64,6 +72,15 @@ def test_decode_frame_camera_names(waymo_dataset_train_scene: UnorderedScene):
         names = frame.camera_names
         assert names is not None
         assert len(names) == 5
+
+
+def test_decode_frame_lidar_names(waymo_dataset_train_scene: UnorderedScene):
+    frame_ids = list(waymo_dataset_train_scene.frame_ids)[:5]
+    for frame_id in frame_ids:
+        frame = waymo_dataset_train_scene.get_frame(frame_id=frame_id)
+        names = frame.lidar_names
+        assert names is not None
+        assert len(names) == 1
 
 
 def test_decode_camera_image(waymo_dataset_train_scene: UnorderedScene):
@@ -82,6 +99,18 @@ def test_decode_camera_image(waymo_dataset_train_scene: UnorderedScene):
         assert rgb.shape[2] == image.channels
 
 
+def test_decode_lidar_point_cloud(waymo_dataset_train_scene: UnorderedScene):
+    lidar_frames = waymo_dataset_train_scene.lidar_frames
+    for _ in range(5):
+        lidar_frame = next(lidar_frames)
+        assert lidar_frame is not None
+        assert isinstance(lidar_frame, LidarSensorFrame)
+        point_cloud = lidar_frame.point_cloud
+        assert point_cloud.xyz.shape[0] > 0
+        assert point_cloud.xyz.shape[1] == 3
+        assert point_cloud.intensity.shape[1] == 1
+
+
 def test_decode_camera_datetime(waymo_dataset_train_scene: UnorderedScene):
     camera_frames = waymo_dataset_train_scene.camera_frames
     for i in range(5):
@@ -89,6 +118,17 @@ def test_decode_camera_datetime(waymo_dataset_train_scene: UnorderedScene):
         assert camera_frame is not None
         assert isinstance(camera_frame, CameraSensorFrame)
         date_time = camera_frame.date_time
+        assert date_time is not None
+        assert date_time > date_time.min
+
+
+def test_decode_lidar_datetime(waymo_dataset_train_scene: UnorderedScene):
+    camera_frames = waymo_dataset_train_scene.lidar_frames
+    for i in range(5):
+        lidar_frame = next(camera_frames)
+        assert lidar_frame is not None
+        assert isinstance(lidar_frame, LidarSensorFrame)
+        date_time = lidar_frame.date_time
         assert date_time is not None
         assert date_time > date_time.min
 
@@ -111,7 +151,7 @@ def test_decode_camera_semseg_2d(waymo_dataset_train_scene: UnorderedScene):
     assert found_labels >= 0
 
 
-def test_decode_camera_isntance_seg_2d(waymo_dataset_train_scene: UnorderedScene):
+def test_decode_camera_instance_seg_2d(waymo_dataset_train_scene: UnorderedScene):
     camera_frames = waymo_dataset_train_scene.camera_frames
     found_labels = 0
     for camera_frame in camera_frames:
@@ -129,11 +169,29 @@ def test_decode_camera_isntance_seg_2d(waymo_dataset_train_scene: UnorderedScene
     assert found_labels >= 0
 
 
+def test_decode_lidar_bounding_boxes_3d(waymo_dataset_train_scene: UnorderedScene):
+    lidar_frames = waymo_dataset_train_scene.lidar_frames
+    for lidar_frame in lidar_frames:
+        assert lidar_frame is not None
+        assert isinstance(lidar_frame, LidarSensorFrame)
+
+        if AnnotationTypes.BoundingBoxes3D in lidar_frame.available_annotation_types:
+            bboxes = lidar_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D)
+            assert bboxes is not None
+            assert isinstance(bboxes, BoundingBoxes3D)
+            assert isinstance(bboxes.boxes[0], BoundingBox3D)
+            assert isinstance(bboxes.boxes[0].pose, Transformation)
+            class_ids = [box.class_id > -1 for box in bboxes.boxes]
+            assert all(class_ids)
+
+
 def test_decode_class_maps(waymo_dataset_train_scene: UnorderedScene):
     class_maps = waymo_dataset_train_scene.class_maps
-    assert len(class_maps) == 1
+    assert len(class_maps) == 2
     assert AnnotationTypes.SemanticSegmentation2D in class_maps
+    assert AnnotationTypes.BoundingBoxes3D in class_maps
     assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 29
+    assert len(class_maps[AnnotationTypes.BoundingBoxes3D].class_names) == 5
 
 
 def test_decode_sensor_frame_class_maps(waymo_dataset_train_scene: UnorderedScene):
@@ -146,7 +204,9 @@ def test_decode_sensor_frame_class_maps(waymo_dataset_train_scene: UnorderedScen
         if AnnotationTypes.InstanceSegmentation2D in camera_frame.available_annotation_types:
             found_labels += 1
             class_maps = camera_frame.class_maps
-            assert len(class_maps) == 1
+            assert len(class_maps) == 2
             assert AnnotationTypes.SemanticSegmentation2D in class_maps
+            assert AnnotationTypes.BoundingBoxes3D in class_maps
             assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 29
+            assert len(class_maps[AnnotationTypes.BoundingBoxes3D].class_names) == 5
     assert found_labels >= 0

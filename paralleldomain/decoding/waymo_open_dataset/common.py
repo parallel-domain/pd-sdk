@@ -1,10 +1,12 @@
 import json
 import struct
+from functools import partial
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.waymo_open_dataset.protos import camera_segmentation_pb2 as cs_pb2
 from paralleldomain.decoding.waymo_open_dataset.protos import dataset_pb2
+from paralleldomain.decoding.waymo_open_dataset.protos import label_pb2 as label_pb2
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -55,6 +57,19 @@ WAYMO_INDEX_TO_CAMERA_NAME = {
 
 WAYMO_CAMERA_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_CAMERA_NAME.items()}
 
+WAYMO_USE_ALL_LIDAR_NAME = "all"
+
+WAYMO_INDEX_TO_LIDAR_NAME = {
+    0: "UNKNOWN",
+    1: "TOP",
+    2: "FRONT",
+    3: "SIDE_LEFT",
+    4: "SIDE_RIGHT",
+    5: "REAR",
+}
+
+WAYMO_LIDAR_NAME_TO_INDEX = {v: k for k, v in WAYMO_INDEX_TO_LIDAR_NAME.items()}
+
 
 def get_record_iterator(
     record_path: AnyPath, read_frame: bool
@@ -99,24 +114,24 @@ def get_record_at(record_path: AnyPath, frame_id: FrameId) -> Optional[dataset_p
         return frame
 
 
-def load_pre_calcualted_scene_to_id_map(split_name: str) -> Dict[SceneName, List[Dict[str, Any]]]:
+def load_pre_calculated_scene_to_id_map(split_name: str) -> Dict[SceneName, List[Dict[str, Any]]]:
     file_path = AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_scenes_to_frame_info.json"
     with file_path.open("r") as fp:
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_scene_to_frame_info(
+def get_cached_pre_calculated_scene_to_frame_info(
     lazy_load_cache: LazyLoadCache, dataset_name: str, split_name: str
 ) -> Dict[SceneName, List[Dict[str, Any]]]:
     _unique_cache_key = create_cache_key(dataset_name=dataset_name, extra=f"{split_name}scene_to_fid")
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_scene_to_id_map,
+        loader=partial(load_pre_calculated_scene_to_id_map, split_name=split_name),
     )
     return id_map
 
 
-def load_pre_calcualted_scene_to_has_segmentation(split_name: str) -> Dict[str, bool]:
+def load_pre_calculated_scene_to_has_segmentation(split_name: str) -> Dict[str, bool]:
     file_path = (
         AnyPath(__file__).absolute().parent / "pre_calculated" / f"{split_name}_sensor_frame_to_has_segmentation.json"
     )
@@ -124,7 +139,7 @@ def load_pre_calcualted_scene_to_has_segmentation(split_name: str) -> Dict[str, 
         return json.load(fp)
 
 
-def get_cached_pre_calcualted_scene_to_has_segmentation(
+def get_cached_pre_calculated_scene_to_has_segmentation(
     lazy_load_cache: LazyLoadCache,
     dataset_name: str,
     scene_name: SceneName,
@@ -137,7 +152,7 @@ def get_cached_pre_calcualted_scene_to_has_segmentation(
     )
     id_map = lazy_load_cache.get_item(
         key=_unique_cache_key,
-        loader=load_pre_calcualted_scene_to_has_segmentation,
+        loader=partial(load_pre_calculated_scene_to_has_segmentation, split_name=split_name),
     )
     key = f"{scene_name}-{frame_id}-{sensor_name}"
     if key in id_map:
@@ -159,7 +174,15 @@ class WaymoFileAccessMixin(LazyLoadPropertyMixin):
         )
 
 
-WAYMO_CLASSES = [
+WAYMO_BBOX3D_CLASSES = {
+    0: "unknown",
+    1: "vehicle",
+    2: "pedestrian",
+    3: "sign",
+    4: "cyclist",
+}
+
+WAYMO_SEMSEG_CLASSES = [
     ClassDetail(
         name="UNDEFINED",
         id=cs_pb2.CameraSegmentation.TYPE_UNDEFINED,
@@ -336,6 +359,42 @@ WAYMO_CLASSES = [
     ),
 ]
 
+WAYMO_3DBB_CLASSES = [
+    ClassDetail(
+        name="UNDEFINED",
+        id=0,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="VEHICLE",
+        id=1,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="PEDESTRIAN",
+        id=2,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="SIGN",
+        id=3,
+        instanced=True,
+        meta=dict(),
+    ),
+    ClassDetail(
+        name="CYCLIST",
+        id=4,
+        instanced=True,
+        meta=dict(),
+    ),
+]
+
 
 def decode_class_maps() -> Dict[AnnotationType, ClassMap]:
-    return {AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_CLASSES)}
+    return {
+        AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_SEMSEG_CLASSES),
+        AnnotationTypes.BoundingBoxes3D: ClassMap(classes=WAYMO_3DBB_CLASSES),
+    }
