@@ -5,7 +5,7 @@ import pd.management
 from pd.assets import init_asset_registry_version
 from pd.internal.assets.asset_registry import InfoSegmentation, UtilSegmentationCategoriesPanoptic
 
-IG_VERSION = "v2-nightly"
+IG_VERSION = "v2.0.0-beta"
 CLASS_NAME = "Debris"
 
 pd.management.org = os.environ["PD_CLIENT_ORG_ENV"]

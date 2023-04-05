@@ -1,9 +1,8 @@
-name: "black-flake8-pytest-sphinx"
+name: "release-black8-flake8-sphinx"
 on:
-  pull_request:
+  push:
     branches:
       - main
-      - 'staging/*'
 jobs:
   black-format:
     # Check if the PR is not from a fork.
@@ -12,13 +11,14 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
       - name: black
-        uses: lgeiger/black-action@v1.0.1
+        uses: psf/black@stable
         with:
-          args: --line-length 120 .
+          options: "--line-length 120"
+          src: "."
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
@@ -35,50 +35,19 @@ jobs:
     needs: black-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
-          python-version: 3.7
+          python-version: '3.8'
       - uses: TrueBrain/actions-flake8@v2
         with:
           max_line_length: 120
           ignore: "E203,F401,F407,W503"
-  pytest:
-    needs: flake8-lint
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ 3.7, 3.8, 3.9 ]
-        os: [ ubuntu-latest, windows-latest ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ".[dev,data_lab]"
-        shell: bash
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.PYTEST_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.PYTEST_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Download  & Test with pytest
-        run: |
-          LOCAL_DATASET_PATH=$(mktemp -d)
-          aws s3 sync '${{ secrets.DGP_DATASET_PATH }}' "$LOCAL_DATASET_PATH" --only-show-errors
-          DGP_PATH="$LOCAL_DATASET_PATH" SKIP_ENCODER=1 SKIP_CACHE=1 pytest --ignore "test_paralleldomain/data_lab" --verbose
-        shell: bash
   sphinx-build:
-    needs: pytest
+    needs: flake8-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build Sphinx API Documentation
         run: |
           sudo apt-get update
@@ -87,7 +56,12 @@ jobs:
           python -m pip install -e ".[data_lab]"
           python -m pip install -r docs/requirements.txt
           sphinx-build -b html docs/source docs/build --keep-going
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: API Documentation
           path: docs/build/
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build

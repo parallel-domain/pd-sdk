@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="0.9.0",
+    version="0.9.1",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -16,8 +16,8 @@ setup(
     package_data={
         "paralleldomain": ["py.typed"],
     },
-    python_requires=">=3.7",
-    long_description="Python SDK for ParallelDomain Datasets",
+    python_requires=">=3.8",
+    long_description="Python SDK for Parallel Domain Datasets",
     install_requires=[
         "awscli>=1.0.0,<2.0.0",
         "coloredlogs>=15.0.1,<16.0.0",
@@ -34,7 +34,7 @@ setup(
         "pyquaternion>=0.9.9,<1.0.0",
         "transforms3d>=0.3.1,<1.0.0",
         "typing-extensions>=3.6.6,<5.0.0.0",
-        "s3path==0.3.2",
+        "s3path>=0.4.1,<1.0.0",
         "ujson>=5.1.0,<6.0.0",
         "imagesize>=1.3.0,<1.4.0",
         "pypeln>=0.4.9,<1.0.0",
@@ -50,8 +50,8 @@ setup(
         "visualization": ["opencv-python>=4.5.3.56,<5.0.0.0"],
         "dev": [
             "git-filter-repo>=2.34.0,<3.0.0",
-            "pytest>=5.3.1,<6.0.0",
-            "pytest-cov>=2.8.1,<3.0.0",
+            "pytest>=7.2.2,<8.0.0",
+            "pytest-cov>=2.12.1,<3.0.0",
             "types-ujson",
             "types-cachetools",
             "pre-commit>=2.13.0,<3.0.0",

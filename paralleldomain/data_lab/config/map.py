@@ -199,13 +199,15 @@ class MapQuery:
                 reference_points = np.array([(p.x, p.y) for p in reference_line.points])
                 points.append(reference_points)
 
-            left_edge = self.edges[element.left_edge]
-            left_points = np.array([(p.x, p.y) for p in left_edge.points])
-            points.append(left_points)
+            if element.proto.HasField("left_edge"):
+                left_edge = self.edges[element.left_edge]
+                left_points = np.array([(p.x, p.y) for p in left_edge.points])
+                points.append(left_points)
 
-            right_edge = self.edges[element.right_edge]
-            right_points = np.array([(p.x, p.y) for p in right_edge.points])
-            points.append(right_points)
+            if element.proto.HasField("right_edge"):
+                right_edge = self.edges[element.right_edge]
+                right_points = np.array([(p.x, p.y) for p in right_edge.points])
+                points.append(right_points)
 
             all_points = np.vstack(points)
         elif isinstance(element, UMD_pb2.RoadSegment):

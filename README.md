@@ -1,13 +1,13 @@
 # Parallel Domain SDK
  [**Documentation**](https://parallel-domain.github.io/pd-sdk/index.html) | [**Documentation -> Tutorials**](https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html) | [**Documentation -> API Reference**](https://parallel-domain.github.io/pd-sdk/api/dataset.html)
 
-Supported Python Versions: **3.8** | **3.9**
+Supported Python Versions: **3.8** | **3.9** | **3.10** | **3.11**
 
 ## Install
 For more detailed instructions see [here](INSTALL.md). For default installation run:
 
 ```bash
-pip install "paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain"
+pip install "paralleldomain @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain"
 ```
 
 
@@ -15,9 +15,9 @@ pip install "paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@
 
 The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain's synthetic data as Python objects.
 
-The PD SDK can also decode different data formats into its common Python object represenation (more public dataset formats will be supported in the future):
+The PD SDK can also decode different data formats into its common Python object representation (more public dataset formats will be supported in the future):
 - [Dataset Governance Policy (DGP)](https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md)
-- [CityScapes](https://www.cityscapes-dataset.com/dataset-overview/)
+- [Cityscapes](https://www.cityscapes-dataset.com/dataset-overview/)
 - [NuImages](https://www.nuscenes.org/nuimages)
 - [NuScenes](https://www.nuscenes.org/nuscenes)
 - [Flying Chairs](https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html)
@@ -38,7 +38,7 @@ More details on the [**Architecture**](paralleldomain/ARCHITECTURE.md) of PD SDK
 To run ``show_sensor_frame`` you need to install the visualization dependencies with (See our [Install Instructions](INSTALL.md) for more install options):
 
 ```bash
-pip install "paralleldomain[visualization] @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain"
+pip install "paralleldomain[visualization] @ git+ssh://git@github.com/parallel-domain/pd-sdk-internal@main#egg=paralleldomain"
 ```
 Then you can decode a dataset at a given local or s3 path using the ``decode_dataset`` method.
 To have quick access to all sensor frames in a dataset you can use the ``sensor_frame_pipeline`` method of a dataset.
@@ -66,7 +66,7 @@ For more examples make sure to check out our [**Tutorials**](https://parallel-do
 ### Tutorials
 
 There are several tutorials available covering common use cases. Those can be found under [Documentation -> Tutorials](https://parallel-domain.github.io/pd-sdk/).
-In case you are missing an important tutorial, feel free to request it via a Github Issue or create a PR, in case you have written one already yourself.
+In case you are missing an important tutorial, feel free to request it via a GitHub Issue or create a PR, in case you have written one already yourself.
 
 ### API Reference
 
@@ -93,7 +93,7 @@ pytest test_paralleldomain
 ```
 
 If you'd like to run tests for Data Lab, make sure that your PD_CLIENT_ORG_ENV and PD_CLIENT_STEP_API_KEY_ENV are set.
-Otherwise those tests will be skipped.
+Otherwise, those tests will be skipped.
 
 For OS X / Linux users:
 ```bash

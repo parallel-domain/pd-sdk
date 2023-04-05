@@ -98,7 +98,7 @@ scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0
 
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.1"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
 
 # Place ourselves in the world
 scenario.add_ego(
