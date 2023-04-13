@@ -190,7 +190,8 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         return boxes
 
     def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
-        return None
+        # Record path is the same for all sensors.
+        return self.record_path
 
 
 class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], WaymoOpenDatasetSensorFrameDecoder):
