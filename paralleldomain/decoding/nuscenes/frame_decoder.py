@@ -41,7 +41,7 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
         self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
-        trans = self.get_ego_pose(scene_token=self.scene_name, frame_id=frame_id)
+        trans = self.get_ego_pose(scene_token=self.scene_token, frame_id=frame_id)
         return EgoPose.from_transformation_matrix(mat=trans)
 
     def _decode_available_sensor_names_by_modality(

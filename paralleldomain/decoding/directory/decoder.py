@@ -46,7 +46,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self.semantic_segmentation_folder = semantic_segmentation_folder
         self.metadata_folder = metadata_folder
         self.camera_name = camera_name
-        dataset_name = "-".join(list([dataset_path]))
+        dataset_name = "-".join(list([str(dataset_path)]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":

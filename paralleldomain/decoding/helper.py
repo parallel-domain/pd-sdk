@@ -12,6 +12,7 @@ from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
 from paralleldomain.decoding.kitti_flow.decoder import KITTIFlowDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
+from paralleldomain.decoding.waymo_open_dataset.decoder import WaymoOpenDatasetDecoder
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -26,6 +27,7 @@ known_decoders: List[Type[DatasetDecoder]] = [
     KITTIFlowDatasetDecoder,
     NuImagesDatasetDecoder,
     NuScenesDatasetDecoder,
+    WaymoOpenDatasetDecoder,
 ]
 
 

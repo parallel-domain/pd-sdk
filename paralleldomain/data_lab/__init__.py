@@ -275,6 +275,6 @@ def preview_scenario(
         for camera_frame in frame.camera_frames:
             show_sensor_frame(
                 sensor_frame=camera_frame,
-                frames_per_second=show_image_for_n_seconds,
+                frames_per_second=1 / show_image_for_n_seconds,
                 annotations_to_show=annotations_to_show,
             )

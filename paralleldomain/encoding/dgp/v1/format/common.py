@@ -81,5 +81,5 @@ def encode_flow_vectors(vectors: np.ndarray) -> np.ndarray:
     vectors = vectors / [width, height]
     vectors = vectors + 0.5
     vectors = vectors * 65535.0
-    vectors = vectors.astype(np.int)
+    vectors = vectors.astype(int)
     return encode_2int16_as_rgba8(vectors)

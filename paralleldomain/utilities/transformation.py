@@ -252,6 +252,38 @@ class Transformation:
         return apply_transform_3d(tf=self, points_3d=points_3d)
 
     @classmethod
+    def interpolate(cls, tf0: "Transformation", tf1: "Transformation", factor: float = 0.5) -> "Transformation":
+        """Interpolates the translation and rotation between two `Transformation` objects.
+
+        For translation, linear interpolation is used:
+            `tf0.translation + factor * (tf1.translation - tf0.translation)`. For rotation, spherical linear
+            interpolation of rotation quaternions is used:
+            `tf0.quaternion * (conjugate(tf0.quaternion) * tf1.quaternion)**factor`
+
+        Args:
+            tf0: First `Transformation` object used as interpolation start
+            tf1: Second `Transformation` object used as interpolation end
+            factor: Interpolation factor within `[0.0, 1.0]`. If `0.0`, the return value is equal to `tf0`;
+                 if `1.0`, the return value is equal to `tf1`. Values smaller than `0.0` or greater than `1.0` can be
+                 used if extrapolation is desired. Default: `0.5`
+        Returns:
+            A new `Transformation` object that is at the interpolated factor between `tf0` and `tf1`.
+        """
+
+        def lerp(p0: np.ndarray, p1: np.ndarray, factor: float) -> np.ndarray:
+            factors = np.asarray([1 - factor, factor])
+            points = np.vstack([p0, p1])
+            return factors @ points
+
+        def slerp(p: Quaternion, q: Quaternion, factor: float) -> Quaternion:
+            return p * (p.conjugate * q) ** factor
+
+        return Transformation(
+            translation=lerp(p0=tf0.translation, p1=tf1.translation, factor=factor),
+            quaternion=slerp(p=tf0.quaternion, q=tf1.quaternion, factor=factor),
+        )
+
+    @classmethod
     def from_euler_angles(
         cls,
         angles: Union[np.ndarray, List[float]],

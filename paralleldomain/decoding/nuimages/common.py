@@ -340,7 +340,7 @@ class NuImagesDataAccessMixin:
     @property
     def nu_class_maps(self) -> Dict[AnnotationType, ClassMap]:
         return {
-            AnnotationTypes.InstanceSegmentation2D: ClassMap(classes=self.nu_class_infos),
+            # AnnotationTypes.InstanceSegmentation2D: ClassMap(classes=self.nu_class_infos),
             AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
             AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
         }

@@ -291,8 +291,9 @@ class MapQuery:
         )
         return self.get_lane_segments_within_bounds(bounds=bounds, method="inside")
 
-    def get_random_street_location(
+    def get_random_lane_type_location(
         self,
+        lane_type: UMD_pb2.LaneSegment.LaneType,
         random_seed: int,
         relative_location_variance: float = 0.0,
         direction_variance_in_degrees: float = 0.0,
@@ -302,7 +303,7 @@ class MapQuery:
         lane_segment_ids = [
             lane_segment_id
             for lane_segment_id, lane_segment in self.map.lane_segments.items()
-            if lane_segment.type in [LaneSegment.LaneType.DRIVABLE]
+            if lane_segment.type in [lane_type]
         ]
         lane_segment_id = random_state.choice(lane_segment_ids)
         lane_segment = self.map.lane_segments.get(lane_segment_id)
@@ -347,3 +348,18 @@ class MapQuery:
         )
 
         return pose
+
+    def get_random_street_location(
+        self,
+        random_seed: int,
+        relative_location_variance: float = 0.0,
+        direction_variance_in_degrees: float = 0.0,
+        sample_rate: int = 100,
+    ) -> Transformation:
+        return self.get_random_lane_type_location(
+            lane_type=LaneSegment.LaneType.DRIVABLE,
+            random_seed=random_seed,
+            relative_location_variance=relative_location_variance,
+            direction_variance_in_degrees=direction_variance_in_degrees,
+            sample_rate=sample_rate,
+        )

@@ -1,8 +1,10 @@
+import glob
+
 from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="0.9.1",
+    version="0.10.0",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -42,6 +44,7 @@ setup(
         "Pillow>=6.2.1,<10.0.0",
     ],
     include_package_data=True,
+    data_files=glob.glob("paralleldomain/decoding/waymo_open_dataset/pre_calculated/**"),
     extras_require={
         "data_lab": [
             "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git",
