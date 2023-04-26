@@ -187,7 +187,7 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
             with split_file.open("r") as f:
                 self.split_list = [int(line) for line in f.readlines()]
 
-        dataset_name = "-".join(list([dataset_path, split_name]))
+        dataset_name = "-".join(list([str(dataset_path), split_name]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":

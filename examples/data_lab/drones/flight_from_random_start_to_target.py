@@ -1,0 +1,213 @@
+import logging
+from typing import List, Optional
+
+from pd.data_lab.config.distribution import CenterSpreadConfig, MinMaxConfigInt
+from pd.data_lab.context import setup_datalab
+from pd.data_lab.render_instance import RenderInstance
+from pd.data_lab.sim_instance import SimulationInstance
+from pd.umd.umd import load_umd_map
+
+import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab.config.map import MapQuery, UniversalMap
+from paralleldomain.data_lab.config.types import Float3
+from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
+from paralleldomain.data_lab.generators.position_request import (
+    AbsolutePositionRequest,
+    LocationRelativePositionRequest,
+    PositionRequest,
+    SpecialAgentTag,
+)
+from paralleldomain.data_lab.generators.random_pedestrian import RandomPedestrianGeneratorParameters
+from paralleldomain.data_lab.generators.spawn_data import AgentSpawnData, VehicleSpawnData
+from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
+from paralleldomain.data_lab.generators.vehicle import VehicleGeneratorParameters
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import write_png
+from paralleldomain.utilities.logging import setup_loggers
+from paralleldomain.utilities.transformation import Transformation
+from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
+
+setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
+
+setup_datalab("v2.0.0-beta")
+
+
+class EgoDroneStraightLineBehaviour(data_lab.CustomSimulationAgentBehaviour):
+    def __init__(self, start_pose: Transformation, target_pose: Transformation, flight_time: float):
+        super().__init__()
+        self._initial_pose = start_pose
+        self._target_pose = target_pose
+        self._flight_time = flight_time
+        self._start_time: Optional[float] = None
+
+    def set_initial_state(
+        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, random_seed: int
+    ):
+        agent.set_pose(pose=self._initial_pose.transformation_matrix)
+
+    def update_state(self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent):
+        current_time = sim_state.sim_time
+
+        if self._start_time is None:
+            self._start_time = current_time  # set first frame as start time even if not exactly 0.0 seconds
+
+        flight_completion = current_time / (self._flight_time + self._start_time)
+
+        interpolated_pose = Transformation.interpolate(
+            tf0=self._initial_pose, tf1=self._target_pose, factor=flight_completion
+        )
+
+        logger.info(f"Using interpolated pose: {interpolated_pose}")
+        agent.set_pose(pose=interpolated_pose.transformation_matrix)
+
+    def clone(self) -> "EgoDroneStraightLineBehaviour":
+        return EgoDroneStraightLineBehaviour(
+            start_pose=self._initial_pose, target_pose=self._target_pose, flight_time=self._flight_time
+        )
+
+
+sensor_rig = data_lab.SensorRig().add_camera(
+    name="Front",
+    width=768,
+    height=768,
+    field_of_view_degrees=70,
+    pose=Transformation.from_euler_angles(
+        angles=[-30, 0.0, 0.0], order="xyz", degrees=True, translation=[0.0, 0.0, 0.0]
+    ),
+    annotation_types=[AnnotationTypes.SemanticSegmentation2D],
+)
+
+
+seed = 1992
+
+# Create scenario
+scenario = data_lab.Scenario(sensor_rig=sensor_rig)
+scenario.random_seed = seed
+
+# Set weather variables and time of day
+scenario.environment.time_of_day.set_category_weight(data_lab.TimeOfDays.Dusk, 1.0)
+scenario.environment.clouds.set_constant_value(0.9)
+scenario.environment.rain.set_constant_value(0.0)
+scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
+
+# Select an environment
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-rc1"))
+
+
+# Load map locally to find a random spawn point and its XYZ coordinates
+# this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordinates to PD generators, so
+# we do it outside.
+map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.0.0-rc1"))
+map_query = MapQuery(map)
+
+start_pose = map_query.get_random_street_location(random_seed=seed)
+start_pose.translation[2] += 5.0  # map query gives us ground position, but we want our Drone to start 5m above ground
+
+target_pose = map_query.get_random_street_location(random_seed=seed + 1)
+target_pose.translation[2] += 7.5  # map query gives us ground position, but we want our Drone to start 5m above ground
+
+flight_time = 10  # in seconds
+
+
+# Place ourselves in the world through a custom simulation agent. Don't use an asset, so we don't see anything flying
+# attach our EgoDroneBehavior from above
+scenario.add_ego(
+    data_lab.CustomSimulationAgents.create_ego_vehicle(
+        sensor_rig=sensor_rig,
+        asset_name="",
+        lock_to_ground=False,
+    ).set_behaviour(
+        EgoDroneStraightLineBehaviour(start_pose=start_pose, target_pose=target_pose, flight_time=flight_time)
+    )
+)
+
+
+# Place a "star vehicle" with absolute position below us that can be used as an "anchor point"
+# for location relative position request with other agents
+scenario.add_agents(
+    generator=VehicleGeneratorParameters(
+        model="suv_medium_02",
+        vehicle_spawn_data=VehicleSpawnData(agent_spawn_data=AgentSpawnData(tags=[SpecialAgentTag.STAR])),
+        position_request=PositionRequest(
+            absolute_position_request=AbsolutePositionRequest(
+                position=Float3(
+                    x=start_pose.translation[0], y=start_pose.translation[1]
+                ),  # just provide XY, Z is being resolved by simulation
+                resolve_z=True,
+            )
+        ),
+    )
+)
+
+# Add other agents
+scenario.add_agents(
+    generator=TrafficGeneratorParameters(
+        spawn_probability=0.9,
+        position_request=PositionRequest(
+            location_relative_position_request=LocationRelativePositionRequest(
+                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                max_spawn_radius=100.0,
+            )
+        ),
+    )
+)
+#
+scenario.add_agents(
+    generator=ParkedVehicleGeneratorParameters(
+        spawn_probability=CenterSpreadConfig(center=0.5),
+        position_request=PositionRequest(
+            location_relative_position_request=LocationRelativePositionRequest(
+                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                max_spawn_radius=100.0,
+            )
+        ),
+    )
+)
+
+scenario.add_agents(
+    generator=RandomPedestrianGeneratorParameters(
+        num_of_pedestrians_range=MinMaxConfigInt(min=30, max=50),
+        position_request=PositionRequest(
+            location_relative_position_request=LocationRelativePositionRequest(
+                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                max_spawn_radius=50.0,
+            )
+        ),
+    )
+)
+
+
+def preview_scenario(
+    scenario,
+    number_of_scenes: int = 1,
+    frames_per_scene: int = 10,
+    annotations_to_show: List[AnnotationType] = None,
+    show_image_for_n_seconds: float = 2,
+    **kwargs,
+):
+    for frame, scene in data_lab.create_frame_stream(
+        scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
+    ):
+        for camera_frame in frame.camera_frames:
+            write_png(
+                obj=camera_frame.image.rgb,
+                path=AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png"),
+            )
+
+            show_sensor_frame(
+                sensor_frame=camera_frame,
+                frames_per_second=show_image_for_n_seconds,
+                annotations_to_show=annotations_to_show,
+            )
+
+
+preview_scenario(
+    scenario=scenario,
+    frames_per_scene=100,
+    sim_capture_rate=10,
+    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
+    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+)

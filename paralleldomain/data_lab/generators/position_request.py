@@ -1,5 +1,3 @@
-from typing import Union
-
 from pd.internal.proto.keystone.generated.wrapper import pd_unified_generator_pb2
 
 from paralleldomain.data_lab.config.types import Float3, Float3x3
@@ -62,26 +60,3 @@ class AbsolutePositionRequest(pd_unified_generator_pb2.AbsolutePositionRequest):
 @inherit_docs
 class PositionRequest(pd_unified_generator_pb2.PositionRequest):
     ...
-
-    def set_request(
-        self,
-        position_request: Union[
-            AbsolutePositionRequest,
-            RoadPitchPositionRequest,
-            PathTimeRelativePositionRequest,
-            LaneSpawnPolicy,
-            LocationRelativePositionRequest,
-        ],
-    ):
-        if isinstance(position_request, AbsolutePositionRequest):
-            self.simple_position_request = position_request
-        elif isinstance(position_request, RoadPitchPositionRequest):
-            self.road_pitch_position_request = position_request
-        elif isinstance(position_request, PathTimeRelativePositionRequest):
-            self.path_time_relative_position_request = position_request
-        elif isinstance(position_request, LocationRelativePositionRequest):
-            self.location_relative_position_request = position_request
-        elif isinstance(position_request, LaneSpawnPolicy):
-            self.lane_spawn_policy = LaneSpawnPolicy
-        else:
-            raise ValueError(f"Position Request of type {type(position_request)} is not supported in this method.")

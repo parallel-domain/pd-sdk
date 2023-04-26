@@ -211,6 +211,8 @@ class LazyLoadCache(Cache):
                 size += LazyLoadCache.getsizeof(v, seen)
         elif isinstance(value, np.ndarray):
             size = value.nbytes
+        elif hasattr(value, "ByteSize"):
+            size = value.ByteSize()
         return size
 
 

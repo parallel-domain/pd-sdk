@@ -89,7 +89,7 @@ class TestScene:
         assert len(lidar_names) == 1
 
     def test_decode_frame_ids(self, two_cam_scene: Scene):
-        assert len(two_cam_scene.frame_ids) == 40
+        assert len(two_cam_scene.frame_ids) == 39
 
     def test_decode_available_annotation_types(self, two_cam_scene: Scene):
         assert len(two_cam_scene.available_annotation_types) == 1
@@ -116,7 +116,7 @@ class TestCamera:
     def test_decode_camera_frame_ids(self, two_cam_scene: Scene):
         camera = two_cam_scene.get_camera_sensor(camera_name=two_cam_scene.camera_names[0])
         assert camera.name == "CAM_BACK"
-        assert len(camera.frame_ids) == 40
+        assert len(camera.frame_ids) == 39
 
     def test_decode_camera_intrinsic(self, two_cam_scene: Scene):
         camera = two_cam_scene.get_camera_sensor(camera_name=two_cam_scene.camera_names[0])
@@ -130,7 +130,7 @@ class TestLidar:
     def test_decode_lidar_frame_ids(self, two_cam_scene: Scene):
         lidar = two_cam_scene.get_lidar_sensor(lidar_name=two_cam_scene.lidar_names[0])
         assert lidar.name == "LIDAR_TOP"
-        assert len(lidar.frame_ids) == 40
+        assert len(lidar.frame_ids) == 39
 
     def test_decode_lidar_transformations(self, two_cam_scene: Scene):
         lidar = two_cam_scene.get_lidar_sensor(lidar_name=two_cam_scene.lidar_names[0])

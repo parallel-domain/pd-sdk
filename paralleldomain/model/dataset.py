@@ -286,7 +286,8 @@ class Dataset:
         """
         Returns a generator that yields all SensorFrames (Lidar and Camera) of all the unordered scenes in this dataset.
         """
-        yield from self.sensor_frame_pipeline(shuffle=False)
+        for sf, _, _ in self.sensor_frame_pipeline(shuffle=False):
+            yield sf
 
     @property
     def number_of_camera_frames(self) -> int:

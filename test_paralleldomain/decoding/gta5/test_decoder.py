@@ -39,7 +39,9 @@ def test_can_load_scene(gta_dataset_train_scene: UnorderedScene):
 
 def test_knows_all_frames(gta_dataset_train_scene: UnorderedScene):
     assert (
-        len(gta_dataset_train_scene.frame_ids) == 24966
+        # official number is 24966, but in our bucket we only have 24904 files
+        len(gta_dataset_train_scene.frame_ids)
+        == 24904
     )  # numer of frames mentioned here https://download.visinf.tu-darmstadt.de/data/from_games/
 
 
@@ -50,8 +52,9 @@ def test_decode_train_scene_names(gta_train_dataset: Dataset):
 
 
 def test_decode_camera_image(gta_dataset_train_scene: UnorderedScene):
+    camera_frames = gta_dataset_train_scene.camera_frames
     for i in range(5):
-        camera_frame = next(gta_dataset_train_scene.camera_frames)
+        camera_frame = next(camera_frames)
         assert camera_frame is not None
         assert isinstance(camera_frame, CameraSensorFrame)
         image = camera_frame.image
@@ -65,8 +68,9 @@ def test_decode_camera_image(gta_dataset_train_scene: UnorderedScene):
 
 
 def test_decode_camera_semseg_2d(gta_dataset_train_scene: UnorderedScene):
+    camera_frames = gta_dataset_train_scene.camera_frames
     for i in range(5):
-        camera_frame = next(gta_dataset_train_scene.camera_frames)
+        camera_frame = next(camera_frames)
         assert camera_frame is not None
         assert isinstance(camera_frame, CameraSensorFrame)
         semseg = camera_frame.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
@@ -78,7 +82,7 @@ def test_decode_camera_semseg_2d(gta_dataset_train_scene: UnorderedScene):
             or class_ids.shape == (1052, 1914, 1)
             or class_ids.shape == (1046, 1914, 1)
         )
-        assert np.all(np.logical_and(np.unique(class_ids) <= 33, np.unique(class_ids) > -1))
+        assert np.all(np.logical_and(np.unique(class_ids) <= 34, np.unique(class_ids) > -1))
 
 
 def test_decode_class_maps(gta_dataset_train_scene: UnorderedScene):

@@ -48,7 +48,6 @@ class MockRenderInstance(AbstractRenderInstance):
         self.session.query_sensor_data = self.query_sensor_data
         self.session.update_state = self.update_state
         self._mock_step_ig = mock.MagicMock()
-        self._mock_step_ig.ig_version = "v2.0.0-beta"
         self._last_timestamp = -1.0
 
     def query_sensor_data(self, agent_id, sensor_name, buffer_type):
@@ -473,35 +472,11 @@ class TestScenario:
     def test_scenario_atomics_multiple_scenes(self, atomic_only_scenario: Scenario):
         self.run_mocked_frame_generation(scenario=atomic_only_scenario, number_of_scenes=3, frames_per_scene=10)
 
-    def test_sim_state_encode_crash_without_ig_version_with_custom_gens(self, atomic_only_scenario: Scenario):
-        sim_instance = MockSimulationInstance(scenario=atomic_only_scenario, ego_agent=None)
-
-        number_of_scenes = 4
-        frames_per_scene = 20
-
-        ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=atomic_only_scenario.sensor_rig).set_behaviour(
-            mock.MagicMock()
-        )
-        atomic_only_scenario.add_agents(ego_agent)
-
-        with TemporaryDirectory() as tmp_dir, pytest.raises(ValueError):
-            tmp_dir = AnyPath(tmp_dir)
-
-            encode_sim_states(
-                scenario=atomic_only_scenario,
-                output_folder=tmp_dir,
-                number_of_scenes=number_of_scenes,
-                frames_per_scene=frames_per_scene,
-                sim_instance=sim_instance,
-                render_instance=None,
-                yield_every_sim_state=True,
-            )
-
     @pytest.mark.parametrize(
-        "yield_every_sim_state, ig_version",
-        [(True, "v2.0.0-beta"), (False, "v2.0.0-beta"), (True, None), (False, None)],
+        "yield_every_sim_state",
+        [(True,), (False,)],
     )
-    def test_sim_state_encode(self, yield_every_sim_state: bool, ig_version: str, atomic_only_scenario: Scenario):
+    def test_sim_state_encode(self, yield_every_sim_state: bool, atomic_only_scenario: Scenario):
         sim_instance = MockSimulationInstance(scenario=atomic_only_scenario, ego_agent=None)
 
         number_of_scenes = 4
@@ -516,7 +491,6 @@ class TestScenario:
                 number_of_scenes=number_of_scenes,
                 frames_per_scene=frames_per_scene,
                 sim_instance=sim_instance,
-                ig_version="v2.0.0-beta",
                 render_instance=None,
                 yield_every_sim_state=yield_every_sim_state,
             )

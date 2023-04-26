@@ -2,9 +2,8 @@ import logging
 import os
 from typing import List
 
-from pd.data_lab import PD_CLIENT_ORG_ENV, PD_CLIENT_STEP_API_KEY_ENV
 from pd.management import Levelpak
-
+from pd.data_lab.context import get_datalab_context
 from paralleldomain.data_lab import Location
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 def map_locations() -> List[Location]:
     locations = list()
-    if all([n in os.environ for n in [PD_CLIENT_ORG_ENV, PD_CLIENT_STEP_API_KEY_ENV]]):
+    context = get_datalab_context()
+    if not context.is_mode_local:
         for level in Levelpak.list():
             for version in level.versions:
                 locations.append(Location(name=level.name, version=version))
