@@ -46,14 +46,19 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example-load-and-visualize-data">Example: Load and visualize data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id3">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tutorials">Tutorials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-installation">Quick Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#developer-setup">Developer Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-extras">Install Extras</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
@@ -184,6 +189,7 @@
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.inverse"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorExtrinsic.rotation"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.rotation</span></code></a></li>
@@ -204,6 +210,7 @@
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorPose.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.inverse"><code class="docutils literal notranslate"><span class="pre">SensorPose.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorPose.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/sensor.html#paralleldomain.model.sensor.SensorPose.rotation"><code class="docutils literal notranslate"><span class="pre">SensorPose.rotation</span></code></a></li>
@@ -717,6 +724,7 @@
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">Transformation.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.interpolate"><code class="docutils literal notranslate"><span class="pre">Transformation.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.inverse"><code class="docutils literal notranslate"><span class="pre">Transformation.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.quaternion"><code class="docutils literal notranslate"><span class="pre">Transformation.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.rotation"><code class="docutils literal notranslate"><span class="pre">Transformation.rotation</span></code></a></li>
@@ -786,22 +794,13 @@
              
   <section id="parallel-domain-sdk">
 <span id="getting-started"></span><h1>Parallel Domain SDK<a class="headerlink" href="#parallel-domain-sdk" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://parallel-domain.github.io/pd-sdk/index.html">**Documentation**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html">**Documentation -&gt; Tutorials**</a> | <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/api/dataset.html">**Documentation -&gt; API Reference**</a></p>
-<p>Supported Python Versions: <strong>3.8</strong> | <strong>3.9</strong></p>
-<section id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this heading"></a></h2>
-<p>For more detailed instructions see <a class="reference external" href="INSTALL.md">here</a>. For default installation run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain&quot;</span>
-</pre></div>
-</div>
-</section>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
 <p>The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain’s synthetic data as Python objects.</p>
-<p>The PD SDK can also decode different data formats into its common Python object represenation (more public dataset formats will be supported in the future):</p>
+<p>The PD SDK can also decode different data formats into its common Python object representation (more public dataset formats will be supported in the future):</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/TRI-ML/dgp/blob/master/dgp/proto/README.md">Dataset Governance Policy (DGP)</a></p></li>
-<li><p><a class="reference external" href="https://www.cityscapes-dataset.com/dataset-overview/">CityScapes</a></p></li>
+<li><p><a class="reference external" href="https://www.cityscapes-dataset.com/dataset-overview/">Cityscapes</a></p></li>
 <li><p><a class="reference external" href="https://www.nuscenes.org/nuimages">NuImages</a></p></li>
 <li><p><a class="reference external" href="https://www.nuscenes.org/nuscenes">NuScenes</a></p></li>
 <li><p><a class="reference external" href="https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html">Flying Chairs</a></p></li>
@@ -810,22 +809,18 @@
 <li><p><a class="reference external" href="https://www.cvlibs.net/datasets/kitti/eval_stereo_flow.php?benchmark=flow">KITTI Optical Flow</a></p></li>
 </ul>
 <p>Currently, local file system and s3 buckets are supported as dataset locations for decoding. See <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/any_path/index.html">AnyPath</a> documentation for our file system abstraction.</p>
-<p>The two main use cases PD SDK is designed for are:</p>
+<p>PD SDK is designed to serve the following use cases:</p>
 <ul class="simple">
-<li><p>to load data in ML data pipelines from local or cloud storage directly into RAM.</p></li>
-<li><p>to encode data into different dataset formats. Currently it’s possible to convert into DGP and DGPv1 format.</p></li>
+<li><p>load data in ML data pipelines from local or cloud storage directly into memory.</p></li>
+<li><p>encode data into different dataset formats. Currently, it’s possible to convert into DGP and DGPv1 format.</p></li>
+<li><p>generate data in PD’s Data Lab.</p></li>
 </ul>
 <p>More details on the <a class="reference external" href="paralleldomain/ARCHITECTURE.md">**Architecture**</a> of PD SDK can be found <a class="reference external" href="paralleldomain/ARCHITECTURE.md">here</a>.</p>
 <section id="example-load-and-visualize-data">
 <h3>Example: Load and visualize data<a class="headerlink" href="#example-load-and-visualize-data" title="Permalink to this heading"></a></h3>
-<p>To run <code class="docutils literal notranslate"><span class="pre">show_sensor_frame</span></code> you need to install the visualization dependencies with (See our <a class="reference external" href="INSTALL.md">Install Instructions</a> for more install options):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain[visualization] @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain&quot;</span>
-</pre></div>
-</div>
-<p>Then you can decode a dataset at a given local or s3 path using the <code class="docutils literal notranslate"><span class="pre">decode_dataset</span></code> method.
-To have quick access to all sensor frames in a dataset you can use the <code class="docutils literal notranslate"><span class="pre">sensor_frame_pipeline</span></code> method of a dataset.
-It will yield all the sensor frames of a dataset in order. So the outer loop will be scenes, then frames and then
-sensors in each frame.</p>
+<p>To run <code class="docutils literal notranslate"><span class="pre">show_sensor_frame</span></code> you need to install the <code class="docutils literal notranslate"><span class="pre">visualization</span></code> dependencies with one of the methods described in <span class="xref std std-ref">Installation</span>.</p>
+<p>Next, you can decode a dataset located at a given local or S3 path using the <code class="docutils literal notranslate"><span class="pre">decode_dataset</span></code> method.
+To quickly access all sensor frames in a dataset, use the <code class="docutils literal notranslate"><span class="pre">sensor_frame_pipeline</span></code> method for that dataset. This method yields all the sensor frames in order, so the outer loop iterates through scenes, followed by frames, and finally sensors within each frame.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">paralleldomain.decoding.helper</span> <span class="kn">import</span> <span class="n">decode_dataset</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.model.annotation</span> <span class="kn">import</span> <span class="n">AnnotationTypes</span>
 <span class="kn">from</span> <span class="nn">paralleldomain.visualization.sensor_frame_viewer</span> <span class="kn">import</span> <span class="n">show_sensor_frame</span>
@@ -839,53 +834,69 @@ sensors in each frame.</p>
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>For more examples make sure to check out our <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/tutorial/general/index.html">**Tutorials**</a>!</p>
+<p>For more examples make sure to check out our <span class="xref std std-ref">Documentation</span>.</p>
 </section>
 </section>
-<section id="id2">
-<h2>Documentation<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
-<section id="id3">
-<h3>Tutorials<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h2>
+<section id="tutorials">
+<h3>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h3>
 <p>There are several tutorials available covering common use cases. Those can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; Tutorials</a>.
-In case you are missing an important tutorial, feel free to request it via a Github Issue or create a PR, in case you have written one already yourself.</p>
+In case you are missing an important tutorial, feel free to request it via a GitHub Issue or create a PR, in case you have written one already yourself.</p>
 </section>
 <section id="api-reference">
 <h3>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h3>
 <p>Public classes / methods / properties are annotated with Docstrings. The compiled API Reference can be found under <a class="reference external" href="https://parallel-domain.github.io/pd-sdk/">Documentation -&gt; API Reference</a></p>
 </section>
 </section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<p>Supported Python Versions: <strong>3.8</strong>, <strong>3.9</strong>, <strong>3.10</strong>, <strong>3.11</strong></p>
+<p>Choose one of the following installation methods for the Python package from GitHub based on your use case:</p>
+<section id="quick-installation">
+<h3>Quick Installation<a class="headerlink" href="#quick-installation" title="Permalink to this heading"></a></h3>
+<p>For users who just want to use the library without editing it, this method is recommended. It quickly installs the package from GitHub, allowing you to access its functionalities without modifying the source code. Run the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;paralleldomain @ git+https://github.com/parallel-domain/pd-sdk.git@main#egg=paralleldomain&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="developer-setup">
+<h3>Developer Setup<a class="headerlink" href="#developer-setup" title="Permalink to this heading"></a></h3>
+<p>This method is suitable for developers who need to modify the source code, contribute to the project, or parallelize the build process. With this setup, you can make changes to the library, test new features, and experiment with the codebase. Follow these steps:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone latest PD SDK release</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/parallel-domain/pd-sdk.git
+
+<span class="c1"># Change directory</span>
+<span class="nb">cd</span><span class="w"> </span>pd-sdk
+
+<span class="c1"># Optional: Parallelize build process for dependencies using gcc, e.g., `opencv-python-headless`</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MAKEFLAGS</span><span class="o">=</span><span class="s2">&quot;-j</span><span class="k">$(</span>nproc<span class="k">)</span><span class="s2">&quot;</span>
+
+<span class="c1"># Install PD SDK from local clone</span>
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>This method allows you to directly work on the library’s source code, which is not possible with the quick installation method.</p>
+</section>
+<section id="install-extras">
+<h3>Install Extras<a class="headerlink" href="#install-extras" title="Permalink to this heading"></a></h3>
+<p>These optional extras can be installed to enhance the functionality of PD SDK based on your specific needs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data_lab</span></code>: This extra includes dependencies for Data Lab, PD’s synthetic data generation platform (includes <code class="docutils literal notranslate"><span class="pre">visualization</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">visualization</span></code>: Install this extra to include <code class="docutils literal notranslate"><span class="pre">opencv</span></code> with GUI components, helpful to visualize data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dev</span></code>: The development extra contains dependencies for developers, such as testing tools, pre-commit hooks, and other utilities that assist in maintaining code quality and ensuring a smooth development process. This is recommended for users who plan to contribute to the project or work extensively with the source code.</p></li>
+</ul>
+</section>
+</section>
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading"></a></h2>
-<p>Before running <code class="docutils literal notranslate"><span class="pre">pytest</span></code> you need to make sure to have its package installed. If you followed the Developer Setup, <code class="docutils literal notranslate"><span class="pre">pytest</span></code> should be already available.
-If you haven’t followed the Developer Setup or are unsure, just run:</p>
-<p>For OS X / Linux users:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev,data_lab]&quot;</span>
-</pre></div>
-</div>
-<p>For Windows users:</p>
-<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="p">.</span><span class="no">[dev,data_lab]</span>
-</pre></div>
-</div>
+<p>Before running <code class="docutils literal notranslate"><span class="pre">pytest</span></code> you need to make sure to have its package installed. To do this, add the <code class="docutils literal notranslate"><span class="pre">dev</span></code> install extra as described in <span class="xref std std-ref">Install Extras</span>.</p>
 <p>Go to the root folder of your pd-sdk repo and run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>test_paralleldomain
 </pre></div>
 </div>
-<p>If you’d like to run tests for Data Lab, make sure that your PD_CLIENT_ORG_ENV and PD_CLIENT_STEP_API_KEY_ENV are set.
-Otherwise those tests will be skipped.</p>
-<p>For OS X / Linux users:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PD_CLIENT_STEP_API_KEY_ENV</span><span class="o">=</span><span class="s2">&quot;my api key&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">PD_CLIENT_ORG_ENV</span><span class="o">=</span><span class="s2">&quot;paralleldomain&quot;</span>
-</pre></div>
-</div>
-<p>For Windows users:</p>
-<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nv">$env:PD_CLIENT_STEP_API_KEY_ENV</span><span class="p">=</span><span class="s2">&quot;my api key&quot;</span>
-<span class="nv">$env:PD_CLIENT_ORG_ENV</span><span class="p">=</span><span class="s2">&quot;paralleldomain&quot;</span>
-</pre></div>
-</div>
-<p>You can run just Data Lab related test by running:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>test_paralleldomain/data_lab/
-</pre></div>
-</div>
+<p>If you’d like to run tests for Data Lab, make sure that your <code class="docutils literal notranslate"><span class="pre">PD_CLIENT_CREDENTIALS_PATH_ENV</span></code>, <code class="docutils literal notranslate"><span class="pre">PD_CLIENT_STEP_API_KEY_ENV</span></code> and <code class="docutils literal notranslate"><span class="pre">PD_CLIENT_ORG_ENV</span></code> environment variables are set, and you have the <code class="docutils literal notranslate"><span class="pre">data_lab</span></code> install extra set up.
+Otherwise, those tests will be skipped. You can find more details on how to set those in <a class="reference external" href="https://app.paralleldomain.com/docs/latest/data-lab-quickstart">Data Lab Quickstart</a></p>
 </section>
 </section>
 

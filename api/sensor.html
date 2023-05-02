@@ -46,14 +46,19 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started.html#introduction">Introduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../getting_started.html#example-load-and-visualize-data">Example: Load and visualize data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#id2">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#id3">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#tutorials">Tutorials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../getting_started.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#quick-installation">Quick Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#developer-setup">Developer Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting_started.html#install-extras">Install Extras</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started.html#testing">Testing</a></li>
@@ -184,6 +189,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.inverse"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic.rotation"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.rotation</span></code></a></li>
@@ -204,6 +210,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorPose.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.inverse"><code class="docutils literal notranslate"><span class="pre">SensorPose.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorPose.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose.rotation"><code class="docutils literal notranslate"><span class="pre">SensorPose.rotation</span></code></a></li>
@@ -717,6 +724,7 @@
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">Transformation.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.interpolate"><code class="docutils literal notranslate"><span class="pre">Transformation.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.inverse"><code class="docutils literal notranslate"><span class="pre">Transformation.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.quaternion"><code class="docutils literal notranslate"><span class="pre">Transformation.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.rotation"><code class="docutils literal notranslate"><span class="pre">Transformation.rotation</span></code></a></li>
@@ -1112,6 +1120,35 @@ orthogonal representation. Default: <cite>False</cite>.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.interpolate">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.interpolate" title="Permalink to this definition"></a></dt>
+<dd><p>Interpolates the translation and rotation between two <cite>Transformation</cite> objects.</p>
+<dl class="simple">
+<dt>For translation, linear interpolation is used:</dt><dd><p><cite>tf0.translation + factor * (tf1.translation - tf0.translation)</cite>. For rotation, spherical linear
+interpolation of rotation quaternions is used:
+<cite>tf0.quaternion * (conjugate(tf0.quaternion) * tf1.quaternion)**factor</cite></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf0</strong> (<a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – First <cite>Transformation</cite> object used as interpolation start</p></li>
+<li><p><strong>tf1</strong> (<a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – Second <cite>Transformation</cite> object used as interpolation end</p></li>
+<li><p><strong>factor</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Interpolation factor within <cite>[0.0, 1.0]</cite>. If <cite>0.0</cite>, the return value is equal to <cite>tf0</cite>;
+if <cite>1.0</cite>, the return value is equal to <cite>tf1</cite>. Values smaller than <cite>0.0</cite> or greater than <cite>1.0</cite> can be
+used if extrapolation is desired. Default: <cite>0.5</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>Transformation</cite> object that is at the interpolated factor between <cite>tf0</cite> and <cite>tf1</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorExtrinsic.inverse">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorExtrinsic.inverse" title="Permalink to this definition"></a></dt>
@@ -1313,6 +1350,35 @@ orthogonal representation. Default: <cite>False</cite>.</p></li>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Transformation</span></code> with provided parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorPose.interpolate">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.sensor.SensorPose.interpolate" title="Permalink to this definition"></a></dt>
+<dd><p>Interpolates the translation and rotation between two <cite>Transformation</cite> objects.</p>
+<dl class="simple">
+<dt>For translation, linear interpolation is used:</dt><dd><p><cite>tf0.translation + factor * (tf1.translation - tf0.translation)</cite>. For rotation, spherical linear
+interpolation of rotation quaternions is used:
+<cite>tf0.quaternion * (conjugate(tf0.quaternion) * tf1.quaternion)**factor</cite></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tf0</strong> (<a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – First <cite>Transformation</cite> object used as interpolation start</p></li>
+<li><p><strong>tf1</strong> (<a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – Second <cite>Transformation</cite> object used as interpolation end</p></li>
+<li><p><strong>factor</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – Interpolation factor within <cite>[0.0, 1.0]</cite>. If <cite>0.0</cite>, the return value is equal to <cite>tf0</cite>;
+if <cite>1.0</cite>, the return value is equal to <cite>tf1</cite>. Values smaller than <cite>0.0</cite> or greater than <cite>1.0</cite> can be
+used if extrapolation is desired. Default: <cite>0.5</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>Transformation</cite> object that is at the interpolated factor between <cite>tf0</cite> and <cite>tf1</cite>.</p>
 </dd>
 </dl>
 </dd></dl>

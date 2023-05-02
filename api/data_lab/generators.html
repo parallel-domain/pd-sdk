@@ -46,14 +46,19 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Parallel Domain SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#introduction">Introduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#example-load-and-visualize-data">Example: Load and visualize data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#id2">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#id3">Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#tutorials">Tutorials</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#quick-installation">Quick Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#developer-setup">Developer Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting_started.html#install-extras">Install Extras</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#testing">Testing</a></li>
@@ -184,6 +189,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.inverse"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorExtrinsic.rotation"><code class="docutils literal notranslate"><span class="pre">SensorExtrinsic.rotation</span></code></a></li>
@@ -204,6 +210,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">SensorPose.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.interpolate"><code class="docutils literal notranslate"><span class="pre">SensorPose.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.inverse"><code class="docutils literal notranslate"><span class="pre">SensorPose.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.quaternion"><code class="docutils literal notranslate"><span class="pre">SensorPose.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sensor.html#paralleldomain.model.sensor.SensorPose.rotation"><code class="docutils literal notranslate"><span class="pre">SensorPose.rotation</span></code></a></li>
@@ -717,6 +724,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.as_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.as_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_euler_angles"><code class="docutils literal notranslate"><span class="pre">Transformation.from_euler_angles()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.from_transformation_matrix"><code class="docutils literal notranslate"><span class="pre">Transformation.from_transformation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.interpolate"><code class="docutils literal notranslate"><span class="pre">Transformation.interpolate()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.inverse"><code class="docutils literal notranslate"><span class="pre">Transformation.inverse</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.quaternion"><code class="docutils literal notranslate"><span class="pre">Transformation.quaternion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation.rotation"><code class="docutils literal notranslate"><span class="pre">Transformation.rotation</span></code></a></li>
@@ -903,7 +911,7 @@ Each asset has an equal chance of being spawned.</p>
 <li><p><strong>position_request</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PositionRequest</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Determines the spawn radius of debris (see <cite>LocationRelativePositionRequest</cite>)</p>
 </dd>
-<dt>Range:</dt><dd><p>Only works with <cite>LocationRelativePositionRequest</cite></p>
+<dt>Range:</dt><dd><p>Works with <cite>LocationRelativePositionRequest</cite> and <cite>LaneSpawnPolicy</cite>.</p>
 </dd>
 <dt>Required:</dt><dd><p>Yes</p>
 </dd>
@@ -947,7 +955,7 @@ If specified, <cite>debris_asset_tag</cite> and <cite>debris_asset_remove_tag</c
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.VehicleBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehicleBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_dynamic_lane_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_obstacle_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_speed_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_cooldown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_aggression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_behavior_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.VehicleBehavior" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehicleBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_dynamic_lane_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_obstacle_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_speed_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_cooldown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_aggression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.VehicleBehavior" title="Permalink to this definition"></a></dt>
 <dd><p>Description: This contains parameters that control vehicle behavior (i.e. lane change, speed, etc.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1076,7 +1084,6 @@ Specifically, this is the amount the target speed is increased by.</p>
 </dl>
 </p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.VehicleBehavior</em><em>]</em>) – </p></li>
-<li><p><strong>vehicle_behavior_type</strong> (<em>Optional</em><em>[</em><em>VehicleBehaviorType</em><em>]</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1209,7 +1216,7 @@ Ignored if the vehicle has no emergency lights</p></li>
 
 <span class="target" id="module-paralleldomain.data_lab.generators.position_request"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbsolutePositionRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbsolutePositionRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest" title="Permalink to this definition"></a></dt>
 <dd><p>Description: Uses specific coordinates for initial pose</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1231,11 +1238,21 @@ Ignored if the vehicle has no emergency lights</p></li>
 </dl>
 </p></li>
 <li><p><strong>lane_id</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Lane ID to spawn in (UMD)</p>
+<dt>Description:</dt><dd><p>Lane ID to spawn in (UMD), inferred by position if not specified.</p>
 </dd>
-<dt>Range:</dt><dd><p>Lane id of lane specified by position</p>
+<dt>Range:</dt><dd><p>Lane id of lane in the loaded (UMD) map.</p>
 </dd>
-<dt>Required:</dt><dd><p>No, if agent is a vehicle. The lane id will be retrieved from the vehicle’s position. Yes, if agent is not a vehicle.</p>
+<dt>Required:</dt><dd><p>No. Lane will be inferred from the position and the map data. The lane picked will be of one of the following types: Drivable, Sidewalk, Parking, ParkingAisle, ParkingSpace.
+In cases where the lane can not be determined automatically, an error will be returned.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>resolve_z</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>If true the AbsolutePositionRequest Z value for position will be ignored, and the Z will be set to the ‘ground’ height at the specified XY coordinate.</p>
+</dd>
+<dt>Range:</dt><dd><p>True or False</p>
+</dd>
+<dt>Required:</dt><dd><p>No</p>
 </dd>
 </dl>
 </p></li>
@@ -1348,19 +1365,19 @@ For other placements, leave empty and use lane_type instead.</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>min_path_length</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies a map of desired minimum path lengths based on lane type.
+<li><p><strong>min_path_length</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Specifies the desired minimum path length for agent.
 The length is from the beginning of the lane.</p>
 </dd>
-<dt>Required:</dt><dd><p>No, will default to 0</p>
+<dt>Required:</dt><dd><p>No, will default to 0 if lane type is ParkingSpace or ParkingAisle, otherwise will default to 200.</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>min_length_behind</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies a map of desired minimum path lengths behind the agent based on lane type.
+<li><p><strong>min_length_behind</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Specifies the desired minimum path length behind the agent.
 The length is the distance behind the agent’s location to the world edge.</p>
 </dd>
-<dt>Required:</dt><dd><p>No, will default to 0</p>
+<dt>Required:</dt><dd><p>No, if it will default to 0 if lane type is ParkingSpace or ParkingAisle, otherwise will default to 100.</p>
 </dd>
 </dl>
 </p></li>
@@ -1551,7 +1568,8 @@ Example: 90 degrees would rotate pose to the left.</p>
 </dl>
 </p></li>
 <li><p><strong>position_request</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PositionRequest</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Determines the center of where the pedestrians will spawn. Radius controlled by <cite>LocationRelativePositionRequest</cite></p>
+<dt>Description:</dt><dd><p>Determines the center of where the pedestrians will spawn. Radius controlled by <cite>LocationRelativePositionRequest</cite>.
+Also compatible with <cite>LaneSpawnPolicy</cite> and will use default radius of 20.</p>
 </dd>
 <dt>Required:</dt><dd><p>Yes</p>
 </dd>
@@ -1720,7 +1738,7 @@ If ped_behavior is not set to JAYWALKING, this field will be ignored.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehicleSpawnData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prevent_spawn_in_redlight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_behavior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_peripheral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehicleSpawnData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_behavior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_peripheral</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData" title="Permalink to this definition"></a></dt>
 <dd><p>Description: Controls the vehicle’s spawning characteristics and movement behavior</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1743,13 +1761,6 @@ If ped_behavior is not set to JAYWALKING, this field will be ignored.</p>
 <dt>Description:</dt><dd><p>Specifies spawn data that applies across agent types</p>
 </dd>
 <dt>Required:</dt><dd><p>No</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>prevent_spawn_in_redlight</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specified if vehicle should be prevented from spawning in a junction lane that has a red light at the start of scenario</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default value</p>
 </dd>
 </dl>
 </p></li>
