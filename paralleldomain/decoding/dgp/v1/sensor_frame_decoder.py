@@ -158,14 +158,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        if datum.image:
-            return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
-        elif datum.point_cloud:
-            return _pose_dto_to_transformation(dto=datum.point_cloud.pose, transformation_type=SensorPose)
-        elif datum.radar_point_cloud:
-            return _pose_dto_to_transformation(dto=datum.radar_point_cloud.pose, transformation_type=SensorPose)
-        else:
-            raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
+
+        datum_oneof = getattr(datum, datum.WhichOneof("datum_oneof"))
+        if hasattr(datum_oneof, "pose"):
+            return _pose_dto_to_transformation(dto=datum_oneof.pose, transformation_type=SensorPose)
+
+        raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
