@@ -1,4 +1,6 @@
-from typing import Dict
+from typing import Dict, Any
+
+import ujson
 
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.src.dgp.proto import ontology_pb2
@@ -32,3 +34,14 @@ def decode_class_maps(
         )
 
     return decoded_ontologies
+
+
+def map_container_to_dict(attributes: Dict[str, str]) -> Dict[str, Any]:
+    attributes_decoded = {}
+    for k, v in attributes.items():
+        try:
+            attributes_decoded[k] = ujson.loads(v)
+        except (ValueError, ujson.JSONDecodeError):
+            attributes_decoded[k] = v
+
+    return attributes_decoded

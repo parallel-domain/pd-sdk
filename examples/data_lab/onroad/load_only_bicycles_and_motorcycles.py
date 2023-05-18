@@ -24,7 +24,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 def query_vehicles_with_spawn_probability():
@@ -51,9 +51,11 @@ def bicycle_motorcycle_only_distribution() -> Dict[str, VehicleCategoryWeight]:
 
     vehicle_distribution = {
         vehicle_type.vehicle_type.name: VehicleCategoryWeight(
-            weight=vehicle_type.vehicle_type.datavehicletypespawnchance.spawn_chance
-            if vehicle_type.vehicle_type.name in spawn_only_categories
-            else 0.0,
+            weight=(
+                vehicle_type.vehicle_type.datavehicletypespawnchance.spawn_chance
+                if vehicle_type.vehicle_type.name in spawn_only_categories
+                else 0.0
+            ),
             model_weights={},
         )
         for vehicle_type in vehicle_weights.group_by(UtilVehicleTypes.name)
@@ -92,7 +94,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 # Place ourselves in the world
 scenario.add_ego(

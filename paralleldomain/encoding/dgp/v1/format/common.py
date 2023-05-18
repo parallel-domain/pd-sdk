@@ -1,14 +1,9 @@
-import pickle
 from datetime import datetime
-from tempfile import TemporaryDirectory
-from typing import Dict, Union
-from uuid import uuid4
+from typing import Union
 
 import numpy as np
 
-from paralleldomain.common.dgp.v1 import annotations_pb2
-from paralleldomain.encoding.pipeline_encoder import PipelineItem, ScenePipelineItem
-from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D
+from paralleldomain.encoding.pipeline_encoder import PipelineItem
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.mask import encode_2int16_as_rgba8
 
@@ -26,6 +21,8 @@ ENCODED_SCENE_AGGREGATION_FOLDER_NAME = "scene_aggregation_tmp"
 class CommonDGPV1FormatMixin:
     @staticmethod
     def _offset_timestamp(compare_datetime: datetime, reference_timestamp: datetime) -> float:
+        compare_datetime = compare_datetime.replace(tzinfo=None)
+        reference_timestamp = reference_timestamp.replace(tzinfo=None)
         diff = compare_datetime - reference_timestamp
         return diff.total_seconds()
 

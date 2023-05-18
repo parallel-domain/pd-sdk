@@ -1,11 +1,9 @@
 import abc
 from datetime import datetime
 from functools import lru_cache
-from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
-import ujson
 from google.protobuf.json_format import ParseDict
 from pyquaternion import Quaternion
 
@@ -19,14 +17,13 @@ from paralleldomain.common.dgp.v1 import (
 from paralleldomain.common.dgp.v1.constants import (
     ANNOTATION_TYPE_MAP,
     DGP_TO_INTERNAL_CS,
-    DirectoryName,
     PointFormat,
     RadarPointFormat,
     TransformType,
 )
 from paralleldomain.common.dgp.v1.utils import rec2array, timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.dgp.v1.common import decode_class_maps
+from paralleldomain.decoding.dgp.v1.common import decode_class_maps, map_container_to_dict
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
@@ -75,22 +72,12 @@ from paralleldomain.model.radar_point_cloud import RadarPointCloud
 from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json_str, read_message, read_npz, read_png
+from paralleldomain.utilities.fsio import read_image, read_message, read_npz, read_png
+from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
 F = TypeVar("F", Image, PointCloud, RadarPointCloud, Annotation)
-
-
-def _decode_attributes(attributes: Dict[str, str]) -> Dict[str, Any]:
-    attributes_decoded = {}
-    for k, v in attributes.items():
-        try:
-            attributes_decoded[k] = ujson.loads(v)
-        except (ValueError, JSONDecodeError):
-            attributes_decoded[k] = v
-
-    return attributes_decoded
 
 
 class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta):
@@ -158,14 +145,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        if datum.image:
-            return _pose_dto_to_transformation(dto=datum.image.pose, transformation_type=SensorPose)
-        elif datum.point_cloud:
-            return _pose_dto_to_transformation(dto=datum.point_cloud.pose, transformation_type=SensorPose)
-        elif datum.radar_point_cloud:
-            return _pose_dto_to_transformation(dto=datum.radar_point_cloud.pose, transformation_type=SensorPose)
-        else:
-            raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
+
+        datum_oneof = getattr(datum, datum.WhichOneof("datum_oneof"))
+        if hasattr(datum_oneof, "pose"):
+            return _pose_dto_to_transformation(dto=datum_oneof.pose, transformation_type=SensorPose)
+
+        raise ValueError("None of Camera, LiDAR or RADAR data were found. Other types are currently not supported")
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
@@ -178,7 +163,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 pose = _pose_dto_to_transformation(dto=box_dto.box.pose, transformation_type=Transformation)
 
                 # Decode generic attributes from and handle json encoded values
-                attr_decoded = _decode_attributes(attributes=box_dto.attributes)
+                attr_decoded = map_container_to_dict(attributes=box_dto.attributes)
                 # Read truncation, occlusion and move them to attribute section in model
                 attr_decoded.update(
                     {
@@ -208,7 +193,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             box_list = []
             for box_dto in dto.annotations:
                 # Decode generic attributes from and handle json encoded values
-                attr_decoded = _decode_attributes(attributes=box_dto.attributes)
+                attr_decoded = map_container_to_dict(attributes=box_dto.attributes)
                 # Read "iscrowd" and move them to attribute section in model
                 attr_decoded.update(
                     {
@@ -527,7 +512,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         poly_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
         polygons = list()
         for annotation in poly_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             lines = self._lines_2d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
@@ -541,7 +526,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         poly_annotations = read_message(obj=annotations_pb2.KeyLine2DAnnotations(), path=annotation_path)
         polylines = list()
         for annotation in poly_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             key = annotation.key
@@ -558,7 +543,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         poly_annotations = read_message(obj=annotations_pb2.KeyPoint2DAnnotations(), path=annotation_path)
         points = list()
         for annotation in poly_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             key = annotation.key
@@ -580,7 +565,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         polygon_annotations = read_message(obj=annotations_pb2.Polygon2DAnnotations(), path=annotation_path)
         polygons = list()
         for annotation in polygon_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             lines = self._lines_3d_from_pb_annotation(annotation=annotation, class_id=class_id, instance_id=instance_id)
@@ -594,7 +579,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         polyline_annotations = read_message(obj=annotations_pb2.KeyLine3DAnnotations(), path=annotation_path)
         polylines = list()
         for annotation in polyline_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             key = annotation.key
@@ -611,7 +596,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         point_annotations = read_message(obj=annotations_pb2.KeyPoint3DAnnotations(), path=annotation_path)
         points = list()
         for annotation in point_annotations.annotations:
-            attributes = _decode_attributes(attributes=annotation.attributes)
+            attributes = map_container_to_dict(attributes=annotation.attributes)
             instance_id = attributes.pop("instance_id", -1)
             class_id = annotation.class_id
             key = annotation.key
@@ -714,7 +699,17 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return datum.image.metadata
+        return map_container_to_dict(attributes=datum.image.metadata)
+
+    def _decode_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        lookup = super()._decode_distortion_lookup(sensor_name=sensor_name, frame_id=frame_id)
+        if lookup is None:
+            lut_csv_path = self._dataset_path / self.scene_name / "calibration" / f"{sensor_name}.csv"
+            if lut_csv_path.exists():
+                with lut_csv_path.open() as f:
+                    lut = np.loadtxt(f, delimiter=",", dtype="float")
+                lookup = DistortionLookupTable.from_ndarray(lut)
+        return lookup
 
 
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
@@ -794,6 +789,9 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         else:
             return None
 
+    def _decode_point_cloud_elongation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
+
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [PointFormat.TS]
         point_cloud_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
@@ -835,7 +833,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return datum.point_cloud.metadata
+        return map_container_to_dict(attributes=datum.point_cloud.metadata)
 
 
 class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[datetime]):
@@ -932,7 +930,7 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
-        return datum.radar_point_cloud.metadata
+        return map_container_to_dict(attributes=datum.radar_point_cloud.metadata)
 
 
 class DGPPointCachePointsDecoder:

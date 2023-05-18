@@ -23,7 +23,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -37,7 +37,7 @@ class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
         sim_state: data_lab.ExtendedSimState,
         agent: data_lab.CustomSimulationAgent,
         random_seed: int,
-        raycast: Optional[Callable],
+        raycast: Optional[Callable] = None,
     ):
         pos_in_ego_coords = data_lab.coordinate_system.forward * self.dist_to_ego
         vert_offset = data_lab.coordinate_system.left * self.vertical_offset
@@ -47,7 +47,10 @@ class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
         agent.set_pose(pose=pose.transformation_matrix)
 
     def update_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, raycast: Optional[Callable]
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
     ):
         pass
 
@@ -107,7 +110,7 @@ scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0
 
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 # Place ourselves in the world
 scenario.add_ego(

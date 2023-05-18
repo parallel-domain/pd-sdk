@@ -16,7 +16,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 sensor_rig = SensorRig(
@@ -34,13 +34,12 @@ sensor_rig = SensorRig(
 )
 
 if len(sys.argv) > 1:
-    path = AnyPath(sys.argv[1])
+    path = sys.argv[1]
 else:
-    path = AnyPath(r"/path/to/scenario_gen.json")
+    path = r"/path/to/scenario_gen.json"
 
 loaded_scenario = data_lab.Scenario.load_scenario(
-    path,
-    sensor_rig=sensor_rig,  # Optional: overwrite sensor rig from build-sim-state stage with a custom rig
+    path, sensor_rig=sensor_rig  # Optional: overwrite sensor rig from build-sim-state stage with a custom rig
 )
 
 AnyPath("out").mkdir(exist_ok=True)

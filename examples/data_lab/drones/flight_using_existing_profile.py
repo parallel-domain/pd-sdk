@@ -34,7 +34,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 class EgoDroneFlightProfileBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -177,14 +177,14 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 
 # Load map locally to find a random spawn point and its XYZ coordinates
 # this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordiantes to PD generators, so
 # we do it outside.
-map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
-map_query = MapQuery(map)
+umd_map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+map_query = MapQuery(umd_map)
 
 start_pose = map_query.get_random_street_location(
     random_seed=seed,
@@ -197,7 +197,13 @@ start_pose.translation[2] += 0.25
 # read from csv
 with AnyPath(r"sample_flight_profile_ascending.csv").open() as fp:
     flight_profile = [
-        (row[0], Transformation(translation=[row[1], row[2], row[3]], quaternion=[row[4], row[5], row[6], row[7]]))
+        (
+            float(row[0]),
+            Transformation(
+                translation=[row[1], row[2], row[3]],
+                quaternion=[float(row[4]), float(row[5]), float(row[6]), float(row[7])],
+            ),
+        )
         for row in csv.reader(fp, delimiter=",", quoting=csv.QUOTE_NONNUMERIC)
     ]
 

@@ -113,6 +113,7 @@ class InMemoryLidarFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
     cloud_xyz: Optional[np.ndarray]
     cloud_rgb: Optional[np.ndarray]
     cloud_intensity: Optional[np.ndarray]
+    cloud_elongation: Optional[np.ndarray]
     cloud_timestamp: Optional[np.ndarray]
     cloud_ring_index: Optional[np.ndarray]
     cloud_ray_type: Optional[np.ndarray]
@@ -128,6 +129,9 @@ class InMemoryLidarFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
 
     def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return self.cloud_intensity
+
+    def get_point_cloud_elongation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return self.cloud_elongation
 
     def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return self.cloud_timestamp
@@ -159,6 +163,7 @@ class InMemoryLidarFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
             cloud_xyz=lidar_frame.point_cloud.xyz,
             cloud_rgb=lidar_frame.point_cloud.rgb,
             cloud_intensity=lidar_frame.point_cloud.intensity,
+            cloud_elongation=lidar_frame.point_cloud.elongation,
             cloud_timestamp=lidar_frame.point_cloud.ts,
             cloud_ring_index=lidar_frame.point_cloud.ring,
             cloud_ray_type=lidar_frame.point_cloud.ray_type,

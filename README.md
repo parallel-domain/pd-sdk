@@ -1,5 +1,5 @@
 # Parallel Domain SDK
- 
+
 ## Introduction
 
 The Parallel Domain SDK (or short: PD SDK) allows the community to access Parallel Domain's synthetic data as Python objects.
@@ -21,8 +21,6 @@ PD SDK is designed to serve the following use cases:
 - load data in ML data pipelines from local or cloud storage directly into memory.
 - encode data into different dataset formats. Currently, it's possible to convert into DGP and DGPv1 format.
 - generate data in PD's Data Lab.
-
-More details on the [**Architecture**](paralleldomain/ARCHITECTURE.md) of PD SDK can be found [here](paralleldomain/ARCHITECTURE.md).
 
 ### Example: Load and visualize data
 To run `show_sensor_frame` you need to install the `visualization` dependencies with one of the methods described in [Installation](#installation).

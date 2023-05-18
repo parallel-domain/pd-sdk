@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 import numpy as np
 import opensimplex  # pip install opensimplex
@@ -35,7 +35,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 def logit(x):
@@ -75,7 +75,11 @@ class EgoDroneStraightLineBehaviour(data_lab.CustomSimulationAgentBehaviour):
         self._start_time: Optional[float] = None
 
     def set_initial_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, random_seed: int
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        random_seed: int,
+        raycast: Optional[Callable] = None,
     ):
         agent.set_pose(pose=self._initial_pose.transformation_matrix)
 
@@ -101,7 +105,12 @@ class EgoDroneStraightLineBehaviour(data_lab.CustomSimulationAgentBehaviour):
 
         return pose_with_noise
 
-    def update_state(self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent):
+    def update_state(
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
+    ):
         current_time = sim_state.sim_time
 
         if self._start_time is None:
@@ -165,14 +174,14 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 
 # Load map locally to find a random spawn point and its XYZ coordinates
 # this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordiantes to PD generators, so
 # we do it outside.
-map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
-map_query = MapQuery(map)
+umd_map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+map_query = MapQuery(umd_map)
 
 start_pose = map_query.get_random_street_location(
     random_seed=seed,

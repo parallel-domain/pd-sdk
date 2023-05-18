@@ -71,6 +71,9 @@ class PointCloudDecoderProtocol(Protocol):
     def get_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
+    def get_point_cloud_elongation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
     def get_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
@@ -90,6 +93,7 @@ class DecoderPointCloud(PointCloud):
         self._xyz = None
         self._rgb = None
         self._intensity = None
+        self._elongation = None
         self._ts = None
         self._ring = None
         self._ray_type = None
@@ -119,6 +123,20 @@ class DecoderPointCloud(PointCloud):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._intensity
+
+    @property
+    def elongation(self) -> Optional[np.ndarray]:
+        """
+        Elongation is recorded in the Waymo Open Dataset and refers to how spread across time the energy of the return
+        lidar pulse is. Larger elongation values tend to indicate spurious objects such as fog and dust, as these
+        objects will reflect some but not all of the laser.
+        Description here: https://patrick-llgc.github.io/Learning-Deep-Learning/paper_notes/waymo_dataset.html
+        """
+        if self._elongation is None:
+            self._elongation = self._decoder.get_point_cloud_elongation(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._elongation
 
     @property
     def ts(self) -> Optional[np.ndarray]:
