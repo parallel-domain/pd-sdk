@@ -289,6 +289,7 @@ def preview_scenario(
     show_image_for_n_seconds: float = 2,
     **kwargs,
 ):
+    AnyPath("out").mkdir(exist_ok=True)
     for frame, scene in data_lab.create_frame_stream(
         scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
     ):
