@@ -6,6 +6,7 @@ import numpy as np
 from pd.data_lab.config.distribution import Distribution
 from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
+from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
 from paralleldomain.utilities.logging import setup_loggers
@@ -14,7 +15,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -28,7 +29,7 @@ class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
         sim_state: data_lab.ExtendedSimState,
         agent: data_lab.CustomSimulationAgent,
         random_seed: int,
-        raycast: Optional[Callable],
+        raycast: Optional[Callable] = None,
     ):
         pos_in_ego_coords = data_lab.coordinate_system.forward * self.dist_to_ego
         vert_offset = data_lab.coordinate_system.left * self.vertical_offset
@@ -38,7 +39,10 @@ class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
         agent.set_pose(pose=pose.transformation_matrix)
 
     def update_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, raycast: Optional[Callable]
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
     ):
         pass
 
@@ -60,7 +64,7 @@ class StackBehaviour(data_lab.CustomSimulationAgentBehaviour):
         sim_state: data_lab.ExtendedSimState,
         agent: data_lab.CustomSimulationAgent,
         random_seed: int,
-        raycast: Optional[Callable],
+        raycast: Optional[Callable] = None,
     ):
         stack_on_agent = sim_state.get_agent(agent_id=self.stack_target_id, on_current_frame=True)
         if stack_on_agent is not None:
@@ -71,7 +75,10 @@ class StackBehaviour(data_lab.CustomSimulationAgentBehaviour):
             agent.set_pose(pose=pose.transformation_matrix)
 
     def update_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, raycast: Optional[Callable]
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
     ):
         pass
 
@@ -98,12 +105,15 @@ class StackAndFlyBehaviour(StackBehaviour):
         sim_state: data_lab.ExtendedSimState,
         agent: data_lab.CustomSimulationAgent,
         random_seed: int,
-        raycast: Optional[Callable],
+        raycast: Optional[Callable] = None,
     ):
         super().set_initial_state(sim_state=sim_state, agent=agent, random_seed=random_seed, raycast=raycast)
 
     def update_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, raycast: Optional[Callable]
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
     ):
         pose = Transformation.from_transformation_matrix(agent.pose, approximate_orthogonal=True)
         global_pose = pose @ (self._speed * sim_state.time_since_last_frame * self._direction)
@@ -174,7 +184,7 @@ class StreetCreepBehaviour(data_lab.CustomSimulationAgentBehaviour):
     ):
         super().__init__()
         self.speed = speed
-        self._initial_pose: Transformation = None
+        self._initial_pose: Optional[Transformation] = None
         self.relative_location_variance = relative_location_variance
         self.direction_variance_in_degrees = direction_variance_in_degrees
 
@@ -183,7 +193,7 @@ class StreetCreepBehaviour(data_lab.CustomSimulationAgentBehaviour):
         sim_state: data_lab.ExtendedSimState,
         agent: data_lab.CustomSimulationAgent,
         random_seed: int,
-        raycast: Optional[Callable],
+        raycast: Optional[Callable] = None,
     ):
         pose = sim_state.map_query.get_random_street_location(
             relative_location_variance=self.relative_location_variance,
@@ -194,7 +204,10 @@ class StreetCreepBehaviour(data_lab.CustomSimulationAgentBehaviour):
         agent.set_pose(pose=pose.transformation_matrix)
 
     def update_state(
-        self, sim_state: data_lab.ExtendedSimState, agent: data_lab.CustomSimulationAgent, raycast: Optional[Callable]
+        self,
+        sim_state: data_lab.ExtendedSimState,
+        agent: data_lab.CustomSimulationAgent,
+        raycast: Optional[Callable] = None,
     ):
         distance = self.speed * sim_state.sim_time
         pos_in_ego_coords = data_lab.coordinate_system.forward * distance
@@ -234,7 +247,7 @@ scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0
 
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 
 scenario.add_ego(
@@ -251,7 +264,7 @@ scenario.add_agents(custom_gen)
 
 data_lab.preview_scenario(
     scenario=scenario,
-    sim_instance=None,  # we don't need to provide a sim_instance b/c all agent behavior is calculated on local client
+    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
     render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
     frames_per_scene=100,
     sim_capture_rate=10,

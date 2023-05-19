@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="0.10.1",
+    version="0.11.0",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [

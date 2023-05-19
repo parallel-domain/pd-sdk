@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Any, Dict, List, TypeVar, Union
 
+import pd.state
 from pd.data_lab.session_reference import TemporalSessionReference
 from pd.session import StepSession
 from pd.state import Pose6D
 from pd.state.state import PosedAgent, State
 
-# TODO: Add protocol for abstraction. We should not have a dependency in this direction
-from paralleldomain.data_lab.config.sensor_rig import SensorRig
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
@@ -27,7 +26,7 @@ class StepFrameDecoder(FrameDecoder[TDateTime]):
     def __init__(
         self,
         session: TemporalSessionReference,
-        sensor_rig: SensorRig,
+        sensor_rig: List[Union[pd.state.CameraSensor, pd.state.LiDARSensor]],
         dataset_name: str,
         scene_name: SceneName,
         settings: DecoderSettings,
@@ -68,13 +67,13 @@ class StepFrameDecoder(FrameDecoder[TDateTime]):
         return EgoPose.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
 
     def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
-        return [sensor.name for sensor in self._sensor_rig.sensors]
+        return [sensor.name for sensor in self._sensor_rig]
 
     def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
-        return [sensor.name for sensor in self._sensor_rig.sensors if sensor.is_camera]
+        return [sensor.name for sensor in self._sensor_rig if isinstance(sensor, pd.state.CameraSensor)]
 
     def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
-        return [sensor.name for sensor in self._sensor_rig.sensors if sensor.is_lidar]
+        return [sensor.name for sensor in self._sensor_rig if isinstance(sensor, pd.state.LiDARSensor)]
 
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         return []

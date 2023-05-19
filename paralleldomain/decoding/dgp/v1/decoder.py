@@ -6,12 +6,12 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from google.protobuf.json_format import MessageToDict
 
-from paralleldomain.common.dgp.v1 import dataset_pb2, metadata_pd_pb2, ontology_pb2, sample_pb2, scene_pb2
+from paralleldomain.common.dgp.v1 import dataset_pb2, metadata_pd_pb2, sample_pb2, scene_pb2
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP
 from paralleldomain.common.dgp.v1.utils import timestamp_to_datetime
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, FrameDecoder, SceneDecoder, TDateTime
-from paralleldomain.decoding.dgp.v1.common import decode_class_maps
+from paralleldomain.decoding.dgp.v1.common import decode_class_maps, map_container_to_dict
 from paralleldomain.decoding.dgp.v1.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.v1.sensor_decoder import (
     DGPCameraSensorDecoder,
@@ -20,7 +20,7 @@ from paralleldomain.decoding.dgp.v1.sensor_decoder import (
 )
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.model.annotation import AnnotationType
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -197,7 +197,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
-        return scene_dto.metadata
+        return map_container_to_dict(scene_dto.metadata)
 
     def _decode_set_description(self, scene_name: SceneName) -> str:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)

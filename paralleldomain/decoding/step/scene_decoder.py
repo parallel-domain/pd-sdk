@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Union
 
+import pd.state
 from pd.data_lab.sim_state import SimState
 
 from paralleldomain.common.constants import ANNOTATION_NAME_TO_CLASS
@@ -8,6 +9,7 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
+from paralleldomain.decoding.step.common import get_sensor_rig_annotation_types
 from paralleldomain.decoding.step.constants import PD_CLASS_DETAILS
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
@@ -17,12 +19,18 @@ from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 class StepSceneDecoder(SceneDecoder[datetime]):
     def __init__(
         self,
-        sim_state: SimState,
+        sensor_rig: List[Union[pd.state.CameraSensor, pd.state.LiDARSensor]],
         dataset_name: str,
         settings: DecoderSettings,
     ):
         super().__init__(dataset_name=dataset_name, settings=settings)
-        self._sim_state = sim_state
+        self._sensor_rig = sensor_rig
+        self._frame_ids = list()
+        self._frame_id_to_date_time_map = dict()
+
+    def add_frame(self, frame_id: FrameId, date_time: datetime):
+        self._frame_id_to_date_time_map[frame_id] = date_time
+        self._frame_ids.append(frame_id)
 
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         # if self._sim_state.current_state is not None:
@@ -36,20 +44,24 @@ class StepSceneDecoder(SceneDecoder[datetime]):
         #     )
         return dict()
 
+    @property
+    def available_annotations(self) -> List[AnnotationType]:
+        return get_sensor_rig_annotation_types(sensor_rig=self._sensor_rig)
+
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
 
     def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        return set(self._sim_state.frame_ids)
+        return set(self._frame_ids)
 
     def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return [sensor.name for sensor in self._sim_state.sensor_rig.sensors]
+        return [sensor.name for sensor in self._sensor_rig]
 
     def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return [sensor.name for sensor in self._sim_state.sensor_rig.sensors if sensor.is_camera]
+        return [sensor.name for sensor in self._sensor_rig if isinstance(sensor, pd.state.CameraSensor)]
 
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return [sensor.name for sensor in self._sim_state.sensor_rig.sensors if sensor.is_lidar]
+        return [sensor.name for sensor in self._sensor_rig if isinstance(sensor, pd.state.LiDARSensor)]
 
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
         return []
@@ -58,7 +70,7 @@ class StepSceneDecoder(SceneDecoder[datetime]):
         return {
             anno_type: ClassMap(classes=PD_CLASS_DETAILS)
             for anno_type in ANNOTATION_NAME_TO_CLASS.values()
-            if anno_type in self._sim_state.sensor_rig.available_annotations
+            if anno_type in self.available_annotations
         }
 
     def _create_camera_sensor_decoder(
@@ -82,4 +94,4 @@ class StepSceneDecoder(SceneDecoder[datetime]):
         raise NotImplementedError("Not supported!")
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, TDateTime]:
-        return {fid: dt for fid, dt in zip(self._sim_state.frame_ids, self._sim_state.frame_date_times)}
+        return self._frame_id_to_date_time_map

@@ -1,7 +1,7 @@
 import math
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Dict, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 import numpy as np
 import pd.state
@@ -14,6 +14,7 @@ from paralleldomain.common.constants import ANNOTATION_NAME_TO_CLASS
 from paralleldomain.data_lab.config.sensor_rig import SensorConfig, SensorRig
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F, LidarSensorFrameDecoder, T
+from paralleldomain.decoding.step.common import get_sensor_rig_annotation_types
 from paralleldomain.decoding.step.constants import PD_CLASS_DETAILS
 from paralleldomain.model.annotation import (
     AnnotationType,
@@ -46,7 +47,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
     def __init__(
         self,
         session: TemporalSessionReference,
-        sensor_rig: SensorRig,
+        sensor_rig: List[Union[pd.state.CameraSensor, pd.state.LiDARSensor]],
         dataset_name: str,
         scene_name: SceneName,
         settings: DecoderSettings,
@@ -59,18 +60,30 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         self._ego_agent_id = ego_agent_id
         self._is_camera = is_camera
 
-    def camera_sensor(self, sensor_name: SensorName) -> SensorConfig:
+    def camera_sensor(self, sensor_name: SensorName) -> pd.state.CameraSensor:
         cam = next(
-            iter([sensor for sensor in self._sensor_rig.sensors if sensor.is_camera and sensor.name == sensor_name]),
+            iter(
+                [
+                    sensor
+                    for sensor in self._sensor_rig
+                    if isinstance(sensor, pd.state.CameraSensor) and sensor.name == sensor_name
+                ]
+            ),
             None,
         )
         if cam is None:
             raise ValueError(f"Unknown camera with name {sensor_name}")
         return cam
 
-    def lidar_sensor(self, sensor_name: SensorName) -> SensorConfig:
+    def lidar_sensor(self, sensor_name: SensorName) -> pd.state.LiDARSensor:
         cam = next(
-            iter([sensor for sensor in self._sensor_rig.sensors if sensor.is_lidar and sensor.name == sensor_name]),
+            iter(
+                [
+                    sensor
+                    for sensor in self._sensor_rig
+                    if isinstance(sensor, pd.state.LiDARSensor) and sensor.name == sensor_name
+                ]
+            ),
             None,
         )
         if cam is None:
@@ -96,7 +109,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         return self.session.query_sensor_data(self._ego_agent_id, sensor_name, pd.state.SensorBuffer.RGB)
 
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
-        cam = self.camera_sensor(sensor_name=sensor_name).to_step_sensor()
+        cam = self.camera_sensor(sensor_name=sensor_name)
 
         camera_model = CameraModel.OPENCV_PINHOLE
         if cam.distortion_params is not None:
@@ -141,7 +154,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
             )
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        cam = self.camera_sensor(sensor_name=sensor_name).camera_intrinsic
+        cam = self.camera_sensor(sensor_name=sensor_name)
         return cam.height, cam.width, 3
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
@@ -174,10 +187,11 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         pass
 
     def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+        available_annotations = get_sensor_rig_annotation_types(sensor_rig=self._sensor_rig)
         return {
             anno_type: ClassMap(classes=PD_CLASS_DETAILS)
             for anno_type in ANNOTATION_NAME_TO_CLASS.values()
-            if anno_type in self._sensor_rig.available_annotations
+            if anno_type in available_annotations
         }
 
     def _decode_available_annotation_types(
@@ -185,7 +199,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
     ) -> Dict[AnnotationType, AnnotationIdentifier]:
         annotations = {}
         if self._is_camera:
-            cam = self.camera_sensor(sensor_name=sensor_name).to_step_sensor()
+            cam = self.camera_sensor(sensor_name=sensor_name)
             if cam.capture_depth:
                 annotations[AnnotationTypes.Depth] = pd.state.SensorBuffer.DEPTH
             if cam.capture_instances:
@@ -216,7 +230,14 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
             sensor = self.camera_sensor(sensor_name=sensor_name)
         else:
             sensor = self.lidar_sensor(sensor_name=sensor_name)
-        return cast(SensorExtrinsic, sensor.sensor_to_ego)
+
+        if isinstance(sensor.pose, Pose6D):
+            mat = sensor.pose.as_transformation_matrix()
+        else:
+            mat = sensor.pose
+
+        # TODO: Ensure FLU
+        return SensorExtrinsic.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         agent = next(
@@ -230,6 +251,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         else:
             mat = agent.pose
 
+        # TODO: Ensure FLU
         return SensorPose.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
 
     def _decode_annotations(

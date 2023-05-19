@@ -4,14 +4,13 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 from pd.data_lab.config.distribution import CenterSpreadConfig, MinMaxConfigInt
-from pd.data_lab.context import setup_datalab
+from pd.data_lab.context import load_map, setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 from pd.sim import Raycast
-from pd.umd.umd import load_umd_map
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain.data_lab.config.map import MapQuery, UniversalMap
+from paralleldomain.data_lab.config.map import MapQuery
 from paralleldomain.data_lab.config.types import Float3
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import (
@@ -35,7 +34,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 class EgoDroneFlightProfileCollisionBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -149,19 +148,22 @@ class EgoDroneFlightProfileCollisionBehaviour(data_lab.CustomSimulationAgentBeha
             direction = (
                 interpolated_pose.translation - Transformation.from_transformation_matrix(mat=agent.pose).translation
             )  # extrapolate from current and previous pose
-            if abs(np.linalg.norm(direction)) > 0:  # a directional vector could be calculated, so cast a ray there
+            magnitude = np.linalg.norm(direction)
+            if magnitude > 0:  # a directional vector could be calculated, so cast a ray there
+                direction = direction / magnitude
                 result = raycast(  # send one ray, but possible to send multiple to cover wider area
                     [Raycast(origin=tuple(interpolated_pose.translation), direction=tuple(direction), max_distance=100)]
                 )
-                hit_relative = result[0][0].position - interpolated_pose.translation
+                if len(result[0]) > 0:  # result is only returned if ray hits object within `max_distance`.
+                    hit_relative = result[0][0].position - interpolated_pose.translation
 
-                # compare Euclidean distance between ego and next hit in meters to user specified limit
-                hit_relative_distance = np.linalg.norm(hit_relative)
-                logger.info(f"Hit distance {hit_relative_distance}")
-                if hit_relative_distance <= self._abort_on_collision_distance:
-                    raise Exception(
-                        f"Aborting due to being on trajectory to collide with an object with {hit_relative_distance}m"
-                    )
+                    # compare Euclidean distance between ego and next hit in meters to user specified limit
+                    hit_relative_distance = np.linalg.norm(hit_relative)
+                    logger.info(f"Hit distance {hit_relative_distance}")
+                    if hit_relative_distance <= self._abort_on_collision_distance:
+                        raise Exception(
+                            f"Aborting due to being on trajectory to collide with an object in {hit_relative_distance}m"
+                        )
 
         logger.info(f"Using interpolated pose: {interpolated_pose} at {flight_profile_time}")
         agent.set_pose(pose=interpolated_pose.transformation_matrix)
@@ -200,14 +202,15 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+location = data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta")
+scenario.set_location(location)
 
 
 # Load map locally to find a random spawn point and its XYZ coordinates
-# this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordiantes to PD generators, so
+# this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordinates to PD generators, so
 # we do it outside.
-map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
-map_query = MapQuery(map)
+umd_map = load_map(location)
+map_query = MapQuery(umd_map)
 
 start_pose = map_query.get_random_street_location(
     random_seed=seed,
@@ -217,7 +220,13 @@ start_pose = map_query.get_random_street_location(
 # read from csv
 with AnyPath(r"sample_flight_profile_ascending.csv").open() as fp:
     flight_profile = [
-        (row[0], Transformation(translation=[row[1], row[2], row[3]], quaternion=[row[4], row[5], row[6], row[7]]))
+        (
+            float(row[0]),
+            Transformation(
+                translation=[row[1], row[2], row[3]],
+                quaternion=[float(row[4]), float(row[5]), float(row[6]), float(row[7])],
+            ),
+        )
         for row in csv.reader(fp, delimiter=",", quoting=csv.QUOTE_NONNUMERIC)
     ]
 
@@ -304,6 +313,7 @@ def preview_scenario(
     show_image_for_n_seconds: float = 2,
     **kwargs,
 ):
+    AnyPath("out").mkdir(exist_ok=True)
     for frame, scene in data_lab.create_frame_stream(
         scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
     ):

@@ -1,32 +1,41 @@
+import json
 import logging
 from datetime import datetime
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, TypeVar, Union
 
+import numpy as np
 import pd.data_lab.config.environment as _env
 import pd.data_lab.config.location as _loc
 import pypeln
-from pd.data_lab import create_sensor_sim_stream, encode_sim_states
+from pd.data_lab import TSimState, create_sensor_sim_stream, encode_sim_states
 from pd.data_lab.generators.custom_generator import CustomAtomicGenerator
 from pd.data_lab.generators.custom_simulation_agent import (
     CustomSimulationAgent,
     CustomSimulationAgentBehaviour,
     CustomSimulationAgents,
 )
-from pd.data_lab.scenario import Scenario
+from pd.data_lab.scenario import Scenario, ScenarioSource, SimulatedScenarioCollection
+from pd.data_lab.sim_instance import FromDiskSimulation
+from pd.data_lab.state_callback import StateCallback
+from pd.state import ModelAgent, VehicleAgent
 
 from paralleldomain import Scene
 from paralleldomain.data_lab.config.sensor_rig import SensorConfig, SensorRig
 from paralleldomain.data_lab.sim_state import ExtendedSimState
 from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.decoding.in_memory.frame_decoder import InMemoryFrameDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
+from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
 from paralleldomain.decoding.step.frame_decoder import StepFrameDecoder
 from paralleldomain.decoding.step.scene_decoder import StepSceneDecoder
 from paralleldomain.encoding.helper import get_encoding_format
 from paralleldomain.encoding.stream_pipeline_builder import StreamDatasetPipelineEncoder, StreamEncodingPipelineBuilder
 from paralleldomain.encoding.stream_pipeline_item import StreamPipelineItem
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
 from paralleldomain.model.frame import Frame
+from paralleldomain.model.sensor import CameraSensorFrame
+from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import CoordinateSystem
 from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
 
@@ -37,6 +46,8 @@ CustomSimulationAgents = CustomSimulationAgents[ExtendedSimState]
 CustomSimulationAgent = CustomSimulationAgent[ExtendedSimState]
 CustomAtomicGenerator = CustomAtomicGenerator[ExtendedSimState]
 encode_sim_states = encode_sim_states
+_ = Scenario
+
 
 # TODO: LFU to FLU (left to right hand problem)
 # coordinate_system = INTERNAL_COORDINATE_SYSTEM
@@ -47,9 +58,26 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 logger = logging.getLogger(__name__)
 
 
+class FilterAsset(StateCallback):
+    def __init__(self, asset_name: str):
+        self._asset_name = asset_name
+
+    def __call__(self, sim_state: TSimState):
+        for agent in sim_state.current_agents:
+            if agent.agent_id == sim_state.ego_agent_id:
+                continue
+            if isinstance(agent.step_agent, ModelAgent) and agent.step_agent.asset_name == self._asset_name:
+                sim_state.remove_agent(agent=agent)
+            elif isinstance(agent.step_agent, VehicleAgent) and agent.step_agent.vehicle_type == self._asset_name:
+                sim_state.remove_agent(agent=agent)
+
+    def clone(self) -> "StateCallback":
+        return FilterAsset(asset_name=self._asset_name)
+
+
 def _create_decoded_stream_from_scenario(
-    scenario: Scenario,
-    scene_index: int,
+    scenario: ScenarioSource,
+    scenario_index: int,
     dataset_name: str = "Default Dataset Name",
     end_skip_frames: Optional[int] = None,
     estimated_startup_time: int = 180,
@@ -61,10 +89,10 @@ def _create_decoded_stream_from_scenario(
     use_merge_batches: Optional[bool] = None,
     **kwargs,
 ) -> Generator[Tuple[Frame[TDateTime], Scene], None, None]:
-    gen = create_sensor_sim_stream(
+    discrete_scenario, gen = create_sensor_sim_stream(
         scenario=scenario,
         sim_settle_frames=sim_settle_frames,
-        scene_index=scene_index,
+        scenario_index=scenario_index,
         dataset_name=dataset_name,
         frames_per_scene=frames_per_scene,
         estimated_startup_time=estimated_startup_time,
@@ -76,18 +104,20 @@ def _create_decoded_stream_from_scenario(
         sim_state_type=ExtendedSimState,
         **kwargs,
     )
-    scene_name = f"scene_{str(scene_index).zfill(6)}"
+    scene_name = discrete_scenario.name
     scene = None
     og_scene = None
     for temporal_sensor_session_reference, sim_state in gen:
         if scene is None:
+            decoder = StepSceneDecoder(
+                sensor_rig=sim_state.sensor_rig,
+                dataset_name=dataset_name,
+                settings=DecoderSettings(),
+            )
+
             scene = Scene(
-                decoder=StepSceneDecoder(
-                    sim_state=sim_state,
-                    dataset_name=dataset_name,
-                    settings=DecoderSettings(),
-                ),
-                available_annotation_types=scenario.sensor_rig.available_annotations,
+                decoder=decoder,
+                available_annotation_types=decoder.available_annotations,
                 name=scene_name,
             )
             og_scene = scene
@@ -95,7 +125,7 @@ def _create_decoded_stream_from_scenario(
             scene_decoder = InMemorySceneDecoder.from_scene(scene=scene)
             scene = Scene(
                 decoder=scene_decoder,
-                available_annotation_types=scenario.sensor_rig.available_annotations,
+                available_annotation_types=scene.available_annotation_types,
                 name=scene_name,
             )
         current_frame = Frame[datetime](
@@ -105,11 +135,13 @@ def _create_decoded_stream_from_scenario(
                 date_time=sim_state.current_sim_date_time,
                 ego_agent_id=sim_state.ego_agent_id,
                 scene_name=scene_name,
-                sensor_rig=scenario.sensor_rig,
+                sensor_rig=sim_state.sensor_rig,
                 session=temporal_sensor_session_reference,
                 settings=DecoderSettings(),
             ),
         )
+        scene_decoder.frame_ids.append(sim_state.current_frame_id)
+        scene_decoder.frame_id_to_date_time_map[sim_state.current_frame_id] = sim_state.current_sim_date_time
         # cache all data in memory so that the sim and renderer can update
         in_memory_frame_decoder = InMemoryFrameDecoder.from_frame(frame=current_frame)
         yield Frame[TDateTime](
@@ -121,7 +153,7 @@ def _create_decoded_stream_from_scenario(
 
 
 def create_frame_stream(
-    scenario: Scenario,
+    scenario: ScenarioSource,
     number_of_scenes: int = 1,
     frames_per_scene: Optional[int] = None,
     number_of_instances: int = 1,
@@ -131,7 +163,7 @@ def create_frame_stream(
     if number_of_instances == 1 and instance_run_env == "sync":
         for scene_index in range(number_of_scenes):
             yield from _create_decoded_stream_from_scenario(
-                scenario=scenario, scene_index=scene_index, frames_per_scene=frames_per_scene, **kwargs
+                scenario=scenario, scenario_index=scene_index, frames_per_scene=frames_per_scene, **kwargs
             )
     else:
         if instance_run_env == "thread":
@@ -152,7 +184,7 @@ def create_frame_stream(
         streams = pypeln.sync.from_iterable(scene_index_iter)
         streams = run_env.flat_map(
             lambda i: _create_decoded_stream_from_scenario(
-                scenario=scenario, scene_index=i, frames_per_scene=frames_per_scene, **kwargs
+                scenario=scenario, scenario_index=i, frames_per_scene=frames_per_scene, **kwargs
             ),
             streams,
             workers=number_of_instances,
@@ -162,7 +194,7 @@ def create_frame_stream(
 
 
 def _get_encoder(
-    scenario: Scenario,
+    scenario: ScenarioSource,
     number_of_scenes: int,
     frames_per_scene: int,
     number_of_instances: int = 1,
@@ -193,7 +225,6 @@ def _get_encoder(
     )
     pipeline_builder = StreamEncodingPipelineBuilder(
         frame_stream=frame_stream,
-        sensor_rig=scenario.sensor_rig,
         number_of_scenes=number_of_scenes,
         number_of_frames_per_scene=frames_per_scene,
         **pipeline_kwargs,
@@ -205,7 +236,7 @@ def _get_encoder(
 
 
 def create_mini_batch(
-    scenario: Scenario,
+    scenario: ScenarioSource,
     number_of_scenes: int = -1,
     frames_per_scene: int = -1,
     number_of_instances: int = 1,
@@ -234,7 +265,7 @@ def create_mini_batch(
 
 
 def create_mini_batch_stream(
-    scenario: Scenario,
+    scenario: ScenarioSource,
     format: str = "dgpv1",
     number_of_scenes: int = -1,
     frames_per_scene: int = -1,
@@ -262,7 +293,7 @@ def create_mini_batch_stream(
 
 
 def preview_scenario(
-    scenario: Scenario,
+    scenario: ScenarioSource,
     number_of_scenes: int = 1,
     frames_per_scene: int = 10,
     annotations_to_show: List[AnnotationType] = None,

@@ -1,5 +1,4 @@
 import logging
-import random
 
 from pd.assets import ObjAssets
 from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
@@ -24,14 +23,12 @@ from paralleldomain.utilities.logging import setup_loggers
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 def get_debris_asset_list() -> str:
     # query specific assets from PD's asset registry and use as csv input for Debris generator
-    asset_objs = ObjAssets.select().where(
-        (ObjAssets.name % "*trash*") & (ObjAssets.width * ObjAssets.height * ObjAssets.length < 1.0)
-    )
+    asset_objs = ObjAssets.select().where(ObjAssets.name % "*trash*")
     asset_names = [o.name for o in asset_objs]
     return ",".join(asset_names)
 
@@ -59,17 +56,19 @@ sensor_rig = data_lab.SensorRig(
 
 # Create scenario
 scenario = data_lab.Scenario(sensor_rig=sensor_rig)
-scenario.random_seed = random.randint(1, 1_000_000)  # set to a fixed integer to keep scenario generation deterministic
+scenario.random_seed = (
+    120951  # random.randint(1, 1_000_000)  # set to a fixed integer to keep scenario generation deterministic
+)
 
 # Set weather variables and time of day
-scenario.environment.time_of_day.set_category_weight(data_lab.TimeOfDays.Day, 1.0)
+scenario.environment.time_of_day.set_category_weight(data_lab.TimeOfDays.Dusk, 1.0)
 scenario.environment.clouds.set_constant_value(0.5)
 scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.fog.set_uniform_distribution(min_value=0.1, max_value=0.3)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -88,7 +87,7 @@ scenario.add_ego(
 
 scenario.add_objects(
     generator=DebrisGeneratorParameters(
-        spawn_probability=0.5,
+        spawn_probability=0.4,
         min_debris_distance=0.0,
         max_debris_distance=15.0,
         debris_asset_tag="trash_wrapper_01,trash_tobacco_01,trash_straw_plastic_01,trash_square_bottle_01",
@@ -103,7 +102,7 @@ scenario.add_objects(
 # Place other agents
 scenario.add_agents(
     generator=TrafficGeneratorParameters(
-        spawn_probability=0.6,
+        spawn_probability=0.8,
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
                 agent_tags=[SpecialAgentTag.EGO],
@@ -115,7 +114,7 @@ scenario.add_agents(
 
 scenario.add_agents(
     generator=ParkedVehicleGeneratorParameters(
-        spawn_probability=CenterSpreadConfig(center=0.4),
+        spawn_probability=CenterSpreadConfig(center=0.6),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
                 agent_tags=[SpecialAgentTag.EGO],

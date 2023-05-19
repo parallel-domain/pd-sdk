@@ -109,6 +109,7 @@ def test_decode_lidar_point_cloud(waymo_dataset_train_scene: UnorderedScene):
         assert point_cloud.xyz.shape[0] > 0
         assert point_cloud.xyz.shape[1] == 3
         assert point_cloud.intensity.shape[1] == 1
+        assert point_cloud.elongation.shape[1] == 1
 
 
 def test_decode_camera_datetime(waymo_dataset_train_scene: UnorderedScene):

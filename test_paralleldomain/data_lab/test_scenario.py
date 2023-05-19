@@ -1,21 +1,13 @@
+import dataclasses
 from tempfile import TemporaryDirectory
-from typing import Optional
+from typing import List
+from typing import Optional, Callable
 from unittest import mock
 
 import numpy as np
-import pd.state
 import pytest
-from pd.data_lab.config.distribution import EnumDistribution
-from pd.data_lab.config.environment import TimeOfDays
-from pd.data_lab.config.location import Location
-from pd.data_lab.generators.non_atomics import NonAtomicGeneratorMessage
-from pd.data_lab.generators.simulation_agent import SimulationAgentBase
-from pd.data_lab.render_instance import AbstractRenderInstance
-from pd.data_lab.scenario import Scenario
-from pd.data_lab.sim_instance import AbstractSimulationInstance
-from pd.management import Ig
-from pd.session import SimSession, StepSession
 
+import pd.state
 from paralleldomain.data_lab import (
     CustomSimulationAgent,
     CustomSimulationAgentBehaviour,
@@ -37,6 +29,19 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
+from pd.data_lab import SimState, sim_stream_from_discrete_scenario
+from pd.data_lab.config.distribution import EnumDistribution
+from pd.data_lab.config.environment import TimeOfDays
+from pd.data_lab.config.location import Location
+from pd.data_lab.generators.custom_generator import CustomAtomicGenerator
+from pd.data_lab.generators.non_atomics import NonAtomicGeneratorMessage
+from pd.data_lab.generators.simulation_agent import SimulationAgentBase
+from pd.data_lab.render_instance import AbstractRenderInstance
+from pd.data_lab.scenario import SimulatedScenarioCollection, Scenario
+from pd.data_lab.sim_instance import AbstractSimulationInstance, FromDiskSimulation
+from pd.management import Ig
+from pd.session import SimSession, StepSession
+from pd.state import state_to_bytes
 from test_paralleldomain.data_lab.constants import LOCATIONS
 
 
@@ -97,28 +102,38 @@ class MockSimulationInstance(AbstractSimulationInstance):
 
     def query_sim_state(self) -> pd.state.State:
         self._simulation_time_sec += self.scenario.sim_state.scenario_gen.sim_update_time
+        self._ego_agent.step_agent.pose = np.eye(4) * self._simulation_time_sec
         sim_state = pd.state.State(
             simulation_time_sec=self._simulation_time_sec,
-            world_info=pd.state.WorldInfo(),
-            agents=[self.ego_agent.step_agent],
+            world_info=pd.state.WorldInfo(location="SF_6thAndMission_medium"),
+            agents=[self._ego_agent.step_agent],
         )
         self.query_sim_state_calls += 1
         return sim_state
 
     def __enter__(self) -> SimSession:
+        super().__enter__()
         ego_agent = self._ego_agent
         if ego_agent is None:
             ego_agent = mock.MagicMock()
             ego_agent.agent_id = 42
-            ego_agent.step_agent = pd.state.ModelAgent(id=42, asset_name="", pose=np.eye(4), velocity=(0.0, 0.0, 0.0))
-        self.ego_agent = ego_agent
+            ego_agent.step_agent = pd.state.ModelAgent(
+                id=42,
+                asset_name="",
+                pose=np.eye(4),
+                velocity=(0.0, 0.0, 0.0),
+                sensors=[s.to_step_sensor() for s in self.scenario.sensor_rig.sensor_configs],
+            )
+        self._ego_agent = ego_agent
         self._session = mock.MagicMock()
-        self._session.load_scenario_generation.return_value = (self.scenario.location, ego_agent.agent_id)
+        self._session.raycast = None
+        self._session.load_scenario_generation.return_value = (self.scenario.location.name, ego_agent.agent_id)
         self._simulation_time_sec = 0.0
         return self._session
 
     def __exit__(self):
-        pass
+        super().__exit__()
+        self._simulation_time_sec = 0.0
 
     @property
     def session(self) -> SimSession:
@@ -131,6 +146,92 @@ class TestScenario:
         map_name = request.param
         location = LOCATIONS[map_name]
         return location
+
+    @pytest.fixture
+    def mixed_scenario(self, location: Location) -> Scenario:
+        sensor_rig = SensorRig(
+            sensor_configs=[
+                SensorConfig.create_camera_sensor(
+                    name="Front",
+                    width=1920,
+                    height=1080,
+                    field_of_view_degrees=70,
+                    pose=Transformation.from_euler_angles(
+                        angles=[2.123, 3.0, -180.0], order="xyz", degrees=True, translation=[10.1, -12.0, 2.0]
+                    ),
+                    annotation_types=[
+                        AnnotationTypes.SurfaceNormals2D,
+                        AnnotationTypes.SemanticSegmentation2D,
+                        AnnotationTypes.InstanceSegmentation2D,
+                    ],
+                )
+            ]
+        )
+
+        scenario = Scenario(sensor_rig=sensor_rig)
+        scenario.set_location(location)
+        scenario.environment.time_of_day.set_category_weight(TimeOfDays.Day, 1.0)
+        scenario.environment.time_of_day.set_category_weight(TimeOfDays.Dawn, 1.0)
+        scenario.environment.time_of_day.set_category_weight(TimeOfDays.Dusk, 1.0)
+        scenario.environment.time_of_day.set_category_weight(TimeOfDays.Night, 1.0)
+        # Place other agents
+        scenario.add_agents(
+            generator=TrafficGeneratorParameters(
+                spawn_probability=0.8,
+                position_request=PositionRequest(
+                    location_relative_position_request=LocationRelativePositionRequest(
+                        agent_tags=[SpecialAgentTag.EGO],
+                        max_spawn_radius=200.0,
+                    )
+                ),
+            )
+        )
+
+        class BlockEgoBehaviour(CustomSimulationAgentBehaviour):
+            def __init__(self, dist_to_ego: float = 5.0):
+                super().__init__()
+                self.dist_to_ego = dist_to_ego
+
+            def set_inital_state(
+                self,
+                sim_state: SimState,
+                agent: CustomSimulationAgent,
+                random_seed: int,
+                raycast: Optional[Callable],
+            ):
+                agent.set_pose(pose=np.eye(4))
+
+            def update_state(
+                self,
+                sim_state: SimState,
+                agent: CustomSimulationAgent,
+                raycast: Optional[Callable],
+            ):
+                pass
+
+            def clone(self) -> "BlockEgoBehaviour":
+                return BlockEgoBehaviour(dist_to_ego=self.dist_to_ego)
+
+        @dataclasses.dataclass
+        class MyObstacleGenerator(CustomAtomicGenerator):
+            number_of_agents: int = 1
+
+            def create_agents_for_new_scene(self, state: SimState, random_seed: int) -> List[CustomSimulationAgent]:
+                agents = []
+                for _ in range(int(self.number_of_agents)):
+                    agent = CustomSimulationAgents.create_object(asset_name="portapotty_01").set_behaviour(
+                        BlockEgoBehaviour()
+                    )
+                    agents.append(agent)
+                return agents
+
+            def clone(self):
+                return MyObstacleGenerator(
+                    number_of_agents=self.number_of_agents,
+                )
+
+        scenario.add_agents(MyObstacleGenerator())
+        return scenario
 
     @pytest.fixture
     def atomic_only_scenario(self, location: Location) -> Scenario:
@@ -374,10 +475,18 @@ class TestScenario:
             def __init__(self, counter: mock.MagicMock):
                 self.counter = counter
 
-            def set_inital_state(self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, random_seed: int):
+            def set_initial_state(
+                self,
+                sim_state: ExtendedSimState,
+                agent: CustomSimulationAgent,
+                random_seed: int,
+                raycast: Optional[Callable],
+            ):
                 self.counter.setup_count += 1
 
-            def update_state(self, sim_state: ExtendedSimState, agent: CustomSimulationAgent):
+            def update_state(
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+            ):
                 self.counter.update_state_count += 1
 
             def clone(self) -> "TestBehaviour":
@@ -395,13 +504,16 @@ class TestScenario:
         )
 
         scenario = Scenario(sensor_rig=sensor_rig)
-        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.0.1"))
+        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.1.0-rc7"))
         ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=sensor_rig).set_behaviour(
             TestBehaviour(counter=cnt_mock)
         )
         scenario.add_ego(ego_agent)
         frames_per_scene = 100
-        update_calls = frames_per_scene * scenario.sim_state.scenario_gen.sim_capture_rate
+        update_calls = (
+            frames_per_scene * scenario.sim_state.scenario_gen.sim_capture_rate
+            + scenario.sim_state.scenario_gen.start_skip_frames
+        )
         self.run_mocked_frame_generation(scenario=scenario, ego_agent=ego_agent, frames_per_scene=frames_per_scene)
         assert cnt_mock.setup_count == 1
         assert cnt_mock.update_state_count == update_calls
@@ -417,10 +529,18 @@ class TestScenario:
             def __init__(self, counter: mock.MagicMock):
                 self.counter = counter
 
-            def set_inital_state(self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, random_seed: int):
+            def set_initial_state(
+                self,
+                sim_state: ExtendedSimState,
+                agent: CustomSimulationAgent,
+                random_seed: int,
+                raycast: Optional[Callable],
+            ):
                 self.counter.setup_count += 1
 
-            def update_state(self, sim_state: ExtendedSimState, agent: CustomSimulationAgent):
+            def update_state(
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+            ):
                 self.counter.update_state_count += 1
 
             def clone(self) -> "TestBehaviour":
@@ -438,7 +558,7 @@ class TestScenario:
         )
 
         scenario = Scenario(sensor_rig=sensor_rig)
-        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.0.1"))
+        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.1.0-rc7"))
         ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=sensor_rig).set_behaviour(
             TestBehaviour(counter=cnt_mock)
         )
@@ -457,9 +577,10 @@ class TestScenario:
         )
 
         frames_per_scene = 100
-        # since we run start_skip_frames the pd gens are already called 9 times and hence we only call the custom
-        # gen once for the first render
-        update_calls = 1 + (frames_per_scene - 1) * scenario.sim_state.scenario_gen.sim_capture_rate
+        update_calls = (
+            frames_per_scene * scenario.sim_state.scenario_gen.sim_capture_rate
+            + scenario.sim_state.scenario_gen.start_skip_frames
+        )
         self.run_mocked_frame_generation(scenario=scenario, ego_agent=ego_agent, frames_per_scene=frames_per_scene)
         assert cnt_mock.setup_count == 1
         assert cnt_mock.update_state_count == update_calls
@@ -474,13 +595,14 @@ class TestScenario:
 
     @pytest.mark.parametrize(
         "yield_every_sim_state",
-        [(True,), (False,)],
+        [True, False],
     )
     def test_sim_state_encode(self, yield_every_sim_state: bool, atomic_only_scenario: Scenario):
         sim_instance = MockSimulationInstance(scenario=atomic_only_scenario, ego_agent=None)
 
         number_of_scenes = 4
         frames_per_scene = 20
+        start_skip_frames = 10
 
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = AnyPath(tmp_dir)
@@ -489,41 +611,173 @@ class TestScenario:
                 scenario=atomic_only_scenario,
                 output_folder=tmp_dir,
                 number_of_scenes=number_of_scenes,
+                start_skip_frames=start_skip_frames,
                 frames_per_scene=frames_per_scene,
                 sim_instance=sim_instance,
                 render_instance=None,
                 yield_every_sim_state=yield_every_sim_state,
             )
 
-            if yield_every_sim_state:
-                every_frame_and_warmup_count = (
-                    number_of_scenes * frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
-                    + number_of_scenes * atomic_only_scenario.sim_state.scenario_gen.start_skip_frames
-                )
-                assert sim_instance.query_sim_state_calls == every_frame_and_warmup_count
-            else:
-                # only capture frames are yielded
-                assert (
-                    sim_instance.query_sim_state_calls
-                    == number_of_scenes
-                    * (frames_per_scene - 1)
-                    * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
-                    + number_of_scenes * atomic_only_scenario.sim_state.scenario_gen.start_skip_frames
-                    + number_of_scenes
-                )
+            every_frame_and_warmup_count = (
+                number_of_scenes * frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
+                + number_of_scenes * start_skip_frames
+                + number_of_scenes
+                # setup pd generators calls query_sim_states once to get an ego pose
+                # init custom generators expects to have a refrence to an ego vehicle
+            )
+            assert sim_instance.query_sim_state_calls == every_frame_and_warmup_count
 
             assert len(list(tmp_dir.iterdir())) == number_of_scenes
             for dir in tmp_dir.iterdir():
-                if yield_every_sim_state:
-                    assert (
-                        len(list(dir.iterdir()))
-                        == frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
+                files_in_scene_dir = [f for f in dir.iterdir() if f.suffix == ".pd"]
+                if yield_every_sim_state is True:
+                    target_num_stored_sim_states = (
+                        frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
+                        + start_skip_frames
                     )
+                    assert len(files_in_scene_dir) == target_num_stored_sim_states
                 else:
-                    assert len(list(dir.iterdir())) == frames_per_scene
+                    assert len(files_in_scene_dir) == frames_per_scene
                 for file in dir.iterdir():
                     assert file.name.endswith(".pd")
                     decoded = pd.state.bytes_to_state(file.open("rb").read())
                     assert isinstance(decoded, pd.state.State)
                     # in our mock we just add 1 agent
                     assert len(decoded.agents) == 1
+
+    def test_discrete_scenario_yields_same_states(self, mixed_scenario: Scenario):
+        class StreetCreepBehaviour(CustomSimulationAgentBehaviour):
+            def __init__(
+                self,
+                speed: float = 5.0,
+            ):
+                super().__init__()
+                self.speed = speed
+                self._initial_pose: Transformation = np.eye(4)
+
+            def set_initial_state(
+                self,
+                sim_state: ExtendedSimState,
+                agent: CustomSimulationAgent,
+                random_seed: int,
+                raycast: Optional[Callable],
+            ):
+                agent.set_pose(pose=np.eye(4))
+
+            def update_state(
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+            ):
+                agent.set_pose(pose=self._initial_pose + agent.pose)
+
+            def clone(self) -> "StreetCreepBehaviour":
+                return StreetCreepBehaviour(
+                    speed=self.speed,
+                )
+
+        ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=mixed_scenario.sensor_rig).set_behaviour(
+            StreetCreepBehaviour()
+        )
+        mixed_scenario.add_ego(ego_agent)
+
+        sim_instance = MockSimulationInstance(scenario=mixed_scenario, ego_agent=ego_agent)
+
+        number_of_scenes = 4
+        frames_per_scene = 20
+
+        with TemporaryDirectory() as tmp_dir:
+            tmp_dir = AnyPath(tmp_dir)
+
+            encode_sim_states(
+                scenario=mixed_scenario,
+                output_folder=tmp_dir,
+                number_of_scenes=number_of_scenes,
+                frames_per_scene=frames_per_scene,
+                sim_instance=sim_instance,
+                render_instance=None,
+                yield_every_sim_state=True,
+            )
+
+            sim_instance_1 = FromDiskSimulation()
+            sim_instance_2 = FromDiskSimulation()
+            scene_dir = AnyPath(f"{tmp_dir}/scene_000000")
+            state_stream_1 = sim_instance_1.state_generator(folder=scene_dir)
+            state_stream_2 = sim_instance_2.state_generator(folder=scene_dir)
+            for state_1, state_2 in zip(state_stream_1, state_stream_2):
+                state_1_bytes = state_to_bytes(state_1)
+                state_2_bytes = state_to_bytes(state_2)
+                assert state_1_bytes == state_2_bytes
+
+    def test_sim_stream_from_scenario_yields_same_states(self, mixed_scenario: Scenario):
+        class StreetCreepBehaviour(CustomSimulationAgentBehaviour):
+            def __init__(
+                self,
+                speed: float = 5.0,
+            ):
+                super().__init__()
+                self.speed = speed
+                self._initial_pose: Transformation = np.eye(4)
+
+            def set_initial_state(
+                self, sim_state: SimState, agent: CustomSimulationAgent, random_seed: int, raycast: Optional[Callable]
+            ):
+                agent.set_pose(pose=np.eye(4))
+
+            def update_state(self, sim_state: SimState, agent: CustomSimulationAgent, raycast: Optional[Callable]):
+                agent.set_pose(pose=self._initial_pose + agent.pose)
+
+            def clone(self) -> "StreetCreepBehaviour":
+                return StreetCreepBehaviour(
+                    speed=self.speed,
+                )
+
+        ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=mixed_scenario.sensor_rig).set_behaviour(
+            StreetCreepBehaviour()
+        )
+        mixed_scenario.add_ego(ego_agent)
+
+        sim_instance_1 = MockSimulationInstance(scenario=mixed_scenario, ego_agent=ego_agent)
+        sim_instance_2 = FromDiskSimulation()
+        sim_instance_3 = FromDiskSimulation()
+
+        number_of_scenes = 4
+        frames_per_scene = 20
+        start_skip_frames = 5
+
+        with TemporaryDirectory() as tmp_dir:
+            tmp_dir = AnyPath(tmp_dir)
+
+            encode_sim_states(
+                scenario=mixed_scenario,
+                output_folder=tmp_dir,
+                number_of_scenes=number_of_scenes,
+                frames_per_scene=frames_per_scene,
+                start_skip_frames=start_skip_frames,
+                sim_instance=sim_instance_1,
+                render_instance=None,
+                yield_every_sim_state=True,
+            )
+
+            collection = SimulatedScenarioCollection(storage_folder=tmp_dir)
+            collection_2 = SimulatedScenarioCollection(storage_folder=tmp_dir)
+            discrete_scenario_1 = collection.get_discrete_scenario(scenario_index=0)
+            discrete_scenario_2 = collection_2.get_discrete_scenario(scenario_index=0)
+            state_stream_1 = sim_stream_from_discrete_scenario(
+                discrete_scenario=discrete_scenario_1,
+                sim_state_type=ExtendedSimState,
+                sim_instance=sim_instance_2,
+                render_instance=mock.MagicMock(),
+            )
+            states_1 = [b.current_state for a, b in state_stream_1]
+            assert len(states_1) == frames_per_scene
+            state_stream_2 = sim_stream_from_discrete_scenario(
+                discrete_scenario=discrete_scenario_2,
+                sim_state_type=ExtendedSimState,
+                sim_instance=sim_instance_3,
+                render_instance=mock.MagicMock(),
+            )
+            states_2 = [b.current_state for a, b in state_stream_2]
+            assert len(states_2) == frames_per_scene
+            for state_1, state_2 in zip(states_1, states_2):
+                state_1_bytes = state_to_bytes(state_1)
+                state_2_bytes = state_to_bytes(state_2)
+                assert state_1_bytes == state_2_bytes

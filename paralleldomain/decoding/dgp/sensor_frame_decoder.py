@@ -64,6 +64,7 @@ from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntr
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image, read_json, read_json_str, read_npz, read_png
+from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
@@ -535,6 +536,16 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
             camera_model=camera_model,
         )
 
+    def _decode_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+        lookup = super()._decode_distortion_lookup(sensor_name=sensor_name, frame_id=frame_id)
+        if lookup is None:
+            lut_csv_path = self._dataset_path / self.scene_name / "calibration" / f"{sensor_name}.csv"
+            if lut_csv_path.exists():
+                with lut_csv_path.open() as f:
+                    lut = np.loadtxt(f, delimiter=",", dtype="float")
+                lookup = DistortionLookupTable.from_ndarray(lut)
+        return lookup
+
 
 class PointInfo(Enum):
     X = "X"
@@ -601,6 +612,9 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         ]
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
         return data[:, intensity_index]
+
+    def _decode_point_cloud_elongation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        return None
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         ts_index = [

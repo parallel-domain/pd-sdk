@@ -18,7 +18,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(
@@ -69,7 +69,7 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
         scenario.environment.fog.set_constant_value(l)
 
         # Select an environment
-        scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+        scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
         # Place ourselves in the world
         scenario.add_ego(

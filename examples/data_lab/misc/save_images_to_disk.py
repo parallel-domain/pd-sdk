@@ -1,44 +1,27 @@
 import logging
-import os
 import random
-from datetime import datetime
-from typing import Any, List, TypeVar, Union
+from typing import List
 
-import pd.data_lab.config.location as _loc
-from pd.assets import ObjAssets
-from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution, MinMaxConfigInt
+from pd.data_lab.config.distribution import EnumDistribution
 from pd.data_lab.context import setup_datalab
-from pd.data_lab.generators.custom_generator import CustomAtomicGenerator
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.scenario import Scenario
 from pd.data_lab.sim_instance import SimulationInstance
 from pd.internal.proto.keystone.generated.wrapper.pd_sensor_pb2 import CameraIntrinsic, SensorExtrinsic
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain import Scene
-from paralleldomain.data_lab.generators.debris import DebrisGeneratorParameters
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
-from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
-from paralleldomain.data_lab.generators.position_request import (
-    LaneSpawnPolicy,
-    LocationRelativePositionRequest,
-    PositionRequest,
-    SpecialAgentTag,
-)
-from paralleldomain.data_lab.generators.random_pedestrian import RandomPedestrianGeneratorParameters
-from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
-from paralleldomain.decoding.step.scene_decoder import StepSceneDecoder
+from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
-from paralleldomain.utilities.transformation import Transformation
 from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
 
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.1.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(
@@ -74,7 +57,7 @@ scenario.environment.fog.set_uniform_distribution(min_value=0.1, max_value=0.3)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
 
 # Place ourselves in the world
 scenario.add_ego(
