@@ -665,6 +665,7 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.data_lab.generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
@@ -675,9 +676,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy"><code class="docutils literal notranslate"><span class="pre">JunctionSpawnPolicy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy"><code class="docutils literal notranslate"><span class="pre">PositionOfInterestPolicy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.PositionRequest"><code class="docutils literal notranslate"><span class="pre">PositionRequest</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.RoadPitchPositionRequest"><code class="docutils literal notranslate"><span class="pre">RoadPitchPositionRequest</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.SpecialAgentTag"><code class="docutils literal notranslate"><span class="pre">SpecialAgentTag</span></code></a></li>
@@ -794,6 +797,16 @@
              
   <section id="module-paralleldomain.data_lab.generators.ego_agent">
 <span id="paralleldomain-data-lab-generators"></span><h1>paralleldomain.data_lab.generators<a class="headerlink" href="#module-paralleldomain.data_lab.generators.ego_agent" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.ego_agent.AgentType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AgentType</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.ego_agent.AgentType" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description:</dt><dd><p>Currently supported agent types</p>
+</dd>
+</dl>
+<p>Args:</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EgoAgentGeneratorParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drone_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ego_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pedestrian_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters" title="Permalink to this definition"></a></dt>
@@ -948,6 +961,7 @@ If specified, <cite>debris_asset_tag</cite> and <cite>debris_asset_remove_tag</c
 <li><p><strong>NORMAL</strong> – Description: Walks on sidewalks/crosswalks and only crosses roads at crosswalks</p></li>
 <li><p><strong>STATIC</strong> – Description: Stays in place</p></li>
 <li><p><strong>JAYWALKER</strong> – Description: Jaywalking behavior (e.g. crosses the road at a non-crosswalk)</p></li>
+<li><p><strong>EDGESTOPPER</strong> – Description: Spawned on sidewalk in front of tagged agent. Walks towards agent and stops at edge of sidewalk</p></li>
 </ul>
 </dd>
 </dl>
@@ -1263,6 +1277,26 @@ In cases where the lane can not be determined automatically, an error will be re
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">JunctionSpawnPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_to_junction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description:</dt><dd><p>Specifies junction lanes as spawning locations.</p>
+</dd>
+<dt>Required:</dt><dd><p>No</p>
+</dd>
+</dl>
+<p>Args:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.JunctionSpawnPolicy</em><em>]</em>) – </p></li>
+<li><p><strong>distance_to_junction</strong> (<em>Optional</em><em>[</em><em>_pd_distributions_pb2.ContinousUniformDistribution</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LaneSpawnPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bicycles_only_in_bike_lanes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lateral_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length_behind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_lanes_in_opposite_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_lanes_in_same_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_path_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nearby_asset_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_of_interest_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">road_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy" title="Permalink to this definition"></a></dt>
 <dd><p>Description: Specifies lanes to spawn at</p>
@@ -1367,22 +1401,24 @@ For other placements, leave empty and use lane_type instead.</p>
 </p></li>
 <li><p><strong>min_path_length</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Specifies the desired minimum path length for agent.
-The length is from the beginning of the lane.</p>
+The length is from the beginning of the lane.
+This parameter does not have an effect if spawning in a driveway, parking aisle or parking space.</p>
 </dd>
-<dt>Required:</dt><dd><p>No, will default to 0 if lane type is ParkingSpace or ParkingAisle, otherwise will default to 200.</p>
+<dt>Required:</dt><dd><p>No. Defaults to 200.</p>
 </dd>
 </dl>
 </p></li>
 <li><p><strong>min_length_behind</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Specifies the desired minimum path length behind the agent.
-The length is the distance behind the agent’s location to the world edge.</p>
+The length is the distance behind the agent’s location to the world edge.
+This parameter does not have an effect if spawning in a driveway, parking aisle or parking space.</p>
 </dd>
-<dt>Required:</dt><dd><p>No, if it will default to 0 if lane type is ParkingSpace or ParkingAisle, otherwise will default to 100.</p>
+<dt>Required:</dt><dd><p>No. Defaults to 100.</p>
 </dd>
 </dl>
 </p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.LaneSpawnPolicy</em><em>]</em>) – </p></li>
-<li><p><strong>position_of_interest_policy</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>PositionOfInterestPolicy</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>position_of_interest_policy</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy" title="paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy"><em>PositionOfInterestPolicy</em></a><em>]</em><em>]</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1477,6 +1513,27 @@ Only works on Drivable lane type, and only works with vehicles relative to other
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PositionOfInterestPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">junction_spawn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_curvature_spawn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Description:</dt><dd><p>Specifies what policy to use in order to spawn agents on a lane.</p>
+</dd>
+<dt>Required:</dt><dd><p>No</p>
+</dd>
+</dl>
+<p>Args:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.PositionOfInterestPolicy</em><em>]</em>) – </p></li>
+<li><p><strong>junction_spawn_policy</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy" title="paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy"><em>JunctionSpawnPolicy</em></a><em>]</em>) – </p></li>
+<li><p><strong>lane_curvature_spawn_policy</strong> (<em>Optional</em><em>[</em><em>LaneCurvatureSpawnPolicy</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.PositionRequest">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PositionRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">absolute_position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_spawn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lateral_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location_relative_position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitudinal_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_time_relative_position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">road_pitch_position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaw_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.PositionRequest" title="Permalink to this definition"></a></dt>
 <dd><p>Description: Determines pose of agents, or spawn center for multiple agents</p>
@@ -1502,7 +1559,8 @@ Determines how much farther to the left (negative for right) we want to move the
 <li><p><strong>yaw_offset</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">CenterSpreadConfig</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Only applied after initial pose is determined by position_type.
 Determines how much to rotate pose about Z axis (points up in right handed coordinate system)
-Example: 90 degrees would rotate pose to the left.</p>
+Units are in radians.
+Example: pi/2 radians would rotate pose to the left.</p>
 </dd>
 <dt>Required:</dt><dd><p>No, will default to <cite>0.0</cite></p>
 </dd>
@@ -1807,7 +1865,11 @@ If ped_behavior is not set to JAYWALKING, this field will be ignored.</p>
 <li><p><strong>position_request</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PositionRequest</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Determines the spawn radius of vehicles (see <cite>LocationRelativePositionRequest</cite>)</p>
 </dd>
-<dt>Range:</dt><dd><p>Only works with <cite>LocationRelativePositionRequest</cite></p>
+<dt>Range:</dt><dd><p>Only works with <cite>LocationRelativePositionRequest</cite>.
+min_path_length and min_length_behind in the lane spawn policy of LocationRelativePositionRequest
+should be set smaller than the values used when placing the reference agent to ensure
+traffic is placed between the reference agent and edge of the world. The default values
+are halved compared to the normal LaneSpawnPolicy defaults.</p>
 </dd>
 <dt>Required:</dt><dd><p>Yes</p>
 </dd>
