@@ -5,13 +5,12 @@ from typing import Callable, List, Optional
 import numpy as np
 import opensimplex  # pip install opensimplex
 from pd.data_lab.config.distribution import CenterSpreadConfig, MinMaxConfigInt
-from pd.data_lab.context import setup_datalab
+from pd.data_lab.context import load_map, setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
-from pd.umd.umd import load_umd_map
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain.data_lab.config.map import MapQuery, UniversalMap
+from paralleldomain.data_lab.config.map import MapQuery
 from paralleldomain.data_lab.config.types import Float3
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import (
@@ -174,13 +173,14 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+location = data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta")
+scenario.set_location(location)
 
 
 # Load map locally to find a random spawn point and its XYZ coordinates
-# this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordiantes to PD generators, so
+# this could be done in the EgoDroneBehavior itself, but we need to pass the XYZ coordinates to PD generators, so
 # we do it outside.
-umd_map = UniversalMap(proto=load_umd_map(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+umd_map = load_map(location)
 map_query = MapQuery(umd_map)
 
 start_pose = map_query.get_random_street_location(
