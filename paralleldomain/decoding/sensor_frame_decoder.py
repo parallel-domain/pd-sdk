@@ -474,6 +474,13 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_radar_range_doppler_energy_map(sensor_name=sensor_name, frame_id=frame_id)
 
+    def get_frame_header_data(self, sensor_name: SensorName, frame_id: FrameId)->Optional[np.ndarray]:
+        return self._decode_radar_frame_header_data(sensor_name=sensor_name, frame_id=frame_id)
+
+    @abc.abstractmethod
+    def _decode_radar_frame_header_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
     @abc.abstractmethod
     def _decode_radar_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
