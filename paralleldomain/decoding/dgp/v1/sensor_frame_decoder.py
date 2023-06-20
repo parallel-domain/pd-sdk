@@ -908,6 +908,10 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         fields = [RadarPointFormat.POWER]
         return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)
 
+    def _decode_radar_point_cloud_rcs(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        fields = [RadarPointFormat.RCS]
+        return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)
+
     def _decode_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         fields = [RadarPointFormat.RANGE]
         return self._decode_radar_fields(sensor_name, frame_id, fields, field_type=np.float32)

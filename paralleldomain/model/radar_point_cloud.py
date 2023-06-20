@@ -24,12 +24,17 @@ class RadarPointCloud:
 
     @property
     @abc.abstractmethod
-    def rgb(self) -> np.ndarray:
+    def rgb(self) -> Optional[np.ndarray]:
         pass
 
     @property
     @abc.abstractmethod
     def power(self) -> np.ndarray:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def rcs(self) -> Optional[np.ndarray]:
         pass
 
     @property
@@ -91,6 +96,9 @@ class RadarPointCloudDecoderProtocol(Protocol):
     def get_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
+    def get_radar_point_cloud_rcs(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
     def get_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
@@ -119,6 +127,7 @@ class DecoderRadarPointCloud(RadarPointCloud):
         self._rgb = None
         self._doppler = None
         self._power = None
+        self._rcs = None
         self._range = None
         self._azimuth = None
         self._elevation = None
@@ -151,6 +160,14 @@ class DecoderRadarPointCloud(RadarPointCloud):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._power
+
+    @property
+    def rcs(self) -> Optional[np.ndarray]:
+        if self._rcs is None:
+            self._rcs = self._decoder.get_radar_point_cloud_rcs(
+                sensor_name=self.sensor_name, frame_id=self.frame_id
+            )
+        return self._rcs
 
     @property
     def range(self) -> Optional[np.ndarray]:
