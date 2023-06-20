@@ -402,6 +402,18 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_radar_point_cloud_power(sensor_name=sensor_name, frame_id=frame_id)
 
+    def get_radar_point_cloud_rcs(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(
+                sensor_name=sensor_name, frame_id=frame_id, extra="radar_point_cloud_rcs"
+            )
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_radar_point_cloud_rcs(sensor_name=sensor_name, frame_id=frame_id),
+            )
+        else:
+            return self._decode_radar_point_cloud_rcs(sensor_name=sensor_name, frame_id=frame_id)
+
     def get_radar_point_cloud_range(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         if self.settings.cache_point_clouds:
             _unique_cache_key = self.get_unique_sensor_frame_id(
@@ -488,6 +500,10 @@ class RadarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
 
     @abc.abstractmethod
     def _decode_radar_point_cloud_power(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_radar_point_cloud_rcs(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
     @abc.abstractmethod

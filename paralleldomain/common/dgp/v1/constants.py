@@ -72,6 +72,7 @@ class RadarPointFormat:
     Y: str = "Y"
     Z: str = "Z"
     POWER: str = "REFLECTED_POWER_DB"
+    RCS: str = "RCS_DBSM"
     DOPPLER: str = "VELOCITY_XS"
     RANGE: str = "RADIAL_DISTANCE"
     AZ: str = "AZIMUTH_ANGLE"
