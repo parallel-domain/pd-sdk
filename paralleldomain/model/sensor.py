@@ -12,6 +12,9 @@ from paralleldomain.model.radar_point_cloud import (
     RadarPointCloud,
     RadarPointCloudDecoderProtocol,
     RangeDopplerMap,
+    RadarFrameHeader,
+    DecoderRadarFrameHeader,
+    RadarFrameHeaderDecoderProtocol,
 )
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable, project_points_3d_to_2d
@@ -329,7 +332,9 @@ class LidarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], Poi
     ...
 
 
-class RadarSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], RadarPointCloudDecoderProtocol):
+class RadarSensorFrameDecoderProtocol(
+    SensorFrameDecoderProtocol[TDateTime], RadarPointCloudDecoderProtocol, RadarFrameHeaderDecoderProtocol
+):
     ...
 
 
@@ -365,6 +370,10 @@ class RadarSensorFrame(SensorFrame[TDateTime]):
     @property
     def radar_range_doppler_map(self) -> RangeDopplerMap:
         return DecoderRangeDopplerMap(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    @property
+    def header(self) -> RadarFrameHeader:
+        return DecoderRadarFrameHeader(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
 
 
 class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):

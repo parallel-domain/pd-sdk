@@ -117,6 +117,17 @@ class RadarRangeDopplerMapDecoderProtocol(Protocol):
         pass
 
 
+class RadarFrameHeaderDecoderProtocol(Protocol):
+    def get_max_non_ambiguous_doppler(self, sensor_name: SensorName, frame_id: FrameId) -> float:
+        pass
+
+    def get_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+        pass
+
+    def _decode_radar_frame_header_data(self, sensor_name, frame_id):
+        pass
+
+
 class DecoderRadarPointCloud(RadarPointCloud):
     def __init__(self, decoder: RadarPointCloudDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
         self.frame_id = frame_id
@@ -224,3 +235,48 @@ class DecoderRangeDopplerMap(RangeDopplerMap):
                 sensor_name=self.sensor_name, frame_id=self.frame_id
             )
         return self._energy_map
+
+
+class RadarFrameHeader:
+    @property
+    @abc.abstractmethod
+    def max_non_ambiguous_doppler(self) -> float:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def timestamp(self) -> int:
+        pass
+
+
+class DecoderRadarFrameHeader(RadarFrameHeader):
+    def __init__(self, decoder: RadarFrameHeaderDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
+        self.frame_id = frame_id
+        self.sensor_name = sensor_name
+        self._decoder = decoder
+        self._max_non_ambiguous_doppler = None
+        self._timestamp = None
+        self._header_data = None
+
+    def __str__(self):
+        return (
+            f"Frame header: Maximum non-ambiguous doppler={self.max_non_ambiguous_doppler}, timestamp={self.timestamp} "
+        )
+
+    def get_header_data(self, sensor_name: SensorName, frame_id: FrameId):
+        if self._header_data is None:
+            self._header_data = self._decoder._decode_radar_frame_header_data(sensor_name, frame_id)
+
+    @property
+    def max_non_ambiguous_doppler(self) -> float:
+        if self._max_non_ambiguous_doppler is None:
+            self.get_header_data(sensor_name=self.sensor_name, frame_id=self.frame_id)
+            self._max_non_ambiguous_doppler = self._header_data["MAX_NON_AMBIGUOUS_DOPPLER"]
+        return self._max_non_ambiguous_doppler
+
+    @property
+    def timestamp(self) -> int:
+        if self._timestamp is None:
+            self.get_header_data(sensor_name=self.sensor_name, frame_id=self.frame_id)
+            self._timestamp = self._header_data["TIMESTAMP"]
+        return self._timestamp
