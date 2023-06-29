@@ -217,7 +217,6 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
             use_precalculated_maps=use_precalculated_maps,
             split_name=split_name,
         )
-        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         # Lidar timestamp is timestamp of the first top LiDAR scan within this frame.

@@ -150,6 +150,17 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         return boxes
 
 
+# The LidarSensorFrameDecoder api exposes individual access to point fields, but they are stored in one single file.
+# We don't want to download the file multiple times directly after each other, so we cache it.
+# The LidarSensorFrameDecoder itself is cached, too, so we can't tie this cache to that instance.
+# Also note that we don't set  the cache size to one so that the cache works with threaded downloads
+@lru_cache(maxsize=16)
+def load_point_cloud(path: str) -> np.ndarray:
+    with AnyPath(path).open(mode="rb") as fp:
+        raw_lidar = np.frombuffer(fp.read(), dtype=np.float32)
+    return raw_lidar.reshape((-1, 5))
+
+
 class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScenesSensorFrameDecoder):
     def __init__(
         self,
@@ -169,7 +180,6 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
             scene_name=scene_name,
             settings=settings,
         )
-        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         """
@@ -180,9 +190,7 @@ class NuScenesLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], NuScene
         )
         lidar_filename = self.nu_samples_data_by_token[sample_data_id]["filename"]
         full_anypath = self._dataset_path / lidar_filename
-        with full_anypath.open(mode="rb") as fp:
-            raw_lidar = np.frombuffer(fp.read(), dtype=np.float32)
-        return raw_lidar.reshape((-1, 5))
+        return load_point_cloud(str(full_anypath))
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
