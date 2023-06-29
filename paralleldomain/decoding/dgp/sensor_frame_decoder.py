@@ -91,7 +91,6 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
         self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
-        self._get_3d_boxes_for_point_cache = lru_cache(maxsize=5)(self._get_3d_boxes_for_point_cache)
 
     def _data_by_sensor_name(self, sensor_name: SensorName) -> Dict[str, SceneDataDTO]:
         return {d.key: d for d in self.scene_data if d.id.name == sensor_name}
@@ -559,11 +558,20 @@ class PointInfo(Enum):
     TS = "TIMESTAMP"
 
 
+# The LidarSensorFrameDecoder api exposes individual access to point fields, but they are stored in one single file.
+# We don't want to download the file multiple times directly after each other, so we cache it.
+# The LidarSensorFrameDecoder itself is cached, too, so we can't tie this cache to that instance.
+# Also note that we don't set  the cache size to one so that the cache works with threaded downloads
+@lru_cache(maxsize=16)
+def load_point_cloud(path: str) -> np.ndarray:
+    pc_data = read_npz(path=AnyPath(path=path), files="data")
+    return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+
+
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._decode_point_cloud_format = lru_cache(maxsize=1)(self._decode_point_cloud_format)
-        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
     def _get_index(self, p_info: PointInfo, sensor_name: SensorName, frame_id: FrameId):
         point_format = self._decode_point_cloud_format(sensor_name=sensor_name, frame_id=frame_id)
@@ -577,8 +585,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
-        pc_data = read_npz(path=cloud_path, files="data")
-        return np.column_stack([pc_data[c] for c in pc_data.dtype.names])
+        return load_point_cloud(str(cloud_path))
 
     def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)

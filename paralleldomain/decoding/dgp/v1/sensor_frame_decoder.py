@@ -712,11 +712,21 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
         return lookup
 
 
+# The LidarSensorFrameDecoder and RadarSensorFrameDecoder api exposes individual access to point fields, but they are
+# stored in one single file.
+# We don't want to download the file multiple times directly after each other, so we cache it.
+# The LidarSensorFrameDecoder itself is cached, too, so we can't tie this cache to that instance.
+# Also note that we don't set  the cache size to one so that the cache works with threaded downloads
+@lru_cache(maxsize=16)
+def load_npz_cached(path: str) -> np.ndarray:
+    pc_data = read_npz(path=AnyPath(path), files="data")
+    return pc_data
+
+
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._decode_point_cloud_format = lru_cache(maxsize=1)(self._decode_point_cloud_format)
-        self._decode_point_cloud_data = lru_cache(maxsize=1)(self._decode_point_cloud_data)
 
     def _decode_available_annotation_types(
         self, sensor_name: SensorName, frame_id: FrameId
@@ -740,8 +750,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     def _decode_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.point_cloud.filename
-        pc_data = read_npz(path=cloud_path, files="data")
-        return pc_data
+        return load_npz_cached(str(cloud_path))
 
     def _has_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> bool:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
@@ -866,8 +875,7 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
     def _decode_radar_point_cloud_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         cloud_path = self._dataset_path / self.scene_name / datum.radar_point_cloud.filename
-        rpc_data = read_npz(path=cloud_path, files="data")
-        return rpc_data
+        return load_npz_cached(str(cloud_path))
 
     def _decode_radar_energy_data(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
@@ -942,6 +950,17 @@ class DGPRadarSensorFrameDecoder(DGPSensorFrameDecoder, RadarSensorFrameDecoder[
         return map_container_to_dict(attributes=datum.radar_point_cloud.metadata)
 
 
+# The PointCachePointsDecoder api exposes individual access to point fields, but they are stored in one single file.
+# We don't want to download the file multiple times directly after each other, so we cache it.
+# The LidarSensorFrameDecoder itself is cached, too, so we can't tie this cache to that instance.
+# Also note that we don't set  the cache size to one so that the cache works with threaded downloads
+@lru_cache(maxsize=16)
+def load_point_cache(path: str) -> np.ndarray:
+    with AnyPath(path).open("rb") as f:
+        cache_points = np.load(f)["data"]
+    return cache_points
+
+
 class DGPPointCachePointsDecoder:
     def __init__(self, sha: str, size: float, cache_folder: AnyPath, pose: Transformation, parent_pose: Transformation):
         self._size = size
@@ -950,12 +969,9 @@ class DGPPointCachePointsDecoder:
         self._pose = pose
         self._parent_pose = parent_pose
         self._file_path = cache_folder / (sha + ".npz")
-        self.get_point_data = lru_cache(maxsize=1)(self.get_point_data)
 
     def get_point_data(self) -> np.ndarray:
-        with self._file_path.open("rb") as f:
-            cache_points = np.load(f)["data"]
-        return cache_points
+        return load_point_cache(str(self._file_path))
 
     def get_points_xyz(self) -> Optional[np.ndarray]:
         cache_points = self.get_point_data()
