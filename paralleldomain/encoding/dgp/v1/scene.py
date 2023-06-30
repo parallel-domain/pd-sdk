@@ -1237,6 +1237,11 @@ class DGPSceneEncoder(SceneEncoder):
         output_path = self._output_path / DirectoryName.CALIBRATION / ".json"
         return self._run_async(func=fsio.write_json_message, obj=calib_dto, path=output_path, append_sha1=True)
 
+    def _encode_custom_scene_metadata(self, metadata_dict: Dict) -> any_pb2.Any:
+        metadata_proto = any_pb2.Any()
+        metadata_proto.Pack(metadata_pd_pb2.ParallelDomainSceneMetadata(**metadata_dict))
+        return metadata_proto
+
     def _encode_scene_json(
         self,
         scene_sensor_data: Dict[str, Dict[str, sample_pb2.Datum]],
@@ -1269,9 +1274,7 @@ class DGPSceneEncoder(SceneEncoder):
         for metadata_key, metadata_item in self._scene.metadata.items():
             if isinstance(metadata_item, dict):  # from decoded DGPv0 dataset
                 filtered_metadata_dict = {k: v for k, v in metadata_item.items() if k != "@type"}
-                metadata_proto = any_pb2.Any()
-                metadata_proto.Pack(metadata_pd_pb2.ParallelDomainSceneMetadata(**filtered_metadata_dict))
-                scene_metadata[metadata_key] = metadata_proto
+                scene_metadata[metadata_key] = self._encode_custom_scene_metadata(filtered_metadata_dict)
             elif isinstance(metadata_item, any_pb2.Any):  # from decoded DGPv1 dataset
                 scene_metadata[metadata_key] = metadata_item
             else:
