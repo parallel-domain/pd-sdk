@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import numpy as np
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2, any_pb2
 
 from paralleldomain import Scene
 from paralleldomain.common.dgp.v1 import (
@@ -19,6 +19,7 @@ from paralleldomain.common.dgp.v1 import (
     point_cloud_pb2,
     sample_pb2,
     scene_pb2,
+    metadata_pd_pb2,
 )
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName, PointFormat
 from paralleldomain.common.dgp.v1.utils import datetime_to_timestamp
@@ -633,7 +634,7 @@ class DGPSceneEncoder(SceneEncoder):
         keyline3d_dto = KeyLine3DTransformer.transform(
             objects=[self._encode_key_line_3d(p) for p in polylines3d.polylines]
         )
-        keylines3d_dto = annotations_pb2.KeyLine2DAnnotations(annotations=keyline3d_dto)
+        keylines3d_dto = annotations_pb2.KeyLine3DAnnotations(annotations=keyline3d_dto)
 
         output_path = (
             self._output_path
@@ -1264,18 +1265,24 @@ class DGPSceneEncoder(SceneEncoder):
                 )
             )
 
+        scene_metadata = {}
+        for metadata_key, metadata_item in self._scene.metadata.items():
+            if isinstance(metadata_item, dict):  # from decoded DGPv0 dataset
+                filtered_metadata_dict = {k: v for k, v in metadata_item.items() if k != "@type"}
+                metadata_proto = any_pb2.Any()
+                metadata_proto.Pack(metadata_pd_pb2.ParallelDomainSceneMetadata(**filtered_metadata_dict))
+                scene_metadata[metadata_key] = metadata_proto
+            elif isinstance(metadata_item, any_pb2.Any):  # from decoded DGPv1 dataset
+                scene_metadata[metadata_key] = metadata_item
+            else:
+                raise TypeError("Scene metadata must be a dictionary, where values are of type Dict or google.protobuf.any_pb2.Any")
+
         scene_dto = scene_pb2.Scene(
             name=self._scene.name,
             description=self._scene.description,
             log="",
             ontologies={k: v.result().stem for k, v in ontologies_files.items()},
-            metadata={
-                # "PD": any_pb2.Any().Pack(
-                #     metadata_pd_pb2.ParallelDomainSceneMetadata(
-                #         **{k: v for k, v in self._scene.metadata["PD"].items() if not k.startswith("@")}
-                #     )
-                # )
-            },
+            metadata=scene_metadata,
             samples=scene_samples,
             data=scene_data,
             creation_date=timestamp_pb2.Timestamp().GetCurrentTime(),
