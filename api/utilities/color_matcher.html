@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>paralleldomain.utilities.geometry &mdash; Parallel Domain SDK  documentation</title>
+  <title>paralleldomain.utilities.color_matcher &mdash; Parallel Domain SDK  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,8 +20,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="paralleldomain.utilities.projection" href="projection.html" />
-    <link rel="prev" title="paralleldomain.utilities.transformation" href="transformation.html" /> 
+    <link rel="prev" title="paralleldomain.utilities.os" href="os.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -748,14 +747,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.utilities.geometry</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.calculate_triangle_area"><code class="docutils literal notranslate"><span class="pre">calculate_triangle_area()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles"><code class="docutils literal notranslate"><span class="pre">decompose_polygon_into_triangles()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.interpolate_points"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.random_point_in_triangle"><code class="docutils literal notranslate"><span class="pre">random_point_in_triangle()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon"><code class="docutils literal notranslate"><span class="pre">random_point_within_2d_polygon()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.geometry.simplify_polyline_2d"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="geometry.html">paralleldomain.utilities.geometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.calculate_triangle_area"><code class="docutils literal notranslate"><span class="pre">calculate_triangle_area()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.decompose_polygon_into_triangles"><code class="docutils literal notranslate"><span class="pre">decompose_polygon_into_triangles()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.interpolate_points"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.is_point_in_polygon_2d"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.random_point_in_triangle"><code class="docutils literal notranslate"><span class="pre">random_point_in_triangle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.random_point_within_2d_polygon"><code class="docutils literal notranslate"><span class="pre">random_point_within_2d_polygon()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.html#paralleldomain.utilities.geometry.simplify_polyline_2d"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="projection.html">paralleldomain.utilities.projection</a><ul>
@@ -784,19 +783,19 @@
 <li class="toctree-l2"><a class="reference internal" href="os.html#paralleldomain.utilities.os.is_container"><code class="docutils literal notranslate"><span class="pre">is_container()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="color_matcher.html">paralleldomain.utilities.color_matcher</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.ColorMatcher"><code class="docutils literal notranslate"><span class="pre">ColorMatcher</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__"><code class="docutils literal notranslate"><span class="pre">ColorMatcher.__matmul__()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.ColorMatcher.from_distributions"><code class="docutils literal notranslate"><span class="pre">ColorMatcher.from_distributions()</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.utilities.color_matcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.ColorMatcher"><code class="docutils literal notranslate"><span class="pre">ColorMatcher</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__"><code class="docutils literal notranslate"><span class="pre">ColorMatcher.__matmul__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.ColorMatcher.from_distributions"><code class="docutils literal notranslate"><span class="pre">ColorMatcher.from_distributions()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_dataset()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_folder()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_image_stream()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.update"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.update()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.to_distribution</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="color_matcher.html#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.to_unit_distribution</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_dataset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_folder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.from_image_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.update"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.update()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.to_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution"><code class="docutils literal notranslate"><span class="pre">GaussianColorDistribution.to_unit_distribution</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -817,9 +816,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">paralleldomain.utilities.geometry</li>
+      <li class="breadcrumb-item active">paralleldomain.utilities.color_matcher</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/api/utilities/geometry.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/api/utilities/color_matcher.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -827,159 +826,163 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-paralleldomain.utilities.geometry">
-<span id="paralleldomain-utilities-geometry"></span><h1>paralleldomain.utilities.geometry<a class="headerlink" href="#module-paralleldomain.utilities.geometry" title="Permalink to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.calculate_triangle_area">
-<span class="sig-name descname"><span class="pre">calculate_triangle_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triangles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.calculate_triangle_area" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates sizes of an array of triangles defined by their three verticies
-:type triangles: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param triangles: n x 3 x 2 array containing the 3 vertices of each triangle</p>
+  <section id="module-paralleldomain.utilities.color_matcher">
+<span id="paralleldomain-utilities-color-matcher"></span><h1>paralleldomain.utilities.color_matcher<a class="headerlink" href="#module-paralleldomain.utilities.color_matcher" title="Permalink to this heading"></a></h1>
+<p>Contains classes for statistical matching of image color statistics.
+This is one of the simplest and least artifact causing image style transfer techniques. We found that properly
+calibrated hue transform improves performance across several tasks.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.ColorMatcher">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ColorMatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformation_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.ColorMatcher" title="Permalink to this definition"></a></dt>
+<dd><p>Precomputed transform that can be applied to images to match the color distributions of two datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transformation_matrix</strong> (<em>ndarray</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__">
+<span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__" title="Permalink to this definition"></a></dt>
+<dd><p>Applies the color matching to a rgb/rgba image
+:type other: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param other: the image as numpy array
+:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:return: the color transformed image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<em>ndarray</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>ndarray</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.ColorMatcher.from_distributions">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_distributions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.ColorMatcher.from_distributions" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the color transform from source to target distribution</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.ColorMatcher" title="paralleldomain.utilities.color_matcher.ColorMatcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">ColorMatcher</span></code></a></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>n x 1 array of triangle sizes</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>triangles</strong> (<em>ndarray</em>) – </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.decompose_polygon_into_triangles">
-<span class="sig-name descname"><span class="pre">decompose_polygon_into_triangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles" title="Permalink to this definition"></a></dt>
-<dd><p>Takes an area defined by a 2D polygon and decomposes it into triangles using the Ear Clipping Method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertices</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – n x 2 array containing the 2d coordinates of the vertices of the polygon</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>n x 3 x 2 array containing the 3 vertices of each n triangle</p>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>source</strong> (<a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a>) – </p></li>
+<li><p><strong>target</strong> (<a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a>) – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.interpolate_points">
-<span class="sig-name descname"><span class="pre">interpolate_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.interpolate_points" title="Permalink to this definition"></a></dt>
-<dd><p>Takes a list of points and interpolates a number of additional points inbetween each point pair.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GaussianColorDistribution</span></span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="Permalink to this definition"></a></dt>
+<dd><p>Tracks per channel mean and variance in LAB space</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates color statistics of images in a dataset
+:type dataset: <a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>
+:param dataset: the dataset instance
+:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
+:param use_tqdm: shows a progress bar if true
+:type max_samples: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
+:param max_samples: number of images that are used to calculate images. It takes all images if set to -1
+:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
+:return: The color distribution object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Array of consecutive points</p></li>
-<li><p><strong>num_points</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Every start point per pair will result in <cite>num_points</cite> points after interpolation.</p></li>
-<li><p><strong>flatten_result</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If <cite>False</cite>
-will return interpolated points, where first axis groups by each input point pair; else returns flat list
-of all points. Default: <cite>True</cite></p></li>
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><em>Dataset</em></a>) – </p></li>
+<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>max_samples</strong> (<em>int</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Array of points with linearly interpolated values inbetween.</p>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.is_point_in_polygon_2d">
-<span class="sig-name descname"><span class="pre">is_point_in_polygon_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d" title="Permalink to this definition"></a></dt>
-<dd><p>Checks if a point lies inside a polygon shape.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates color statistics of all images in a folder. Note that this only works on flat folders right now
+:type image_folder: <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyPath</span></code></a>]
+:param image_folder: folder with images
+:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
+:param use_tqdm: shows a progress bar if true
+:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
+:return: The color distribution object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>polygon</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]]]) – Array of consecutive points that form a polygon</p></li>
-<li><p><strong>point</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – 2D point coordinates to be tested if they lie in the specified polygon</p></li>
-<li><p><strong>include_edge</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If point is considered inside if lying on the edge or not. Default: <cite>True</cite></p></li>
+<li><p><strong>image_folder</strong> (<em>str</em><em> | </em><a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><em>AnyPath</em></a>) – </p></li>
+<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><cite>True</cite> if point in polygon, otherwise <a href="#id1"><span class="problematic" id="id2">`</span></a>False,</p>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.random_point_in_triangle">
-<span class="sig-name descname"><span class="pre">random_point_in_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triangle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.random_point_in_triangle" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates a random point in a given triangle. Ensuring that the random points are roughly uniformly distributed
-:type triangle: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param triangle: 3 x 2 array containing the x,y position of the triangle’s verticies
-:type random_seed: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
-:param random_seed:</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the statistics of all images in the given image stream
+:type image_stream: <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]
+:param image_stream: Iterator over rgb images
+:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
+:param use_tqdm: shows a progress bar if true
+:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
+:return: The color distribution object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_stream</strong> (<em>Iterator</em><em>[</em><em>ndarray</em><em>]</em>) – </p></li>
+<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.update" title="Permalink to this definition"></a></dt>
+<dd><p>adds the image colors to the color statistics
+:type x: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
+:param x: image in rgb</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>2 x 1 array of x,y position of randomly selected point in each triangle</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>triangle</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>random_seed</strong> (<em>int</em>) – </p></li>
-</ul>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>x</strong> (<em>ndarray</em>) – </p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.random_point_within_2d_polygon">
-<span class="sig-name descname"><span class="pre">random_point_within_2d_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a random point within a polygon.  Note that this returns a z value of 0
-:type edge_2d: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param edge_2d: n x 2 array containing the 2d coordinates of the verticies of the polygon
-:type random_seed: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
-:param random_seed: random seed - will be overridden if randomize_point_selection is set to True
-:type num_points: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
-:param num_points: Number of points to spawn</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>num_points x 2 array containing the x,y positions of the point(s)</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>edge_2d</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>random_seed</strong> (<em>int</em>) – </p></li>
-<li><p><strong>num_points</strong> (<em>int</em>) – </p></li>
-</ul>
-</dd>
-</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Transformation that can be used to transform a color value from a unit distribution into this distribution
+:return:</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.simplify_polyline_2d">
-<span class="sig-name descname"><span class="pre">simplify_polyline_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polyline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supporting_points_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximation_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.simplify_polyline_2d" title="Permalink to this definition"></a></dt>
-<dd><p>Takes a 2D polyline and simplifies its shape while allowing for a specified error.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>polyline</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]]]) – 2D Polyline that should be simplified.</p></li>
-<li><p><strong>supporting_points_indices</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]]) – An optional list of vertices of the polyline that need to be kept during
-simplification.</p></li>
-<li><p><strong>approximation_error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The maximum error that’s allowed to be introduced during simplification.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A simplified version of the input polyline, or the input polyline if no simplification could be done.</p>
-</dd>
-</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_unit_distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Transformation that can be used to transform a color value from this distribution into a unit distribution
+:return:</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -988,8 +991,7 @@ simplification.</p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="transformation.html" class="btn btn-neutral float-left" title="paralleldomain.utilities.transformation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="projection.html" class="btn btn-neutral float-right" title="paralleldomain.utilities.projection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="os.html" class="btn btn-neutral float-left" title="paralleldomain.utilities.os" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

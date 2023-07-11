@@ -27,6 +27,7 @@ Parallel Domain SDK
     tutorial/general/index
     tutorial/any_path/index
     tutorial/ml_data_generator/index
+    tutorial/hue_transform/index
 
 
 .. toctree::
@@ -45,6 +46,7 @@ Parallel Domain SDK
     api/utilities/projection
     api/utilities/mask
     api/utilities/os
+    api/utilities/color_matcher
 
 
 
