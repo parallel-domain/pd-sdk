@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from pyquaternion import Quaternion
 
+from paralleldomain.utilities.coordinate_system import CoordinateSystem
 from paralleldomain.utilities.transformation import Transformation
 
 
@@ -149,3 +150,60 @@ def test_quaternion_constructor():
     # via np.ndarray
     tf_1 = Transformation(quaternion=np.asarray(quaternion_elements))
     assert np.allclose(pyquat.elements, tf_1.quaternion.elements)
+
+
+_COORDINATE_SYSTEMS = ["FLU", "RUB", "RDF", "RFU"]
+
+
+class TestLookAt:
+    def test_it_can_create_identity(self):
+        result = Transformation.look_at(target=[1, 0, 0], position=[0, 0, 0], coordinate_system="FLU")
+
+        assert np.allclose(result.transformation_matrix, np.identity(4))
+
+    @pytest.mark.parametrize("coordinate_system", _COORDINATE_SYSTEMS)
+    def test_it_can_look_right(self, coordinate_system: str):
+        target = (
+            CoordinateSystem.get_base_change_from_to(from_axis_directions="FLU", to_axis_directions=coordinate_system)
+            @ np.array([[0, -1, 0]])[0]
+        )
+        result = Transformation.look_at(target=target, position=[0, 0, 0], coordinate_system=coordinate_system)
+        resulting_target = (result @ CoordinateSystem(coordinate_system).forward[np.newaxis, :])[0]
+
+        expected = CoordinateSystem.change_transformation_coordinate_system(
+            transformation=Transformation.from_euler_angles(angles=[0, 0, -90], order="yxz", degrees=True),
+            transformation_system="FLU",
+            target_system=coordinate_system,
+        )
+
+        assert np.allclose(resulting_target, target)
+        assert np.allclose(
+            result.transformation_matrix,
+            expected.transformation_matrix,
+        )
+
+    @pytest.mark.parametrize("coordinate_system", _COORDINATE_SYSTEMS)
+    def test_it_translates_and_rotates(self, coordinate_system: str):
+        target = (
+            CoordinateSystem.get_base_change_from_to(from_axis_directions="FLU", to_axis_directions=coordinate_system)
+            @ np.array([[1 + np.sqrt(3), 2 + np.sqrt(3), 3 + np.sqrt(3)]])
+        )[0]
+        position = (
+            CoordinateSystem.get_base_change_from_to(from_axis_directions="FLU", to_axis_directions=coordinate_system)
+            @ np.array([[1, 2, 3]])
+        )[0]
+
+        result = Transformation.look_at(target=target, position=position, coordinate_system=coordinate_system)
+        direction_to_target = 3 * CoordinateSystem(coordinate_system).forward
+        resulting_target = (result @ direction_to_target[np.newaxis, :])[0]
+
+        expected = CoordinateSystem.change_transformation_coordinate_system(
+            transformation=Transformation.from_euler_angles(
+                angles=[0, -35.26, 45], order="xyz", degrees=True, translation=[1, 2, 3]
+            ),
+            transformation_system="FLU",
+            target_system=coordinate_system,
+        )
+
+        assert np.allclose(resulting_target, target)
+        assert np.allclose(result.transformation_matrix, expected.transformation_matrix, atol=1e-4)

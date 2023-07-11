@@ -1,13 +1,14 @@
 import logging.config
 import os
 import sys
-from pathlib import Path
 
-import cv2
 import pd.management
 from pd.assets import ObjAssets, init_asset_registry_version
 from pd.util.snapshot import generate_state_for_asset_snap
 from tqdm import tqdm
+
+from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.fsio import write_png
 
 """
 Asset images generator
@@ -50,13 +51,13 @@ logger = logging.getLogger()
 ASSETS_NAME_FILE = "./out.txt"
 OUTPUT_DIR = "./asset_preview_images"
 IG_ADDRESS = "ssl://ig.step-api-dev.paralleldomain.com:300X"
-IG_VERSION = "v2.1.0-beta"
+IG_VERSION = "v2.2.0-beta"
 
 pd.management.org = os.environ["PD_CLIENT_ORG_ENV"]
 pd.management.api_key = os.environ["PD_CLIENT_STEP_API_KEY_ENV"]
 client_cert_file = os.environ["PD_CLIENT_CREDENTIALS_PATH_ENV"]
 resolution = (1080, 1080)
-output_path = Path(OUTPUT_DIR)
+output_path = AnyPath(OUTPUT_DIR)
 
 if output_path.exists():
     sys.exit(f"Error: Output directory {output_path} already exists. Please specify a different directory.")
@@ -117,4 +118,4 @@ with session:
             raise Exception("Failed to query sensor image from IG")
         rgb_data = sensor_data.data_as_rgb
         image_path = rgb_output_path / f"{asset_name}.png"
-        cv2.imwrite(str(image_path), cv2.cvtColor(rgb_data, cv2.COLOR_RGB2BGR))
+        write_png(path=image_path, obj=rgb_data)

@@ -238,9 +238,8 @@ class TestSensorFrame:
 
         rgb = camera_sensor.image.rgb
         coordinates = camera_sensor.image.coordinates
-        for y in range(rgb.shape[0]):
-            for x in range(rgb.shape[1]):
-                assert np.all(coordinates[y, x] == np.array([y, x]))
+        assert np.all(coordinates[:, :, 0] == np.arange(rgb.shape[0])[:, np.newaxis])
+        assert np.all(coordinates[:, :, 1] == np.arange(rgb.shape[1])[np.newaxis, :])
 
     # Add test set with backwards optical flow
     @pytest.mark.skip

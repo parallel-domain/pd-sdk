@@ -34,6 +34,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         scene_data: List[sample_pb2.Datum],
         ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
+        point_cache_folder_exists: bool,
         settings: DecoderSettings,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
@@ -43,6 +44,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
         self.dataset_path = dataset_path
         self._ontologies = ontologies
         self._data_by_key = lru_cache(maxsize=1)(self._data_by_key)
+        self._point_cache_folder_exists = point_cache_folder_exists
 
     def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
         sensor_name = next(iter(self._decode_available_camera_names(frame_id=frame_id)), None)
@@ -104,6 +106,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _decode_camera_sensor_frame(
@@ -121,6 +124,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _decode_lidar_sensor_frame(
@@ -138,6 +142,7 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             ontologies=self._ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _decode_radar_sensor_frame(

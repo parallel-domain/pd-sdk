@@ -1,7 +1,6 @@
 import logging
 import sys
 
-import cv2
 from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
@@ -12,11 +11,12 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
+from paralleldomain.visualization.model_visualization import show_frame
 
 setup_loggers(logger_names=["__main__", "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 sensor_rig = SensorRig(
@@ -45,13 +45,11 @@ loaded_scenario = data_lab.Scenario.load_scenario(
 AnyPath("out").mkdir(exist_ok=True)
 for frame, scene in data_lab.create_frame_stream(
     scenario=loaded_scenario,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
 ):
+    show_frame(frame=frame)
     for camera_frame in frame.camera_frames:
         write_png(
             obj=camera_frame.image.rgb, path=AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png")
         )
-
-        cv2.imshow("image", camera_frame.image.rgb[..., ::-1])
-        cv2.waitKey(100)

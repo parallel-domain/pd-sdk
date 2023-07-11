@@ -333,7 +333,6 @@ class UnorderedScene(Generic[TDateTime]):
     def sensor_frame_pipeline(
         self,
         shuffle: bool = False,
-        fast_shuffle: bool = False,
         concurrent: bool = False,
         random_seed: int = 42,
         frame_ids: Optional[Iterable[FrameId]] = None,
@@ -348,7 +347,7 @@ class UnorderedScene(Generic[TDateTime]):
         all_false = not (only_cameras or only_radars or only_lidars)
         if not just_one and not all_false:
             raise ValueError(
-                "You can onlt set one of only_cameras or only_radars or "
+                "You can only set one of only_cameras or only_radars or "
                 "only_lidars to a value to filter a certain sensor type!"
             )
 
@@ -379,7 +378,7 @@ class UnorderedScene(Generic[TDateTime]):
             for name in used_sensor_names:
                 yield frame.get_sensor(sensor_name=name), frame, self
 
-        if not shuffle or (shuffle and fast_shuffle):
+        if not shuffle:
             yield from runenv.flat_map(map_frame, stage, maxsize=max_queue_size, workers=max_workers)
         else:
             yield from nested_generator_random_draw(

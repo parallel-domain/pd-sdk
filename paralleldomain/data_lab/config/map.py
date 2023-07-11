@@ -19,6 +19,12 @@ except ImportError:
 from igraph import Graph, Vertex
 from pd.internal.proto.umd.generated.python import UMD_pb2 as UMD_pb2_base
 from pd.internal.proto.umd.generated.wrapper import UMD_pb2
+from paralleldomain.utilities.geometry import (
+    decompose_polygon_into_triangles,
+    calculate_triangle_area,
+    random_point_in_triangle,
+    random_point_within_2d_polygon,
+)
 
 AABB = UMD_pb2.AABB
 Info = UMD_pb2.Info
@@ -290,6 +296,38 @@ class MapQuery:
             x=pose.translation[0], y=pose.translation[1], width=2 * radius, height=2 * radius
         )
         return self.get_lane_segments_within_bounds(bounds=bounds, method="inside")
+
+    def get_random_area_object(self, area_type: UMD_pb2.Area.AreaType, random_seed: int) -> Optional[UMD_pb2.Area]:
+        random_state = random.Random(random_seed)
+        area_ids = [area_id for area_id, area in self.map.areas.items() if area.type is area_type]
+
+        if len(area_ids) == 0:
+            return None
+
+        area_id = random_state.choice(area_ids)
+        return self.map.areas.get(area_id)
+
+    def get_random_area_location(self, area_type: UMD_pb2.Area.AreaType, random_seed: int) -> Optional[Transformation]:
+        random_state = random.Random(random_seed)
+        area = self.get_random_area_object(area_type=area_type, random_seed=random_seed)
+
+        if area is None:
+            return None
+
+        edge_line = self.map.edges[int(area.edges[0])].as_polyline().to_numpy()
+
+        point = random_point_within_2d_polygon(edge_2d=edge_line[:, :2], random_seed=random_seed, num_points=1)[0]
+
+        translation = [point[0], point[1], np.average(edge_line[:, 2])]
+
+        pose = Transformation.from_euler_angles(
+            angles=[0.0, 0.0, random_state.uniform(0.0, 360)],
+            order="xyz",
+            translation=translation,
+            degrees=True,
+        )
+
+        return pose
 
     def get_random_lane_type_location(
         self,

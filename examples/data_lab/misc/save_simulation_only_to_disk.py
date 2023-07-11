@@ -14,7 +14,6 @@ from paralleldomain.data_lab.generators.position_request import (
     LaneSpawnPolicy,
     LocationRelativePositionRequest,
     PositionRequest,
-    SpecialAgentTag,
 )
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.utilities.logging import setup_loggers
@@ -23,7 +22,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(
@@ -51,7 +50,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -75,7 +74,7 @@ scenario.add_objects(
         debris_asset_tag="trash_bottle_tall_01",
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
             )
         ),
     )
@@ -87,7 +86,7 @@ scenario.add_agents(
         spawn_probability=0.8,
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
                 max_spawn_radius=200.0,
             )
         ),
@@ -100,7 +99,7 @@ data_lab.encode_sim_states(
     frames_per_scene=100,
     number_of_scenes=2,
     sim_capture_rate=2,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
     render_instance=None,
     output_folder=output_folder,
 )

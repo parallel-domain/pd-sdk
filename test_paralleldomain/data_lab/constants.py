@@ -1,13 +1,15 @@
 import logging
-import os
 from typing import List
 
-from pd.management import Levelpak
 from pd.data_lab.context import get_datalab_context, setup_datalab
+from pd.management import Levelpak
+
 from paralleldomain.data_lab import Location
 
 logger = logging.getLogger(__name__)
-setup_datalab("v2.1.0-rc6")
+
+LOCATION_VERSION = "v2.2.0-beta"
+setup_datalab(LOCATION_VERSION)
 
 
 def map_locations() -> List[Location]:
@@ -19,7 +21,8 @@ def map_locations() -> List[Location]:
                 # Skipping this map since it is broken
                 if level.name == "Test_SF_6thAndMission_small":
                     continue
-                locations.append(Location(name=level.name, version=version))
+                if version == LOCATION_VERSION:
+                    locations.append(Location(name=level.name, version=version))
     else:
         print("Missing step credentials! Will test with default map")
         locations.append(Location(name="Test_SF_6thAndMission_small_parking.umd"))

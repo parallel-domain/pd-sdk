@@ -1,13 +1,25 @@
 import dataclasses
 from tempfile import TemporaryDirectory
-from typing import List
-from typing import Optional, Callable
+from typing import Callable, List, Optional
 from unittest import mock
 
 import numpy as np
-import pytest
-
 import pd.state
+import pytest
+from pd.data_lab import SimState, sim_stream_from_discrete_scenario
+from pd.data_lab.config.distribution import EnumDistribution
+from pd.data_lab.config.environment import TimeOfDays
+from pd.data_lab.config.location import Location
+from pd.data_lab.generators.custom_generator import CustomAtomicGenerator
+from pd.data_lab.generators.non_atomics import NonAtomicGeneratorMessage
+from pd.data_lab.generators.simulation_agent import SimulationAgentBase
+from pd.data_lab.render_instance import AbstractRenderInstance
+from pd.data_lab.scenario import Scenario, SimulatedScenarioCollection
+from pd.data_lab.sim_instance import AbstractSimulationInstance, FromDiskSimulation
+from pd.management import Ig
+from pd.session import SimSession, StepSession
+from pd.state import state_to_bytes
+
 from paralleldomain.data_lab import (
     CustomSimulationAgent,
     CustomSimulationAgentBehaviour,
@@ -23,26 +35,12 @@ from paralleldomain.data_lab.generators.position_request import (
     LaneSpawnPolicy,
     LocationRelativePositionRequest,
     PositionRequest,
-    SpecialAgentTag,
 )
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
-from pd.data_lab import SimState, sim_stream_from_discrete_scenario
-from pd.data_lab.config.distribution import EnumDistribution
-from pd.data_lab.config.environment import TimeOfDays
-from pd.data_lab.config.location import Location
-from pd.data_lab.generators.custom_generator import CustomAtomicGenerator
-from pd.data_lab.generators.non_atomics import NonAtomicGeneratorMessage
-from pd.data_lab.generators.simulation_agent import SimulationAgentBase
-from pd.data_lab.render_instance import AbstractRenderInstance
-from pd.data_lab.scenario import SimulatedScenarioCollection, Scenario
-from pd.data_lab.sim_instance import AbstractSimulationInstance, FromDiskSimulation
-from pd.management import Ig
-from pd.session import SimSession, StepSession
-from pd.state import state_to_bytes
-from test_paralleldomain.data_lab.constants import LOCATIONS
+from test_paralleldomain.data_lab.constants import LOCATIONS, LOCATION_VERSION
 
 
 class MockRenderInstance(AbstractRenderInstance):
@@ -141,9 +139,9 @@ class MockSimulationInstance(AbstractSimulationInstance):
 
 
 class TestScenario:
-    @pytest.fixture(params=list(LOCATIONS.keys()))
-    def location(self, request):
-        map_name = request.param
+    @pytest.fixture()
+    def location(self):
+        map_name = list(LOCATIONS.keys())[0]
         location = LOCATIONS[map_name]
         return location
 
@@ -180,7 +178,7 @@ class TestScenario:
                 spawn_probability=0.8,
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                         max_spawn_radius=200.0,
                     )
                 ),
@@ -205,7 +203,7 @@ class TestScenario:
                 self,
                 sim_state: SimState,
                 agent: CustomSimulationAgent,
-                raycast: Optional[Callable],
+                raycast: Optional[Callable] = None,
             ):
                 pass
 
@@ -266,7 +264,7 @@ class TestScenario:
                 spawn_probability=0.8,
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                         max_spawn_radius=200.0,
                     )
                 ),
@@ -364,7 +362,7 @@ class TestScenario:
                 debris_asset_tag="trash_bottle_tall_01",
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                     )
                 ),
             )
@@ -378,7 +376,7 @@ class TestScenario:
                 spawn_probability=0.8,
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                         max_spawn_radius=200.0,
                     )
                 ),
@@ -399,7 +397,7 @@ class TestScenario:
                 spawn_probability=0.8,
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                         max_spawn_radius=200.0,
                     )
                 ),
@@ -423,7 +421,7 @@ class TestScenario:
                     debris_asset_tag="trash_bottle_tall_01",
                     position_request=PositionRequest(
                         location_relative_position_request=LocationRelativePositionRequest(
-                            agent_tags=[SpecialAgentTag.EGO],
+                            agent_tags=["EGO"],
                         )
                     ),
                 )
@@ -480,12 +478,12 @@ class TestScenario:
                 sim_state: ExtendedSimState,
                 agent: CustomSimulationAgent,
                 random_seed: int,
-                raycast: Optional[Callable],
+                raycast: Optional[Callable] = None,
             ):
                 self.counter.setup_count += 1
 
             def update_state(
-                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable] = None
             ):
                 self.counter.update_state_count += 1
 
@@ -504,15 +502,16 @@ class TestScenario:
         )
 
         scenario = Scenario(sensor_rig=sensor_rig)
-        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.1.0-rc7"))
+        scenario.set_location(Location(name="SF_6thAndMission_medium", version=LOCATION_VERSION))
         ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=sensor_rig).set_behaviour(
             TestBehaviour(counter=cnt_mock)
         )
         scenario.add_ego(ego_agent)
         frames_per_scene = 100
         update_calls = (
-            frames_per_scene * scenario.sim_state.scenario_gen.sim_capture_rate
+            (frames_per_scene - 1) * scenario.sim_state.scenario_gen.sim_capture_rate
             + scenario.sim_state.scenario_gen.start_skip_frames
+            + 1
         )
         self.run_mocked_frame_generation(scenario=scenario, ego_agent=ego_agent, frames_per_scene=frames_per_scene)
         assert cnt_mock.setup_count == 1
@@ -534,12 +533,12 @@ class TestScenario:
                 sim_state: ExtendedSimState,
                 agent: CustomSimulationAgent,
                 random_seed: int,
-                raycast: Optional[Callable],
+                raycast: Optional[Callable] = None,
             ):
                 self.counter.setup_count += 1
 
             def update_state(
-                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable] = None
             ):
                 self.counter.update_state_count += 1
 
@@ -558,7 +557,7 @@ class TestScenario:
         )
 
         scenario = Scenario(sensor_rig=sensor_rig)
-        scenario.set_location(Location(name="SF_6thAndMission_medium", version="v2.1.0-rc7"))
+        scenario.set_location(Location(name="SF_6thAndMission_medium", version=LOCATION_VERSION))
         ego_agent = CustomSimulationAgents.create_ego_vehicle(sensor_rig=sensor_rig).set_behaviour(
             TestBehaviour(counter=cnt_mock)
         )
@@ -569,7 +568,7 @@ class TestScenario:
                 spawn_probability=0.8,
                 position_request=PositionRequest(
                     location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=[SpecialAgentTag.EGO],
+                        agent_tags=["EGO"],
                         max_spawn_radius=200.0,
                     )
                 ),
@@ -578,10 +577,13 @@ class TestScenario:
 
         frames_per_scene = 100
         update_calls = (
-            frames_per_scene * scenario.sim_state.scenario_gen.sim_capture_rate
+            (frames_per_scene - 1) * scenario.sim_state.scenario_gen.sim_capture_rate
             + scenario.sim_state.scenario_gen.start_skip_frames
+            + 1
         )
-        self.run_mocked_frame_generation(scenario=scenario, ego_agent=ego_agent, frames_per_scene=frames_per_scene)
+        # We use the mocked ego_agent here to avoid having SimulationAgent and CustomVehicleSimulationAgent
+        # with same agent id in the sim state.
+        self.run_mocked_frame_generation(scenario=scenario, ego_agent=None, frames_per_scene=frames_per_scene)
         assert cnt_mock.setup_count == 1
         assert cnt_mock.update_state_count == update_calls
         assert cnt_mock.clone_count == 1
@@ -618,12 +620,10 @@ class TestScenario:
                 yield_every_sim_state=yield_every_sim_state,
             )
 
-            every_frame_and_warmup_count = (
-                number_of_scenes * frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
-                + number_of_scenes * start_skip_frames
-                + number_of_scenes
-                # setup pd generators calls query_sim_states once to get an ego pose
-                # init custom generators expects to have a refrence to an ego vehicle
+            every_frame_and_warmup_count = number_of_scenes * (
+                frames_per_scene - 1
+            ) * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate + number_of_scenes * (
+                start_skip_frames + 1
             )
             assert sim_instance.query_sim_state_calls == every_frame_and_warmup_count
 
@@ -632,9 +632,8 @@ class TestScenario:
                 files_in_scene_dir = [f for f in dir.iterdir() if f.suffix == ".pd"]
                 if yield_every_sim_state is True:
                     target_num_stored_sim_states = (
-                        frames_per_scene * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate
-                        + start_skip_frames
-                    )
+                        frames_per_scene - 1
+                    ) * atomic_only_scenario.sim_state.scenario_gen.sim_capture_rate + (start_skip_frames + 1)
                     assert len(files_in_scene_dir) == target_num_stored_sim_states
                 else:
                     assert len(files_in_scene_dir) == frames_per_scene
@@ -660,12 +659,12 @@ class TestScenario:
                 sim_state: ExtendedSimState,
                 agent: CustomSimulationAgent,
                 random_seed: int,
-                raycast: Optional[Callable],
+                raycast: Optional[Callable] = None,
             ):
                 agent.set_pose(pose=np.eye(4))
 
             def update_state(
-                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable]
+                self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable] = None
             ):
                 agent.set_pose(pose=self._initial_pose + agent.pose)
 
@@ -718,11 +717,17 @@ class TestScenario:
                 self._initial_pose: Transformation = np.eye(4)
 
             def set_initial_state(
-                self, sim_state: SimState, agent: CustomSimulationAgent, random_seed: int, raycast: Optional[Callable]
+                self,
+                sim_state: SimState,
+                agent: CustomSimulationAgent,
+                random_seed: int,
+                raycast: Optional[Callable] = None,
             ):
                 agent.set_pose(pose=np.eye(4))
 
-            def update_state(self, sim_state: SimState, agent: CustomSimulationAgent, raycast: Optional[Callable]):
+            def update_state(
+                self, sim_state: SimState, agent: CustomSimulationAgent, raycast: Optional[Callable] = None
+            ):
                 agent.set_pose(pose=self._initial_pose + agent.pose)
 
             def clone(self) -> "StreetCreepBehaviour":

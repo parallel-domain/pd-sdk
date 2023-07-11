@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
-from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d
+from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d, project_points_2d_to_3d
 
 
 @pytest.fixture
@@ -73,3 +73,32 @@ def test_pd_fisheye_projection_shape_and_focal_point(k_matrix, pd_fisheye_distor
 
     assert uv_pd_fisheye.shape == (len(points_3d), 2)
     assert np.all(uv_pd_fisheye[3] == k_matrix[[0, 1], [2]])
+
+
+def test_opencv_fisheye_3d_to_2d_and_back(k_matrix: np.ndarray):
+    d = np.linspace(1.5, 0, 4, endpoint=False)
+    points_3d = np.asarray(
+        [
+            [1.0, 0.0, 10.0],
+            [1.0, 5.0, 10.0],
+            [2.0, 1.0, 10.0],
+            [2.0, 0.0, 10.0],
+            [0.20, -1.23, 10.0],
+            [5.0, -2.2, 10.0],
+        ]
+    )
+    uv_opencv_fisheye = project_points_3d_to_2d(
+        k_matrix=k_matrix,
+        distortion_parameters=d,
+        camera_model=CAMERA_MODEL_OPENCV_FISHEYE,
+        points_3d=points_3d,
+    )
+    result = project_points_2d_to_3d(
+        k_matrix=k_matrix,
+        camera_model=CAMERA_MODEL_OPENCV_FISHEYE,
+        points_2d=uv_opencv_fisheye[:, :2],
+        depth=10 * np.ones((1920, 1080, 1)),
+        distortion_parameters=d,
+    )
+
+    assert np.allclose(result, points_3d)

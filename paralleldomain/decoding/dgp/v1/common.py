@@ -41,7 +41,7 @@ def map_container_to_dict(attributes: Dict[str, str]) -> Dict[str, Any]:
     for k, v in attributes.items():
         try:
             attributes_decoded[k] = ujson.loads(v)
-        except (ValueError, ujson.JSONDecodeError):
+        except (TypeError, ValueError, ujson.JSONDecodeError):
             attributes_decoded[k] = v
 
     return attributes_decoded

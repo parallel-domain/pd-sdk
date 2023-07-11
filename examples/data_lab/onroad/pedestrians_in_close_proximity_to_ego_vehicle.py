@@ -18,7 +18,6 @@ from paralleldomain.data_lab.generators.position_request import (
     LaneSpawnPolicy,
     LocationRelativePositionRequest,
     PositionRequest,
-    SpecialAgentTag,
 )
 from paralleldomain.data_lab.generators.spawn_data import PedestrianSpawnData
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
@@ -27,7 +26,7 @@ from paralleldomain.utilities.logging import setup_loggers
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 def get_character_names() -> List[str]:
@@ -72,7 +71,7 @@ scenario.environment.fog.set_uniform_distribution(min_value=0.1, max_value=0.3)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -97,7 +96,7 @@ for i in range(0, 5):
             position_request=PositionRequest(
                 location_relative_position_request=LocationRelativePositionRequest(
                     max_spawn_radius=0.0,  # Select ego vehicle's center as initial position
-                    agent_tags=[SpecialAgentTag.EGO],
+                    agent_tags=["EGO"],
                 ),
                 longitudinal_offset=CenterSpreadConfig(
                     center=random.randint(50, 100) / 10  # now move ped by 5-10meter to the front
@@ -115,7 +114,7 @@ scenario.add_agents(
     generator=TrafficGeneratorParameters(
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
                 max_spawn_radius=100.0,
             )
         ),
@@ -127,7 +126,7 @@ scenario.add_agents(
         spawn_probability=CenterSpreadConfig(center=0.4),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
                 max_spawn_radius=100.0,
             )
         ),
@@ -139,6 +138,6 @@ data_lab.preview_scenario(
     scenario=scenario,
     frames_per_scene=100,
     sim_capture_rate=10,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
 )

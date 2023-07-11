@@ -212,7 +212,15 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_samples_data_by_token(self) -> Dict[str, Dict[str, Any]]:
-        return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
+        _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
+
+        def get_nu_samples_data_by_token() -> Dict[str, Dict[str, Any]]:
+            return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
+
+        return self.nu_table_storage.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_samples_data_by_token,
+        )
 
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:

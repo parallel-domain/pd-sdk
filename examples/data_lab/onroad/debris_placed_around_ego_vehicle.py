@@ -1,4 +1,5 @@
 import logging
+import random
 
 from pd.assets import ObjAssets
 from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
@@ -15,7 +16,6 @@ from paralleldomain.data_lab.generators.position_request import (
     LaneSpawnPolicy,
     LocationRelativePositionRequest,
     PositionRequest,
-    SpecialAgentTag,
 )
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.utilities.logging import setup_loggers
@@ -23,12 +23,14 @@ from paralleldomain.utilities.logging import setup_loggers
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 def get_debris_asset_list() -> str:
     # query specific assets from PD's asset registry and use as csv input for Debris generator
-    asset_objs = ObjAssets.select().where(ObjAssets.name % "*trash*")
+    asset_objs = ObjAssets.select().where(
+        (ObjAssets.name % "*trash*") & (ObjAssets.width * ObjAssets.height * ObjAssets.length < 1.0)
+    )
     asset_names = [o.name for o in asset_objs]
     return ",".join(asset_names)
 
@@ -56,9 +58,7 @@ sensor_rig = data_lab.SensorRig(
 
 # Create scenario
 scenario = data_lab.Scenario(sensor_rig=sensor_rig)
-scenario.random_seed = (
-    120951  # random.randint(1, 1_000_000)  # set to a fixed integer to keep scenario generation deterministic
-)
+scenario.random_seed = random.randint(1, 1_000_000)  # set to a fixed integer to keep scenario generation deterministic
 
 # Set weather variables and time of day
 scenario.environment.time_of_day.set_category_weight(data_lab.TimeOfDays.Dusk, 1.0)
@@ -93,7 +93,7 @@ scenario.add_objects(
         debris_asset_tag="trash_wrapper_01,trash_tobacco_01,trash_straw_plastic_01,trash_square_bottle_01",
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
             )
         ),
     )
@@ -105,7 +105,7 @@ scenario.add_agents(
         spawn_probability=0.8,
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
                 max_spawn_radius=100.0,
             )
         ),
@@ -117,7 +117,7 @@ scenario.add_agents(
         spawn_probability=CenterSpreadConfig(center=0.6),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.EGO],
+                agent_tags=["EGO"],
                 max_spawn_radius=100.0,
             )
         ),
@@ -129,6 +129,6 @@ data_lab.preview_scenario(
     scenario=scenario,
     frames_per_scene=100,
     sim_capture_rate=10,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
 )
