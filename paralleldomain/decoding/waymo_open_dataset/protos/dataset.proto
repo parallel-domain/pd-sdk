@@ -50,8 +50,8 @@ message CameraName {
     UNKNOWN = 0;
     FRONT = 1;
     FRONT_LEFT = 2;
-    FRONT_RIGHT = 3;
-    SIDE_LEFT = 4;
+    SIDE_LEFT = 3;
+    FRONT_RIGHT = 4;
     SIDE_RIGHT = 5;
 
   }

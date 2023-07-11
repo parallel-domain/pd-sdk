@@ -38,6 +38,7 @@ from paralleldomain.model.sensor import (
 )
 from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.coordinate_system import CoordinateSystem
 
 SensorFrameTypes = Union[CameraSensorFrame, RadarSensorFrame, LidarSensorFrame]
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
@@ -160,9 +161,14 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         sensor_data = self.session.query_sensor_data(self._ego_agent_id, sensor_name, pd.state.SensorBuffer.RGB)
         rgb_data = sensor_data.data_as_rgb
-        ones = np.ones((*rgb_data.shape[:2], 1), dtype=rgb_data.dtype) * 255
-        concatenated = np.concatenate([rgb_data, ones], axis=-1)
-        return concatenated
+        if rgb_data.shape[-1] == 3:
+            ones = np.ones((*rgb_data.shape[:2], 1), dtype=rgb_data.dtype) * 255
+            concatenated = np.concatenate([rgb_data, ones], axis=-1)
+            return concatenated
+        elif rgb_data.shape[-1] == 1:  # grayscale fix for now
+            return np.dstack([rgb_data.squeeze()] * 4)
+        else:
+            raise ValueError(f"Sensor returned {rgb_data.shape[1]} color channels. It must be either 3 or 1 channels.")
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass
@@ -223,7 +229,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         return dict()
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
-        return self._session.date_time
+        return datetime.fromtimestamp(self.state.simulation_time_sec)
 
     def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
         if self._is_camera:
@@ -236,8 +242,11 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         else:
             mat = sensor.pose
 
-        # TODO: Ensure FLU
-        return SensorExtrinsic.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
+        RDF_to_RFU = CoordinateSystem("RDF") > CoordinateSystem("RFU")
+        RFU_to_FLU = CoordinateSystem("RFU") > CoordinateSystem("FLU")
+
+        sensor_to_ego_RFU = SensorExtrinsic.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
+        return RFU_to_FLU @ sensor_to_ego_RFU @ RDF_to_RFU
 
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         agent = next(
@@ -251,8 +260,17 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         else:
             mat = agent.pose
 
-        # TODO: Ensure FLU
-        return SensorPose.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
+        sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
+
+        RFU_to_FLU = CoordinateSystem("RFU") > CoordinateSystem("FLU")
+
+        ego_to_world = (
+            RFU_to_FLU
+            @ SensorPose.from_transformation_matrix(mat=mat, approximate_orthogonal=True)
+            @ RFU_to_FLU.inverse
+        )
+
+        return ego_to_world @ sensor_to_ego
 
     def _decode_annotations(
         self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T

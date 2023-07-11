@@ -50,8 +50,8 @@ WAYMO_INDEX_TO_CAMERA_NAME = {
     0: "UNKNOWN",
     1: "FRONT",
     2: "FRONT_LEFT",
-    3: "FRONT_RIGHT",
-    4: "SIDE_LEFT",
+    3: "SIDE_LEFT",
+    4: "FRONT_RIGHT",
     5: "SIDE_RIGHT",
 }
 

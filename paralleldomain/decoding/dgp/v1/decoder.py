@@ -97,6 +97,7 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
             umd_map_path=umd_map_path,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -129,6 +130,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         dataset_path: Union[str, AnyPath],
         umd_map_path: Optional[Union[str, AnyPath]],
         settings: DecoderSettings,
+        scene_name: str,
         custom_reference_to_box_bottom: Optional[Transformation] = None,
     ):
         _DatasetDecoderMixin.__init__(self, dataset_path=dataset_path)
@@ -145,6 +147,8 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._decode_scene_dto = lru_cache(maxsize=1)(self._decode_scene_dto)
         self._data_by_key_with_name = lru_cache(maxsize=1)(self._data_by_key_with_name)
         self._sample_by_index = lru_cache(maxsize=1)(self._sample_by_index)
+        point_cache_folder = self._dataset_path / scene_name / "point_cache"
+        self._point_cache_folder_exists = point_cache_folder.exists()
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -159,6 +163,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _create_lidar_sensor_decoder(
@@ -174,6 +179,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _create_radar_sensor_decoder(
@@ -189,6 +195,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
@@ -239,6 +246,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             ontologies=scene_dto.ontologies,
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
+            point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
     def _decode_scene_dto(self, scene_name: str) -> scene_pb2.Scene:

@@ -7,14 +7,14 @@ from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
 from paralleldomain.model.radar_point_cloud import (
+    DecoderRadarFrameHeader,
     DecoderRadarPointCloud,
     DecoderRangeDopplerMap,
+    RadarFrameHeader,
+    RadarFrameHeaderDecoderProtocol,
     RadarPointCloud,
     RadarPointCloudDecoderProtocol,
     RangeDopplerMap,
-    RadarFrameHeader,
-    DecoderRadarFrameHeader,
-    RadarFrameHeaderDecoderProtocol,
 )
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable, project_points_3d_to_2d
@@ -244,23 +244,38 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def pose(self) -> "SensorPose":
         """
-        Local Vehicle coordinate system at the current time step to world coordinate system
+        Local Sensor coordinate system at the current time step to world coordinate system.
+        This is the same as the sensor_to_world property
         """
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
-    def ego_to_world(self) -> Transformation:
+    def sensor_to_world(self) -> Transformation:
         """
         Transformation from ego to world coordinate system
         """
         return self.pose
 
     @property
-    def world_to_ego(self) -> Transformation:
+    def world_to_sensor(self) -> Transformation:
         """
         Transformation from world to ego coordinate system
         """
         return self.pose.inverse
+
+    @property
+    def ego_to_world(self) -> Transformation:
+        """
+        Transformation from ego to world coordinate system
+        """
+        return self.sensor_to_world @ self.ego_to_sensor
+
+    @property
+    def world_to_ego(self) -> Transformation:
+        """
+        Transformation from world to ego coordinate system
+        """
+        return self.ego_to_world.inverse
 
     @property
     def ego_to_sensor(self) -> Transformation:

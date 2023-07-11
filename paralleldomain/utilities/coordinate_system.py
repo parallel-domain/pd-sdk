@@ -221,5 +221,29 @@ class CoordinateSystem:
         """
         return -1.0 * self.up
 
+    @staticmethod
+    def change_transformation_coordinate_system(
+        transformation: Transformation, transformation_system: str, target_system: str
+    ) -> Transformation:
+        """
+        Changes the coordinate system interpretation of a transformation. Note that this only works as intended,
+        if the transformation doesn't already include a coordinate system change! For example if you have an
+        ego_to_world matrix, going from ego in RFU to world in RFU, you want to know the transformation from ego in FLU
+        to world in FLU, you can call
+        `CoordinateSystem.change_transformation_coordinate_system(ego_to_world, transformation_system="RFU",
+        target_system="FLU")`
+        Args:
+            transformation: the transformation to change the coordinate system of
+            transformation_system: the coordinate system the transformation currently is in
+            target_system: the coordinate system to change to
+
+        Returns:
+        Transformation: A transformation of the same meaning, but with the changed coordinate system interpretation
+        """
+        transformation_to_target = CoordinateSystem(transformation_system) > CoordinateSystem(target_system)
+        target_to_transformation = transformation_to_target.inverse
+        return transformation_to_target @ transformation @ target_to_transformation
+
 
 INTERNAL_COORDINATE_SYSTEM = CoordinateSystem("FLU")
+SIM_COORDINATE_SYSTEM = CoordinateSystem("RFU")

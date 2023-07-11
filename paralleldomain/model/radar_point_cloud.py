@@ -175,9 +175,7 @@ class DecoderRadarPointCloud(RadarPointCloud):
     @property
     def rcs(self) -> Optional[np.ndarray]:
         if self._rcs is None:
-            self._rcs = self._decoder.get_radar_point_cloud_rcs(
-                sensor_name=self.sensor_name, frame_id=self.frame_id
-            )
+            self._rcs = self._decoder.get_radar_point_cloud_rcs(sensor_name=self.sensor_name, frame_id=self.frame_id)
         return self._rcs
 
     @property

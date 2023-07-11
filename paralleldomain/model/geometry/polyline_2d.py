@@ -56,7 +56,7 @@ class Line2DBaseGeometry(Generic[T]):
         except ZeroDivisionError:
             return np.inf
 
-    def to_numpy(self):
+    def to_numpy(self) -> np.ndarray:
         """Returns the start and end coordinates as a numpy array with shape (2 x 2)."""
         return np.vstack([self.start.to_numpy(), self.end.to_numpy()])
 

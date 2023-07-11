@@ -153,26 +153,6 @@ class TestDatasetSensors:
                     items_in_order.append(actual_ref in frame_refs)
         assert not all(items_in_order)
 
-    def test_fast_shuffled_pipeline(self, dataset: Dataset):
-        ref_names = []
-        for sensor_frame, frame, scene in dataset.sensor_frame_pipeline(shuffle=True, fast_shuffle=True):
-            ref_names.append(f"{sensor_frame.sensor_name}-{frame.frame_id}-{scene.name}")
-
-        items_in_order = []
-        assert len(ref_names) == NUM_TEST_SENSORS * NUM_TEST_FRAMES_PER_SCENE * NUM_TEST_SCENES
-
-        for scene_name in ["scene_000000", "scene_000001", "scene_000002", "scene_000003", "scene_000004"]:
-            for frame_id in range(NUM_TEST_FRAMES_PER_SCENE):
-                frame_refs = []
-                # since the sensor name order is dependent on how the dataset is stored on disk
-                # we just check if the frame order is kept
-                for sensor_name in TEST_SET_CAM_NAMES + TEST_SET_LIDAR_NAMES:
-                    frame_refs.append(f"{sensor_name}-{frame_id}-{scene_name}")
-                for i in range(NUM_TEST_SENSORS):
-                    actual_ref = ref_names.pop(0)
-                    items_in_order.append(actual_ref in frame_refs)
-        assert not all(items_in_order)
-
     def test_shuffled_concurrent_pipeline(self, dataset: Dataset):
         ref_names = []
         for sensor_frame, frame, scene in dataset.sensor_frame_pipeline(shuffle=True, concurrent=True):

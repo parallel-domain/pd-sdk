@@ -18,7 +18,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(
@@ -69,7 +69,7 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
         scenario.environment.fog.set_constant_value(l)
 
         # Select an environment
-        scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+        scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
         # Place ourselves in the world
         scenario.add_ego(
@@ -94,8 +94,8 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
             frames_per_scene=1,
             number_of_scenes=1,
             sim_settle_frames=1,
-            sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-            render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+            sim_instance=SimulationInstance(name="<instance name>"),
+            render_instance=RenderInstance(name="<instance name>"),
         ):
             for camera_frame in frame.camera_frames:
                 write_png(

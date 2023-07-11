@@ -4,6 +4,7 @@ import numpy as np
 from pyquaternion import Quaternion
 from transforms3d.euler import euler2mat, mat2euler
 
+
 T = TypeVar("T")
 
 
@@ -319,6 +320,50 @@ class Transformation:
         quat = Quaternion(matrix=mat)
 
         return Transformation(quaternion=quat, translation=translation)
+
+    @staticmethod
+    def look_at(
+        target: Union[np.ndarray, List[float]],
+        coordinate_system: str,
+        position: Optional[Union[np.ndarray, List[float]]] = None,
+    ) -> "Transformation":
+        """
+        Calculates the pose transformation of being located at the given positions and looking at the given target.
+        Args:
+            target: The position to look at
+            coordinate_system: The coordinate system the result, target and position are in
+            position: the position to look from
+
+        Returns:
+            Instance of :obj:`Transformation` looking from position to target
+        """
+        from paralleldomain.utilities.coordinate_system import CoordinateSystem
+
+        if position is None:
+            position = [0, 0, 0]
+        position = np.asarray(position)
+        # Calculate it in flu, convert it to something else later
+        to_flu_transformation = CoordinateSystem.get_base_change_from_to(
+            from_axis_directions=coordinate_system, to_axis_directions="FLU"
+        )
+        front_direction = np.asarray(target) - position
+        front_direction = (to_flu_transformation @ front_direction[np.newaxis, :])[0]
+        front_direction /= np.linalg.norm(front_direction)
+
+        left_direction = np.cross(front_direction, [0, 0, -1])
+        left_direction /= np.linalg.norm(left_direction)
+
+        up_direction = np.cross(front_direction, left_direction)
+        up_direction /= np.linalg.norm(up_direction)
+
+        transformation_matrix = np.identity(4)
+        transformation_matrix[:3, :3] = np.array([front_direction, left_direction, up_direction]).T
+        transformation_matrix[:3, 3] = (to_flu_transformation @ position[np.newaxis, :])[0]
+
+        transformation_in_flu = Transformation.from_transformation_matrix(mat=transformation_matrix)
+        return CoordinateSystem.change_transformation_coordinate_system(
+            transformation=transformation_in_flu, transformation_system="FLU", target_system=coordinate_system
+        )
 
 
 def apply_transform_3d(tf: Transformation, points_3d: np.ndarray) -> np.ndarray:

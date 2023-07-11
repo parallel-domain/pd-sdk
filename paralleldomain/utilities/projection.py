@@ -202,6 +202,13 @@ def project_points_2d_to_3d(
         xy_double_prime_one = np.ones(shape=(len(xy_double_prime), 1))
 
         points_3d = np.hstack([xy_double_prime, xy_double_prime_one]) * depth_for_points_2d
+    elif camera_model == CAMERA_MODEL_OPENCV_FISHEYE:
+        points_2d = cv2.fisheye.undistortPoints(
+            points_2d[:, np.newaxis, :],
+            k_matrix,
+            distortion_parameters,
+        )[:, 0, :]
+        points_3d = np.hstack([points_2d, np.ones(shape=(len(points_2d), 1))]) * depth_for_points_2d
     else:
         raise NotImplementedError(f'Distortion Model "{camera_model}" not implemented.')
 

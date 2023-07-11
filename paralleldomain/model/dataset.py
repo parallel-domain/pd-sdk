@@ -173,7 +173,6 @@ class Dataset:
         frame_ids: Optional[Iterable[FrameId]] = None,
         scene_names: Optional[Iterable[SceneName]] = None,
         shuffle: bool = False,
-        fast_shuffle: bool = False,
         concurrent: bool = False,
         max_queue_size: int = 8,
         max_workers: int = 4,
@@ -189,7 +188,6 @@ class Dataset:
         """
         for sensor_frame, _, _ in self.sensor_frame_pipeline(
             shuffle=shuffle,
-            fast_shuffle=fast_shuffle,
             concurrent=concurrent,
             sensor_names=sensor_names,
             frame_ids=frame_ids,
@@ -406,12 +404,11 @@ class Dataset:
     def sensor_frame_pipeline(
         self,
         shuffle: bool = False,
-        fast_shuffle: bool = False,
         concurrent: bool = False,
         endless_loop: bool = False,
         random_seed: int = 42,
         scene_names: Optional[List[SceneName]] = None,
-        frame_ids: Optional[Iterable[FrameId]] = None,
+        frame_ids: Optional[Union[Dict[SceneName, Iterable[FrameId]], Iterable[FrameId]]] = None,
         sensor_names: Optional[Iterable[SensorName]] = None,
         only_ordered_scenes: bool = False,
         max_queue_size: int = 8,
@@ -428,29 +425,61 @@ class Dataset:
 
         You can use this as quick access to sensor frames to load images, annotations etc. and feed those to
         your models or to encode the sensor frames into another data format.
+
+        Args:
+            shuffle: if = True the data is returned a randomized order
+            concurrent: if = True threads are used to speed up the generator
+            endless_loop: whether to iterate over the scenes of the dataset in an endless loop
+            random_seed: seed used for shuffling the data
+            scene_names: optional iterable of scene_names, if set, only frames from these scenes are yielded
+            frame_ids: optional, dict/iterable containing frame_ids
+                       - if frame_ids is None, yield all frames from each scene
+                       - if frame_ids is a dictionary, mapping scene_names to frame_ids:
+                           + if a scene_name is among the dictionary keys, the corresponding value defines which
+                             frames to yield from that scene
+                           + if a scene_name is not in the dictionary, yield all frames from that scene
+                       - if frame_ids is an iterable, yield the same set of frames from each scene
+            sensor_names: optional iterable of sensor_names, if set, only frames recorded with these sensors are yielded
+            only_ordered_scenes: if = True, only yield frames from ordered scenes
+            max_queue_size: maximum queue size
+            max_workers: max number of worker threads
+            only_cameras: only yield camera frames
+            only_radars: only yield radar frames
+            only_lidars: only yield lidar frames
         """
         runenv = pypeln.sync
         if concurrent:
             if not shuffle:
                 raise ValueError("Order can not be guaranteed in concurrent mode!")
             runenv = pypeln.thread
+        source_state = random.Random(random_seed)
 
-        use_faster_pipeline = not shuffle or (shuffle and fast_shuffle)
         stage = self.scene_pipeline(
             shuffle=shuffle,
             concurrent=concurrent,
-            # endless looping is differently handled in shuffle pipeline
-            endless_loop=endless_loop and use_faster_pipeline,
-            random_seed=random_seed,
+            endless_loop=endless_loop,
+            random_seed=source_state.randint(0, 99999),
             scene_names=scene_names,
             only_ordered_scenes=only_ordered_scenes,
         )
 
         def map_scenes(scene: Union[UnorderedScene, Scene]):
+            def get_relevant_frame_ids(scene_name):
+                # if frame_ids is None, we can yield all frames from the scene
+                if frame_ids is None:
+                    return None
+                # if frame_ids is a dictionary, and it contains the scene_name as a key,
+                # we should only yield the frame id-s defined in the corresponding value
+                elif isinstance(frame_ids, dict):
+                    return frame_ids.get(scene_name, None)
+                # if frame_ids is an iterable, i.e. there is no mapping to specific scenes,
+                # yield the same set of frames for all scenes
+                return frame_ids
+
             yield from scene.sensor_frame_pipeline(
-                frame_ids=frame_ids,
+                frame_ids=get_relevant_frame_ids(scene.name),
                 sensor_names=sensor_names,
-                random_seed=random_seed,
+                random_seed=source_state.randint(0, 99999),
                 max_workers=max_workers,
                 max_queue_size=max_queue_size,
                 shuffle=shuffle,
@@ -460,7 +489,7 @@ class Dataset:
                 only_lidars=only_lidars,
             )
 
-        if use_faster_pipeline:
+        if not shuffle:
             stage = runenv.flat_map(map_scenes, stage, maxsize=max_queue_size, workers=max_workers)
             yield from pypeln.sync.to_iterable(stage, maxsize=max_queue_size)
         else:

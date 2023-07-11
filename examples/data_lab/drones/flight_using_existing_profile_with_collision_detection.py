@@ -17,7 +17,6 @@ from paralleldomain.data_lab.generators.position_request import (
     AbsolutePositionRequest,
     LocationRelativePositionRequest,
     PositionRequest,
-    SpecialAgentTag,
 )
 from paralleldomain.data_lab.generators.random_pedestrian import RandomPedestrianGeneratorParameters
 from paralleldomain.data_lab.generators.spawn_data import AgentSpawnData, VehicleSpawnData
@@ -28,13 +27,13 @@ from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
+from paralleldomain.visualization.model_visualization import show_frame
 
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 class EgoDroneFlightProfileCollisionBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -47,22 +46,22 @@ class EgoDroneFlightProfileCollisionBehaviour(data_lab.CustomSimulationAgentBeha
     ):
         super().__init__()
 
-        self._start_position = start_position
-        self._flight_profile = flight_profile
+        self._start_position: Union[List[float], np.ndarray] = start_position
+        self._flight_profile: List[Tuple[float, Transformation]] = flight_profile
 
         # if user specified other than None, set the lowest point in flight profile to this value above ground.
         # Allows to offset the flight profile to any altitude
-        self._minimum_altitude_override = minimum_altitude_override
-        self._abort_on_collision_distance = abort_on_collision_distance
+        self._minimum_altitude_override: float = minimum_altitude_override
+        self._abort_on_collision_distance: Optional[float] = abort_on_collision_distance
         self._start_time: Optional[float] = None
-        self._flight_profile_normalized = None
+        self._flight_profile_normalized: Optional[List[Tuple[float, Transformation]]] = None
 
         # Flight profiles come in potentially other world coordinates. "Normalize" towards PD map and start position
         self.normalize_flight_profile(
             start_position=start_position, minimum_altitude_override=minimum_altitude_override
         )
 
-        self._initial_pose = self._flight_profile_normalized[0][1]
+        self._initial_pose: Transformation = self._flight_profile_normalized[0][1]
 
     def normalize_flight_profile(
         self, start_position: Union[List[float], np.ndarray], minimum_altitude_override: Optional[float]
@@ -202,7 +201,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-location = data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta")
+location = data_lab.Location(name="SF_6thAndMission_medium")
 scenario.set_location(location)
 
 
@@ -254,7 +253,7 @@ scenario.add_ego(
 scenario.add_agents(
     generator=VehicleGeneratorParameters(
         model="suv_medium_02",
-        vehicle_spawn_data=VehicleSpawnData(agent_spawn_data=AgentSpawnData(tags=[SpecialAgentTag.STAR])),
+        vehicle_spawn_data=VehicleSpawnData(agent_spawn_data=AgentSpawnData(tags=["STAR"])),
         position_request=PositionRequest(
             absolute_position_request=AbsolutePositionRequest(
                 position=Float3(
@@ -273,7 +272,7 @@ scenario.add_agents(
         spawn_probability=0.9,
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                agent_tags=["STAR"],  # anchor around star vehicle
                 max_spawn_radius=100.0,
             )
         ),
@@ -285,7 +284,7 @@ scenario.add_agents(
         spawn_probability=CenterSpreadConfig(center=0.5),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                agent_tags=["STAR"],  # anchor around star vehicle
                 max_spawn_radius=100.0,
             )
         ),
@@ -297,7 +296,7 @@ scenario.add_agents(
         num_of_pedestrians_range=MinMaxConfigInt(min=30, max=50),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
-                agent_tags=[SpecialAgentTag.STAR],  # anchor around star vehicle
+                agent_tags=["STAR"],  # anchor around star vehicle
                 max_spawn_radius=50.0,
             )
         ),
@@ -317,16 +316,12 @@ def preview_scenario(
     for frame, scene in data_lab.create_frame_stream(
         scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
     ):
+        show_frame(frame=frame, annotations_to_show=annotations_to_show)
+
         for camera_frame in frame.camera_frames:
             write_png(
                 obj=camera_frame.image.rgb,
                 path=AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png"),
-            )
-
-            show_sensor_frame(
-                sensor_frame=camera_frame,
-                frames_per_second=show_image_for_n_seconds,
-                annotations_to_show=annotations_to_show,
             )
 
 
@@ -334,6 +329,6 @@ preview_scenario(
     scenario=scenario,
     frames_per_scene=100,
     sim_capture_rate=10,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
 )

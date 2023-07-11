@@ -16,12 +16,12 @@ from paralleldomain.model.annotation import AnnotationType
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
-from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
+from paralleldomain.visualization.model_visualization import show_frame
 
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(
@@ -57,7 +57,7 @@ scenario.environment.fog.set_uniform_distribution(min_value=0.1, max_value=0.3)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -87,17 +87,17 @@ def preview_scenario(
     for frame, scene in data_lab.create_frame_stream(
         scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
     ):
+        show_frame(frame=frame, annotations_to_show=annotations_to_show)
         for camera_frame in frame.camera_frames:
             write_png(
                 camera_frame.image.rgb, AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png")
             )
-            show_sensor_frame(sensor_frame=camera_frame, annotations_to_show=annotations_to_show, frames_per_second=100)
 
 
 preview_scenario(
     scenario=scenario,
     frames_per_scene=500,
     sim_capture_rate=1,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
 )

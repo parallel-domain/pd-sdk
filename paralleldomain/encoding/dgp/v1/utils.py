@@ -18,7 +18,7 @@ def class_map_to_ontology_proto(class_map: ClassMap) -> ontology_pb2.Ontology:
                     b=cval.meta["color"]["b"] if "color" in cval.meta else 0,
                 ),
                 isthing=cval.instanced,
-                supercategory="",
+                supercategory=cval.meta.get("supercategory", ""),
             )
             for cid, cval in class_map.items()
         ]

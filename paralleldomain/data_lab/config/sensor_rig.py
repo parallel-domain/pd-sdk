@@ -3,6 +3,8 @@ from typing import Iterable, List, Optional, Type, TypeVar, Union
 import numpy as np
 import pd.state
 from google.protobuf.message import Message
+
+from paralleldomain.utilities.coordinate_system import CoordinateSystem, SIM_COORDINATE_SYSTEM
 from pd.internal.proto.keystone.generated.python import pd_sensor_pb2 as pd_sensor_pb2_base
 from pd.internal.proto.keystone.generated.wrapper import pd_sensor_pb2
 from pd.internal.proto.keystone.generated.wrapper.utils import register_wrapper
@@ -57,22 +59,40 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
 
     @property
     def sensor_to_ego(self) -> Transformation:
-        return self.get_sensor_to_ego(in_sim_coordinate_system=False)
+        """
+        Returns:
+        Transformation: The transformation from sensor to ego in FLU
+        """
+        return self.get_sensor_to_ego()
 
-    def get_sensor_to_ego(self, in_sim_coordinate_system: bool = False) -> Transformation:
+    def get_sensor_to_ego(self, coordinate_system: str = "FLU") -> Transformation:
+        """
+        Args:
+            coordinate_system: The coordinate system the return transformation is in
+
+        Returns:
+        Transformation: The transformation from sensor to ego in the given coordinate system
+        """
         extrinsic: SensorExtrinsic = self.sensor_extrinsic
-        pose = Transformation.from_euler_angles(
-            angles=[extrinsic.proto.pitch, extrinsic.proto.roll, extrinsic.proto.yaw],
-            order="xyz",
+        # sim coordinates are in  RFU, so roll is around the y-axis, pitch around x-axis
+        pose_in_rfu = Transformation.from_euler_angles(
+            angles=[extrinsic.proto.roll, extrinsic.proto.pitch, extrinsic.proto.yaw],
+            order="yxz",
             translation=[extrinsic.proto.x, extrinsic.proto.y, extrinsic.proto.z],
             degrees=True,
         )
-        # if not in_sim_coordinate_system: TODO: LFU to FLU (left to right hand problem)
-        #     pose = pose @ SIM_TO_INTERNAL_COORDINATE_SYSYEM
-        return pose
+        return CoordinateSystem.change_transformation_coordinate_system(
+            transformation=pose_in_rfu,
+            transformation_system=SIM_COORDINATE_SYSTEM.axis_directions,
+            target_system=coordinate_system,
+        )
 
     @property
     def ego_to_sensor(self) -> Transformation:
+        """
+        Returns:
+        Transformation: The transformation from ego to sensor in FLU
+        """
         return self.sensor_to_ego.inverse
 
     @property
@@ -100,7 +120,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         add_annotation_type(intrinsics=self.intrinsic_config, annotation_type=annotation_type)
 
     def to_step_sensor(self) -> Union[CameraSensor, LiDARSensor]:
-        sim_pose = self.get_sensor_to_ego(in_sim_coordinate_system=True)
+        sim_pose = self.get_sensor_to_ego(coordinate_system=SIM_COORDINATE_SYSTEM.axis_directions)
         sim_pose = pd.state.Pose6D.from_transformation_matrix(matrix=sim_pose.transformation_matrix)
         if self.is_camera:
             return CameraSensor(
@@ -183,13 +203,20 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         follow_rotation: bool = True,
         lock_to_yaw: bool = False,
         annotation_types: List[AnnotationType] = None,
+        pose_coordinate_system: str = SIM_COORDINATE_SYSTEM.axis_directions,
         **kwargs,
     ) -> "SensorConfig":
         if isinstance(pose, np.ndarray):
             pose = Transformation.from_transformation_matrix(pose)
+        pose = CoordinateSystem.change_transformation_coordinate_system(
+            transformation=pose,
+            transformation_system=pose_coordinate_system,
+            target_system=SIM_COORDINATE_SYSTEM.axis_directions,
+        )
 
         x, y, z = pose.translation
-        pitch, roll, yaw = pose.as_euler_angles(order="xyz", degrees=True)
+        # rfu coordinate system => roll is around y-axis, pitch around x-axis
+        roll, pitch, yaw = pose.as_euler_angles(order="yxz", degrees=True)
         extrinsic = SensorExtrinsic(
             x=x, y=y, z=z, roll=roll, pitch=pitch, yaw=yaw, follow_rotation=follow_rotation, lock_to_yaw=lock_to_yaw
         )

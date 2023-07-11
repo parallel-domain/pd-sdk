@@ -90,6 +90,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         scene_data: List[sample_pb2.Datum],
         ontologies: Dict[str, str],
         custom_reference_to_box_bottom: Transformation,
+        point_cache_folder_exists: bool,
         settings: DecoderSettings,
     ):
         super().__init__(dataset_name=dataset_name, scene_name=scene_name, settings=settings)
@@ -100,6 +101,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         self._custom_reference_to_box_bottom = custom_reference_to_box_bottom
         self._data_by_sensor_name = lru_cache(maxsize=1)(self._data_by_sensor_name)
         self._get_sensor_frame_data = lru_cache(maxsize=1)(self._get_sensor_frame_data)
+        self._point_cache_folder_exists = point_cache_folder_exists
 
     def _data_by_sensor_name(self, sensor_name: SensorName) -> Dict[str, sample_pb2.Datum]:
         return {d.key: d for d in self.scene_data if d.id.name == sensor_name}
@@ -640,8 +642,7 @@ class DGPCameraSensorFrameDecoder(DGPSensorFrameDecoder, CameraSensorFrameDecode
         type_to_path = datum.image.annotations
         available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
 
-        point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
-        if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
+        if BoundingBoxes3D in available_annotation_types and self._point_cache_folder_exists:
             available_annotation_types[PointCaches] = "$".join(
                 [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
             )
@@ -735,8 +736,7 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
         type_to_path = datum.point_cloud.annotations
         available_annotation_types = {ANNOTATION_TYPE_MAP[k]: v for k, v in type_to_path.items()}
 
-        point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
-        if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
+        if BoundingBoxes3D in available_annotation_types and self._point_cache_folder_exists:
             available_annotation_types[PointCaches] = "$".join(
                 [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
             )

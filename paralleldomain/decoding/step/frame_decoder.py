@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, TypeVar, Union
 
 import pd.state
@@ -82,7 +82,7 @@ class StepFrameDecoder(FrameDecoder[TDateTime]):
         return dict()
 
     def _decode_datetime(self, frame_id: FrameId) -> TDateTime:
-        return self._date_time
+        return datetime.fromtimestamp(self.state.simulation_time_sec, tz=timezone.utc)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
         return StepSensorFrameDecoder(

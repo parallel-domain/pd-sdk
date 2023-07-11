@@ -1,7 +1,6 @@
 from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail
 
-
 PD_CLASS_DETAILS_JSON = [
     {"name": "Animal", "id": 0, "color": {"r": 220, "g": 20, "b": 180}, "isthing": True, "supercategory": ""},
     {"name": "Bicycle", "id": 1, "color": {"r": 119, "g": 11, "b": 32}, "isthing": True, "supercategory": ""},
@@ -232,4 +231,12 @@ PD_CLASS_DETAILS_JSON = [
     {"name": "Void", "id": 255, "color": {"r": 0, "g": 0, "b": 0}, "isthing": False, "supercategory": ""},
     {"name": "WheeledSlow", "id": 39, "color": {"r": 0, "g": 64, "b": 64}, "isthing": True, "supercategory": ""},
 ]
-PD_CLASS_DETAILS = [ClassDetail(name=c["name"], id=c["id"], instanced=c["isthing"]) for c in PD_CLASS_DETAILS_JSON]
+PD_CLASS_DETAILS = [
+    ClassDetail(
+        name=c["name"],
+        id=c["id"],
+        instanced=c["isthing"],
+        meta=dict(supercategory=c["supercategory"], color=c["color"]),
+    )
+    for c in PD_CLASS_DETAILS_JSON
+]

@@ -13,7 +13,7 @@ def boolean_mask_by_value(mask: np.ndarray, value: int) -> np.ndarray:
     Returns:
         Returns array of shape (M x N x 1).
     """
-    return boolean_mask_by_values(mask=mask, values=[value])
+    return mask == value
 
 
 def boolean_mask_by_values(mask: np.ndarray, values: List[int]) -> np.ndarray:

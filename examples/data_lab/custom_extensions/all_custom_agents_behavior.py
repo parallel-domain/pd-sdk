@@ -15,7 +15,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.1.0-beta")
+setup_datalab("v2.2.0-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -247,7 +247,7 @@ scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0
 
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.1.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 
 scenario.add_ego(
@@ -264,8 +264,8 @@ scenario.add_agents(custom_gen)
 
 data_lab.preview_scenario(
     scenario=scenario,
-    sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-    render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
     frames_per_scene=100,
     sim_capture_rate=10,
 )

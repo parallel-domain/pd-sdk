@@ -31,15 +31,12 @@ To quickly access all sensor frames in a dataset, use the `sensor_frame_pipeline
 ```python
 from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.model.annotation import AnnotationTypes
-from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
+from paralleldomain.visualization.model_visualization import show_frame
 
 pd_dataset = decode_dataset(dataset_path="s3://bucket/with/dgp/dataset", dataset_format="dgp")
 
 for sensor_frame, frame, scene in pd_dataset.sensor_frame_pipeline():
-    show_sensor_frame(
-        sensor_frame=camera_frame,
-        annotations_to_show=[AnnotationTypes.BoundingBoxes2D],
-    )
+    show_frame(frame=frame, annotations_to_show=[AnnotationTypes.BoundingBoxes2D])
 ```
 
 For more examples make sure to check out our [Documentation](#documentation).

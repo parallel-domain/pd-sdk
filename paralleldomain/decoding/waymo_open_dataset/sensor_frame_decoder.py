@@ -340,5 +340,7 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
 
         ones = np.ones((*image_data.shape[:2], 1), dtype=image_data.dtype)
+        if image_data.dtype == np.uint8:
+            ones *= 255
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
