@@ -2,11 +2,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, TypeVar, Union
 
 import pd.state
-from pd.data_lab.session_reference import TemporalSessionReference
-from pd.session import StepSession
-from pd.state import Pose6D
-from pd.state.state import PosedAgent, State
-
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
@@ -16,8 +11,11 @@ from paralleldomain.decoding.sensor_frame_decoder import (
 )
 from paralleldomain.decoding.step.sensor_frame_decoder import StepSensorFrameDecoder
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from pd.data_lab.session_reference import TemporalSessionReference
+from pd.session import StepSession
+from pd.state import Pose6D
+from pd.state.state import PosedAgent, State
 
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
@@ -95,11 +93,6 @@ class StepFrameDecoder(FrameDecoder[TDateTime]):
             is_camera=True,
         )
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[TDateTime]:
-        return CameraSensorFrame[TDateTime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
         return StepSensorFrameDecoder(
             settings=self.settings,
@@ -112,14 +105,4 @@ class StepFrameDecoder(FrameDecoder[TDateTime]):
         )
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
-        pass
-
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[TDateTime]:
-        return LidarSensorFrame[TDateTime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[TDateTime]:
         pass

@@ -6,43 +6,42 @@ from typing import Any, Dict, Generator, List, Optional, Tuple
 from paralleldomain.decoding.common import LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.waymo_open_dataset.protos import camera_segmentation_pb2 as cs_pb2
 from paralleldomain.decoding.waymo_open_dataset.protos import dataset_pb2
-from paralleldomain.decoding.waymo_open_dataset.protos import label_pb2 as label_pb2
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.lazy_load_cache import LazyLoadCache
 
 SEGMENTATION_COLOR_MAP = {
-    cs_pb2.CameraSegmentation.TYPE_UNDEFINED: [0, 0, 0],
-    cs_pb2.CameraSegmentation.TYPE_EGO_VEHICLE: [102, 102, 102],
-    cs_pb2.CameraSegmentation.TYPE_CAR: [0, 0, 142],
-    cs_pb2.CameraSegmentation.TYPE_TRUCK: [0, 0, 70],
-    cs_pb2.CameraSegmentation.TYPE_BUS: [0, 60, 100],
-    cs_pb2.CameraSegmentation.TYPE_OTHER_LARGE_VEHICLE: [61, 133, 198],
-    cs_pb2.CameraSegmentation.TYPE_BICYCLE: [119, 11, 32],
-    cs_pb2.CameraSegmentation.TYPE_MOTORCYCLE: [0, 0, 230],
-    cs_pb2.CameraSegmentation.TYPE_TRAILER: [111, 168, 220],
-    cs_pb2.CameraSegmentation.TYPE_PEDESTRIAN: [220, 20, 60],
-    cs_pb2.CameraSegmentation.TYPE_CYCLIST: [255, 0, 0],
-    cs_pb2.CameraSegmentation.TYPE_MOTORCYCLIST: [180, 0, 0],
-    cs_pb2.CameraSegmentation.TYPE_BIRD: [127, 96, 0],
-    cs_pb2.CameraSegmentation.TYPE_GROUND_ANIMAL: [91, 15, 0],
-    cs_pb2.CameraSegmentation.TYPE_CONSTRUCTION_CONE_POLE: [230, 145, 56],
-    cs_pb2.CameraSegmentation.TYPE_POLE: [153, 153, 153],
-    cs_pb2.CameraSegmentation.TYPE_PEDESTRIAN_OBJECT: [234, 153, 153],
-    cs_pb2.CameraSegmentation.TYPE_SIGN: [246, 178, 107],
-    cs_pb2.CameraSegmentation.TYPE_TRAFFIC_LIGHT: [250, 170, 30],
-    cs_pb2.CameraSegmentation.TYPE_BUILDING: [70, 70, 70],
-    cs_pb2.CameraSegmentation.TYPE_ROAD: [128, 64, 128],
-    cs_pb2.CameraSegmentation.TYPE_LANE_MARKER: [234, 209, 220],
-    cs_pb2.CameraSegmentation.TYPE_ROAD_MARKER: [217, 210, 233],
-    cs_pb2.CameraSegmentation.TYPE_SIDEWALK: [244, 35, 232],
-    cs_pb2.CameraSegmentation.TYPE_VEGETATION: [107, 142, 35],
-    cs_pb2.CameraSegmentation.TYPE_SKY: [70, 130, 180],
-    cs_pb2.CameraSegmentation.TYPE_GROUND: [102, 102, 102],
-    cs_pb2.CameraSegmentation.TYPE_DYNAMIC: [102, 102, 102],
-    cs_pb2.CameraSegmentation.TYPE_STATIC: [102, 102, 102],
+    cs_pb2.CameraSegmentation.TYPE_UNDEFINED: dict(r=0, g=0, b=0),
+    cs_pb2.CameraSegmentation.TYPE_EGO_VEHICLE: dict(r=102, g=102, b=102),
+    cs_pb2.CameraSegmentation.TYPE_CAR: dict(r=0, g=0, b=142),
+    cs_pb2.CameraSegmentation.TYPE_TRUCK: dict(r=0, g=0, b=70),
+    cs_pb2.CameraSegmentation.TYPE_BUS: dict(r=0, g=60, b=100),
+    cs_pb2.CameraSegmentation.TYPE_OTHER_LARGE_VEHICLE: dict(r=61, g=133, b=198),
+    cs_pb2.CameraSegmentation.TYPE_BICYCLE: dict(r=119, g=11, b=32),
+    cs_pb2.CameraSegmentation.TYPE_MOTORCYCLE: dict(r=0, g=0, b=230),
+    cs_pb2.CameraSegmentation.TYPE_TRAILER: dict(r=111, g=168, b=220),
+    cs_pb2.CameraSegmentation.TYPE_PEDESTRIAN: dict(r=220, g=20, b=60),
+    cs_pb2.CameraSegmentation.TYPE_CYCLIST: dict(r=255, g=0, b=0),
+    cs_pb2.CameraSegmentation.TYPE_MOTORCYCLIST: dict(r=180, g=0, b=0),
+    cs_pb2.CameraSegmentation.TYPE_BIRD: dict(r=127, g=96, b=0),
+    cs_pb2.CameraSegmentation.TYPE_GROUND_ANIMAL: dict(r=91, g=15, b=0),
+    cs_pb2.CameraSegmentation.TYPE_CONSTRUCTION_CONE_POLE: dict(r=230, g=145, b=56),
+    cs_pb2.CameraSegmentation.TYPE_POLE: dict(r=153, g=153, b=153),
+    cs_pb2.CameraSegmentation.TYPE_PEDESTRIAN_OBJECT: dict(r=234, g=153, b=153),
+    cs_pb2.CameraSegmentation.TYPE_SIGN: dict(r=246, g=178, b=107),
+    cs_pb2.CameraSegmentation.TYPE_TRAFFIC_LIGHT: dict(r=250, g=170, b=30),
+    cs_pb2.CameraSegmentation.TYPE_BUILDING: dict(r=70, g=70, b=70),
+    cs_pb2.CameraSegmentation.TYPE_ROAD: dict(r=128, g=64, b=128),
+    cs_pb2.CameraSegmentation.TYPE_LANE_MARKER: dict(r=234, g=209, b=220),
+    cs_pb2.CameraSegmentation.TYPE_ROAD_MARKER: dict(r=217, g=210, b=233),
+    cs_pb2.CameraSegmentation.TYPE_SIDEWALK: dict(r=244, g=35, b=232),
+    cs_pb2.CameraSegmentation.TYPE_VEGETATION: dict(r=107, g=142, b=35),
+    cs_pb2.CameraSegmentation.TYPE_SKY: dict(r=70, g=130, b=180),
+    cs_pb2.CameraSegmentation.TYPE_GROUND: dict(r=102, g=102, b=102),
+    cs_pb2.CameraSegmentation.TYPE_DYNAMIC: dict(r=102, g=102, b=102),
+    cs_pb2.CameraSegmentation.TYPE_STATIC: dict(r=102, g=102, b=102),
 }
 
 
@@ -393,8 +392,10 @@ WAYMO_3DBB_CLASSES = [
 ]
 
 
-def decode_class_maps() -> Dict[AnnotationType, ClassMap]:
+def decode_class_maps() -> Dict[AnnotationIdentifier, ClassMap]:
     return {
-        AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=WAYMO_SEMSEG_CLASSES),
-        AnnotationTypes.BoundingBoxes3D: ClassMap(classes=WAYMO_3DBB_CLASSES),
+        AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D): ClassMap(
+            classes=WAYMO_SEMSEG_CLASSES
+        ),
+        AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D): ClassMap(classes=WAYMO_3DBB_CLASSES),
     }

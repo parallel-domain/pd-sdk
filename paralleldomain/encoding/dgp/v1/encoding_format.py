@@ -6,6 +6,7 @@ from paralleldomain.encoding.dgp.v1.format.bounding_box_2d import BoundingBox2DD
 from paralleldomain.encoding.dgp.v1.format.bounding_box_3d import BoundingBox3DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.camera_image import CameraDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.class_map import ClassMapDGPV1Mixin
+from paralleldomain.encoding.dgp.v1.format.common import CUSTOM_FORMAT_KEY
 from paralleldomain.encoding.dgp.v1.format.dataset import DatasetDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.depth import DepthDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.instance_segmentation_2d import InstanceSegmentation2DDGPV1Mixin
@@ -22,7 +23,7 @@ from paralleldomain.encoding.dgp.v1.format.semantic_segmentation_3d import Seman
 from paralleldomain.encoding.dgp.v1.format.surface_normals_2d import SurfaceNormals2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.surface_normals_3d import SurfaceNormals3DDGPV1Mixin
 from paralleldomain.encoding.pipeline_encoder import DataType, EncodingFormat, ScenePipelineItem
-from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -93,22 +94,124 @@ class DGPV1EncodingFormat(
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
         scene_output_path = self.dataset_output_path / pipeline_item.scene_name
 
-        if data_type == AnnotationTypes.BoundingBoxes2D:
-            self.save_boxes_2d_and_write_state(
-                pipeline_item=pipeline_item,
-                data=data,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-                save_binary=self.encode_to_binary,
-            )
-        elif data_type == AnnotationTypes.BoundingBoxes3D:
-            self.save_boxes_3d_and_write_state(
-                pipeline_item=pipeline_item,
-                data=data,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-                save_binary=self.encode_to_binary,
-            )
+        if isinstance(data_type, AnnotationIdentifier):
+            if data_type.annotation_type == AnnotationTypes.BoundingBoxes2D:
+                self.save_boxes_2d_and_write_state(
+                    pipeline_item=pipeline_item,
+                    data=data,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                    save_binary=self.encode_to_binary,
+                )
+            elif data_type.annotation_type == AnnotationTypes.BoundingBoxes3D:
+                self.save_boxes_3d_and_write_state(
+                    pipeline_item=pipeline_item,
+                    data=data,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                    save_binary=self.encode_to_binary,
+                )
+            elif data_type.annotation_type == AnnotationTypes.Depth:
+                self.save_depth_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.InstanceSegmentation2D:
+                self.save_instance_segmentation_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.InstanceSegmentation3D:
+                self.save_instance_segmentation_3d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.OpticalFlow:
+                self.save_optical_flow_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.BackwardOpticalFlow:
+                self.save_backward_optical_flow_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.Points2D:
+                self.save_points_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                    save_binary=self.encode_to_binary,
+                )
+            elif data_type.annotation_type == AnnotationTypes.Polygons2D:
+                self.save_polygons_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                    save_binary=self.encode_to_binary,
+                )
+            elif data_type.annotation_type == AnnotationTypes.Polylines2D:
+                self.save_polyline_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                    save_binary=self.encode_to_binary,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SceneFlow:
+                self.save_scene_flow_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SceneFlow:
+                self.save_backward_scene_flow_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SemanticSegmentation2D:
+                self.save_semantic_segmentation_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SemanticSegmentation3D:
+                self.save_semantic_segmentation_3d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SurfaceNormals2D:
+                self.save_surface_normals_2d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
+            elif data_type.annotation_type == AnnotationTypes.SurfaceNormals3D:
+                self.save_surface_normals_3d_and_write_state(
+                    data=data,
+                    pipeline_item=pipeline_item,
+                    scene_output_path=scene_output_path,
+                    sim_offset=self.sim_offset,
+                )
         elif data_type == Image:
             self.save_image_and_write_state(
                 data=data,
@@ -116,109 +219,9 @@ class DGPV1EncodingFormat(
                 scene_output_path=scene_output_path,
                 sim_offset=self.sim_offset,
             )
-        elif data_type == AnnotationTypes.Depth:
-            self.save_depth_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.InstanceSegmentation2D:
-            self.save_instance_segmentation_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.InstanceSegmentation3D:
-            self.save_instance_segmentation_3d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.OpticalFlow:
-            self.save_optical_flow_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.BackwardOpticalFlow:
-            self.save_backward_optical_flow_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
+
         elif data_type == PointCloud:
             self.save_point_cloud_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.Points2D:
-            self.save_points_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-                save_binary=self.encode_to_binary,
-            )
-        elif data_type == AnnotationTypes.Polygons2D:
-            self.save_polygons_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-                save_binary=self.encode_to_binary,
-            )
-        elif data_type == AnnotationTypes.Polylines2D:
-            self.save_polyline_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-                save_binary=self.encode_to_binary,
-            )
-        elif data_type == AnnotationTypes.SceneFlow:
-            self.save_scene_flow_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.SceneFlow:
-            self.save_backward_scene_flow_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.SemanticSegmentation2D:
-            self.save_semantic_segmentation_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.SemanticSegmentation3D:
-            self.save_semantic_segmentation_3d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.SurfaceNormals2D:
-            self.save_surface_normals_2d_and_write_state(
-                data=data,
-                pipeline_item=pipeline_item,
-                scene_output_path=scene_output_path,
-                sim_offset=self.sim_offset,
-            )
-        elif data_type == AnnotationTypes.SurfaceNormals3D:
-            self.save_surface_normals_3d_and_write_state(
                 data=data,
                 pipeline_item=pipeline_item,
                 scene_output_path=scene_output_path,
@@ -231,6 +234,9 @@ class DGPV1EncodingFormat(
             )
 
     def save_sensor_frame(self, pipeline_item: ScenePipelineItem, data: Any = None):
+        if pipeline_item.camera_frame is not None:
+            pipeline_item.custom_data[CUSTOM_FORMAT_KEY]["image_width"] = pipeline_item.camera_frame.image.width
+            pipeline_item.custom_data[CUSTOM_FORMAT_KEY]["image_height"] = pipeline_item.camera_frame.image.height
         self.aggregate_sensor_frame(pipeline_item=pipeline_item)
 
     def save_scene(self, pipeline_item: ScenePipelineItem, data: Any = None):

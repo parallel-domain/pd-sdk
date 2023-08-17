@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder
@@ -7,6 +7,7 @@ from paralleldomain.decoding.gta5.common import IMAGE_FOLDER_NAME, SEMANTIC_SEGM
 from paralleldomain.decoding.gta5.sensor_frame_decoder import GTACameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.class_mapping import ClassDetail
+from paralleldomain.model.sensor import SensorDataCopyTypes
 from paralleldomain.model.type_aliases import SceneName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -18,6 +19,7 @@ class GTACameraSensorDecoder(DirectoryCameraSensorDecoder):
         scene_name: SceneName,
         dataset_path: AnyPath,
         settings: DecoderSettings,
+        folder_to_data_type: Dict[str, SensorDataCopyTypes],
         class_map: List[ClassDetail],
         metadata_folder: Optional[str],
     ):
@@ -26,8 +28,7 @@ class GTACameraSensorDecoder(DirectoryCameraSensorDecoder):
             scene_name=scene_name,
             dataset_path=dataset_path,
             settings=settings,
-            image_folder=IMAGE_FOLDER_NAME,
-            semantic_segmentation_folder=SEMANTIC_SEGMENTATION_FOLDER_NAME,
+            folder_to_data_type=folder_to_data_type,
             metadata_folder=metadata_folder,
             class_map=class_map,
         )
@@ -39,6 +40,7 @@ class GTACameraSensorDecoder(DirectoryCameraSensorDecoder):
             scene_name=self.scene_name,
             dataset_path=self.dataset_path,
             settings=self.settings,
-            class_map=self._class_map,
+            folder_to_data_type=self.folder_to_data_type,
             metadata_folder=self._metadata_folder,
+            class_map=self._class_map,
         )

@@ -14,11 +14,11 @@ from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
-setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.2.0-beta")
+setup_datalab("v2.4.0-beta")
 
 
 sensor_rig = data_lab.SensorRig(

@@ -2,12 +2,13 @@ import cv2
 import pickle
 import numpy as np
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 from paralleldomain.model.scene import Scene
 from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.annotation import BoundingBoxes2D, SemanticSegmentation2D
 from paralleldomain.model.statistics.base import Statistic
 from paralleldomain.model.statistics.constants import STATISTICS_REGISTRY
+from paralleldomain.utilities.any_path import AnyPath
 
 MAX_IMAGE_EXTENT = 450
 
@@ -28,7 +29,7 @@ def maintain_aspect_ratio(width, height, max_edge_length):
     return int(new_width), int(new_height)
 
 
-@STATISTICS_REGISTRY.register_module()
+@STATISTICS_REGISTRY.register_module(name="class_heatmap")
 class ClassHeatMaps(Statistic):
     def __init__(self, classes_of_interest: List[str] = None) -> None:
         super().__init__()
@@ -58,6 +59,8 @@ class ClassHeatMaps(Statistic):
             class_ids = cv2.resize(src=class_ids, dsize=[width, height], interpolation=cv2.INTER_NEAREST)
 
             for class_id in np.unique(class_ids):
+                if class_id not in class_map.class_ids:
+                    continue
                 class_name = class_map[class_id].name
                 if self._classes_of_interest is not None and class_name not in self._classes_of_interest:
                     continue
@@ -87,12 +90,14 @@ class ClassHeatMaps(Statistic):
         else:
             raise Exception(f"No suitable annotation found to compute {self.__class__.__name__}")
 
-    def _load(self, file_path: str):
-        with open(file_path, "rb") as f:
+    def _load(self, file_path: Union[str, AnyPath]):
+        file_path = AnyPath(file_path)
+        with file_path.open("rb") as f:
             self._heat_maps = pickle.load(f)
 
-    def _save(self, file_path: str):
-        with open(file_path, "wb") as f:
+    def _save(self, file_path: Union[str, AnyPath]):
+        file_path = AnyPath(file_path)
+        with file_path.open("wb") as f:
             pickle.dump(self._heat_maps, f)
 
     def get_classes(self) -> List[str]:

@@ -18,10 +18,7 @@ from paralleldomain.decoding.sensor_decoder import (
 )
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
-    LidarSensorFrameDecoder,
-    RadarSensorFrameDecoder,
 )
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
@@ -72,11 +69,6 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
         super().__init__(**kwargs)
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
-
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -109,11 +101,6 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
             point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
-    ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame[datetime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
-
 
 class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
     def __init__(self, **kwargs):
@@ -132,8 +119,3 @@ class DGPRadarSensorDecoder(DGPSensorDecoder, RadarSensorDecoder[datetime]):
             ontologies=self._ontologies,
             point_cache_folder_exists=self._point_cache_folder_exists,
         )
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, radar_name: SensorName
-    ) -> RadarSensorFrame[datetime]:
-        return RadarSensorFrame[datetime](sensor_name=radar_name, frame_id=frame_id, decoder=decoder)

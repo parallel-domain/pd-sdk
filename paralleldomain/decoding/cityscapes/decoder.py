@@ -1,18 +1,20 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
-from paralleldomain.decoding.cityscapes.common import CITYSCAPE_CLASSES, decode_class_maps, get_scene_path
+from paralleldomain.decoding.cityscapes.common import decode_class_maps, get_scene_path
 from paralleldomain.decoding.cityscapes.frame_decoder import CityscapesFrameDecoder
 from paralleldomain.decoding.cityscapes.sensor_decoder import CityscapesCameraSensorDecoder
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
+from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
+_AVAILABLE_ANNOTATION_TYPES = [AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D]
+_AVAILABLE_ANNOTATION_IDENTIFIERS = [AnnotationIdentifier(annotation_type=t) for t in _AVAILABLE_ANNOTATION_TYPES]
 IMAGE_FOLDER_NAME = "leftImg8bit"
 
 
@@ -52,7 +54,7 @@ class CityscapesDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.SemanticSegmentation2D, AnnotationTypes.InstanceSegmentation2D],
+            available_annotation_identifiers=_AVAILABLE_ANNOTATION_IDENTIFIERS,
             custom_attributes=dict(splits=self.splits),
         )
 
@@ -107,8 +109,11 @@ class CityscapesSceneDecoder(SceneDecoder[None]):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return list()
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return decode_class_maps()
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        return _AVAILABLE_ANNOTATION_IDENTIFIERS
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str

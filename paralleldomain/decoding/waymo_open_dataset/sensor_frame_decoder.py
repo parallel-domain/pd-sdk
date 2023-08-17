@@ -1,16 +1,12 @@
 from datetime import datetime
-from functools import lru_cache
-from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import cv2
-import imagesize
 import numpy as np
 
-from paralleldomain.decoding.common import DecoderSettings
+from paralleldomain.decoding.common import DecoderSettings, create_cache_key
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
-    F,
     LidarSensorFrameDecoder,
     SensorFrameDecoder,
 )
@@ -26,22 +22,25 @@ from paralleldomain.decoding.waymo_open_dataset.frame_utils import (
     parse_range_image_and_camera_projection,
 )
 from paralleldomain.model.annotation import (
-    AnnotationType,
     AnnotationTypes,
     BoundingBox3D,
     BoundingBoxes3D,
     InstanceSegmentation2D,
     SemanticSegmentation2D,
+    AnnotationIdentifier,
 )
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
-from paralleldomain.model.image import Image
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image_bytes, read_json
+from paralleldomain.utilities.fsio import read_image_bytes
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
+
+"""
+Waymo point data is in FLU. Parsing the extrinsic is not implemented right now
+"""
 
 
 class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFileAccessMixin):
@@ -62,13 +61,13 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
         self.split_name = split_name
         self.use_precalculated_maps = use_precalculated_maps
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return decode_class_maps()
 
-    def _decode_available_annotation_types(
+    def _decode_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        available_annotations = {AnnotationTypes.BoundingBoxes3D: f"{frame_id}"}
+    ) -> List[AnnotationIdentifier]:
+        available_annotations = [AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D)]
         if self.use_precalculated_maps and self.split_name == "training":
             has_segmentation = get_cached_pre_calculated_scene_to_has_segmentation(
                 lazy_load_cache=self.lazy_load_cache,
@@ -79,23 +78,24 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
                 split_name=self.split_name,
             )
             if has_segmentation:
-                available_annotations.update(
-                    {
-                        AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
-                        AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
-                    }
+                available_annotations.append(
+                    AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D)
                 )
+                available_annotations.append(
+                    AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D)
+                )
+
         else:
             record = self.get_record_at(frame_id=frame_id)
             if isinstance(self, WaymoOpenDatasetCameraSensorFrameDecoder):
                 cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
                 cam_data = record.images[cam_index]
                 if cam_data.camera_segmentation_label.panoptic_label:
-                    available_annotations.update(
-                        {
-                            AnnotationTypes.SemanticSegmentation2D: f"{frame_id}",
-                            AnnotationTypes.InstanceSegmentation2D: f"{frame_id}",
-                        }
+                    available_annotations.append(
+                        AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+                    )
+                    available_annotations.append(
+                        AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D)
                     )
         return available_annotations
 
@@ -109,20 +109,18 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         return SensorPose.from_transformation_matrix(np.eye(4))
 
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
-        if issubclass(annotation_type, SemanticSegmentation2D):
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        if issubclass(identifier.annotation_type, SemanticSegmentation2D):
             class_ids = self._decode_semantic_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
             return SemanticSegmentation2D(class_ids=class_ids)
-        if issubclass(annotation_type, InstanceSegmentation2D):
+        if issubclass(identifier.annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
             return InstanceSegmentation2D(instance_ids=instance_ids)
-        if issubclass(annotation_type, BoundingBoxes3D):
+        if issubclass(identifier.annotation_type, BoundingBoxes3D):
             boxes = self._decode_bounding_boxes_3d(sensor_name=sensor_name, frame_id=frame_id)
             return BoundingBoxes3D(boxes=boxes)
         else:
-            raise NotImplementedError(f"{annotation_type} is not supported!")
+            raise NotImplementedError(f"{identifier} is not supported!")
 
     def _decode_semantic_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         record = self.get_record_at(frame_id=frame_id)
@@ -189,9 +187,15 @@ class WaymoOpenDatasetSensorFrameDecoder(SensorFrameDecoder[datetime], WaymoFile
             )
         return boxes
 
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         # Record path is the same for all sensors.
         return self.record_path
+
+    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
+        record = self.get_record_at(frame_id=frame_id)
+        return datetime.fromtimestamp(record.timestamp_micros / 1000000)
 
 
 class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime], WaymoOpenDatasetSensorFrameDecoder):
@@ -237,24 +241,35 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         is potentially smeared or refracted, such that the return pulse is elongated in time.
         (Source: https://patrick-llgc.github.io/Learning-Deep-Learning/paper_notes/waymo_dataset.html)
         """
-        record = self.get_record_at(frame_id=frame_id)
-        # Range image to point cloud processing
-        (range_images, _, range_image_top_pose) = parse_range_image_and_camera_projection(
-            record=record, sensor_name=sensor_name
+        _unique_cache_key = create_cache_key(
+            dataset_name="Waymo Open Dataset",
+            scene_name=self.record_path.name,
+            frame_id=frame_id,
+            extra="_decode_point_cloud_data",
+            sensor_name=sensor_name,
         )
 
-        # Point Cloud Conversion and Viz
-        points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
-        points_ri2 = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose, ri_index=1)
-        # 3d points in vehicle frame.
-        points_all = np.concatenate(points, axis=0)
-        points_all_ri2 = np.concatenate(points_ri2, axis=0)
+        def _decode_point_cloud_data() -> Optional[np.ndarray]:
+            record = self.get_record_at(frame_id=frame_id)
+            # Range image to point cloud processing
+            (range_images, _, range_image_top_pose) = parse_range_image_and_camera_projection(
+                record=record, sensor_name=sensor_name
+            )
 
-        include_second_returns = True  # Pull this flag out
-        if include_second_returns:
-            return np.concatenate([points_all, points_all_ri2], axis=0)
-        else:
-            return points_all
+            # Point Cloud Conversion and Viz
+            points = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose)
+            points_ri2 = convert_range_image_to_point_cloud(record, range_images, range_image_top_pose, ri_index=1)
+
+            include_second_returns = True  # Pull this flag out
+            if include_second_returns:
+                return np.concatenate([*points, *points_ri2], axis=0)
+            else:
+                return np.concatenate([*points], axis=0)
+
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: _decode_point_cloud_data(),
+        )
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         data = self._decode_point_cloud_data(sensor_name=sensor_name, frame_id=frame_id)
@@ -280,10 +295,10 @@ class WaymoOpenDatasetLidarSensorFrameDecoder(LidarSensorFrameDecoder[datetime],
         return data[:, 4].reshape(-1, 1)
 
     def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
+        return -1 * np.ones((self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id), 1))
 
     def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
-        return -1 * np.ones(self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id))
+        return -1 * np.ones((self._decode_point_cloud_size(sensor_name=sensor_name, frame_id=frame_id), 1))
 
     def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         return None
@@ -314,6 +329,7 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         self._dataset_path = dataset_path
         self.split_name = split_name
         self.use_precalculated_maps = use_precalculated_maps
+        self._dimensions: Optional[Tuple[int, int, int]] = None
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
         # Camera timestamp is camera shutter time, which will not match exactly the datetime
@@ -328,8 +344,13 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         return SensorIntrinsic()
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
-        img = self.get_image_rgba(sensor_name=sensor_name, frame_id=frame_id)
-        return img.shape[0], img.shape[1], 3
+        if self._dimensions is None:
+            record = self.get_record_at(frame_id=frame_id)
+            cam_index = WAYMO_CAMERA_NAME_TO_INDEX[sensor_name] - 1
+            cam_data = record.images[cam_index]
+            image_data = read_image_bytes(images_bytes=cam_data.image, convert_to_rgb=True)
+            self._dimensions = (image_data.shape[0], image_data.shape[1], 3)
+        return self._dimensions
 
     def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
         record = self.get_record_at(frame_id=frame_id)
@@ -343,4 +364,5 @@ class WaymoOpenDatasetCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime
         if image_data.dtype == np.uint8:
             ones *= 255
         concatenated = np.concatenate([image_data, ones], axis=-1)
+        self._dimensions = (image_data.shape[0], image_data.shape[1], 3)
         return concatenated

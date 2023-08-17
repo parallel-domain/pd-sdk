@@ -1,25 +1,19 @@
 from datetime import datetime
-from typing import Any, Dict, Generator, List, Union
-
-import numpy as np
-from iso8601 import iso8601
-from pyquaternion import Quaternion
+from typing import Any, Dict, List, Union
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
-from paralleldomain.decoding.nuscenes.common import NUSCENES_IMU_TO_INTERNAL_CS, NuScenesDataAccessMixin
+from paralleldomain.decoding.nuscenes.common import NuScenesDataAccessMixin
 from paralleldomain.decoding.nuscenes.sensor_frame_decoder import (
     NuScenesCameraSensorFrameDecoder,
     NuScenesLidarSensorFrameDecoder,
 )
-from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
     RadarSensorFrameDecoder,
 )
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -84,11 +78,6 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
             settings=self.settings,
         )
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[TDateTime]:
-        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
         return NuScenesLidarSensorFrameDecoder(
             dataset_path=self._dataset_path,
@@ -98,19 +87,9 @@ class NuScenesFrameDecoder(FrameDecoder[datetime], NuScenesDataAccessMixin):
             settings=self.settings,
         )
 
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[TDateTime]:
-        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         """Not supported yet"""
         return list()
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
-        raise ValueError("Currently do not support radar data!")
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[TDateTime]:
         raise ValueError("Currently do not support radar data!")

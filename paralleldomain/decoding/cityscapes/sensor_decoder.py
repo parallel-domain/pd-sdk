@@ -1,4 +1,3 @@
-from datetime import datetime
 from functools import lru_cache
 from typing import Set
 
@@ -7,7 +6,6 @@ from paralleldomain.decoding.cityscapes.sensor_frame_decoder import CityscapesCa
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
-from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -26,11 +24,6 @@ class CityscapesCameraSensorDecoder(CameraSensorDecoder[None]):
         file_names = [path.name for path in scene_images_folder.iterdir()]
         frame_ids.update(file_names)
         return frame_ids
-
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[None]:
-        return CameraSensorFrame[None](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
         return CityscapesCameraSensorFrameDecoder(

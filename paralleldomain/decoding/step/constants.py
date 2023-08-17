@@ -131,6 +131,13 @@ PD_CLASS_DETAILS_JSON = [
         "supercategory": "",
     },
     {
+        "name": "Wall",
+        "id": 69,
+        "color": {"r": 12, "g": 150, "b": 110},
+        "isthing": False,
+        "supercategory": "",
+    },
+    {
         "name": "RoadBoundary(CurbSide)",
         "id": 65,
         "color": {"r": 140, "g": 160, "b": 140},

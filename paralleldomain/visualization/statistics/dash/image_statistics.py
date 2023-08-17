@@ -5,20 +5,35 @@ from paralleldomain.visualization.statistics.viewer import ViewComponent, BACKEN
 
 
 @STATISTIC_VIS_REGISTRY.register_module(reference_model=ImageStatistics, is_default=True, backend=BACKEND.DASH)
-class ImageStatisticsView(ViewComponent):
+class PlotlyImageStatisticsView(ViewComponent[ImageStatistics]):
     def _visualize(self):
-        if self._model._bin_edges is None:
+        if self._model._recorder["_bin_edges"] is None:
             return go.Figure(go.Bar(x=[], y=[]))
 
         fig = go.Figure()
         fig.add_trace(
-            go.Bar(x=self._model._bin_edges[:-1], y=self._model._histogram_red, name="Red", marker_color="red")
+            go.Bar(
+                x=self._model._recorder["_bin_edges"][:-1],
+                y=self._model._recorder["_histogram_red"],
+                name="Red",
+                marker_color="red",
+            )
         )
         fig.add_trace(
-            go.Bar(x=self._model._bin_edges[:-1], y=self._model._histogram_green, name="Green", marker_color="green")
+            go.Bar(
+                x=self._model._recorder["_bin_edges"][:-1],
+                y=self._model._recorder["_histogram_green"],
+                name="Green",
+                marker_color="green",
+            )
         )
         fig.add_trace(
-            go.Bar(x=self._model._bin_edges[:-1], y=self._model._histogram_blue, name="Blue", marker_color="blue")
+            go.Bar(
+                x=self._model._recorder["_bin_edges"][:-1],
+                y=self._model._recorder["_histogram_blue"],
+                name="Blue",
+                marker_color="blue",
+            )
         )
 
         # Update the layout of the figure

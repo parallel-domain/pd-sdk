@@ -1,17 +1,15 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
-from iso8601 import iso8601
-
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.nuimages.common import NUIMAGES_CLASSES, NuImagesDataAccessMixin, load_table
+from paralleldomain.decoding.nuimages.common import NuImagesDataAccessMixin
 from paralleldomain.decoding.nuimages.frame_decoder import NuImagesFrameDecoder
 from paralleldomain.decoding.nuimages.sensor_decoder import NuImagesCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -69,10 +67,11 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
                 AnnotationTypes.InstanceSegmentation2D,
                 AnnotationTypes.BoundingBoxes2D,
             ]
+        available_annotation_identifiers = [AnnotationIdentifier(annotation_type=t) for t in available_annotation_types]
 
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=available_annotation_types,
+            available_annotation_identifiers=available_annotation_identifiers,
             custom_attributes=dict(split_name=self.split_name),
         )
 
@@ -131,7 +130,7 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return list()
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
@@ -172,3 +171,17 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[None]:
         raise ValueError("NuImages does not contain radar data!")
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        if self.split_name == "v1.0-test":
+            return []
+        samples = self.nu_sample_data_tokens_to_available_anno_types
+        has_surface = any(has_surface for has_surface, _ in samples.values())
+        has_obj = any(has_obj for _, has_obj in samples.values())
+        anno_identifiers = list()
+        if has_surface:
+            anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D))
+        if has_obj:
+            anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D))
+            anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D))
+        return anno_identifiers

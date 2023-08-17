@@ -1,12 +1,6 @@
 import logging
 import random
 
-from pd.assets import ObjAssets
-from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
-from pd.data_lab.context import setup_datalab
-from pd.data_lab.render_instance import RenderInstance
-from pd.data_lab.sim_instance import SimulationInstance
-
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab.generators.debris import DebrisGeneratorParameters
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
@@ -18,22 +12,18 @@ from paralleldomain.data_lab.generators.position_request import (
 )
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.model.annotation import AnnotationTypes
-from paralleldomain.model.statistics.base import CompositeStatistic
-from paralleldomain.model.statistics.class_distribution import ClassDistribution
-from paralleldomain.model.statistics.heat_map import ClassHeatMaps
-from paralleldomain.model.statistics.image_statistics import ImageStatistics
-from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.visualization.statistics.class_distribution import ClassDistributionView
-from paralleldomain.visualization.statistics.dash_viewer import DashViewer
-from paralleldomain.visualization.statistics.heat_map import ClassHeatMapsView
-from paralleldomain.visualization.statistics.image_statistics import ImageStatisticsView
+from pd.assets import ObjAssets
+from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
+from pd.data_lab.context import setup_datalab
+from pd.data_lab.render_instance import RenderInstance
+from pd.data_lab.sim_instance import SimulationInstance
 
-setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.0.0-beta")
+setup_datalab("v2.4.0-beta")
 
 
 def get_debris_asset_list() -> str:
@@ -72,7 +62,7 @@ scenario.environment.fog.set_uniform_distribution(min_value=0.1, max_value=0.3)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.0.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -109,7 +99,7 @@ scenario.add_agents(
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
                 agent_tags=["EGO"],
-                max_spawn_radius=100.0,
+                max_spawn_radius=20.0,
             )
         ),
     )
@@ -121,63 +111,21 @@ scenario.add_agents(
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
                 agent_tags=["EGO"],
-                max_spawn_radius=100.0,
+                max_spawn_radius=20.0,
             )
         ),
     )
 )
 
-# Create statistic models
-class_counter = ClassDistribution()
-class_heatmaps = ClassHeatMaps()
-image_statistics = ImageStatistics()
-model = CompositeStatistic([class_counter, image_statistics, class_heatmaps])
-
-# Create corresponding views
-class_counter_view = ClassDistributionView(
-    model=class_counter, classes_of_interest=["Pedestrian", "Bicycle", "Car", "Debris", "Road", "TrafficLight"]
-)
-image_statistics_view = ImageStatisticsView(model=image_statistics)
-class_heatmaps_view = ClassHeatMapsView(
-    model=class_heatmaps,
-    classes_of_interest=["Pedestrian", "Bicycle", "Car", "Debris", "Road", "TrafficLight"],
-)
-
-viewer = DashViewer(view_components=[class_counter_view, image_statistics_view, class_heatmaps_view])
-# Alternatively create both statistic model and viewer with default component
-# viewer, model = DashViewer.create_with_default_components(
-#     classes_of_interest=["Pedestrian", "Bicycle", "Car", "Debris", "Road", "TrafficLight"]
-# )
-
-# Launch DashViewer in the background to avoid blocking the main thread
-viewer.launch(in_background=True, port=8051)
 
 data_lab.preview_scenario(
     scenario=scenario,
-    number_of_scenes=1,
-    frames_per_scene=20,
+    number_of_scenes=2,
+    frames_per_scene=5,
     sim_capture_rate=10,
     sim_instance=SimulationInstance(name="<instance name>"),
     render_instance=RenderInstance(name="<instance name>"),
-    statistic=model,
+    statistic="class_distribution, class_heatmap, color_distribution",
+    # statistic="all", # alternatively you can just add all statistics
+    # statistics_save_location="./statistics", # you have the option to save the statistics to a directory
 )
-
-# The Statistic object can also be passed to create_mini_batch_stream and create_mini_batch. Example Usage:
-# data_lab.create_mini_batch(
-#     scenario=scenario,
-#     sim_instance=SimulationInstance(address="ssl://sim.step-api-dev.paralleldomain.com:30XX"),
-#     render_instance=RenderInstance(address="ssl://ig.step-api-dev.paralleldomain.com:30XX"),
-#     frames_per_scene=20,
-#     sim_capture_rate=10,
-#     number_of_scenes=2,
-#     format_kwargs=dict(
-#         dataset_output_path="./debug-mini6/",
-#         encode_to_binary=False,
-#     ),
-#     pipeline_kwargs=dict(copy_all_available_sensors_and_annotations=True),
-#     statistic=model,
-# )
-
-# Need to explicitly save statistics
-AnyPath("./statistics").mkdir(exist_ok=True)
-model.save("./statistics")

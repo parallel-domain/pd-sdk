@@ -83,7 +83,13 @@ def parse_range_image_and_camera_projection(
     return range_images, seg_labels, range_image_top_pose
 
 
-def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index=0):
+def convert_range_image_to_cartesian(
+    frame: dataset_pb2.Frame,
+    range_images: Dict[int, List[dataset_pb2.MatrixFloat]],
+    range_image_top_pose: dataset_pb2.MatrixFloat,
+    ri_index: int = 0,
+    filter_smaller_equal_zero_distance: bool = False,
+):
     """Convert range images from polar coordinates to Cartesian coordinates.
 
     Args:
@@ -143,13 +149,20 @@ def convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, 
 
         # Note: not currently keeping range because it's repetitive with x,y,z., but it is available here
         range_image_cartesian = np.concatenate([range_image_cartesian, range_image_tensor[..., 1:3]], axis=-1)
+        if filter_smaller_equal_zero_distance is True:
+            range_image_cartesian = range_image_cartesian[range_image_tensor[..., 0] > 0]
 
         cartesian_range_images[c.name] = range_image_cartesian
 
     return cartesian_range_images
 
 
-def convert_range_image_to_point_cloud(frame, range_images, range_image_top_pose, ri_index=0):
+def convert_range_image_to_point_cloud(
+    frame: dataset_pb2.Frame,
+    range_images: Dict[int, List[dataset_pb2.MatrixFloat]],
+    range_image_top_pose: dataset_pb2.MatrixFloat,
+    ri_index: int = 0,
+):
     """Convert range images to point cloud.
     Note: camera projection points were removed from this function but were present in Waymo Open Dataset version.
 
@@ -167,16 +180,17 @@ def convert_range_image_to_point_cloud(frame, range_images, range_image_top_pose
     calibrations = sorted(frame.context.laser_calibrations, key=lambda c: c.name)
     points = []
 
-    cartesian_range_images = convert_range_image_to_cartesian(frame, range_images, range_image_top_pose, ri_index)
+    cartesian_range_images = convert_range_image_to_cartesian(
+        frame=frame,
+        range_images=range_images,
+        range_image_top_pose=range_image_top_pose,
+        ri_index=ri_index,
+        filter_smaller_equal_zero_distance=True,
+    )
     for c in calibrations:
-        range_image = range_images[c.name][ri_index]
-        range_image_tensor = np.asarray(range_image.data).reshape(range_image.shape.dims)
-        range_image_mask = range_image_tensor[..., 0] > 0
-
         range_image_cartesian = cartesian_range_images[c.name]
-        points_tensor = range_image_cartesian[range_image_mask]
 
-        points.append(points_tensor)
+        points.append(range_image_cartesian)
 
     return points
 

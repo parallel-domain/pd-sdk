@@ -1,14 +1,13 @@
+import base64
 import json
 import logging
 import random
-from base64 import b64encode
 from dataclasses import dataclass
 from typing import Tuple, Dict, Optional
 
 import cv2
 import numpy as np
 import requests
-
 from paralleldomain import Scene, Dataset
 from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_PD_FISHEYE
 from paralleldomain.data_lab.config.reactor import ReactorObject, ReactorConfig
@@ -16,14 +15,18 @@ from paralleldomain.data_lab.reactor_undistortion import undistort_inpainting_in
 from paralleldomain.decoding.in_memory.frame_decoder import InMemoryFrameDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
-from paralleldomain.model.annotation import InstanceSegmentation2D, SemanticSegmentation2D, AnnotationTypes
+from paralleldomain.model.annotation import (
+    InstanceSegmentation2D,
+    SemanticSegmentation2D,
+    AnnotationTypes,
+    AnnotationIdentifier,
+)
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensorFrame, TDateTime
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
 
-REACTOR_ENDPOINT: str = "http://gradio.internal.paralleldomain.com/run/instance_inpainting_mask"
-REACTOR_FILE: str = "http://gradio.internal.paralleldomain.com/file={file}"
+REACTOR_ENDPOINT: str = "https://reactor.internal.paralleldomain.com/change_shape"
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +110,6 @@ class ReactorFrameStreamGenerator:
             self._current_scene = Scene(
                 decoder=self._current_scene_decoder,
                 name=scene_name,
-                available_annotation_types=reactor_input.paired_scene.available_annotation_types,
             )
 
         paired_frame = reactor_input.paired_frame
@@ -188,7 +190,7 @@ class ReactorFrameStreamGenerator:
                         "Can't run reactor on undistorted image without depth annotations."
                         " Falling back to distorted images."
                     )
-                output_image, output_mask = instance_inpainting(
+                output_image, output_mask = change_shape(
                     input_image=input_image,
                     empty_input_image=empty_image,
                     input_mask=input_mask,
@@ -229,8 +231,10 @@ class ReactorFrameStreamGenerator:
                     decoder.rgba = camera_inpainting_input.empty_image
             else:
                 decoder.rgba = camera_inpainting_input.empty_image
-            decoder.annotations[AnnotationTypes.SemanticSegmentation2D.__name__] = empty_frame_semseg_mask
-            decoder.annotations[AnnotationTypes.InstanceSegmentation2D.__name__] = empty_frame_instance_mask
+            decoder.annotations[AnnotationIdentifier(AnnotationTypes.SemanticSegmentation2D)] = empty_frame_semseg_mask
+            decoder.annotations[
+                AnnotationIdentifier(AnnotationTypes.InstanceSegmentation2D)
+            ] = empty_frame_instance_mask
         camera_sensor_frame = CameraSensorFrame(
             sensor_name=paired_sensor_frame.sensor_name,
             frame_id=paired_sensor_frame.frame_id,
@@ -288,80 +292,41 @@ def merge_instance_masks(instance_mask: np.ndarray, inpainting_output_mask: np.n
     inpainting_output_mask = inpainting_output_mask.astype(instance_mask.dtype)
     # then we paste the inpainted object and assign new instance id
     inpainting_output_mask[inpainting_output_mask > 0] += np.max(instance_mask)
-    output_instance_mask += np.expand_dims(inpainting_output_mask, axis=2)
+    output_instance_mask += inpainting_output_mask
     return output_instance_mask
 
 
 def get_mask_annotations(
     camera_frame: CameraSensorFrame[TDateTime],
 ) -> Tuple[SemanticSegmentation2D, InstanceSegmentation2D]:
-    annotations = dict()
-    for anno_type in camera_frame.available_annotation_types:
-        annotations[anno_type.__name__] = camera_frame.get_annotations(annotation_type=anno_type)
-
-    if "SemanticSegmentation2D" not in annotations.keys():
+    if SemanticSegmentation2D not in camera_frame.available_annotation_types:
         raise ValueError("Instance inpainting requires annotation type SemanticSegmentation2D")
-    if "InstanceSegmentation2D" not in annotations.keys():
+    if InstanceSegmentation2D not in camera_frame.available_annotation_types:
         raise ValueError("Instance inpainting requires annotation type InstanceSegmentation2D")
-    instance_mask = annotations["InstanceSegmentation2D"]
-    semseg_mask = annotations["SemanticSegmentation2D"]
+    instance_mask = camera_frame.get_annotations(annotation_type=InstanceSegmentation2D)
+    semseg_mask = camera_frame.get_annotations(annotation_type=SemanticSegmentation2D)
     return semseg_mask, instance_mask
 
 
-def _rgb_to_png_base64(image: np.ndarray) -> str:
-    return b64encode(cv2.imencode(".png", cv2.cvtColor(src=image, code=cv2.COLOR_RGB2BGR))[1]).decode("ascii")
+def encode_rgba_image_png_base64(image: np.ndarray) -> str:
+    return base64.b64encode(cv2.imencode(".png", image)[1]).decode("ascii")
 
 
-def _rgba_to_png_base64(image: np.ndarray) -> str:
-    return b64encode(cv2.imencode(".png", cv2.cvtColor(src=image, code=cv2.COLOR_RGBA2BGRA))[1]).decode("ascii")
+def decode_rgba_image_png_base64(image_str: str) -> np.ndarray:
+    return cv2.imdecode(np.frombuffer(base64.b64decode(image_str), dtype=np.uint8), flags=cv2.IMREAD_UNCHANGED)
 
 
-def _get_gradio_image(file_path: str) -> np.ndarray:
-    image_response = requests.get(REACTOR_FILE.format(file=file_path))
-    image_bgr = cv2.imdecode(
-        buf=np.fromstring(
-            image_response.content,
-            np.uint8,
-        ),
-        flags=cv2.IMREAD_COLOR,
-    )
-
-    return cv2.cvtColor(src=image_bgr, code=cv2.COLOR_BGR2RGBA)
-
-
-def _get_gradio_mask(file_path: str) -> np.ndarray:
-    image_response = requests.get(REACTOR_FILE.format(file=file_path))
-    image_mask = cv2.imdecode(
-        buf=np.fromstring(
-            image_response.content,
-            np.uint8,
-        ),
-        flags=cv2.IMREAD_UNCHANGED,
-    )
-
-    return image_mask
-
-
-def _check_response_json(data: dict):
+def check_response_json(data: dict):
     valid_response = True
-    if "data" not in data:
+    if "output_image" not in data:
         valid_response = False
-    else:
-        if len(data["data"]) != 1:
-            valid_response = False
-        else:
-            if len(data["data"][0]) != 2:
-                valid_response = False
-            else:
-                if "name" not in data["data"][0][0]:
-                    valid_response = False
-                if "name" not in data["data"][0][1]:
-                    valid_response = False
+    if "output_mask" not in data:
+        valid_response = False
     if valid_response is False:
         raise ValueError("The reactor endpoint did not return valid data.")
 
 
-def instance_inpainting(
+def change_shape(
     prompt: str,
     inference_width: int,
     inference_height: int,
@@ -388,39 +353,38 @@ def instance_inpainting(
         raise ValueError("Input instance mask can not be None.")
     if empty_input_image is None:
         raise ValueError("Empty input image can not be None")
-    response = requests.post(
-        REACTOR_ENDPOINT,
-        json={
-            "data": [
-                "data:image/png;base64,{img_base64}".format(img_base64=_rgba_to_png_base64(input_image)),
-                "data:image/png;base64,{img_base64}".format(img_base64=_rgba_to_png_base64(empty_input_image)),
-                "data:image/png;base64,{img_base64}".format(img_base64=_rgb_to_png_base64(input_mask)),
-                prompt,
-                negative_prompt,
-                inference_width,
-                inference_height,
-                guidance_scale,
-                number_of_inference_steps,
-                noise_scheduler,
-                ddim_eta,
-                seed,
-                use_color_matching,
-                use_camera_noise,
-                clip_score_threshold,
-                f1_score_threshold,
-                context_scale,
-                color_matching_strength,
-                maximum_number_retries,
-            ]
-        },
-    )
+    image_encode = encode_rgba_image_png_base64(image=input_image)
+    empty_image_encode = encode_rgba_image_png_base64(image=empty_input_image)
+    image_mask_encode = encode_rgba_image_png_base64(image=input_mask.squeeze())
+    payload = {
+        "image": image_encode,
+        "empty_image": empty_image_encode,
+        "image_mask": image_mask_encode,
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+        "inference_width": inference_width,
+        "inference_height": inference_height,
+        "guidance_scale": guidance_scale,
+        "num_diffusion_steps": number_of_inference_steps,
+        "scheduler": noise_scheduler,
+        "eta": ddim_eta,
+        "seed": seed,
+        "use_hue_transformer": use_color_matching,
+        "use_camera_noise": use_camera_noise,
+        "clip_score_threshold": clip_score_threshold,
+        "f1_score_threshold": f1_score_threshold,
+        "context_scale": context_scale,
+        "hue_transform_strength": color_matching_strength,
+        "maximum_number_retries": maximum_number_retries,
+    }
 
-    response.raise_for_status()
-    response_json = response.json()
-    _check_response_json(response_json)
-    output_image = _get_gradio_image(file_path=response_json["data"][0][0]["name"])
-    output_mask = _get_gradio_mask(file_path=response_json["data"][0][1]["name"])
-
+    resp = requests.post(REACTOR_ENDPOINT, json=payload)
+    resp.raise_for_status()
+    resp_json = resp.json()
+    check_response_json(resp_json)
+    output_image = decode_rgba_image_png_base64(resp_json["output_image"])
+    output_mask = decode_rgba_image_png_base64(resp_json["output_mask"])
+    output_mask = np.expand_dims(output_mask, 2)
     return output_image, output_mask
 
 

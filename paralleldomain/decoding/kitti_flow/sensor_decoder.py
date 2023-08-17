@@ -1,13 +1,11 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Set
+from typing import Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.kitti_flow.sensor_frame_decoder import KITTIFlowCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
-from paralleldomain.model.class_mapping import ClassDetail
-from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -35,11 +33,6 @@ class KITTIFlowCameraSensorDecoder(CameraSensorDecoder[datetime]):
     def _decode_frame_id_set(self, sensor_name: SensorName) -> Set[FrameId]:
         frame_ids = {self.scene_name + "_10.png", self.scene_name + "_11.png"}
         return frame_ids
-
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return KITTIFlowCameraSensorFrameDecoder(

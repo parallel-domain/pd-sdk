@@ -2,8 +2,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Set, Union
 
 import pd.state
-from pd.data_lab.sim_state import SimState
-
 from paralleldomain.common.constants import ANNOTATION_NAME_TO_CLASS
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import SceneDecoder, TDateTime
@@ -11,7 +9,7 @@ from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
 from paralleldomain.decoding.step.common import get_sensor_rig_annotation_types
 from paralleldomain.decoding.step.constants import PD_CLASS_DETAILS
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationType, AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
@@ -66,9 +64,9 @@ class StepSceneDecoder(SceneDecoder[datetime]):
     def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
         return []
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return {
-            anno_type: ClassMap(classes=PD_CLASS_DETAILS)
+            AnnotationIdentifier(annotation_type=anno_type): ClassMap(classes=PD_CLASS_DETAILS)
             for anno_type in ANNOTATION_NAME_TO_CLASS.values()
             if anno_type in self.available_annotations
         }
@@ -95,3 +93,23 @@ class StepSceneDecoder(SceneDecoder[datetime]):
 
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, TDateTime]:
         return self._frame_id_to_date_time_map
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        annotation_identifiers = list()
+        for sensor in self._sensor_rig:
+            if isinstance(sensor, pd.state.CameraSensor):
+                if sensor.capture_depth:
+                    annotation_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.Depth))
+                if sensor.capture_instances:
+                    annotation_identifiers.append(
+                        AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D)
+                    )
+                if sensor.capture_segmentation:
+                    annotation_identifiers.append(
+                        AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+                    )
+                if sensor.capture_normals:
+                    annotation_identifiers.append(
+                        AnnotationIdentifier(annotation_type=AnnotationTypes.SurfaceNormals2D)
+                    )
+        return annotation_identifiers

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Optional, Tuple, TypeVar, Union, List
 
 import numpy as np
 
-from paralleldomain.decoding.sensor_frame_decoder import F, T
-from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.decoding.sensor_frame_decoder import T
+from paralleldomain.model.annotation import Annotation, AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.sensor import (
     CameraSensorFrame,
@@ -14,8 +14,9 @@ from paralleldomain.model.sensor import (
     SensorExtrinsic,
     SensorIntrinsic,
     SensorPose,
+    SensorDataCopyTypes,
 )
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookup
 
@@ -29,8 +30,8 @@ class InMemorySensorFrameDecoder(Generic[TDateTime]):
     scene_name: SceneName
     extrinsic: SensorExtrinsic
     sensor_pose: SensorPose
-    annotations: Dict[str, Annotation]
-    class_maps: Dict[str, ClassMap]
+    annotations: Dict[AnnotationIdentifier, Annotation]
+    class_maps: Dict[AnnotationIdentifier, ClassMap]
 
     date_time: TDateTime
     metadata: Dict[str, Any]
@@ -41,18 +42,18 @@ class InMemorySensorFrameDecoder(Generic[TDateTime]):
     def get_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorPose":
         return self.sensor_pose
 
-    def get_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
-        return self.annotations[annotation_type.__name__]
+    def get_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        return self.annotations[identifier]
 
-    def get_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def get_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         return None
 
-    def get_available_annotation_types(
+    def get_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        return {type(ann): rep for rep, ann in self.annotations.items()}
+    ) -> List[AnnotationIdentifier]:
+        return list(self.annotations.keys())
 
     def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return self.metadata
@@ -60,8 +61,8 @@ class InMemorySensorFrameDecoder(Generic[TDateTime]):
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         return self.date_time
 
-    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        return {type(self.annotations[k]): v for k, v in self.class_maps.items()}
+    def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
+        return self.class_maps
 
 
 @dataclass
@@ -87,9 +88,9 @@ class InMemoryCameraFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
     def from_camera_frame(camera_frame: CameraSensorFrame[TDateTime]) -> "InMemoryCameraFrameDecoder":
         annotations = dict()
         class_maps = dict()
-        for anno_type in camera_frame.available_annotation_types:
-            annotations[anno_type.__name__] = camera_frame.get_annotations(annotation_type=anno_type)
-            class_maps[anno_type.__name__] = camera_frame.class_maps[anno_type]
+        for anno_identifier in camera_frame.available_annotation_identifiers:
+            annotations[anno_identifier] = camera_frame.get_annotations(annotation_identifier=anno_identifier)
+            class_maps[anno_identifier] = camera_frame.class_maps[anno_identifier]
 
         return InMemoryCameraFrameDecoder(
             dataset_name=camera_frame.dataset_name,
@@ -146,9 +147,9 @@ class InMemoryLidarFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
     def from_lidar_frame(lidar_frame: LidarSensorFrame[TDateTime]) -> "InMemoryLidarFrameDecoder":
         annotations = dict()
         class_maps = dict()
-        for anno_type in lidar_frame.available_annotation_types:
-            annotations[anno_type.__name__] = lidar_frame.get_annotations(annotation_type=anno_type)
-            class_maps[anno_type.__name__] = lidar_frame.class_maps[anno_type]
+        for anno_identifier in lidar_frame.available_annotation_identifiers:
+            annotations[anno_identifier] = lidar_frame.get_annotations(annotation_identifier=anno_identifier)
+            class_maps[anno_identifier] = lidar_frame.class_maps[anno_identifier]
 
         return InMemoryLidarFrameDecoder(
             dataset_name=lidar_frame.dataset_name,
@@ -213,9 +214,9 @@ class InMemoryRadarFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
     def from_radar_frame(radar_frame: RadarSensorFrame[TDateTime]) -> "InMemoryRadarFrameDecoder":
         annotations = dict()
         class_maps = dict()
-        for anno_type in radar_frame.available_annotation_types:
-            annotations[anno_type.__name__] = radar_frame.get_annotations(annotation_type=anno_type)
-            class_maps[anno_type.__name__] = radar_frame.class_maps[anno_type]
+        for anno_identifier in radar_frame.available_annotation_identifiers:
+            annotations[anno_identifier] = radar_frame.get_annotations(annotation_identifier=anno_identifier)
+            class_maps[anno_identifier] = radar_frame.class_maps[anno_identifier]
 
         return InMemoryRadarFrameDecoder(
             dataset_name=radar_frame.dataset_name,

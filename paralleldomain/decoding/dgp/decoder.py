@@ -14,7 +14,7 @@ from paralleldomain.decoding.dgp.common import decode_class_maps
 from paralleldomain.decoding.dgp.frame_decoder import DGPFrameDecoder
 from paralleldomain.decoding.dgp.sensor_decoder import DGPCameraSensorDecoder, DGPLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -96,7 +96,10 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
         dto = self._decode_dataset_dto()
         meta_dict = dto.metadata.to_dict()
         anno_types = [ANNOTATION_TYPE_MAP[str(a)] for a in dto.metadata.available_annotation_types]
-        return DatasetMeta(name=dto.metadata.name, available_annotation_types=anno_types, custom_attributes=meta_dict)
+        anno_identifiers = [AnnotationIdentifier(annotation_type=t) for t in anno_types]
+        return DatasetMeta(
+            name=dto.metadata.name, available_annotation_identifiers=anno_identifiers, custom_attributes=meta_dict
+        )
 
     @staticmethod
     def get_format() -> str:
@@ -161,6 +164,13 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
             settings=self.settings,
         )
 
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        dto = self._decode_dataset_dto()
+        return [
+            AnnotationIdentifier(annotation_type=ANNOTATION_TYPE_MAP[str(a)])
+            for a in dto.metadata.available_annotation_types
+        ]
+
     def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return {sample.id.index: self._scene_sample_to_date_time(sample=sample) for sample in scene_dto.samples}
@@ -197,7 +207,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     ) -> RadarSensorDecoder[TDateTime]:
         raise ValueError("DGP V0 does not support radar data!")
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return decode_class_maps(
             ontologies=scene_dto.ontologies, dataset_path=self._dataset_path, scene_name=scene_name

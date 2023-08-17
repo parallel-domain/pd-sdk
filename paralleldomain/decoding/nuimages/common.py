@@ -6,7 +6,7 @@ import numpy as np
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import create_cache_key
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -338,11 +338,16 @@ class NuImagesDataAccessMixin:
         raise ValueError(f"No ego pose for frame id {frame_id}")
 
     @property
-    def nu_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def nu_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return {
-            # AnnotationTypes.InstanceSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.SemanticSegmentation2D: ClassMap(classes=self.nu_class_infos),
-            AnnotationTypes.BoundingBoxes2D: ClassMap(classes=self.nu_class_infos),
+            # AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D):
+            # ClassMap(classes=self.nu_class_infos),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D): ClassMap(
+                classes=self.nu_class_infos
+            ),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D): ClassMap(
+                classes=self.nu_class_infos
+            ),
         }
 
 

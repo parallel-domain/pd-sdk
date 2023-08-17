@@ -1,5 +1,7 @@
+from __future__ import annotations
+import math
 from datetime import datetime
-from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, TypeVar, Union, overload
 
 import numpy as np
 
@@ -17,7 +19,7 @@ from paralleldomain.model.radar_point_cloud import (
     RangeDopplerMap,
 )
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable, project_points_3d_to_2d
+from paralleldomain.utilities.projection import DistortionLookup, project_points_3d_to_2d
 
 try:
     from typing import Protocol
@@ -30,60 +32,20 @@ from paralleldomain.constants import (
     CAMERA_MODEL_PD_FISHEYE,
     CAMERA_MODEL_PD_ORTHOGRAPHIC,
 )
-from paralleldomain.model.annotation import Annotation, AnnotationType
-from paralleldomain.model.annotation.albedo_2d import Albedo2D
-from paralleldomain.model.annotation.backward_optical_flow import BackwardOpticalFlow
-from paralleldomain.model.annotation.backward_scene_flow import BackwardSceneFlow
-from paralleldomain.model.annotation.bounding_box_2d import BoundingBoxes2D
-from paralleldomain.model.annotation.bounding_box_3d import BoundingBoxes3D
-from paralleldomain.model.annotation.depth import Depth
-from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
-from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D
-from paralleldomain.model.annotation.material_properties_2d import MaterialProperties2D
-from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
-from paralleldomain.model.annotation.optical_flow import OpticalFlow
-from paralleldomain.model.annotation.point_2d import Points2D
-from paralleldomain.model.annotation.point_cache import PointCaches
-from paralleldomain.model.annotation.polygon_2d import Polygons2D
-from paralleldomain.model.annotation.polyline_2d import Polylines2D
-from paralleldomain.model.annotation.scene_flow import SceneFlow
-from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSegmentation2D
-from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
-from paralleldomain.model.annotation.surface_normals_2d import SurfaceNormals2D
-from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
-F = TypeVar("F", Image, PointCloud, Annotation)
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
-SensorDataTypes = Union[
+SensorDataCopyTypes = Union[
     Type[Image],
     Type[PointCloud],
-    Type[BoundingBoxes2D],
-    Type[BoundingBoxes3D],
-    Type[SemanticSegmentation2D],
-    Type[InstanceSegmentation2D],
-    Type[SemanticSegmentation3D],
-    Type[InstanceSegmentation3D],
-    Type[OpticalFlow],
-    Type[BackwardOpticalFlow],
-    Type[Depth],
-    Type[SurfaceNormals3D],
-    Type[SurfaceNormals2D],
-    Type[SceneFlow],
-    Type[BackwardSceneFlow],
-    Type[MaterialProperties2D],
-    Type[MaterialProperties3D],
-    Type[Albedo2D],
-    Type[Points2D],
-    Type[Polygons2D],
-    Type[Polylines2D],
-    Type[PointCaches],
+    AnnotationIdentifier,
 ]
 
 
-class FilePathedDataType:
+class FilePathedDataType(AnnotationTypes):
     """Allows to get type-safe access to data types that may have a file linked to them,
     e.g., annotation data, images and point clouds.
 
@@ -126,26 +88,6 @@ class FilePathedDataType:
 
     Image: Type[Image] = Image  # noqa: F811
     PointCloud: Type[PointCloud] = PointCloud  # noqa: F811
-    BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D  # noqa: F811
-    BoundingBoxes3D: Type[BoundingBoxes3D] = BoundingBoxes3D  # noqa: F811
-    SemanticSegmentation2D: Type[SemanticSegmentation2D] = SemanticSegmentation2D  # noqa: F811
-    InstanceSegmentation2D: Type[InstanceSegmentation2D] = InstanceSegmentation2D  # noqa: F811
-    SemanticSegmentation3D: Type[SemanticSegmentation3D] = SemanticSegmentation3D  # noqa: F811
-    InstanceSegmentation3D: Type[InstanceSegmentation3D] = InstanceSegmentation3D  # noqa: F811
-    OpticalFlow: Type[OpticalFlow] = OpticalFlow  # noqa: F811
-    BackwardOpticalFlow: Type[BackwardOpticalFlow] = BackwardOpticalFlow  # noqa: F811
-    Depth: Type[Depth] = Depth  # noqa: F811
-    SurfaceNormals3D: Type[SurfaceNormals3D] = SurfaceNormals3D  # noqa: F811
-    SurfaceNormals2D: Type[SurfaceNormals2D] = SurfaceNormals2D  # noqa: F811
-    SceneFlow: Type[SceneFlow] = SceneFlow  # noqa: F811
-    BackwardSceneFlow: Type[BackwardSceneFlow] = BackwardSceneFlow  # noqa: F811
-    MaterialProperties2D: Type[MaterialProperties2D] = MaterialProperties2D  # noqa: F811
-    MaterialProperties3D: Type[MaterialProperties3D] = MaterialProperties3D  # noqa: F811
-    Albedo2D: Type[Albedo2D] = Albedo2D  # noqa: F811
-    Points2D: Type[Points2D] = Points2D  # noqa: F811
-    Polygons2D: Type[Polygons2D] = Polygons2D  # noqa: F811
-    Polylines2D: Type[Polylines2D] = Polylines2D  # noqa: F811
-    PointCaches: Type[PointCaches] = PointCaches  # noqa: F811
 
 
 class CameraModel:
@@ -193,16 +135,21 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
         pass
 
     def get_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
+        self,
+        sensor_name: SensorName,
+        frame_id: FrameId,
+        identifier: AnnotationIdentifier[T],
     ) -> List[T]:
         pass
 
-    def get_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def get_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         pass
 
-    def get_available_annotation_types(
+    def get_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+    ) -> List[AnnotationIdentifier]:
         pass
 
     def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
@@ -211,7 +158,7 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
         pass
 
-    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         pass
 
 
@@ -237,7 +184,8 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def extrinsic(self) -> "SensorExtrinsic":
         """
-        Local Sensor coordinate system to vehicle coordinate system
+        Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. Vehicle coordinate system is in FLU.
         """
         return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
@@ -245,21 +193,24 @@ class SensorFrame(Generic[TDateTime]):
     def pose(self) -> "SensorPose":
         """
         Local Sensor coordinate system at the current time step to world coordinate system.
-        This is the same as the sensor_to_world property
+        This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. World coordinate system is Z up.
         """
         return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
     @property
     def sensor_to_world(self) -> Transformation:
         """
-        Transformation from ego to world coordinate system
+        Transformation from ego to world coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. World coordinate system is Z up.
         """
         return self.pose
 
     @property
     def world_to_sensor(self) -> Transformation:
         """
-        Transformation from world to ego coordinate system
+        Transformation from world to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. World coordinate system is Z up.
         """
         return self.pose.inverse
 
@@ -280,14 +231,16 @@ class SensorFrame(Generic[TDateTime]):
     @property
     def ego_to_sensor(self) -> Transformation:
         """
-        Transformation from ego to sensor coordinate system
+        Transformation from ego to sensor coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. Vehicle coordinate system is in FLU.
         """
         return self.extrinsic.inverse
 
     @property
     def sensor_to_ego(self) -> Transformation:
         """
-        Transformation from sensor to ego coordinate system
+        Transformation from sensor to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. Vehicle coordinate system is in FLU.
         """
         return self.extrinsic
 
@@ -301,31 +254,80 @@ class SensorFrame(Generic[TDateTime]):
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
-        return list(self._annotation_type_identifiers.keys())
+        return list({ai.annotation_type for ai in self.available_annotation_identifiers})
 
     @property
-    def class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        return self._decoder.get_available_annotation_identifiers(sensor_name=self.sensor_name, frame_id=self.frame_id)
+
+    def get_annotation_identifiers_of_type(self, annotation_type: Type[T]) -> List[AnnotationIdentifier[T]]:
+        return [
+            identifier
+            for identifier in self.available_annotation_identifiers
+            if issubclass(identifier.annotation_type, annotation_type)
+        ]
+
+    @property
+    def class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self._decoder.get_class_maps()
+
+    @overload
+    def get_class_map(self, annotation_type: Type[T], name: str = None) -> ClassMap:
+        pass
+
+    @overload
+    def get_class_map(self, annotation_identifier: AnnotationIdentifier[T]) -> ClassMap:
+        pass
+
+    def get_class_map(
+        self, annotation_type: Type[T] = None, annotation_identifier: AnnotationIdentifier[T] = None, name: str = None
+    ) -> ClassMap:
+        annotation_identifier = AnnotationIdentifier.resolve_annotation_identifier(
+            available_annotation_identifiers=self.available_annotation_identifiers,
+            annotation_type=annotation_type,
+            annotation_identifier=annotation_identifier,
+            name=name,
+        )
+        return self.class_maps[annotation_identifier]
 
     @property
     def metadata(self) -> Dict[str, Any]:
         return self._decoder.get_metadata(sensor_name=self.sensor_name, frame_id=self.frame_id)
 
-    @property
-    def _annotation_type_identifiers(self) -> Dict[AnnotationType, AnnotationIdentifier]:
-        return self._decoder.get_available_annotation_types(sensor_name=self.sensor_name, frame_id=self.frame_id)
+    def get_annotation_identifiers(
+        self, names: Optional[List[str]] = None, annotation_types: Optional[List[AnnotationType]] = None
+    ) -> List[AnnotationIdentifier]:
+        return [
+            ai
+            for ai in self.available_annotation_identifiers
+            if (names is None or ai.name in names)
+            and (annotation_types is None or ai.annotation_type in annotation_types)
+        ]
 
-    def get_annotations(self, annotation_type: Type[T]) -> T:
-        if annotation_type not in self._annotation_type_identifiers:
-            raise ValueError(f"The annotation type {annotation_type} is not available in this sensor frame!")
+    @overload
+    def get_annotations(self, annotation_identifier: AnnotationIdentifier[T]) -> T:
+        ...
+
+    @overload
+    def get_annotations(self, annotation_type: Type[T], name: str = None) -> T:
+        ...
+
+    def get_annotations(
+        self, annotation_type: Type[T] = None, annotation_identifier: AnnotationIdentifier[T] = None, name: str = None
+    ) -> T:
+        annotation_identifier = AnnotationIdentifier.resolve_annotation_identifier(
+            available_annotation_identifiers=self.available_annotation_identifiers,
+            annotation_type=annotation_type,
+            annotation_identifier=annotation_identifier,
+            name=name,
+        )
         return self._decoder.get_annotations(
             sensor_name=self.sensor_name,
             frame_id=self.frame_id,
-            identifier=self._annotation_type_identifiers[annotation_type],
-            annotation_type=annotation_type,
+            identifier=annotation_identifier,
         )
 
-    def get_file_path(self, data_type: Type[F]) -> Optional[AnyPath]:
+    def get_file_path(self, data_type: SensorDataCopyTypes) -> Optional[AnyPath]:
         return self._decoder.get_file_path(
             sensor_name=self.sensor_name,
             frame_id=self.frame_id,
@@ -601,3 +603,18 @@ class SensorIntrinsic:
             return projected.reshape(ori_shape)
         else:
             raise ValueError(f"Invalid value {other}! Has to be a Transformation or 4xn numpy array!")
+
+    @staticmethod
+    def from_field_of_view(field_of_view_degrees: float, width: int, height: int) -> SensorIntrinsic:
+        # TODO: This is the code from the step decoder. It assumes that the fov is horizontal fov if width > height and
+        # vertical fov if height > width?
+        fx = width / (2 * math.tan(math.radians(field_of_view_degrees) / 2))
+        fy = height / (2 * math.tan(math.radians(field_of_view_degrees) / 2))
+        return SensorIntrinsic(
+            cx=width / 2,
+            cy=height / 2,
+            fx=max(fx, fy),
+            fy=max(fx, fy),
+            fov=field_of_view_degrees,
+            camera_model=CameraModel.OPENCV_PINHOLE,
+        )

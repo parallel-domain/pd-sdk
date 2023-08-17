@@ -29,6 +29,12 @@ known_decoders: List[Type[DatasetDecoder]] = [
     NuScenesDatasetDecoder,
     WaymoOpenDatasetDecoder,
 ]
+try:
+    from paralleldomain.decoding.data_stream.decoder import DataStreamDatasetDecoder
+
+    known_decoders.append(DataStreamDatasetDecoder)
+except ImportError:
+    pass
 
 
 def register_decoder(decoder_type: Type[DatasetDecoder]):

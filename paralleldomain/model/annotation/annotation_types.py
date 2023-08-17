@@ -5,7 +5,6 @@ from paralleldomain.model.annotation.backward_optical_flow import BackwardOptica
 from paralleldomain.model.annotation.backward_scene_flow import BackwardSceneFlow
 from paralleldomain.model.annotation.bounding_box_2d import BoundingBoxes2D
 from paralleldomain.model.annotation.bounding_box_3d import BoundingBoxes3D
-from paralleldomain.model.annotation.common import Annotation
 from paralleldomain.model.annotation.depth import Depth
 from paralleldomain.model.annotation.instance_segmentation_2d import InstanceSegmentation2D
 from paralleldomain.model.annotation.instance_segmentation_3d import InstanceSegmentation3D
@@ -24,8 +23,6 @@ from paralleldomain.model.annotation.semantic_segmentation_2d import SemanticSeg
 from paralleldomain.model.annotation.semantic_segmentation_3d import SemanticSegmentation3D
 from paralleldomain.model.annotation.surface_normals_2d import SurfaceNormals2D
 from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
-
-AnnotationType = Type[Annotation]
 
 
 class AnnotationTypes:

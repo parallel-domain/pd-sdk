@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
 import imagesize
 import numpy as np
@@ -15,12 +15,12 @@ from paralleldomain.decoding.flying_things.common import (
     get_scene_flow_folder,
     get_scene_folder,
 )
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes, BackwardOpticalFlow, OpticalFlow
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes, BackwardOpticalFlow, OpticalFlow
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_flo, read_image
 
@@ -93,17 +93,16 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return dict()
 
-    def _decode_available_annotation_types(
+    def _decode_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        optical_flow_file_name = f"{sensor_name}/{frame_id}"
-
-        return {
-            AnnotationTypes.OpticalFlow: optical_flow_file_name,
-        }
+    ) -> List[AnnotationIdentifier]:
+        return [
+            AnnotationIdentifier(annotation_type=AnnotationTypes.OpticalFlow),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.BackwardOpticalFlow),
+        ]
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return dict()
@@ -117,33 +116,28 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
     def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
         return SensorPose.from_transformation_matrix(np.eye(4))
 
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
-        if issubclass(annotation_type, OpticalFlow):
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        if identifier.annotation_type is OpticalFlow:
             vectors = self._decode_optical_flow(sensor_name=sensor_name, frame_id=frame_id, forward=True)
             return OpticalFlow(vectors=vectors)
-        if issubclass(annotation_type, BackwardOpticalFlow):
+        if identifier.annotation_type is BackwardOpticalFlow:
             vectors = self._decode_optical_flow(sensor_name=sensor_name, frame_id=frame_id, forward=False)
             return BackwardOpticalFlow(vectors=vectors)
         else:
-            raise NotImplementedError(f"{annotation_type} is not supported!")
+            raise NotImplementedError(f"{identifier.annotation_type} is not supported!")
 
     def _decode_optical_flow(self, sensor_name: SensorName, frame_id: FrameId, forward: bool) -> np.ndarray:
         flow_file_path = self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=forward)
         return read_flow(file_path=flow_file_path)
 
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
-        if issubclass(data_type, OpticalFlow):
-            annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
-            if data_type in annotation_identifiers:
-                annotation_path = (
-                    get_scene_flow_folder(
-                        dataset_path=self._dataset_path, scene_name=self.scene_name, split_name=self._split_name
-                    )
-                    / annotation_identifiers[data_type]
-                )
-                return annotation_path
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
+        if issubclass(data_type, AnnotationIdentifier):
+            if data_type.annotation_type is OpticalFlow:
+                return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=True)
+            if data_type.annotation_type is BackwardOpticalFlow:
+                return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=False)
         elif issubclass(data_type, Image):
             img_path = self._get_image_file_path(sensor_name=sensor_name, frame_id=frame_id)
             return img_path

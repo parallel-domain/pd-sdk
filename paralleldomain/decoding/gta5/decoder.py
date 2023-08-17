@@ -4,56 +4,63 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import SceneDecoder
 from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder, DirectorySceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.gta5.common import GTA_CLASSES, IMAGE_FOLDER_NAME, SEMANTIC_SEGMENTATION_FOLDER_NAME
+from paralleldomain.decoding.gta5.common import GTA_CLASSES
 from paralleldomain.decoding.gta5.frame_decoder import GTAFrameDecoder
 from paralleldomain.decoding.gta5.sensor_decoder import GTACameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
-from paralleldomain.model.class_mapping import ClassDetail
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationType, AnnotationIdentifier
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.image import Image
+from paralleldomain.model.sensor import SensorDataCopyTypes
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+
+FOLDER_TO_DATA_TYPE = {
+    "images": Image,
+    "labels": AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
+}
 
 
 class GTADatasetDecoder(DirectoryDatasetDecoder):
     def __init__(
         self,
         dataset_path: Union[str, AnyPath],
-        settings: Optional[DecoderSettings] = None,
-        camera_name: Optional[str] = "default",
-        image_folder: Optional[str] = None,
-        semantic_segmentation_folder: Optional[str] = None,
-        metadata_folder: Optional[str] = None,
         class_map: Optional[List[ClassDetail]] = None,
+        folder_to_data_type: Optional[Dict[str, SensorDataCopyTypes]] = None,
+        settings: Optional[DecoderSettings] = None,
+        metadata_folder: Optional[str] = None,
+        sensor_name: Optional[str] = "default",
         **kwargs,
     ):
-        if image_folder is None:
-            image_folder = IMAGE_FOLDER_NAME
-        if semantic_segmentation_folder is None:
-            semantic_segmentation_folder = SEMANTIC_SEGMENTATION_FOLDER_NAME
         if class_map is None:
             class_map = GTA_CLASSES
+        class_map = GTA_CLASSES if class_map is None else class_map
+        folder_to_data_type = FOLDER_TO_DATA_TYPE if folder_to_data_type is None else folder_to_data_type
 
         super().__init__(
             dataset_path=dataset_path,
-            settings=settings,
             class_map=class_map,
-            image_folder=image_folder,
-            semantic_segmentation_folder=semantic_segmentation_folder,
+            settings=settings,
+            folder_to_data_type=folder_to_data_type,
             metadata_folder=metadata_folder,
-            camera_name=camera_name,
+            sensor_name=sensor_name,
             **kwargs,
         )
         self.dataset_name = "GTA5"
+
+    def _decode_unordered_scene_names(self) -> List[SceneName]:
+        # todo: change?
+        return ["default_scene"]
 
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
         return GTASceneDecoder(
             dataset_path=self._dataset_path,
             dataset_name=self.dataset_name,
-            settings=self.settings,
-            camera_name=self.camera_name,
             class_map=self.class_map,
+            settings=self.settings,
+            folder_to_data_type=self.folder_to_data_type,
             metadata_folder=self.metadata_folder,
-            image_folder=self.image_folder,
-            semantic_segmentation_folder=self.semantic_segmentation_folder,
+            sensor_name=self.sensor_name,
         )
 
     @staticmethod
@@ -66,22 +73,20 @@ class GTASceneDecoder(DirectorySceneDecoder):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
-        settings: DecoderSettings,
-        camera_name: str,
         class_map: List[ClassDetail],
+        settings: DecoderSettings,
+        folder_to_data_type: Dict[str, SensorDataCopyTypes],
         metadata_folder: Optional[str],
-        image_folder: str,
-        semantic_segmentation_folder: str,
+        sensor_name: Optional[str] = "default",
     ):
         super().__init__(
             dataset_path=dataset_path,
             dataset_name=dataset_name,
-            settings=settings,
             class_map=class_map,
-            image_folder=image_folder,
-            semantic_segmentation_folder=semantic_segmentation_folder,
+            settings=settings,
+            folder_to_data_type=folder_to_data_type,
             metadata_folder=metadata_folder,
-            camera_name=camera_name,
+            sensor_name=sensor_name,
         )
 
     def _create_camera_sensor_decoder(
@@ -89,11 +94,12 @@ class GTASceneDecoder(DirectorySceneDecoder):
     ) -> CameraSensorDecoder[None]:
         return GTACameraSensorDecoder(
             dataset_name=self.dataset_name,
-            dataset_path=self._dataset_path,
             scene_name=scene_name,
+            dataset_path=self._dataset_path,
             settings=self.settings,
-            class_map=self._class_map,
+            folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
+            class_map=self._class_map,
         )
 
     def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder[None]:
@@ -102,7 +108,8 @@ class GTASceneDecoder(DirectorySceneDecoder):
             scene_name=scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
-            camera_name=self._camera_name,
-            class_map=self._class_map,
+            folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
+            sensor_name=self._sensor_name,
+            class_map=self._class_map,
         )

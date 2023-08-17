@@ -1,13 +1,12 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Set
+from typing import List, Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.flying_things.common import decode_frame_id_set
 from paralleldomain.decoding.flying_things.sensor_frame_decoder import FlyingThingsCameraSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
-from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -41,11 +40,6 @@ class FlyingThingsCameraSensorDecoder(CameraSensorDecoder[datetime]):
             dataset_path=self._dataset_path,
             sensor_name=sensor_name,
         )
-
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return FlyingThingsCameraSensorFrameDecoder(

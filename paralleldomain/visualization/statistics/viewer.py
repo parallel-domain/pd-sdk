@@ -1,6 +1,8 @@
-from typing import List, Tuple, Type
+from typing import List, Tuple, Type, TypeVar, Generic
 from enum import Enum
 from abc import ABC, abstractmethod
+import logging
+
 
 import webbrowser
 
@@ -11,15 +13,18 @@ from paralleldomain.utilities.module_registry import ModuleRegistry
 
 STATISTIC_VIS_REGISTRY = ModuleRegistry("reference_model", "is_default", "backend")
 
+S = TypeVar("S", bound=Statistic)
 
-class BACKEND(str, Enum):
+
+class BACKEND(Enum):
     DASH = "dash"
     JUPYTER_DASH = "jupyter_dash"
+    RERUN = "rerun"
 
 
-class ViewComponent(Observer):
-    def __init__(self, model: Statistic):
-        self._model = model
+class ViewComponent(Observer, Generic[S]):
+    def __init__(self, model: S):
+        self._model: S = model
         self._model.add_subscriber(self)
         self._vis_need_update: bool = True
 
@@ -64,17 +69,14 @@ class StatisticViewer(ABC):
         pass
 
     @staticmethod
-    def get_default_view_component(statistic: Statistic, backend: BACKEND) -> ViewComponent:
+    def get_default_view_component(statistic: Statistic, backend: BACKEND) -> Type[ViewComponent]:
         for _, entry in STATISTIC_VIS_REGISTRY.items():
             if (
-                statistic == entry.tags.get("reference_model", None)
+                isinstance(statistic, entry.tags.get("reference_model", None))
                 and entry.tags.get("is_default", False)
                 and entry.tags.get("backend", None) == backend
             ):
                 return entry.module_class
-        raise ValueError(
-            f"Could not find suitable view component for {statistic.__class__.__name__} with backend {backend}"
-        )
 
     @staticmethod
     def get_supported_statistics(backend: BACKEND) -> List[Type[Statistic]]:
@@ -85,6 +87,28 @@ class StatisticViewer(ABC):
         return supported_statistics
 
     @classmethod
+    def create_view_components(cls, models: List[Statistic], **kwargs):
+        view_components = []
+
+        for sub_model in models:
+            view_class = cls.get_default_view_component(statistic=sub_model, backend=cls.backend())
+
+            if view_class is None:
+                logging.warning(
+                    f"Could not find suitable view component for {sub_model.__class__.__name__} "
+                    f"with backend {cls.backend()}."
+                )
+                continue
+
+            applicable_kwargs = {
+                key: value for key, value in kwargs.items() if key in view_class.__init__.__code__.co_varnames
+            }
+
+            view_components.append(view_class(model=sub_model, **applicable_kwargs))
+
+        return view_components
+
+    @classmethod
     def create_with_default_components(cls, **kwargs) -> Tuple["StatisticViewer", CompositeStatistic]:
         sub_models = []
         for statistic_class in cls.get_supported_statistics(backend=cls.backend()):
@@ -93,13 +117,7 @@ class StatisticViewer(ABC):
             }
             sub_models.append(statistic_class(**applicable_kwargs))
 
-        view_components = []
-        for sub_model in sub_models:
-            view_class = cls.get_default_view_component(statistic=sub_model.__class__, backend=cls.backend())
-            applicable_kwargs = {
-                key: value for key, value in kwargs.items() if key in view_class.__init__.__code__.co_varnames
-            }
-            view_components.append(view_class(model=sub_model, **applicable_kwargs))
+        view_components = cls.create_view_components(models=sub_models, **kwargs)
 
         viewer = cls(view_components=view_components)
         return viewer, CompositeStatistic(sub_models=sub_models)
@@ -111,9 +129,20 @@ class StatisticViewer(ABC):
         view_components = []
         model = CompositeStatistic.from_path(path=path, watch_changes=watch_changes)
 
-        for sub_model in model._sub_models:
-            sub_class = sub_model.__class__
-            view_class = cls.get_default_view_component(statistic=sub_class, backend=BACKEND.DASH)
-            view_components.append(view_class(sub_model))
+        view_components = cls.create_view_components(model._sub_models)
 
         return cls(view_components=view_components), model
+
+    @staticmethod
+    def resolve_default_viewers(statistic: Statistic, backend: BACKEND) -> List["StatisticViewer"]:
+        visualizers = list()
+        if isinstance(statistic, CompositeStatistic):
+            for stat in statistic.child_statistics:
+                viewer = StatisticViewer.get_default_view_component(statistic=stat, backend=backend)(model=stat)
+                visualizers.append(viewer)
+        elif isinstance(statistic, Statistic):
+            viewer = StatisticViewer.get_default_view_component(statistic=statistic, backend=backend)(model=statistic)
+            visualizers.append(viewer)
+        else:
+            raise ValueError(f"Unsupported type: {type(statistic)}!")
+        return visualizers

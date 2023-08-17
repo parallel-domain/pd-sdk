@@ -1,9 +1,7 @@
-import base64
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, ByteString, Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
-import cv2
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings
@@ -12,21 +10,29 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     CameraSensorFrameDecoder,
     LidarSensorFrameDecoder,
     SensorFrameDecoder,
-    TDateTime,
 )
-from paralleldomain.model.annotation import Annotation, AnnotationType, AnnotationTypes, BoundingBox3D, BoundingBoxes3D
+from paralleldomain.model.annotation import (
+    AnnotationTypes,
+    BoundingBox3D,
+    BoundingBoxes3D,
+    AnnotationIdentifier,
+)
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
-F = TypeVar("F", Image, PointCloud, Annotation)
+
+"""
+Nuscenes point data is in RFU, images in RDF. The extrinsic calibration transforms into FLU.
+Please note that transforming 3d boxes into camera sensor frame is currently not implemented.
+"""
 
 
 class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAccessMixin):
@@ -45,23 +51,23 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         )
         self.scene_token = self.nu_scene_name_to_scene_token[scene_name]
 
-    def _decode_available_annotation_types(
+    def _decode_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        anno_types = dict()
+    ) -> List[AnnotationIdentifier]:
+        anno_identifiers = list()
         if self.split_name != "v1.0-test":
             if frame_id in self.nu_frame_id_to_available_anno_types:
                 has_obj, has_surface = self.nu_frame_id_to_available_anno_types[frame_id]
                 if has_obj:
-                    anno_types[AnnotationTypes.BoundingBoxes3D] = "BoundingBoxes3D"
+                    anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D))
                 # if has_surface:
-                #     anno_types[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
-        return anno_types
+                #     anno_identifiers[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
+        return anno_identifiers
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return {}
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
     def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
@@ -86,7 +92,9 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         sensor_to_world = ego_to_world @ sensor_to_ego
         return sensor_to_world
 
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         if issubclass(data_type, Image):
             sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
                 scene_token=self.scene_token, frame_id=frame_id, sensor_name=sensor_name
@@ -106,10 +114,8 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
 
         return None
 
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
-        if issubclass(annotation_type, BoundingBoxes3D):
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        if issubclass(identifier.annotation_type, BoundingBoxes3D):
             boxes = self._decode_bounding_boxes_3d(sensor_name=sensor_name, frame_id=frame_id)
             return BoundingBoxes3D(boxes=boxes)
         # elif issubclass(annotation_type, InstanceSegmentation3D):
@@ -119,7 +125,7 @@ class NuScenesSensorFrameDecoder(SensorFrameDecoder[datetime], NuScenesDataAcces
         #     class_ids = self._decode_semantic_segmentation_3d(sensor_name=sensor_name, frame_id=frame_id)
         #     return SemanticSegmentation3D(class_ids=class_ids)
         else:
-            raise NotImplementedError(f"{annotation_type} is not supported!")
+            raise NotImplementedError(f"{identifier} is not supported!")
 
     def _decode_bounding_boxes_3d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox3D]:
         boxes = list()

@@ -1,8 +1,11 @@
 import random
+import logging
+from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 from more_itertools import windowed
+from pd.core import PdError
 from pd.internal.proto.umd.generated.wrapper.utils import register_wrapper
 
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
@@ -19,12 +22,7 @@ except ImportError:
 from igraph import Graph, Vertex
 from pd.internal.proto.umd.generated.python import UMD_pb2 as UMD_pb2_base
 from pd.internal.proto.umd.generated.wrapper import UMD_pb2
-from paralleldomain.utilities.geometry import (
-    decompose_polygon_into_triangles,
-    calculate_triangle_area,
-    random_point_in_triangle,
-    random_point_within_2d_polygon,
-)
+from paralleldomain.utilities.geometry import random_point_within_2d_polygon
 
 AABB = UMD_pb2.AABB
 Info = UMD_pb2.Info
@@ -45,6 +43,13 @@ ZoneGrid = UMD_pb2.ZoneGrid
 UniversalMap = UMD_pb2.UniversalMap
 RoadMarking = UMD_pb2.RoadMarking
 Point_ENU = UMD_pb2.Point_ENU
+
+logger = logging.getLogger(__name__)
+
+
+class Side(Enum):
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
 
 
 @register_wrapper(proto_type=UMD_pb2_base.Edge)
@@ -307,16 +312,24 @@ class MapQuery:
         area_id = random_state.choice(area_ids)
         return self.map.areas.get(area_id)
 
-    def get_random_area_location(self, area_type: UMD_pb2.Area.AreaType, random_seed: int) -> Optional[Transformation]:
+    def get_random_area_location(
+        self, area_type: UMD_pb2.Area.AreaType, random_seed: int, num_points: int = 1, area_id: Optional[int] = None
+    ) -> Optional[Transformation]:
         random_state = random.Random(random_seed)
-        area = self.get_random_area_object(area_type=area_type, random_seed=random_seed)
+
+        if area_id is None:
+            area = self.get_random_area_object(area_type=area_type, random_seed=random_seed)
+        else:
+            area = self.map.areas.get(area_id)
 
         if area is None:
             return None
 
         edge_line = self.map.edges[int(area.edges[0])].as_polyline().to_numpy()
 
-        point = random_point_within_2d_polygon(edge_2d=edge_line[:, :2], random_seed=random_seed, num_points=1)[0]
+        point = random_point_within_2d_polygon(
+            edge_2d=edge_line[:, :2], random_seed=random_seed, num_points=num_points
+        )[0]
 
         translation = [point[0], point[1], np.average(edge_line[:, 2])]
 
@@ -333,18 +346,19 @@ class MapQuery:
         self,
         lane_type: UMD_pb2.LaneSegment.LaneType,
         random_seed: int,
+        min_path_length: Optional[float] = None,
         relative_location_variance: float = 0.0,
         direction_variance_in_degrees: float = 0.0,
         sample_rate: int = 100,
-    ) -> Transformation:
+        max_retries: int = 1000,
+    ) -> Optional[Transformation]:
         random_state = random.Random(random_seed)
-        lane_segment_ids = [
-            lane_segment_id
-            for lane_segment_id, lane_segment in self.map.lane_segments.items()
-            if lane_segment.type in [lane_type]
-        ]
-        lane_segment_id = random_state.choice(lane_segment_ids)
-        lane_segment = self.map.lane_segments.get(lane_segment_id)
+        lane_segment = self.get_random_lane_type_object(
+            lane_type=lane_type, random_seed=random_seed, min_path_length=min_path_length, max_retries=max_retries
+        )
+
+        if lane_segment is None:
+            return None
 
         right_edge = Edge(proto=self.edges[lane_segment.right_edge].proto).as_polyline().to_numpy()
         right_points = np.reshape(right_edge, (-1, 3))
@@ -387,6 +401,215 @@ class MapQuery:
 
         return pose
 
+    def get_random_lane_type_object(
+        self,
+        lane_type: UMD_pb2.LaneSegment.LaneType,
+        random_seed: int,
+        min_path_length: Optional[float] = None,
+        max_retries: int = 1000,
+    ) -> Optional[LaneSegment]:
+        seed = random_seed
+        attempts = 0
+        valid_lane_found = False
+
+        while not valid_lane_found:
+            random_state = random.Random(seed)
+
+            lane_segment_ids = [
+                lane_segment_id
+                for lane_segment_id, lane_segment in self.map.lane_segments.items()
+                if lane_segment.type in [lane_type]
+            ]
+
+            if len(lane_segment_ids) == 0:
+                return None
+
+            lane_segment_id = random_state.choice(lane_segment_ids)
+            lane_segment = self.map.lane_segments.get(lane_segment_id)
+
+            if min_path_length is None or self.check_lane_is_longer_than(
+                lane_id=lane_segment_id, path_length=min_path_length
+            ):
+                return lane_segment
+            elif attempts > max_retries:
+                logger.warning("Unable to find valid lane object with given min_path_length")
+                return None
+            else:
+                seed += 1
+                attempts += 1
+
+    def get_random_road_type_object(
+        self,
+        road_type: UMD_pb2.RoadSegment.RoadType,
+        random_seed: int,
+        min_path_length: Optional[float] = None,
+        max_retries: int = 1000,
+    ) -> Optional[RoadSegment]:
+        seed = random_seed
+        attempts = 0
+        valid_lane_found = False
+
+        while not valid_lane_found:
+            random_state = random.Random(seed)
+
+            road_segment_ids = [
+                road_segment_id
+                for road_segment_id, road_segment in self.map.road_segments.items()
+                if road_segment.type in [road_type]
+            ]
+
+            if len(road_segment_ids) == 0:
+                return None
+
+            road_segment_id = random_state.choice(road_segment_ids)
+            road_segment = self.map.road_segments.get(road_segment_id)
+
+            if min_path_length is None:
+                return road_segment
+
+            for lane_id in road_segment.lane_segments:
+                if self.check_lane_is_longer_than(lane_id=lane_id, path_length=min_path_length):
+                    return road_segment
+
+            if attempts > max_retries:
+                logger.warning("Unable to find valid road segment with given min_path_length")
+                return None
+            else:
+                seed += 1
+                attempts += 1
+
+    def get_random_lane_object_from_road_type(
+        self,
+        road_type: UMD_pb2.RoadSegment.RoadType,
+        random_seed: int,
+        min_path_length: Optional[float] = None,
+        max_retries: int = 1000,
+    ) -> Optional[LaneSegment]:
+        seed = random_seed
+        attempts = 0
+        valid_lane_found = False
+
+        while not valid_lane_found:
+            random_state = random.Random(seed)
+
+            road_object = self.get_random_road_type_object(road_type=road_type, random_seed=seed)
+
+            if road_object is None:
+                return None
+
+            lane_object = self.map.lane_segments[random_state.choice(road_object.lane_segments)]
+
+            if (
+                self.check_lane_is_longer_than(lane_id=lane_object.id, path_length=min_path_length)
+                or min_path_length is None
+            ):
+                return lane_object
+            elif attempts > max_retries:
+                logger.warning("Unable to find valid lane segment with given min_path_length")
+                return None
+            else:
+                seed += 1
+                attempts += 1
+
+    def get_random_junction_object(self, intersection_type: str, random_seed: int) -> Optional[Junction]:
+        random_state = random.Random(random_seed)
+
+        if intersection_type == "signaled":
+            junction_ids = [j_id for j_id in self.map.signaled_intersections]
+        elif intersection_type == "signed":
+            junction_ids = [j_id for j_id in self.map.signed_intersections]
+        else:
+            raise ValueError("Invalid intersection type selected - must be 'signed' or 'signaled")
+
+        if len(junction_ids) > 0:
+            junction_id = random_state.choice(junction_ids)
+        else:
+            return None
+
+        junction = self.map.junctions[junction_id]
+
+        return junction
+
+    def get_random_junction_relative_lane_location(
+        self,
+        random_seed: int,
+        distance_to_junction: float = 10.0,
+        probability_of_signaled_junction: float = 0.5,
+        probability_of_arriving_junction: float = 1.0,
+    ) -> Optional[Transformation]:
+        random_state = random.Random(random_seed)
+        np.random.seed(random_seed)
+
+        type_of_intersection = np.random.choice(
+            ["signed", "signaled"], 1, p=[1 - probability_of_signaled_junction, probability_of_signaled_junction]
+        )[0]
+
+        junction_to_spawn = self.get_random_junction_object(
+            intersection_type=type_of_intersection, random_seed=random_seed
+        )
+
+        if junction_to_spawn is None:
+            return None
+
+        valid_lanes_at_junctions = [
+            self.map.lane_segments[id]
+            for id in junction_to_spawn.lane_segments
+            if self.map.lane_segments[id].direction is LaneSegment.Direction.FORWARD
+        ]
+
+        junction_lane = random_state.choice(valid_lanes_at_junctions)
+
+        arriving_junction = True if random_state.uniform(0.0, 1.0) < probability_of_arriving_junction else False
+
+        # Loop through the previous lanes to find the required distance from junction
+        accumulated_distance = 0.0
+
+        current_lane = (
+            self.map.lane_segments[junction_lane.predecessors[0]]
+            if arriving_junction
+            else self.map.lane_segments[junction_lane.successors[0]]
+        )
+
+        super_line = []  # Collect all the points of the total lane prior to the junction
+        while accumulated_distance < distance_to_junction:
+            current_line = self.map.edges[current_lane.reference_line].as_polyline().to_numpy()
+
+            accumulated_distance += np.linalg.norm(current_line[-1] - current_line[0])
+
+            super_line.append(current_line)
+
+            try:
+                current_lane = (
+                    self.map.lane_segments[current_lane.predecessors[0]]
+                    if arriving_junction
+                    else self.map.lane_segments[current_lane.predecessors[0]]
+                )
+            except IndexError:  # In the case that we don't have long enough lanes to meet the distance requirement
+                logger.warning(
+                    (
+                        "Unable to find lane location which matches given distance requirement. "
+                        "Consider reducing requested distance to junction"
+                    )
+                )
+                return None
+
+        super_line = np.concatenate(super_line, axis=0)
+
+        distance_between_points = np.linalg.norm(np.diff(super_line, axis=0), axis=1)
+        cumulative_distance_bt_points = np.cumsum(distance_between_points)
+
+        spawn_point = next(
+            super_line[i]
+            for i in range(len(cumulative_distance_bt_points))
+            if cumulative_distance_bt_points[i] >= distance_to_junction
+        )
+
+        translation = [spawn_point[0], spawn_point[1], spawn_point[2]]
+
+        return Transformation.from_euler_angles(
+            angles=[0.0, 0.0, 0.0], order="xyz", translation=translation, degrees=True
+        )
+
     def get_random_street_location(
         self,
         random_seed: int,
@@ -401,3 +624,147 @@ class MapQuery:
             direction_variance_in_degrees=direction_variance_in_degrees,
             sample_rate=sample_rate,
         )
+
+    def check_lane_is_longer_than(self, lane_id: int, path_length: float) -> bool:
+        """
+        Checks that a given lane is longer than a given length
+
+        Args:
+            lane_id: The ID of the lane segment which we are checking the length of
+            path_length: The length against which the length of the lane segment should be compared
+
+        Returns:
+            True when the lane is longer than path_length, False otherwise
+        """
+        current_lane = self.map.lane_segments[lane_id]
+
+        # If the current_lane is backwards, we skip immediately to its successor
+        try:
+            current_lane = self.map.lane_segments[current_lane.successors[0]]
+        except IndexError:
+            return False
+
+        accumulated_distance = 0.0
+
+        while accumulated_distance < path_length:
+            current_line = self.map.edges[current_lane.reference_line].as_polyline().to_numpy()
+
+            # If the lane is backwards, flip it around
+            if current_lane.direction is LaneSegment.Direction.BACKWARD:
+                current_line = np.flip(current_line, axis=0)
+
+            accumulated_distance += np.linalg.norm(current_line[-1] - current_line[0])
+
+            try:
+                current_lane = self.map.lane_segments[current_lane.successors[0]]
+            except IndexError:  # In the case that we don't have long enough lanes to meet the distance requirement
+                continue
+
+        if accumulated_distance >= path_length:
+            return True
+        else:
+            return False
+
+    def get_connected_lane_points(self, lane_id: int, path_length: float) -> np.ndarray:
+        """
+        Returns all the points of the lane segments which are connected to a given lane segment within a certain
+            path_length.  This function will throw an error if the lane segment, and it's connected lane segments are
+            shorter than the specified path_length
+
+        Args:
+            lane_id: The ID of the lane segment we wish to get the points of
+            path_length: The minimum length of the line of points we wish to return
+
+        Returns:
+            nx3 numpy array of points which make up the reference line of the lane beginning with the inputted lane
+                segment
+        """
+        current_lane = self.map.lane_segments[lane_id]
+
+        # If the current_lane is backwards, we skip immediately to its successor
+        try:
+            current_lane = self.map.lane_segments[current_lane.successors[0]]
+        except IndexError:
+            raise PdError(
+                "Insufficient length of connected lanes to meet specified path_length. "
+                "Check that connected lanes are long enough first using check_available_path_length_in_lane."
+            )
+
+        accumulated_distance = 0.0
+        super_line = []  # Collect all the points of the total lane
+        while accumulated_distance < path_length:
+            current_line = self.map.edges[current_lane.reference_line].as_polyline().to_numpy()
+
+            # If the lane is backwards, flip it around
+            if current_lane.direction is LaneSegment.Direction.BACKWARD:
+                current_line = np.flip(current_line, axis=0)
+
+            accumulated_distance += np.linalg.norm(current_line[-1] - current_line[0])
+
+            super_line.append(current_line)
+
+            try:
+                current_lane = self.map.lane_segments[current_lane.successors[0]]
+            except IndexError:  # In the case that we don't have long enough lanes to meet the distance requirement
+                continue
+
+        if accumulated_distance >= path_length:
+            super_line = np.concatenate(super_line, axis=0)
+
+            return super_line
+        else:
+            raise PdError(
+                "Insufficient length of connected lanes to meet specified path_length. "
+                "Check that connected lanes are long enough first using check_available_path_length_in_lane."
+            )
+
+    def get_edge_of_road_from_lane(self, lane_id: int, side: Side) -> Edge:
+        """
+        Function which returns either the left or right edge of the roac on which the lane we specify exists
+
+        Args:
+            lane_id: The ID of the lane which exists on the road we wish to find the edge of
+            which_edge: Choose to return either the left or right edge
+
+        Returns:
+            An Edge object of the edge of the road corresponding to the inputted parameters
+        """
+        current_lane = self.map.lane_segments[lane_id]
+
+        neighbor_id = None
+        while neighbor_id != 0:
+            neighbor_id = current_lane.left_neighbor if side is Side.LEFT else current_lane.right_neighbor
+
+            if neighbor_id != 0:
+                current_lane = self.map.lane_segments[neighbor_id]
+
+        road_edge = self.map.edges[current_lane.left_edge if side is Side.LEFT else current_lane.right_edge]
+        return road_edge
+
+    def get_line_point_by_distance_from_start(self, line: np.ndarray, distance_from_start: float) -> np.ndarray:
+        """
+        Given a line of points, returns the point that is the first to be more than the specified distance from the
+            start of the line.  If the distance specified is longer than the line, the last point on the line will
+            be returned
+
+        Args:
+            line: nx3 numpy array containing the 3d points which make up the line
+            distance_from_start: The distance from the start of the line, after which we want to return the first point
+
+        Returns:
+            nx3 numpy array corresponding to the first point on the line which is greater than the specified
+                distance_from_start from the start of the line
+        """
+        distance_between_points = np.linalg.norm(np.diff(line, axis=0), axis=1)
+        cumulative_distance_bt_points = np.cumsum(distance_between_points)
+        try:
+            point = next(
+                line[i]
+                for i in range(len(cumulative_distance_bt_points))
+                if cumulative_distance_bt_points[i] >= distance_from_start
+            )
+        except StopIteration:
+            logger.warning("Line provided was shorter than distance_from_start specified.  Returning last value")
+            point = line[-1]
+
+        return point

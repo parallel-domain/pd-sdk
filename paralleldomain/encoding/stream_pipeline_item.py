@@ -35,7 +35,6 @@ class StreamPipelineItem(ScenePipelineItem):
             return Scene(
                 decoder=self.scene_decoder,
                 name=self.scene_name,
-                available_annotation_types=self.available_annotation_types,
             )
         return None
 

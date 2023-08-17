@@ -4,8 +4,8 @@ from time import perf_counter
 
 from paralleldomain.decoding.helper import decode_dataset, known_decoders
 from paralleldomain.utilities.logging import setup_loggers
-
-from paralleldomain.visualization.statistics.dash_viewer import DashViewer
+from paralleldomain.visualization.statistics.dash.dash_viewer import DashViewer
+from paralleldomain.visualization.statistics.rerun.rerun_viewer import RerunViewer
 
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 
@@ -25,6 +25,9 @@ def parse_args():
     parser.add_argument(
         "-p", "--precomputed", required=False, default=None, help="Path to a folder storing pre-computed statistics"
     )
+    parser.add_argument(
+        "-b", "--backend", required=False, type=str, default="dash", help="Desired backend", choices=["dash", "rerun"]
+    )
     args = parser.parse_args()
     return args
 
@@ -32,8 +35,14 @@ def parse_args():
 def main():
     args = parse_args()
 
-    viewer, model = DashViewer.create_with_default_components()
-    viewer.launch(in_background=True)
+    if args.backend == "dash":
+        viewer, model = DashViewer.create_with_default_components()
+        viewer.launch()
+    elif args.backend == "rerun":
+        viewer, model = RerunViewer.create_with_default_components()
+        viewer.launch()
+    else:
+        raise TypeError(f"{args.backend} not in supported backends [rerun, dash]")
 
     if args.precomputed is None:
         # Compute dataset statistics and update visualization live

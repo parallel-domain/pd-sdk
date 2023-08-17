@@ -6,7 +6,7 @@ from paralleldomain import Scene
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import Dataset, DatasetMeta
 from paralleldomain.model.frame import Frame
@@ -79,18 +79,12 @@ class DatasetDecoder(LazyLoadPropertyMixin, metaclass=abc.ABCMeta):
         )
 
     def _decode_scene(self, scene_name: SceneName) -> Scene:
-        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
-        return Scene(
-            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
-        )
+        return Scene(name=scene_name, decoder=scene_decoder)
 
     def _decode_unordered_scene(self, scene_name: SceneName) -> UnorderedScene:
-        metadata = self.get_dataset_metadata()
         scene_decoder = self.create_scene_decoder(scene_name=scene_name)
-        return UnorderedScene(
-            name=scene_name, available_annotation_types=metadata.available_annotation_types, decoder=scene_decoder
-        )
+        return UnorderedScene(name=scene_name, decoder=scene_decoder)
 
     @abc.abstractmethod
     def create_scene_decoder(self, scene_name: SceneName) -> "SceneDecoder":
@@ -145,6 +139,13 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
             extra=extra,
         )
 
+    def get_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="available_annotations")
+        return self.lazy_load_cache.get_item(
+            key=_unique_cache_key,
+            loader=lambda: self._decode_available_annotation_identifiers(scene_name=scene_name),
+        )
+
     # ------------------- Set Decoding Methods -------------------------------
     def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         # add caching here if needed
@@ -153,6 +154,10 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
     def get_set_description(self, scene_name: SceneName) -> str:
         # add caching here if needed
         return self._decode_set_description(scene_name=scene_name)
+
+    @abc.abstractmethod
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        pass
 
     @abc.abstractmethod
     def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
@@ -183,7 +188,7 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
         pass
 
     @abc.abstractmethod
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         pass
 
     def get_sensor_names(self, scene_name: SceneName) -> List[str]:
@@ -221,7 +226,7 @@ class SceneDecoder(Generic[TDateTime], LazyLoadPropertyMixin, metaclass=abc.ABCM
             loader=lambda: self._decode_frame_id_set(scene_name=scene_name),
         )
 
-    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         _unique_cache_key = self.get_unique_id(scene_name=scene_name, extra="class_maps")
         class_maps = self.lazy_load_cache.get_item(
             key=_unique_cache_key,

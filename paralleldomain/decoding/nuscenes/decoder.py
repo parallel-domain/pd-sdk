@@ -1,18 +1,16 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
-from iso8601 import iso8601
-
 import paralleldomain.decoding.nuscenes.splits as nu_splits
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
-from paralleldomain.decoding.nuscenes.common import NUSCENES_CLASSES, NuScenesDataAccessMixin, load_table
+from paralleldomain.decoding.nuscenes.common import NuScenesDataAccessMixin
 from paralleldomain.decoding.nuscenes.frame_decoder import NuScenesFrameDecoder
 from paralleldomain.decoding.nuscenes.sensor_decoder import NuScenesCameraSensorDecoder, NuScenesLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -79,16 +77,16 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
 
     # Update this function when lidar_semseg is added.
     def _decode_dataset_metadata(self) -> DatasetMeta:
-        available_annotation_types = list()
+        available_annotation_identifiers = list()
         if self.split_name != "v1.0-test" or (len(self.nu_sample_annotation) > 0):
-            available_annotation_types = [
+            available_annotation_identifiers = [
                 # AnnotationTypes.SemanticSegmentation3D,
-                AnnotationTypes.BoundingBoxes3D,
+                AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D),
             ]
 
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=available_annotation_types,
+            available_annotation_identifiers=available_annotation_identifiers,
             custom_attributes=dict(split_name=self.split_name, nu_split_name=self.nu_split_name),
         )
 
@@ -154,7 +152,7 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["lidar"])
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
     def _create_camera_sensor_decoder(
@@ -203,3 +201,15 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[None]:
         raise ValueError("Currently do not support radar data!")
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        anno_identifiers = list()
+        if self.split_name != "v1.0-test":
+            for frame_id in self.get_frame_ids(scene_name=scene_name):
+                if frame_id in self.nu_frame_id_to_available_anno_types:
+                    has_obj, has_surface = self.nu_frame_id_to_available_anno_types[frame_id]
+                    if has_obj:
+                        anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D))
+                    # if has_surface:
+                    #     anno_identifiers[AnnotationTypes.SemanticSegmentation2D] = "SemanticSegmentation2D"
+        return anno_identifiers

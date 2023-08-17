@@ -27,8 +27,7 @@ PROXY_OBJECT = "SM_primitive_box_1m"  # used as an approximation for generated o
 PROXY_SCALE_FACTORS = [0.6, 0.4, 0.8]  # L*W*H
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-LOCATION_VERSION = "local"
-setup_datalab(LOCATION_VERSION)
+setup_datalab("v2.4.0-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -114,7 +113,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version=LOCATION_VERSION))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(

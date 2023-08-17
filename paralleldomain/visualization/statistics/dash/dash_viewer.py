@@ -16,7 +16,7 @@ class DashViewer(StatisticViewer):
     def backend(cls) -> BACKEND:
         return BACKEND.DASH
 
-    def launch(self, in_background: bool = False, port: int = 8050):
+    def launch(self, in_background: bool = True, port: int = 8050):
         if in_background:
             self._dash_thread = threading.Thread(target=self._launch_dash, kwargs=dict(port=port))
             self._dash_thread.daemon = True

@@ -1,5 +1,3 @@
-import json
-import struct
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
@@ -19,8 +17,8 @@ from paralleldomain.decoding.waymo_open_dataset.sensor_decoder import (
     WaymoOpenDatasetCameraSensorDecoder,
     WaymoOpenDatasetLidarSensorDecoder,
 )
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -28,6 +26,12 @@ from paralleldomain.utilities.any_path import AnyPath
 IMAGE_FOLDER_NAME = "image"
 SEMANTIC_SEGMENTATION_FOLDER_NAME = "semantic_segmentation"
 METADATA_FOLDER_NAME = "metadata"
+AVAILABLE_ANNOTATION_TYPES = [
+    AnnotationTypes.SemanticSegmentation2D,
+    AnnotationTypes.InstanceSegmentation2D,
+    AnnotationTypes.BoundingBoxes3D,
+]
+AVAILABLE_ANNOTATION_IDENTIFIERS = [AnnotationIdentifier(annotation_type=t) for t in AVAILABLE_ANNOTATION_TYPES]
 
 
 class WaymoOpenDatasetDecoder(DatasetDecoder):
@@ -79,11 +83,7 @@ class WaymoOpenDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[
-                AnnotationTypes.SemanticSegmentation2D,
-                AnnotationTypes.InstanceSegmentation2D,
-                AnnotationTypes.BoundingBoxes3D,
-            ],
+            available_annotation_identifiers=AVAILABLE_ANNOTATION_IDENTIFIERS,
             custom_attributes=dict(),
         )
 
@@ -144,7 +144,7 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         return [WAYMO_USE_ALL_LIDAR_NAME]
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return decode_class_maps()
 
     def _create_camera_sensor_decoder(
@@ -207,3 +207,6 @@ class WaymoOpenDatasetSceneDecoder(SceneDecoder[datetime]):
         self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
     ) -> RadarSensorDecoder[TDateTime]:
         raise ValueError("This dataset has no radar data!")
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        return AVAILABLE_ANNOTATION_IDENTIFIERS

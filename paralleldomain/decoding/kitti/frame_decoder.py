@@ -1,0 +1,23 @@
+from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecoder
+from paralleldomain.decoding.kitti.sensor_frame_decoder import KittiLidarSensorFrameDecoder
+from paralleldomain.decoding.sensor_frame_decoder import LidarSensorFrameDecoder
+from paralleldomain.model.sensor import LidarSensorFrame
+from paralleldomain.model.type_aliases import FrameId, SensorName
+
+
+class KittiFrameDecoder(DirectoryFrameDecoder):
+    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[None]:
+        return KittiLidarSensorFrameDecoder(
+            dataset_name=self.dataset_name,
+            scene_name=self.scene_name,
+            dataset_path=self.dataset_path,
+            settings=self.settings,
+            folder_to_data_type=self._folder_to_data_type,
+            metadata_folder=self._metadata_folder,
+            class_map=self._class_map,
+        )
+
+    def _decode_lidar_sensor_frame(
+        self, decoder: LidarSensorFrameDecoder[None], frame_id: FrameId, sensor_name: SensorName
+    ) -> LidarSensorFrame[None]:
+        return LidarSensorFrame(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)

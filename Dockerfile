@@ -18,8 +18,9 @@ RUN mkdir -p /app && chown user:user /app
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx
 
+USER user
+
 COPY --chown=user:user . /app/
 RUN pip install /app/${EXTRAS}
 
-USER user
 WORKDIR /app

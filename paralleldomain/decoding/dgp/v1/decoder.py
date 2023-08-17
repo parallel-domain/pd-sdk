@@ -19,7 +19,7 @@ from paralleldomain.decoding.dgp.v1.sensor_decoder import (
     DGPRadarSensorDecoder,
 )
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -106,10 +106,11 @@ class DGPDatasetDecoder(_DatasetDecoderMixin, DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         dto = self._decode_dataset_dto()
         anno_types = [ANNOTATION_TYPE_MAP[a] for a in dto.metadata.available_annotation_types]
+        anno_identifiers = [AnnotationIdentifier(annotation_type=t) for t in anno_types]
 
         return DatasetMeta(
             name=dto.metadata.name,
-            available_annotation_types=anno_types,
+            available_annotation_identifiers=anno_identifiers,
             custom_attributes=MessageToDict(dto.metadata, preserving_proto_field_name=True),
         )
 
@@ -149,6 +150,13 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         self._sample_by_index = lru_cache(maxsize=1)(self._sample_by_index)
         point_cache_folder = self._dataset_path / scene_name / "point_cache"
         self._point_cache_folder_exists = point_cache_folder.exists()
+
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        dto = self._decode_dataset_dto()
+        return [
+            AnnotationIdentifier(annotation_type=ANNOTATION_TYPE_MAP[str(a)])
+            for a in dto.metadata.available_annotation_types
+        ]
 
     def _create_camera_sensor_decoder(
         self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
@@ -229,7 +237,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return sorted(list({datum.id.name for datum in scene_dto.data if datum.datum.HasField("radar_point_cloud")}))
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         scene_dto = self._decode_scene_dto(scene_name=scene_name)
         return decode_class_maps(
             ontologies=scene_dto.ontologies, dataset_path=self._dataset_path, scene_name=scene_name

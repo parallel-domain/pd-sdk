@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, TypeVar, Union
+from typing import Any, Dict, List, Set, TypeVar, Union
 
 from paralleldomain import Scene
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -20,7 +20,7 @@ class InMemorySceneDecoder:
     radar_names: List[SensorName] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
     frames: Dict[FrameId, Frame] = field(default_factory=dict)
-    class_maps: Dict[AnnotationType, ClassMap] = field(default_factory=dict)
+    class_maps: Dict[AnnotationIdentifier, ClassMap] = field(default_factory=dict)
     frame_id_to_date_time_map: Dict[FrameId, datetime] = field(default_factory=dict)
 
     def get_set_description(self, scene_name: SceneName) -> str:
@@ -51,7 +51,7 @@ class InMemorySceneDecoder:
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         return set(self.frame_ids)
 
-    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.class_maps
 
     def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName):
@@ -79,3 +79,6 @@ class InMemorySceneDecoder:
 
     def clear_from_cache(self, scene_name: SceneName):
         pass
+
+    def get_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        return list(self.class_maps.keys())

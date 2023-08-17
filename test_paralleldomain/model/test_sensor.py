@@ -1,17 +1,15 @@
-import time
-from collections import defaultdict
 from datetime import datetime
 from typing import Dict
 from unittest import mock
+from unittest.mock import MagicMock
 
 from paralleldomain import Scene
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder as DGPDatasetDecoderV0
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPDatasetDecoderV1
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationType, AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE
 from paralleldomain.utilities.projection import DistortionLookupTable
 
 
@@ -109,6 +107,41 @@ class TestSensorFrame:
         sensor_frame = next(iter(dataset.get_sensor_frames(sensor_names=[sensor_frame.sensor_name])))
         distortion_lookup = sensor_frame.distortion_lookup
         assert distortion_lookup == fake_loopup
+
+    def test_get_available_annotation_types(self):
+        decoder = MagicMock()
+        decoder.get_available_annotation_identifiers.return_value = [
+            AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D, name="someName"),
+        ]
+        scene = Scene(name="test", decoder=decoder)
+
+        result = scene.available_annotation_types
+
+        assert set(result) == {
+            AnnotationTypes.BoundingBoxes2D,
+            AnnotationTypes.SemanticSegmentation2D,
+        }
+
+    def test_get_annotation_identifiers_of_type(self):
+        decoder = MagicMock()
+        decoder.get_available_annotation_identifiers.return_value = [
+            AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D, name="someName"),
+        ]
+        scene = Scene(name="test", decoder=decoder)
+
+        result = scene.get_annotation_identifiers_of_type(annotation_type=AnnotationTypes.BoundingBoxes2D)
+        assert result == [AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D)]
+
+        result = scene.get_annotation_identifiers_of_type(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+        assert result == [
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
+            AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D, name="someName"),
+        ]
 
 
 class TestSensor:

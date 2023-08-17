@@ -1,23 +1,16 @@
-import math
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Any, Dict, Optional, Tuple, TypeVar, Union, List
 
 import numpy as np
-import pd.state
-from pd.data_lab.session_reference import TemporalSessionReference
-from pd.session import StepSession
-from pd.state import LidarSensorData, Pose6D, SensorData
-from pd.state.state import PosedAgent, State
 
+import pd.state
 from paralleldomain.common.constants import ANNOTATION_NAME_TO_CLASS
-from paralleldomain.data_lab.config.sensor_rig import SensorConfig, SensorRig
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, F, LidarSensorFrameDecoder, T
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder, T
 from paralleldomain.decoding.step.common import get_sensor_rig_annotation_types
 from paralleldomain.decoding.step.constants import PD_CLASS_DETAILS
 from paralleldomain.model.annotation import (
-    AnnotationType,
     AnnotationTypes,
     Depth,
     InstanceSegmentation2D,
@@ -25,6 +18,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SemanticSegmentation3D,
     SurfaceNormals2D,
+    AnnotationIdentifier,
 )
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.sensor import (
@@ -35,10 +29,15 @@ from paralleldomain.model.sensor import (
     SensorExtrinsic,
     SensorIntrinsic,
     SensorPose,
+    SensorDataCopyTypes,
 )
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.coordinate_system import CoordinateSystem
+from pd.data_lab.session_reference import TemporalSessionReference
+from pd.session import StepSession
+from pd.state import LidarSensorData, Pose6D, SensorData
+from pd.state.state import PosedAgent, State
 
 SensorFrameTypes = Union[CameraSensorFrame, RadarSensorFrame, LidarSensorFrame]
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
@@ -112,7 +111,6 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
     def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
         cam = self.camera_sensor(sensor_name=sensor_name)
 
-        camera_model = CameraModel.OPENCV_PINHOLE
         if cam.distortion_params is not None:
             if cam.distortion_params.is_fisheye is True or cam.distortion_params.is_fisheye == 1:
                 camera_model = CameraModel.OPENCV_FISHEYE
@@ -143,15 +141,8 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
                 camera_model=camera_model,
             )
         else:
-            fx = cam.width / (2 * math.tan(math.radians(cam.field_of_view_degrees) / 2))
-            fy = cam.height / (2 * math.tan(math.radians(cam.field_of_view_degrees) / 2))
-            return SensorIntrinsic(
-                cx=cam.width / 2,
-                cy=cam.height / 2,
-                fx=max(fx, fy),
-                fy=max(fx, fy),
-                fov=cam.field_of_view_degrees,
-                camera_model=camera_model,
+            return SensorIntrinsic.from_field_of_view(
+                field_of_view_degrees=cam.field_of_view_degrees, width=cam.width, height=cam.height
             )
 
     def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
@@ -192,28 +183,32 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
     def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
         pass
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         available_annotations = get_sensor_rig_annotation_types(sensor_rig=self._sensor_rig)
         return {
-            anno_type: ClassMap(classes=PD_CLASS_DETAILS)
+            AnnotationIdentifier(annotation_type=anno_type): ClassMap(classes=PD_CLASS_DETAILS)
             for anno_type in ANNOTATION_NAME_TO_CLASS.values()
             if anno_type in available_annotations
         }
 
-    def _decode_available_annotation_types(
+    def _decode_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
-        annotations = {}
+    ) -> List[AnnotationIdentifier]:
+        annotation_identifiers: List[AnnotationIdentifier] = list()
         if self._is_camera:
             cam = self.camera_sensor(sensor_name=sensor_name)
             if cam.capture_depth:
-                annotations[AnnotationTypes.Depth] = pd.state.SensorBuffer.DEPTH
+                annotation_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.Depth))
             if cam.capture_instances:
-                annotations[AnnotationTypes.InstanceSegmentation2D] = pd.state.SensorBuffer.INSTANCES
+                annotation_identifiers.append(
+                    AnnotationIdentifier(annotation_type=AnnotationTypes.InstanceSegmentation2D)
+                )
             if cam.capture_segmentation:
-                annotations[AnnotationTypes.SemanticSegmentation2D] = pd.state.SensorBuffer.SEGMENTATION
+                annotation_identifiers.append(
+                    AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+                )
             if cam.capture_normals:
-                annotations[AnnotationTypes.SurfaceNormals2D] = pd.state.SensorBuffer.NORMALS
+                annotation_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.SurfaceNormals2D))
         # else:
         # lidar = self.lidar_sensor(sensor_name=sensor_name).to_step_sensor()
         # no annotations supported for LiDAR
@@ -223,7 +218,7 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
         #     annotations[AnnotationTypes.SemanticSegmentation3D] = pd.state.SensorBuffer.SEGMENTATION
         # if lidar.capture_normals:
         #     annotations[AnnotationTypes.SurfaceNormals3D] = pd.state.SensorBuffer.NORMALS
-        return annotations
+        return annotation_identifiers
 
     def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
         return dict()
@@ -272,45 +267,45 @@ class StepSensorFrameDecoder(CameraSensorFrameDecoder[TDateTime], LidarSensorFra
 
         return ego_to_world @ sensor_to_ego
 
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
-        if issubclass(annotation_type, SemanticSegmentation3D):
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        if issubclass(identifier.annotation_type, SemanticSegmentation3D):
             sensor_data = self.session.query_sensor_data(
                 self._ego_agent_id, sensor_name, pd.state.SensorBuffer.SEGMENTATION
             )
             class_ids = np.expand_dims(sensor_data.data_as_segmentation_ids, -1)
             return SemanticSegmentation3D(class_ids=class_ids.astype(int))
-        elif issubclass(annotation_type, InstanceSegmentation3D):
+        elif issubclass(identifier.annotation_type, InstanceSegmentation3D):
             sensor_data = self.session.query_sensor_data(
                 self._ego_agent_id, sensor_name, pd.state.SensorBuffer.INSTANCES
             )
             instance_ids = np.expand_dims(sensor_data.data_as_instance_ids, -1)
             return InstanceSegmentation3D(instance_ids=instance_ids.astype(int))
-        elif issubclass(annotation_type, SemanticSegmentation2D):
+        elif issubclass(identifier.annotation_type, SemanticSegmentation2D):
             sensor_data = self.session.query_sensor_data(
                 self._ego_agent_id, sensor_name, pd.state.SensorBuffer.SEGMENTATION
             )
             class_ids = np.expand_dims(sensor_data.data_as_segmentation_ids, -1)
             return SemanticSegmentation2D(class_ids=class_ids.astype(int))
-        elif issubclass(annotation_type, InstanceSegmentation2D):
+        elif issubclass(identifier.annotation_type, InstanceSegmentation2D):
             sensor_data = self.session.query_sensor_data(
                 self._ego_agent_id, sensor_name, pd.state.SensorBuffer.INSTANCES
             )
             instance_ids = np.expand_dims(sensor_data.data_as_instance_ids, -1)
             return InstanceSegmentation2D(instance_ids=instance_ids.astype(int))
-        elif issubclass(annotation_type, Depth):
+        elif issubclass(identifier.annotation_type, Depth):
             sensor_data = self.session.query_sensor_data(self._ego_agent_id, sensor_name, pd.state.SensorBuffer.DEPTH)
             depth_mask = np.expand_dims(sensor_data.data_as_depth, -1)
             return Depth(depth=depth_mask)
 
-        elif issubclass(annotation_type, SurfaceNormals2D):
+        elif issubclass(identifier.annotation_type, SurfaceNormals2D):
             sensor_data = self.session.query_sensor_data(self._ego_agent_id, sensor_name, pd.state.SensorBuffer.NORMALS)
             normals = sensor_data.data[..., :3]
             return SurfaceNormals2D(normals=normals)
 
         else:
-            raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
+            raise NotImplementedError(f"{identifier} is not implemented yet in this decoder!")
 
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         return None

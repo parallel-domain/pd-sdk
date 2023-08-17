@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 from paralleldomain.encoding.dgp.v1.encoding_format import DGPV1EncodingFormat
 from paralleldomain.encoding.generic_pipeline_builder import GenericPipelineBuilder
-from paralleldomain.model.sensor import SensorDataTypes, SensorFrame
+from paralleldomain.model.sensor import SensorDataCopyTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 
 try:
@@ -37,8 +37,10 @@ class DGPV1DatasetPipelineEncoder(DatasetPipelineEncoder):
         target_dataset_name: Optional[str] = None,
         use_tqdm: bool = True,
         fs_copy: bool = True,
-        copy_data_types: Optional[List[SensorDataTypes]] = None,
-        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        copy_data_types: Optional[List[SensorDataCopyTypes]] = None,
+        should_copy_callbacks: Optional[
+            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
+        ] = None,
         copy_all_available_sensors_and_annotations: bool = False,
         decoder_kwargs: Optional[Dict[str, Any]] = None,
         encode_to_binary: bool = False,

@@ -4,8 +4,6 @@ from datetime import datetime
 from functools import partial
 from typing import Any, Callable, Dict, Generator, Generic, Iterable, List, Literal, Optional, Type, Union
 
-import pypeln
-
 from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.encoding.pipeline_encoder import (
     NAME_TO_RUNENV,
@@ -17,7 +15,7 @@ from paralleldomain.encoding.pipeline_encoder import (
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import FilePathedDataType, SensorDataTypes, SensorFrame
+from paralleldomain.model.sensor import FilePathedDataType, SensorDataCopyTypes, SensorFrame
 from paralleldomain.model.type_aliases import FrameId
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -94,9 +92,11 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
     def __init__(
         self,
         encoding_format: EncodingFormat[TPipelineItem],
-        copy_data_types: List[SensorDataTypes],
+        copy_data_types: List[SensorDataCopyTypes],
         fs_copy: bool,
-        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        should_copy_callbacks: Optional[
+            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
+        ] = None,
         workers: int = 1,
         in_queue_size: int = 1,
         run_env: Literal["thread", "process", "sync"] = "thread",
@@ -112,8 +112,8 @@ class GenericEncoderStep(Generic[TPipelineItem], EncoderStep):
     def encode_frame_data(
         self,
         pipeline_item: TPipelineItem,
-        data_type: SensorDataTypes,
-        should_copy: Callable[[SensorDataTypes, SensorFrame], bool],
+        data_type: SensorDataCopyTypes,
+        should_copy: Callable[[SensorDataCopyTypes, SensorFrame], bool],
     ) -> TPipelineItem:
         sensor_frame = pipeline_item.sensor_frame
 
@@ -183,8 +183,10 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         custom_encoder_steps: List[EncoderStep] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         allowed_frames: Optional[List[FrameId]] = None,
-        copy_data_types: Optional[List[SensorDataTypes]] = None,
-        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        copy_data_types: Optional[List[SensorDataCopyTypes]] = None,
+        should_copy_callbacks: Optional[
+            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
+        ] = None,
         target_dataset_name: Optional[str] = None,
         scene_names: Optional[List[str]] = None,
         set_start: Optional[int] = None,
@@ -213,7 +215,7 @@ class GenericPipelineBuilder(PipelineBuilder[TPipelineItem]):
         dataset = decode_dataset(dataset_path=dataset_path, dataset_format=dataset_format, **decoder_kwargs)
 
         if copy_data_types is None and copy_all_available_sensors_and_annotations:
-            copy_data_types: List[SensorDataTypes] = dataset.available_annotation_types
+            copy_data_types: List[SensorDataCopyTypes] = dataset.available_annotation_identifiers.copy()
             if any(len(scene.camera_names) > 0 for scene in dataset.unordered_scenes.values()):
                 copy_data_types.append(FilePathedDataType.Image)
             if any(len(scene.lidar_names) > 0 for scene in dataset.unordered_scenes.values()):

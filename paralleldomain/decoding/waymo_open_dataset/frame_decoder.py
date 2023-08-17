@@ -1,7 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-
-import numpy as np
+from typing import Any, Dict, List
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.frame_decoder import FrameDecoder, TDateTime
@@ -20,7 +18,6 @@ from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import (
     WaymoOpenDatasetLidarSensorFrameDecoder,
 )
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -72,11 +69,6 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
             split_name=self.split_name,
         )
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
         return WaymoOpenDatasetLidarSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -88,20 +80,10 @@ class WaymoOpenDatasetFrameDecoder(FrameDecoder[datetime], WaymoFileAccessMixin)
             include_second_returns=self.include_second_returns,
         )
 
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("This dataset has no radar data!")
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
-        raise ValueError("This dataset has no radar data!")
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[TDateTime]:
         raise ValueError("This dataset has no radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:

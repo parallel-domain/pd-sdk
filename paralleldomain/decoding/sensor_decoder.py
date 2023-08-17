@@ -45,11 +45,10 @@ class SensorDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
 
 
 class CameraSensorDecoder(SensorDecoder[TDateTime]):
-    @abc.abstractmethod
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, camera_name: SensorName
     ) -> CameraSensorFrame[TDateTime]:
-        pass
+        return CameraSensorFrame[TDateTime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
 
     @abc.abstractmethod
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
@@ -68,11 +67,10 @@ class CameraSensorDecoder(SensorDecoder[TDateTime]):
 
 
 class LidarSensorDecoder(SensorDecoder[TDateTime]):
-    @abc.abstractmethod
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, lidar_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
-        pass
+        return LidarSensorFrame[TDateTime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
 
     @abc.abstractmethod
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
@@ -91,11 +89,10 @@ class LidarSensorDecoder(SensorDecoder[TDateTime]):
 
 
 class RadarSensorDecoder(SensorDecoder[TDateTime]):
-    @abc.abstractmethod
     def _decode_radar_sensor_frame(
         self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, radar_name: SensorName
     ) -> RadarSensorFrame[TDateTime]:
-        pass
+        return RadarSensorFrame[TDateTime](sensor_name=radar_name, frame_id=frame_id, decoder=decoder)
 
     @abc.abstractmethod
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
