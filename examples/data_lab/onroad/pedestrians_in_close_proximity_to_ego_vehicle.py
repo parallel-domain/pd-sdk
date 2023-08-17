@@ -7,9 +7,9 @@ from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
 from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
-from pd.internal.proto.keystone.generated.wrapper.pd_sensor_pb2 import CameraIntrinsic, SensorExtrinsic
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
 from paralleldomain.data_lab.generators.behavior import PedestrianBehavior
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
@@ -23,10 +23,10 @@ from paralleldomain.data_lab.generators.spawn_data import PedestrianSpawnData
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.utilities.logging import setup_loggers
 
-setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.2.0-beta")
+setup_datalab("v2.4.0-beta")
 
 
 def get_character_names() -> List[str]:

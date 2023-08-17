@@ -15,7 +15,7 @@ from paralleldomain.encoding.pipeline_encoder import (
     PipelineBuilder,
 )
 from paralleldomain.encoding.stream_pipeline_item import StreamPipelineItem
-from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.image import Image
@@ -24,7 +24,7 @@ from paralleldomain.model.sensor import (
     CameraSensorFrame,
     FilePathedDataType,
     LidarSensorFrame,
-    SensorDataTypes,
+    SensorDataCopyTypes,
     SensorFrame,
 )
 from paralleldomain.model.type_aliases import FrameId
@@ -37,8 +37,10 @@ class StreamGenericEncoderStep(EncoderStep):
         self,
         encoding_format: EncodingFormat[StreamPipelineItem],
         fs_copy: bool,
-        copy_data_types: Optional[List[SensorDataTypes]] = None,
-        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        copy_data_types: Optional[List[SensorDataCopyTypes]] = None,
+        should_copy_callbacks: Optional[
+            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
+        ] = None,
         workers: int = 1,
         in_queue_size: int = 1,
         run_env: Literal["thread", "process", "sync"] = "thread",
@@ -53,10 +55,14 @@ class StreamGenericEncoderStep(EncoderStep):
         self.fs_copy = fs_copy
         self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
 
-    def _get_data_types_to_copy(self, sensor_frame: SensorFrame) -> List[Union[SensorDataTypes, AnnotationType]]:
+    def _get_data_types_to_copy(
+        self, sensor_frame: SensorFrame
+    ) -> List[Union[SensorDataCopyTypes, AnnotationIdentifier]]:
         if self.copy_data_types is None:
             if self.copy_all_available_sensors_and_annotations:
-                copy_data_types: List[Union[SensorDataTypes, AnnotationType]] = sensor_frame.available_annotation_types
+                copy_data_types: List[
+                    Union[SensorDataCopyTypes, AnnotationIdentifier]
+                ] = sensor_frame.available_annotation_identifiers
                 if isinstance(sensor_frame, CameraSensorFrame):
                     copy_data_types.append(FilePathedDataType.Image)
                 if isinstance(sensor_frame, LidarSensorFrame):
@@ -85,7 +91,10 @@ class StreamGenericEncoderStep(EncoderStep):
 
                 load_data = True
                 if self.fs_copy:
-                    if issubclass(data_type, Annotation) and data_type in sensor_frame.available_annotation_types:
+                    if (
+                        isinstance(data_type, AnnotationIdentifier)
+                        and data_type in sensor_frame.available_annotation_identifiers
+                    ):
                         file_path = sensor_frame.get_file_path(data_type=data_type)
                     elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
                         file_path = sensor_frame.get_file_path(data_type=data_type)
@@ -101,8 +110,11 @@ class StreamGenericEncoderStep(EncoderStep):
                         load_data = False
 
                 if load_data:
-                    if issubclass(data_type, Annotation) and data_type in sensor_frame.available_annotation_types:
-                        data_or_path = sensor_frame.get_annotations(annotation_type=data_type)
+                    if (
+                        isinstance(data_type, AnnotationIdentifier)
+                        and data_type in sensor_frame.available_annotation_identifiers
+                    ):
+                        data_or_path = sensor_frame.get_annotations(annotation_identifier=data_type)
                     elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
                         data_or_path = pipeline_item.camera_frame.image.rgba
                     elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
@@ -136,8 +148,10 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
         custom_encoder_steps: List[EncoderStep] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
         allowed_frames: Optional[List[FrameId]] = None,
-        copy_data_types: Optional[List[SensorDataTypes]] = None,
-        should_copy_callbacks: Optional[Dict[SensorDataTypes, Callable[[SensorDataTypes, SensorFrame], bool]]] = None,
+        copy_data_types: Optional[List[SensorDataCopyTypes]] = None,
+        should_copy_callbacks: Optional[
+            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
+        ] = None,
         target_dataset_name: str = "MiniBatchDataset",
         copy_all_available_sensors_and_annotations: bool = False,
         run_env: Literal["thread", "process", "sync"] = "thread",
@@ -201,7 +215,7 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
         dataset_decoder = InMemoryDatasetDecoder(
             scene_names=[],
             unordered_scene_names=[],
-            metadata=DatasetMeta(name=self.target_dataset_name, available_annotation_types=list()),
+            metadata=DatasetMeta(name=self.target_dataset_name, available_annotation_identifiers=list()),
         )
         scene_decoders = dict()
         scene_sensor_frames_count = dict()

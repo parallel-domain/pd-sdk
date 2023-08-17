@@ -2,12 +2,11 @@ import logging
 import random
 from typing import Dict
 
-from pd.assets import DataVehicle, ObjAssets
+from pd.assets import DataVehicle, DataVehicleTypeSpawnChance, ObjAssets, UtilVehicleTypes
 from pd.data_lab.config.distribution import EnumDistribution, VehicleCategoryWeight
 from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
-from pd.internal.assets.asset_registry import DataVehicleTypeSpawnChance, UtilVehicleTypes
 
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
@@ -20,10 +19,10 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
-setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.2.0-beta")
+setup_datalab("v2.4.0-beta")
 
 
 def query_vehicles_with_spawn_probability():
@@ -86,7 +85,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version="v2.2.0-beta"))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(

@@ -51,7 +51,7 @@ logger = logging.getLogger()
 ASSETS_NAME_FILE = "./out.txt"
 OUTPUT_DIR = "./asset_preview_images"
 IG_ADDRESS = "ssl://ig.step-api-dev.paralleldomain.com:300X"
-IG_VERSION = "v2.2.0-beta"
+IG_VERSION = "v2.4.0-beta"
 
 pd.management.org = os.environ["PD_CLIENT_ORG_ENV"]
 pd.management.api_key = os.environ["PD_CLIENT_STEP_API_KEY_ENV"]

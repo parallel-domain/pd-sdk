@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="0.12.0",
+    version="0.14.0",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -47,28 +47,36 @@ setup(
     data_files=glob.glob("paralleldomain/decoding/waymo_open_dataset/pre_calculated/**"),
     extras_require={
         "data_lab": [
-            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git",
-            "rerun-sdk>=0.7.0",
+            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git@v2.4.0-beta",
+            "rerun-sdk>=0.8.0",
+            "py7zr>=0.20.5,<1.0.0",
         ],
         "statistics": [
-            "filelock>=3.0.0,<4.0.0",
-            "matplotlib>=3.7.1,<4.0.0",
-            "pandas>=1.3.5,<2.0.0",
-            "watchdog>=3.0.0,<4.0.0",
+            "filelock>=3.0.0,<4.0.0",  # no dependencies
+            "pandas>=1.3.5,<2.0.0",  # depends on pytz, tzdata, six, numpy, python-dateutil
+            "watchdog>=3.0.0,<4.0.0",  # no dependencies
         ],
         "visualization": [
+            "rerun-sdk>=0.8.0",
+            "filelock>=3.0.0,<4.0.0",  # no dependencies
+            "pandas>=1.3.5,<2.0.0",  # depends on pytz, tzdata, six, numpy, python-dateutil
+            "watchdog>=3.0.0,<4.0.0",  # no dependencies
+        ],
+        "dash": [
             "dash-core-components>=2.0.0",
             "dash>=2.9.3",
             "imgui[glfw]>=2.0",
             "jupyter-dash>=0.4.2",
             "nbformat>=5.0.0",
-            "rerun-sdk>=0.7.0",
         ],
         "dev": [
+            "black==22.6.0",
             "git-filter-repo>=2.34.0,<3.0.0",
+            "mypy>=1.3.0",
             "pre-commit>=2.13.0,<3.0.0",
             "pytest-cov>=2.12.1,<3.0.0",
             "pytest>=7.2.2,<8.0.0",
+            "ruff>=0.0.280",
             "types-cachetools",
             "types-ujson",
         ],

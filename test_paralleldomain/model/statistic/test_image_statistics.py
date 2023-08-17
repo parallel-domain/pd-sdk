@@ -1,6 +1,7 @@
 import numpy as np
 from datetime import datetime
 
+from paralleldomain import Scene
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
 from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
 from paralleldomain.model.statistics import ImageStatistics
@@ -28,16 +29,17 @@ def test_all_red():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_red = np.zeros(256, dtype=np.uint32)
     hist_red[-1] = 512 * 512
     hist_other = np.zeros(256, dtype=np.uint32)
     hist_other[0] = 512 * 512
 
-    assert np.equal(image_statistics._histogram_red, hist_red).all()
-    assert np.equal(image_statistics._histogram_green, hist_other).all()
-    assert np.equal(image_statistics._histogram_blue, hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_red).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_other).all()
 
 
 def test_all_green():
@@ -61,16 +63,17 @@ def test_all_green():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_green = np.zeros(256, dtype=np.uint32)
     hist_green[-1] = 512 * 512
     hist_other = np.zeros(256, dtype=np.uint32)
     hist_other[0] = 512 * 512
 
-    assert np.equal(image_statistics._histogram_red, hist_other).all()
-    assert np.equal(image_statistics._histogram_green, hist_green).all()
-    assert np.equal(image_statistics._histogram_blue, hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_green).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_other).all()
 
 
 def test_all_blue():
@@ -94,16 +97,17 @@ def test_all_blue():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_blue = np.zeros(256, dtype=np.uint32)
     hist_blue[-1] = 512 * 512
     hist_other = np.zeros(256, dtype=np.uint32)
     hist_other[0] = 512 * 512
 
-    assert np.equal(image_statistics._histogram_red, hist_other).all()
-    assert np.equal(image_statistics._histogram_green, hist_other).all()
-    assert np.equal(image_statistics._histogram_blue, hist_blue).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_blue).all()
 
 
 def test_black():
@@ -125,14 +129,15 @@ def test_black():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_other = np.zeros(256)
     hist_other[0] = 512 * 512
 
-    assert np.equal(image_statistics._histogram_red, hist_other).all()
-    assert np.equal(image_statistics._histogram_green, hist_other).all()
-    assert np.equal(image_statistics._histogram_blue, hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_other).all()
 
 
 def test_multiple_updates():
@@ -156,19 +161,20 @@ def test_multiple_updates():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_red = np.zeros(256, dtype=np.uint32)
     hist_red[-1] = 512 * 512 * 4
     hist_other = np.zeros(256, dtype=np.uint32)
     hist_other[0] = 512 * 512 * 4
 
-    assert np.equal(image_statistics._histogram_red, hist_red).all()
-    assert np.equal(image_statistics._histogram_green, hist_other).all()
-    assert np.equal(image_statistics._histogram_blue, hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_red).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_other).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_other).all()
 
 
 def test_range():
@@ -194,7 +200,8 @@ def test_range():
         date_time=datetime.now(),
     )
     sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    image_statistics.update(scene=None, sensor_frame=sensor_frame)
+    scene = Scene(name="test_scene", decoder=None)
+    image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_red = np.zeros(256, dtype=np.uint32)
     hist_red[...] = 1024
@@ -203,6 +210,6 @@ def test_range():
     hist_blue = np.zeros(256, dtype=np.uint32)
     hist_blue[:64] = 4096
 
-    assert np.equal(image_statistics._histogram_red, hist_red).all()
-    assert np.equal(image_statistics._histogram_green, hist_green).all()
-    assert np.equal(image_statistics._histogram_blue, hist_blue).all()
+    assert np.equal(image_statistics._recorder["histogram_red"], hist_red).all()
+    assert np.equal(image_statistics._recorder["histogram_green"], hist_green).all()
+    assert np.equal(image_statistics._recorder["histogram_blue"], hist_blue).all()

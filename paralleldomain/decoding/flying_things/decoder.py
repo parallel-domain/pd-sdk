@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 
-import numpy as np
-
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder
 from paralleldomain.decoding.flying_things.common import (
@@ -19,11 +17,16 @@ from paralleldomain.decoding.flying_things.frame_decoder import FlyingThingsFram
 from paralleldomain.decoding.flying_things.sensor_decoder import FlyingThingsCameraSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
+
+AVAILABLE_ANNOTATION_IDENTIFIERS = [
+    AnnotationIdentifier(annotation_type=AnnotationTypes.OpticalFlow),
+    AnnotationIdentifier(annotation_type=AnnotationTypes.BackwardOpticalFlow),
+]
 
 
 class FlyingThingsDatasetDecoder(DatasetDecoder):
@@ -228,7 +231,7 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.OpticalFlow],
+            available_annotation_identifiers=AVAILABLE_ANNOTATION_IDENTIFIERS,
             custom_attributes=dict(),
         )
 
@@ -271,6 +274,9 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         )
         return metadata_dict
 
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        return AVAILABLE_ANNOTATION_IDENTIFIERS
+
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
 
@@ -293,7 +299,7 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         raise ValueError("FlyingThings decoder does not currently support lidar data!")
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return dict()
 
     def _create_camera_sensor_decoder(

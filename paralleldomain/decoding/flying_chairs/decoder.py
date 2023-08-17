@@ -10,8 +10,8 @@ from paralleldomain.decoding.flying_chairs.frame_decoder import FlyingChairsFram
 from paralleldomain.decoding.flying_chairs.sensor_decoder import FlyingChairsCameraSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -19,6 +19,9 @@ from paralleldomain.utilities.any_path import AnyPath
 SPLIT_FILENAME = "FlyingChairs_train_val.txt"
 IMAGE_FOLDER_NAME = "data"
 OPTICAL_FLOW_FOLDER_NAME = "data"
+AVAILABLE_ANNOTATION_IDENTIFIERS = [
+    AnnotationIdentifier(annotation_type=AnnotationTypes.OpticalFlow),
+]
 
 
 class FlyingChairsDatasetDecoder(DatasetDecoder):
@@ -45,7 +48,7 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
         self.image_folder = image_folder
         self.optical_flow_folder = optical_flow_folder
         self.camera_name = "default"
-        dataset_name = "-".join(list([dataset_path, split_name]))
+        dataset_name = "-".join(list([str(dataset_path), split_name]))
         # train-val split is a list of 1s and 2s
         split_path = self._dataset_path / split_filename
         with split_path.open("r") as f:
@@ -85,7 +88,7 @@ class FlyingChairsDatasetDecoder(DatasetDecoder):
     def _decode_dataset_metadata(self) -> DatasetMeta:
         return DatasetMeta(
             name=self.dataset_name,
-            available_annotation_types=[AnnotationTypes.OpticalFlow],
+            available_annotation_identifiers=AVAILABLE_ANNOTATION_IDENTIFIERS,
             custom_attributes=dict(),
         )
 
@@ -127,6 +130,9 @@ class FlyingChairsSceneDecoder(SceneDecoder[datetime]):
         )
         return metadata_dict
 
+    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        return AVAILABLE_ANNOTATION_IDENTIFIERS
+
     def _decode_set_description(self, scene_name: SceneName) -> str:
         return ""
 
@@ -143,7 +149,7 @@ class FlyingChairsSceneDecoder(SceneDecoder[datetime]):
     def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
         raise ValueError("FlyingChairs decoder does not currently support lidar data!")
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         return dict()
 
     def _create_camera_sensor_decoder(

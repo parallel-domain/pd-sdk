@@ -16,12 +16,10 @@ from paralleldomain.common.dgp.v0.dtos import (
     CalibrationDTO,
     CalibrationExtrinsicDTO,
     CalibrationIntrinsicDTO,
-    OntologyFileDTO,
     PoseDTO,
     SceneDataDatum,
     SceneDataDatumPointCloud,
     SceneDataDTO,
-    SceneDTO,
     SceneSampleDTO,
     scene_data_to_date_time,
 )
@@ -34,8 +32,7 @@ from paralleldomain.decoding.sensor_frame_decoder import (
 )
 from paralleldomain.model.annotation import (
     Albedo2D,
-    Annotation,
-    AnnotationType,
+    AnnotationIdentifier,
     BackwardOpticalFlow,
     BackwardSceneFlow,
     BoundingBox2D,
@@ -57,18 +54,23 @@ from paralleldomain.model.annotation import (
     SurfaceNormals3D,
 )
 from paralleldomain.model.annotation.material_properties_3d import MaterialProperties3D
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.sensor import CameraModel, SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_image, read_json, read_json_str, read_npz, read_png
+from paralleldomain.utilities.fsio import read_image, read_json, read_npz, read_png
 from paralleldomain.utilities.projection import DistortionLookup, DistortionLookupTable
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T")
-F = TypeVar("F", Image, PointCloud, Annotation)
+
+"""
+All our sensor data is in RDF coordinate system. Applying the extrinsic/sensor_to_ego transformation transforms it
+into FLU.
+Please note that transforming 3d boxes into camera sensor frame is currently not implemented.
+"""
 
 
 class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta):
@@ -112,7 +114,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         scene_data = self._get_sensor_frame_data(frame_id=frame_id, sensor_name=sensor_name)
         return scene_data.datum
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return decode_class_maps(
             ontologies=self._ontologies, dataset_path=self._dataset_path, scene_name=self.scene_name
         )
@@ -141,11 +143,14 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         else:
             return _pose_dto_to_transformation(dto=datum.point_cloud.pose, transformation_type=SensorPose)
 
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+        annotation_type = identifier.annotation_type
+        relative_path = self._get_annotation_relative_path(
+            sensor_name=sensor_name, frame_id=frame_id, identifier=identifier
+        )
+
         if issubclass(annotation_type, BoundingBoxes3D):
-            dto = self._decode_bounding_boxes_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_3d(scene_name=self.scene_name, relative_path=relative_path)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -175,7 +180,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
             return BoundingBoxes3D(boxes=box_list)
         elif issubclass(annotation_type, BoundingBoxes2D):
-            dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            dto = self._decode_bounding_boxes_2d(scene_name=self.scene_name, relative_path=relative_path)
 
             box_list = []
             for box_dto in dto.annotations:
@@ -202,51 +207,49 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             return BoundingBoxes2D(boxes=box_list)
         elif issubclass(annotation_type, SemanticSegmentation3D):
             segmentation_mask = self._decode_semantic_segmentation_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.scene_name, relative_path=relative_path
             )
             return SemanticSegmentation3D(class_ids=segmentation_mask)
         elif issubclass(annotation_type, InstanceSegmentation3D):
             instance_mask = self._decode_instance_segmentation_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.scene_name, relative_path=relative_path
             )
             return InstanceSegmentation3D(instance_ids=instance_mask)
         elif issubclass(annotation_type, SemanticSegmentation2D):
-            class_ids = self._decode_semantic_segmentation_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
+            class_ids = self._decode_semantic_segmentation_2d(scene_name=self.scene_name, relative_path=relative_path)
             return SemanticSegmentation2D(class_ids=class_ids)
         elif issubclass(annotation_type, InstanceSegmentation2D):
             instance_ids = self._decode_instance_segmentation_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.scene_name, relative_path=relative_path
             )
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(annotation_type, OpticalFlow):
-            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, relative_path=relative_path)
             return OpticalFlow(vectors=vectors)
         elif issubclass(annotation_type, BackwardOpticalFlow):
-            vectors = self._decode_optical_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            vectors = self._decode_optical_flow(scene_name=self.scene_name, relative_path=relative_path)
             return BackwardOpticalFlow(vectors=vectors)
         elif issubclass(annotation_type, Depth):
-            depth_mask = self._decode_depth(scene_name=self.scene_name, annotation_identifier=identifier)
+            depth_mask = self._decode_depth(scene_name=self.scene_name, relative_path=relative_path)
             return Depth(depth=depth_mask)
         elif issubclass(annotation_type, SceneFlow):
-            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, relative_path=relative_path)
             return SceneFlow(vectors=vectors)
         elif issubclass(annotation_type, BackwardSceneFlow):
-            vectors = self._decode_scene_flow(scene_name=self.scene_name, annotation_identifier=identifier)
+            vectors = self._decode_scene_flow(scene_name=self.scene_name, relative_path=relative_path)
             return BackwardSceneFlow(vectors=vectors)
         elif issubclass(annotation_type, SurfaceNormals3D):
-            normals = self._decode_surface_normals_3d(scene_name=self.scene_name, annotation_identifier=identifier)
+            normals = self._decode_surface_normals_3d(scene_name=self.scene_name, relative_path=relative_path)
             return SurfaceNormals3D(normals=normals)
         elif issubclass(annotation_type, SurfaceNormals2D):
-            normals = self._decode_surface_normals_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            normals = self._decode_surface_normals_2d(scene_name=self.scene_name, relative_path=relative_path)
             return SurfaceNormals2D(normals=normals)
         elif issubclass(annotation_type, PointCaches):
-            caches = self._decode_point_caches(scene_name=self.scene_name, annotation_identifier=identifier)
+            caches = self._decode_point_caches(scene_name=self.scene_name, relative_path=relative_path)
             return PointCaches(caches=caches)
         elif issubclass(annotation_type, MaterialProperties3D):
             material_ids, roughness, metallic, specular, emissive, opacity, flags = self._decode_material_properties_3d(
-                scene_name=self.scene_name, annotation_identifier=identifier
+                scene_name=self.scene_name, relative_path=relative_path
             )
             return MaterialProperties3D(
                 material_ids=material_ids,
@@ -258,19 +261,17 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 flags=flags,
             )
         elif issubclass(annotation_type, Albedo2D):
-            color = self._decode_albedo_2d(scene_name=self.scene_name, annotation_identifier=identifier)
+            color = self._decode_albedo_2d(scene_name=self.scene_name, relative_path=relative_path)
             return Albedo2D(color=color)
         elif issubclass(annotation_type, MaterialProperties2D):
-            roughness = self._decode_material_properties_2d(
-                scene_name=self.scene_name, annotation_identifier=identifier
-            )
+            roughness = self._decode_material_properties_2d(scene_name=self.scene_name, relative_path=relative_path)
             return MaterialProperties2D(roughness=roughness)
         else:
             raise NotImplementedError(f"{annotation_type} is not implemented yet in this decoder!")
 
-    def _decode_available_annotation_types(
-        self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+    def _get_annotation_relative_path(
+        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]
+    ) -> str:
         datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
         if datum.image:
             type_to_path = datum.image.annotations
@@ -284,6 +285,25 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
             available_annotation_types[PointCaches] = "$".join(
                 [available_annotation_types[BoundingBoxes3D], sensor_name, frame_id]
             )
+
+        return available_annotation_types[identifier.annotation_type]
+
+    def _decode_available_annotation_identifiers(
+        self, sensor_name: SensorName, frame_id: FrameId
+    ) -> List[AnnotationIdentifier]:
+        datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
+        if datum.image:
+            type_to_path = datum.image.annotations
+        else:
+            type_to_path = datum.point_cloud.annotations
+
+        available_annotation_types = [
+            AnnotationIdentifier(annotation_type=ANNOTATION_TYPE_MAP[k]) for k in type_to_path.keys()
+        ]
+
+        point_cache_folder = self._dataset_path / self.scene_name / "point_cache"
+        if BoundingBoxes3D in available_annotation_types and point_cache_folder.exists():
+            available_annotation_types.append(AnnotationIdentifier(annotation_type=PointCaches))
 
         return available_annotation_types
 
@@ -315,24 +335,20 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         index = calibration_dto.names.index(sensor_name)
         return calibration_dto.intrinsics[index]
 
-    def _get_3d_boxes_for_point_cache(
-        self, bbox_annotation_identifier: str, sensor_name: SensorName, frame_id: FrameId
-    ):
+    def _get_3d_boxes_for_point_cache(self, sensor_name: SensorName, frame_id: FrameId):
         boxes = self.get_annotations(
             sensor_name=sensor_name,
             frame_id=frame_id,
-            identifier=bbox_annotation_identifier,
-            annotation_type=BoundingBoxes3D,
+            identifier=AnnotationIdentifier(annotation_type=BoundingBoxes3D),
         )
         return boxes
 
-    def _decode_point_caches(self, scene_name: str, annotation_identifier: str) -> List[PointCache]:
-        bbox_annotation_identifier, sensor_name, frame_id = annotation_identifier.split("$")
+    def _decode_point_caches(self, scene_name: str, relative_path: str) -> List[PointCache]:
+        bbox_relative_path, sensor_name, frame_id = relative_path.split("$")
         point_cache_folder = self._dataset_path / scene_name / "point_cache"
         boxes = self._get_3d_boxes_for_point_cache(
             sensor_name=sensor_name,
             frame_id=frame_id,
-            bbox_annotation_identifier=bbox_annotation_identifier,
         )
         caches = []
 
@@ -361,38 +377,38 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return caches
 
-    def _decode_bounding_boxes_3d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox3DDTO:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_bounding_boxes_3d(self, scene_name: str, relative_path: str) -> AnnotationsBoundingBox3DDTO:
+        annotation_path = self._dataset_path / scene_name / relative_path
         bb_dict = read_json(path=annotation_path)
         return AnnotationsBoundingBox3DDTO.from_dict(bb_dict)
 
-    def _decode_bounding_boxes_2d(self, scene_name: str, annotation_identifier: str) -> AnnotationsBoundingBox2DDTO:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_bounding_boxes_2d(self, scene_name: str, relative_path: str) -> AnnotationsBoundingBox2DDTO:
+        annotation_path = self._dataset_path / scene_name / relative_path
         bb_dict = read_json(path=annotation_path)
         return AnnotationsBoundingBox2DDTO.from_dict(bb_dict)
 
-    def _decode_semantic_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_semantic_segmentation_3d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         segmentation_data = read_npz(path=annotation_path, files="segmentation")
 
         return segmentation_data
 
-    def _decode_instance_segmentation_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_instance_segmentation_3d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         instance_data = read_npz(path=annotation_path, files="instance")
 
         return instance_data
 
-    def _decode_semantic_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_semantic_segmentation_2d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         class_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
         return class_ids
 
-    def _decode_optical_flow(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_optical_flow(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
 
         image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
@@ -402,46 +418,44 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return vectors
 
-    def _decode_albedo_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_albedo_2d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         color = read_image(path=annotation_path)[..., :3]
         return color
 
-    def _decode_material_properties_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_material_properties_2d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         roughness = read_png(path=annotation_path)[..., :3]
         return roughness
 
-    def _decode_depth(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_depth(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         depth_data = read_npz(path=annotation_path, files="data")
 
         return np.expand_dims(depth_data, axis=-1)
 
-    def _decode_instance_segmentation_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_instance_segmentation_2d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         image_data = read_image(path=annotation_path)
         image_data = image_data.astype(int)
         instance_ids = (image_data[..., 2:3] << 16) + (image_data[..., 1:2] << 8) + image_data[..., 0:1]
 
         return instance_ids
 
-    def _decode_scene_flow(
-        self, scene_name: str, annotation_identifier: str, files: str = "motion_vectors"
-    ) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_scene_flow(self, scene_name: str, relative_path: str, files: str = "motion_vectors") -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
 
         vectors = read_npz(path=annotation_path, files=files)
 
         return vectors
 
-    def _decode_surface_normals_3d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_surface_normals_3d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
         vectors = read_npz(path=annotation_path, files="surface_normals")
         return vectors
 
-    def _decode_surface_normals_2d(self, scene_name: str, annotation_identifier: str) -> np.ndarray:
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+    def _decode_surface_normals_2d(self, scene_name: str, relative_path: str) -> np.ndarray:
+        annotation_path = self._dataset_path / scene_name / relative_path
 
         encoded_norms = read_png(path=annotation_path)[..., :3]
         encoded_norms_f = encoded_norms.astype(float)
@@ -451,9 +465,9 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return decoded_norms
 
     def _decode_material_properties_3d(
-        self, scene_name: str, annotation_identifier: str
+        self, scene_name: str, relative_path: str
     ) -> (np.ndarray, Dict[str, np.ndarray]):
-        annotation_path = self._dataset_path / scene_name / annotation_identifier
+        annotation_path = self._dataset_path / scene_name / relative_path
         try:
             material_data = read_npz(path=annotation_path, files="material_properties")
         except KeyError:  # Temporary solution
@@ -471,11 +485,16 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
 
         return material_ids, roughness, metallic, specular, emissive, opacity, flags
 
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
-        annotation_identifiers = self.get_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id)
-        if data_type in annotation_identifiers:
-            annotation_identifier = annotation_identifiers[data_type]
-            return self._dataset_path / self.scene_name / annotation_identifier
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
+        annotation_identifiers = self.get_available_annotation_identifiers(sensor_name=sensor_name, frame_id=frame_id)
+        annotation_identifiers = {a.annotation_type: a for a in annotation_identifiers}
+        if isinstance(data_type, AnnotationIdentifier) and data_type.annotation_type in annotation_identifiers:
+            relative_path = self._get_annotation_relative_path(
+                sensor_name=sensor_name, frame_id=frame_id, identifier=annotation_identifiers[data_type]
+            )
+            return self._dataset_path / self.scene_name / relative_path
         elif issubclass(data_type, Image):
             datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
             return self._dataset_path / self.scene_name / datum.image.filename

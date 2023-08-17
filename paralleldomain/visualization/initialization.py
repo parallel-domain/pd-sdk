@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 import rerun as rr
@@ -20,6 +21,7 @@ def initialize_viewer(application_id: str = "PD Viewer", entity_root: str = "wor
     if not _RERUN_IS_INITIALIZED:
         rr.init(
             application_id=application_id,
+            recording_id=str(uuid.uuid4()),
             default_enabled=True,
             strict=True,
             spawn=True,

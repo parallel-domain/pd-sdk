@@ -16,7 +16,7 @@ class Depth(Annotation):
 
     Attributes:
         depth: Matrix of shape `(H X W x 1)`, , where `H` is the height and `W` is the width of corresponding
-            camera image. The third axis contains the depth distance for each pixel as `int` in meter.
+            camera image. The third axis contains the depth distance for each pixel as `float` in meter.
 
     """
 

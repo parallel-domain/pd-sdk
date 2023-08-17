@@ -65,9 +65,10 @@ class GaussianColorDistribution(StreamingStats):
     def to_distribution(self) -> np.ndarray:
         """
         Transformation that can be used to transform a color value from a unit distribution into this distribution
-        :return:
-        """
 
+        Returns:
+            4x4 transformation matrix
+        """
         matrix = np.identity(4).astype(np.float32)
         matrix[:3, :3] *= self.std
         matrix[:3, 3] = self.mean
@@ -77,7 +78,9 @@ class GaussianColorDistribution(StreamingStats):
     def to_unit_distribution(self) -> np.ndarray:
         """
         Transformation that can be used to transform a color value from this distribution into a unit distribution
-        :return:
+
+        Returns:
+            4x4 transformation matrix
         """
         return np.linalg.inv(self.to_distribution)
 
@@ -91,7 +94,9 @@ class GaussianColorDistribution(StreamingStats):
     def update(self, x: np.ndarray) -> None:
         """
         adds the image colors to the color statistics
-        :param x: image in rgb
+
+        Args:
+            x: image in rgb
         """
         if x.dtype == np.uint8:
             x = x.astype(np.float32) / 255
@@ -118,9 +123,13 @@ class GaussianColorDistribution(StreamingStats):
     def from_image_stream(image_stream: Iterator[np.ndarray], use_tqdm: bool = True) -> "GaussianColorDistribution":
         """
         Calculates the statistics of all images in the given image stream
-        :param image_stream: Iterator over rgb images
-        :param use_tqdm: shows a progress bar if true
-        :return: The color distribution object
+
+        Args:
+            image_stream: Iterator over rgb images
+            use_tqdm: shows a progress bar if true
+
+        Returns:
+            The color distribution object
         """
         stats = GaussianColorDistribution()
         if use_tqdm:
@@ -133,9 +142,13 @@ class GaussianColorDistribution(StreamingStats):
     def from_folder(image_folder: Union[str, AnyPath], use_tqdm: bool = True) -> "GaussianColorDistribution":
         """
         Calculates color statistics of all images in a folder. Note that this only works on flat folders right now
-        :param image_folder: folder with images
-        :param use_tqdm: shows a progress bar if true
-        :return: The color distribution object
+
+        Args:
+            image_folder: folder with images
+            use_tqdm: shows a progress bar if true
+
+        Returns:
+            The color distribution object
         """
         image_gen = (
             read_image(path=path) for path in AnyPath(image_folder).iterdir() if path.suffix in [".jpg", ".png"]
@@ -147,10 +160,14 @@ class GaussianColorDistribution(StreamingStats):
     def from_dataset(dataset: Dataset, use_tqdm: bool = True, max_samples: int = -1) -> "GaussianColorDistribution":
         """
         Calculates color statistics of images in a dataset
-        :param dataset: the dataset instance
-        :param use_tqdm: shows a progress bar if true
-        :param max_samples: number of images that are used to calculate images. It takes all images if set to -1
-        :return: The color distribution object
+
+        Args:
+            dataset: the dataset instance
+            use_tqdm: shows a progress bar if true
+            max_samples: number of images that are used to calculate images. It takes all images if set to -1
+
+        Returns:
+            The color distribution object
         """
 
         def image_gen() -> Generator[np.ndarray, None, None]:
@@ -205,8 +222,12 @@ class ColorMatcher:
     def __matmul__(self, other: np.ndarray) -> np.ndarray:
         """
         Applies the color matching to a rgb/rgba image
-        :param other: the image as numpy array
-        :return: the color transformed image
+
+        Args:
+            other: the image as numpy array
+
+        Returns:
+            the color transformed image
         """
         if not isinstance(other, np.ndarray):
             raise ValueError(f"Invalid value {other}! Has to be an numpy array of shape MxNx3 or  MxNx4!")

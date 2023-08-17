@@ -18,7 +18,6 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     RadarSensorFrameDecoder,
 )
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
@@ -109,11 +108,6 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
         return DGPLidarSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -127,11 +121,6 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             point_cache_folder_exists=self._point_cache_folder_exists,
         )
 
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[datetime]:
         return DGPRadarSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -144,8 +133,3 @@ class DGPFrameDecoder(FrameDecoder[datetime]):
             settings=self.settings,
             point_cache_folder_exists=self._point_cache_folder_exists,
         )
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[datetime]:
-        return RadarSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)

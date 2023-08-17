@@ -25,17 +25,15 @@ class Scene(UnorderedScene[datetime]):
 
     Args:
         name: Name of scene
-        available_annotation_types: List of available annotation types for this scene.
         decoder: Decoder instance to be used for loading all relevant objects (frames, annotations etc.)
     """
 
     def __init__(
         self,
         name: SceneName,
-        available_annotation_types: List[AnnotationType],
         decoder: SceneDecoderProtocol,
     ):
-        super().__init__(name=name, available_annotation_types=available_annotation_types, decoder=decoder)
+        super().__init__(name=name, decoder=decoder)
         self._decoder = decoder
 
     @property

@@ -8,7 +8,7 @@ from paralleldomain.visualization.statistics.viewer import ViewComponent, BACKEN
 
 
 @STATISTIC_VIS_REGISTRY.register_module(reference_model=ClassDistribution, is_default=True, backend=BACKEND.DASH)
-class ClassDistributionView(ViewComponent):
+class PlotlyClassDistributionView(ViewComponent[ClassDistribution]):
     def __init__(self, model: ClassDistribution, classes_of_interest: List[str] = None) -> None:
         super().__init__(model=model)
         self._classes_of_interest = classes_of_interest

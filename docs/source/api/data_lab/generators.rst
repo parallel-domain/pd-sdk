@@ -54,3 +54,7 @@ paralleldomain.data_lab.generators
 .. automodule:: paralleldomain.data_lab.generators.vehicle
     :members:
     :inherited-members:
+
+.. automodule:: paralleldomain.data_lab.generators.driveway
+    :members:
+    :inherited-members:

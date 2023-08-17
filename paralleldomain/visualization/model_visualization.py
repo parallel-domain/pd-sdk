@@ -1,6 +1,9 @@
 from collections import deque
+from time import sleep
+
+import cv2
 from itertools import islice
-from typing import List, Union
+from typing import List, Union, Optional
 
 import numpy as np
 import rerun as rr
@@ -13,8 +16,21 @@ from paralleldomain.model.unordered_scene import UnorderedScene
 from paralleldomain.visualization.initialization import initialize_viewer
 
 
-def show_dataset(dataset: Dataset):
-    pass
+def show_dataset(
+    dataset: Dataset,
+    annotations_to_show: List[AnnotationType] = None,
+    max_frames: int = None,
+    max_scenes: int = None,
+    entity_root: str = "world",
+    **kwrags,
+):
+    scene_stream = dataset.scene_pipeline(**kwrags)
+    if max_frames is not None:
+        scene_stream = islice(scene_stream, max_scenes)
+    for scene in scene_stream:
+        rr.reset_time()
+        rr.log_cleared(entity_path=entity_root, recursive=True)
+        show_scene(scene=scene, annotations_to_show=annotations_to_show, max_frames=max_frames, entity_root=entity_root)
 
 
 def show_sensor_frame(
@@ -23,7 +39,7 @@ def show_sensor_frame(
     depth_cutoff: float = 3000.0,
     entity_root: str = "world",
 ):
-    initialize_viewer(entity_root=entity_root, timeless=sensor_frame.date_time is None)
+    initialize_viewer(entity_root=entity_root, timeless=False)
 
     if annotations_to_show is None:
         annotation_types = sensor_frame.available_annotation_types
@@ -74,13 +90,16 @@ def show_sensor_frame(
                     annotation_type=AnnotationTypes.SemanticSegmentation2D
                 ).class_ids
                 rr.log_segmentation_image(entity_path=f"{image_ref}/semantic_segmentation_2d", image=class_ids)
+            elif annotation_type is AnnotationTypes.InstanceSegmentation2D:
+                instance_ids = sensor_frame.get_annotations(
+                    annotation_type=AnnotationTypes.InstanceSegmentation2D
+                ).instance_ids
+                rr.log_segmentation_image(entity_path=f"{image_ref}/instance_segmentation_2d", image=instance_ids)
             elif annotation_type is AnnotationTypes.BoundingBoxes3D:
                 boxes = sensor_frame.get_annotations(annotation_type=AnnotationTypes.BoundingBoxes3D).boxes
                 class_map = sensor_frame.class_maps[AnnotationTypes.BoundingBoxes3D]
                 for box in boxes:
                     global_pose = box.pose
-                    rot_q = deque(global_pose.quaternion.elements)
-                    rot_q.rotate(1)
                     box_meta = dict(instance_id=box.instance_id, num_points=box.num_points)
                     box_meta.update(box.attributes)
                     rr.log_obb(
@@ -90,7 +109,12 @@ def show_sensor_frame(
                         ext=box_meta,
                         half_size=[box.length / 2, box.width / 2, box.height / 2],
                         position=global_pose.translation,
-                        rotation_q=np.array(rot_q),
+                        rotation_q=[
+                            global_pose.quaternion.x,
+                            global_pose.quaternion.y,
+                            global_pose.quaternion.z,
+                            global_pose.quaternion.w,
+                        ],
                     )
 
     elif isinstance(sensor_frame, LidarSensorFrame):
@@ -113,8 +137,6 @@ def show_sensor_frame(
                 class_map = sensor_frame.class_maps[AnnotationTypes.BoundingBoxes3D]
                 for box in boxes:
                     global_pose = box.pose
-                    rot_q = deque(global_pose.quaternion.elements)
-                    rot_q.rotate(1)
                     box_meta = dict(instance_id=box.instance_id, num_points=box.num_points)
                     box_meta.update(box.attributes)
                     rr.log_obb(
@@ -124,28 +146,56 @@ def show_sensor_frame(
                         ext=box_meta,
                         half_size=[box.length / 2, box.width / 2, box.height / 2],
                         position=global_pose.translation,
-                        rotation_q=np.array(rot_q),
+                        rotation_q=[
+                            global_pose.quaternion.x,
+                            global_pose.quaternion.y,
+                            global_pose.quaternion.z,
+                            global_pose.quaternion.w,
+                        ],
+                    )
+                    forward = box.pose @ np.array([[box.length, 0.0, 0.0, 0.0]]).T
+                    # forward = box.pose @ np.array([[1., 0., 0., 1.]]).T
+                    rr.log_arrow(
+                        entity_path=f"{frame_ref}/bounding_boxes_3d/{box.instance_id}/direction",
+                        origin=global_pose.translation,
+                        vector=forward.T[0, :3],
                     )
 
         cloud = sensor_frame.point_cloud
+        # note: intensity should be between [0, 1] and of shape (:, 1)
+        intensity = cloud.intensity
+        intensity = np.clip(intensity, 0.0, 1.0)
+        pad_ones = np.ones_like(cloud.intensity)
+        intensity_color = np.stack([0.25 * intensity, 0.5 + 0.5 * intensity, pad_ones], axis=-1) * 255
+        intensity_color = cv2.cvtColor(intensity_color.astype(np.uint8), cv2.COLOR_HSV2RGB)[:, 0, :]
+
         rr.log_points(
             entity_path=cloud_ref,
             positions=cloud.xyz,
             class_ids=pcl_class_ids,
-            colors=cloud.rgb,
+            colors=intensity_color,
             identifiers=pcl_instance_ids,
         )
 
 
 def show_frame(
     frame: Frame,
+    frame_index: Optional[int] = None,
     annotations_to_show: List[AnnotationType] = None,
     entity_root: str = "world",
 ):
-    initialize_viewer(entity_root=entity_root, timeless=frame.date_time is None)
+    sleep(1)
+    initialize_viewer(entity_root=entity_root, timeless=False)
 
     if frame.date_time is not None:
         rr.set_time_seconds(timeline="time", seconds=frame.date_time.timestamp())
+    else:
+        try:
+            frame_int_id = int(frame.frame_id)
+        except ValueError:
+            frame_int_id = frame_index
+        rr.set_time_sequence(timeline="time", sequence=frame_int_id)
+        rr.log_cleared(entity_path=entity_root, recursive=True)
 
     for sensor_frame in frame.camera_frames:
         show_sensor_frame(sensor_frame=sensor_frame, annotations_to_show=annotations_to_show, entity_root=entity_root)
@@ -159,10 +209,10 @@ def show_scene(
     max_frames: int = None,
     entity_root: str = "world",
 ):
-    initialize_viewer(entity_root=entity_root, timeless=not isinstance(scene, Scene))
+    initialize_viewer(entity_root=entity_root, timeless=False)
 
     frame_stream = scene.frame_pipeline()
     if max_frames is not None:
         frame_stream = islice(frame_stream, max_frames)
-    for frame in frame_stream:
-        show_frame(frame=frame, annotations_to_show=annotations_to_show, entity_root=entity_root)
+    for frame_idx, frame in enumerate(frame_stream):
+        show_frame(frame=frame, annotations_to_show=annotations_to_show, entity_root=entity_root, frame_index=frame_idx)

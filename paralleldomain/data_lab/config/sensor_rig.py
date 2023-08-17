@@ -3,27 +3,38 @@ from typing import Iterable, List, Optional, Type, TypeVar, Union
 import numpy as np
 import pd.state
 from google.protobuf.message import Message
-
-from paralleldomain.utilities.coordinate_system import CoordinateSystem, SIM_COORDINATE_SYSTEM
 from pd.internal.proto.keystone.generated.python import pd_sensor_pb2 as pd_sensor_pb2_base
 from pd.internal.proto.keystone.generated.wrapper import pd_sensor_pb2
 from pd.internal.proto.keystone.generated.wrapper.utils import register_wrapper
-from pd.state.sensor import (
-    CameraSensor,
-    DistortionParams,
-    LiDARSensor,
-    NoiseParams,
-    PostProcessMaterial,
-    PostProcessParams,
-)
+from pd.state.sensor import CameraSensor
+from pd.state.sensor import DistortionParams as DistortionParamsStep
+from pd.state.sensor import LiDARSensor
+from pd.state.sensor import NoiseParams as NoiseParamsStep
+from pd.state.sensor import PostProcessMaterial
+from pd.state.sensor import PostProcessParams as PostProcessParamsStep
 
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.utilities.coordinate_system import SIM_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.transformation import Transformation
 
+AlbedoWeights = pd_sensor_pb2.AlbedoWeights
+AliceLidarModel = pd_sensor_pb2.AliceLidarModel
 CameraIntrinsic = pd_sensor_pb2.CameraIntrinsic
+DistortionParams = pd_sensor_pb2.DistortionParams
+LidarBeam = pd_sensor_pb2.LidarBeam
+LidarIntensityParams = pd_sensor_pb2.LidarIntensityParams
 LidarIntrinsic = pd_sensor_pb2.LidarIntrinsic
+LidarNoiseParams = pd_sensor_pb2.LidarNoiseParams
+NoiseParams = pd_sensor_pb2.NoiseParams
+PostProcessNode = pd_sensor_pb2.PostProcessNode
+PostProcessParams = pd_sensor_pb2.PostProcessParams
+RadarBasicParameters = pd_sensor_pb2.RadarBasicParameters
+RadarDetectorParameters = pd_sensor_pb2.RadarDetectorParameters
+RadarEnergyParameters = pd_sensor_pb2.RadarEnergyParameters
 RadarIntrinsic = pd_sensor_pb2.RadarIntrinsic
+RadarNoiseParameters = pd_sensor_pb2.RadarNoiseParameters
 SensorExtrinsic = pd_sensor_pb2.SensorExtrinsic
+SensorList = pd_sensor_pb2.SensorList
 
 T = TypeVar("T")
 
@@ -142,17 +153,17 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
                 lut=self.camera_intrinsic.lut,
                 lut_weight=self.camera_intrinsic.lut_weight,
                 distortion_params=convert_to_step_class(
-                    DistortionParams, message=self.camera_intrinsic.proto, attr_name="distortion_params"
+                    DistortionParamsStep, message=self.camera_intrinsic.proto, attr_name="distortion_params"
                 ),
                 noise_params=convert_to_step_class(
-                    NoiseParams, message=self.camera_intrinsic.proto, attr_name="noise_params"
+                    NoiseParamsStep, message=self.camera_intrinsic.proto, attr_name="noise_params"
                 ),
                 post_process_params=convert_to_step_class(
-                    PostProcessParams, message=self.camera_intrinsic.proto, attr_name="post_process_params"
+                    PostProcessParamsStep, message=self.camera_intrinsic.proto, attr_name="post_process_params"
                 ),
-                # post_process_materials=convert_to_step_class(
-                #     PostProcessMaterial, message=self.camera_intrinsic.proto, attr_name="post_process"
-                # ),
+                post_process_materials=convert_to_step_class(
+                    PostProcessMaterial, message=self.camera_intrinsic.proto, attr_name="post_process"
+                ),
                 transmit_gray=self.camera_intrinsic.transmit_gray,
                 fisheye_model=self.camera_intrinsic.distortion_params.fisheye_model,
                 distortion_lookup_table=self.camera_intrinsic.distortion_lookup_table,
@@ -215,7 +226,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         )
 
         x, y, z = pose.translation
-        # rfu coordinate system => roll is around y-axis, pitch around x-axis
+        # RFU coordinate system => roll is around y-axis, pitch around x-axis
         roll, pitch, yaw = pose.as_euler_angles(order="yxz", degrees=True)
         extrinsic = SensorExtrinsic(
             x=x, y=y, z=z, roll=roll, pitch=pitch, yaw=yaw, follow_rotation=follow_rotation, lock_to_yaw=lock_to_yaw
@@ -223,7 +234,6 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         annotation_types = annotation_types if annotation_types is not None else []
         return SensorConfig(
             display_name=name,
-            # pose=pose,
             sensor_extrinsic=extrinsic,
             camera_intrinsic=CameraIntrinsic(
                 width=width,
@@ -290,7 +300,7 @@ class SensorRig(pd_sensor_pb2.SensorRigConfig):
         pose: Union[Transformation, np.ndarray],
         width: int,
         height: int,
-        field_of_view_degrees: float,
+        field_of_view_degrees: float = 70,
         grayscale: bool = False,
         annotation_types: List[AnnotationType] = None,
         **kwargs,

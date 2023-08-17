@@ -7,10 +7,10 @@ from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.scenario import Scenario
 from pd.data_lab.sim_instance import SimulationInstance
-from pd.internal.proto.keystone.generated.wrapper.pd_sensor_pb2 import DistortionParams
 
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab.config.reactor import ReactorConfig, ReactorObject
+from paralleldomain.data_lab.config.sensor_rig import DistortionParams
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.model.annotation import Depth, InstanceSegmentation2D, SemanticSegmentation2D
@@ -24,7 +24,6 @@ Please note that this requires depth annotations to work!
 """
 
 
-logging.basicConfig(level=logging.DEBUG)
 setup_loggers(logger_names=["__main__", "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
@@ -32,8 +31,7 @@ logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 PROXY_OBJECT = "SM_NCAP_Male_Child_2yo_A_BobbyCar_01"  # used as an approximation for generated object's shape
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-LOCATION_VERSION = "local"
-setup_datalab(LOCATION_VERSION)
+setup_datalab("v2.4.0-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -116,7 +114,7 @@ scenario.environment.rain.set_constant_value(0.0)
 scenario.environment.wetness.set_uniform_distribution(min_value=0.1, max_value=0.3)
 
 # Select an environment
-scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium", version=LOCATION_VERSION))
+scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
 
 # Place ourselves in the world
 scenario.add_ego(
@@ -156,8 +154,8 @@ data_lab.create_mini_batch(
     number_of_scenes=2,
     sim_capture_rate=10,
     start_skip_frames=5,
-    sim_instance=SimulationInstance(name="local"),
-    render_instance=RenderInstance(name="local"),
+    sim_instance=SimulationInstance(name="<instance name>"),
+    render_instance=RenderInstance(name="<instance name>"),
     reactor_config=reactor_config,
     use_cached_reactor_states=True,
     format_kwargs=dict(

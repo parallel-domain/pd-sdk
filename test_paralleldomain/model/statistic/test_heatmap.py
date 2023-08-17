@@ -1,20 +1,21 @@
-import numpy as np
 from datetime import datetime
 
-from paralleldomain.model.scene import Scene
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
-from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D
-from paralleldomain.model.class_mapping import ClassMap, ClassDetail
-from paralleldomain.model.statistics import ClassHeatMaps
+import numpy as np
+
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
+from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D, AnnotationIdentifier
+from paralleldomain.model.class_mapping import ClassMap, ClassDetail
+from paralleldomain.model.scene import Scene
+from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
+from paralleldomain.model.statistics import ClassHeatMaps
 
 
 def test_bounding_boxes():
     heatmaps = ClassHeatMaps()
 
     scene_decoder = InMemorySceneDecoder(frame_ids=["1"])
-    scene = Scene(name="test_scene", available_annotation_types=[BoundingBoxes2D], decoder=scene_decoder)
+    scene = Scene(name="test_scene", decoder=scene_decoder)
 
     image = np.zeros([450, 450, 3], dtype=np.uint8)
     boxes = []
@@ -33,13 +34,14 @@ def test_bounding_boxes():
         ]
     )
 
+    annotation_key = AnnotationIdentifier(annotation_type=BoundingBoxes2D)
     frame_decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test_scene",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations={BoundingBoxes2D.__name__: bbox_2d},
-        class_maps={BoundingBoxes2D.__name__: bbox_classmap},
+        annotations={annotation_key: bbox_2d},
+        class_maps={annotation_key: bbox_classmap},
         intrinsic=SensorIntrinsic(),
         rgba=image,
         image_dimensions=image.shape,

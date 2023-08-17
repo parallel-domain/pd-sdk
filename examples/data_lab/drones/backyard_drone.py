@@ -9,19 +9,18 @@ from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain.data_lab.config.map import MapQuery, Area
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.data_lab import preview_scenario
+from paralleldomain.data_lab.config.map import Area, MapQuery
+from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import write_png
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.visualization.sensor_frame_viewer import show_sensor_frame
 
-setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.2.0-beta")
+setup_datalab("v2.4.0-beta")
 
 
 class EgoDroneFlightProfileBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -212,31 +211,6 @@ scenario.add_ego(
         )
     )
 )
-
-
-def preview_scenario(
-    scenario,
-    number_of_scenes: int = 1,
-    frames_per_scene: int = 10,
-    annotations_to_show: List[AnnotationType] = None,
-    show_image_for_n_seconds: float = 2,
-    **kwargs,
-):
-    AnyPath("out").mkdir(exist_ok=True)
-    for frame, scene in data_lab.create_frame_stream(
-        scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
-    ):
-        for camera_frame in frame.camera_frames:
-            write_png(
-                obj=camera_frame.image.rgb,
-                path=AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png"),
-            )
-
-            show_sensor_frame(
-                sensor_frame=camera_frame,
-                frames_per_second=show_image_for_n_seconds,
-                annotations_to_show=annotations_to_show,
-            )
 
 
 preview_scenario(

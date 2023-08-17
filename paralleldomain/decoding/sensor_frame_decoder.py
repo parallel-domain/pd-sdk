@@ -1,21 +1,18 @@
 import abc
 from datetime import datetime
-from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
 from paralleldomain.decoding.common import DecoderSettings, LazyLoadPropertyMixin, create_cache_key
-from paralleldomain.model.annotation import Annotation, AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.model.image import Image
-from paralleldomain.model.point_cloud import PointCloud
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose
-from paralleldomain.model.type_aliases import AnnotationIdentifier, FrameId, SceneName, SensorName
+from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.projection import DistortionLookup
 
 T = TypeVar("T")
-F = TypeVar("F", Image, PointCloud, Annotation)
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
@@ -54,9 +51,7 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             loader=lambda: self._decode_sensor_pose(sensor_name=sensor_name, frame_id=frame_id),
         )
 
-    def get_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
+    def get_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
         if self.settings.cache_annotations:
             _unique_cache_key = self.get_unique_sensor_frame_id(
                 sensor_name=sensor_name, frame_id=frame_id, extra=f"-annotations-{identifier}"
@@ -64,15 +59,15 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             return self.lazy_load_cache.get_item(
                 key=_unique_cache_key,
                 loader=lambda: self._decode_annotations(
-                    sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
+                    sensor_name=sensor_name, frame_id=frame_id, identifier=identifier
                 ),
             )
         else:
-            return self._decode_annotations(
-                sensor_name=sensor_name, frame_id=frame_id, identifier=identifier, annotation_type=annotation_type
-            )
+            return self._decode_annotations(sensor_name=sensor_name, frame_id=frame_id, identifier=identifier)
 
-    def get_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def get_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra=f"-file_path-{data_type.__name__}"
         )
@@ -81,15 +76,15 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             loader=lambda: self._decode_file_path(sensor_name=sensor_name, frame_id=frame_id, data_type=data_type),
         )
 
-    def get_available_annotation_types(
+    def get_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+    ) -> List[AnnotationIdentifier]:
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra="-available_annotation_types"
         )
         return self.lazy_load_cache.get_item(
             key=_unique_cache_key,
-            loader=lambda: self._decode_available_annotation_types(sensor_name=sensor_name, frame_id=frame_id),
+            loader=lambda: self._decode_available_annotation_identifiers(sensor_name=sensor_name, frame_id=frame_id),
         )
 
     def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
@@ -101,7 +96,7 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
             loader=lambda: self._decode_metadata(sensor_name=sensor_name, frame_id=frame_id),
         )
 
-    def get_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         _unique_cache_key = self.get_unique_sensor_frame_id(extra="class_maps", sensor_name=None, frame_id=None)
         class_maps = self.lazy_load_cache.get_item(
             key=_unique_cache_key,
@@ -114,13 +109,13 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
         return self._decode_date_time(sensor_name=sensor_name, frame_id=frame_id)
 
     @abc.abstractmethod
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         pass
 
     @abc.abstractmethod
-    def _decode_available_annotation_types(
+    def _decode_available_annotation_identifiers(
         self, sensor_name: SensorName, frame_id: FrameId
-    ) -> Dict[AnnotationType, AnnotationIdentifier]:
+    ) -> List[AnnotationIdentifier]:
         pass
 
     @abc.abstractmethod
@@ -140,13 +135,13 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
         pass
 
     @abc.abstractmethod
-    def _decode_annotations(
-        self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier, annotation_type: T
-    ) -> T:
+    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
         pass
 
     @abc.abstractmethod
-    def _decode_file_path(self, sensor_name: SensorName, frame_id: FrameId, data_type: Type[F]) -> Optional[AnyPath]:
+    def _decode_file_path(
+        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
+    ) -> Optional[AnyPath]:
         pass
 
 

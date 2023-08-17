@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Set, Tuple, TypeVar, Union
+from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, TypeVar, Union, Type
 
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
@@ -18,11 +18,12 @@ import logging
 
 import pypeln
 
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationType, AnnotationIdentifier
 from paralleldomain.model.scene import Scene
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
 TOrderBy = TypeVar("TOrderBy")
 DEFAULT_NUM_OF_COUNTING_WORKERS = 4
 DEFAULT_SIZE_OF_COUNTING_QUEUE = 8
@@ -34,19 +35,23 @@ class DatasetMeta:
 
     Args:
         name: :attr:`~.DatasetMeta.name`
-        available_annotation_types: :attr:`~.DatasetMeta.available_annotation_types`
+        available_annotation_identifiers: :attr:`~.DatasetMeta.available_annotation_identifiers`
         custom_attributes: :attr:`~.DatasetMeta.custom_attributes`
 
     Attributes:
         name: Name of the dataset.
-        available_annotation_types: List of available annotation types for all scenes.
+        available_annotation_identifiers: List of available annotation identifiers for all scenes.
         custom_attributes: Dictionary of arbitrary dataset attributes.
 
     """
 
     name: str
-    available_annotation_types: List[AnnotationType]
+    available_annotation_identifiers: List[AnnotationIdentifier]
     custom_attributes: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def available_annotation_types(self) -> List[AnnotationType]:
+        return list({a.annotation_type for a in self.available_annotation_identifiers})
 
 
 class DatasetDecoderProtocol(Protocol):
@@ -129,6 +134,18 @@ class Dataset:
     def available_annotation_types(self) -> List[AnnotationType]:
         """Returns a list of available annotation types for the dataset."""
         return self.metadata.available_annotation_types
+
+    @property
+    def available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        """Returns a list of available annotation identifiers for the dataset."""
+        return self.metadata.available_annotation_identifiers
+
+    def get_annotation_identifiers_of_type(self, annotation_type: Type[T]) -> List[AnnotationIdentifier[T]]:
+        return [
+            identifier
+            for identifier in self.available_annotation_identifiers
+            if issubclass(identifier.annotation_type, annotation_type)
+        ]
 
     @property
     def name(self) -> str:
@@ -386,6 +403,8 @@ class Dataset:
             used_scene_names = self.scene_names if only_ordered_scenes else self.unordered_scene_names
             used_scene_names = [name for name in used_scene_names if scene_names is None or name in scene_names]
             epoch = 0
+            if len(used_scene_names) == 0:
+                raise ValueError("scene_names is empty.")
             while endless_loop or epoch == 0:
                 epoch += 1
                 if shuffle:

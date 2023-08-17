@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Optional
 
 import numpy as np
 from google.protobuf import timestamp_pb2
@@ -207,7 +207,6 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
             metadata = pipeline_item.custom_data[CUSTOM_FORMAT_KEY][META_DATA_KEY]
             target_frame_id = pipeline_item.frame_id
             target_sensor_name = pipeline_item.target_sensor_name
-
             camera_datum = self.encode_camera_datum(
                 target_sensor_name=target_sensor_name,
                 scene_output_path=scene_output_path,
@@ -216,6 +215,8 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
                 metadata=metadata,
                 target_frame_id=target_frame_id,
                 sensor_frame=pipeline_item.camera_frame,
+                stored_width=pipeline_item.custom_data[CUSTOM_FORMAT_KEY].get("image_width"),
+                stored_height=pipeline_item.custom_data[CUSTOM_FORMAT_KEY].get("image_height"),
             )
             return camera_datum
         raise ValueError("The given pipeline item does not contain a camera frame!")
@@ -229,11 +230,19 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         metadata: Dict[str, Any],
         target_frame_id: FrameId,
         sensor_frame: CameraSensorFrame,
+        stored_width: Optional[int],
+        stored_height: Optional[int],
     ) -> sample_pb2.Datum:
         quaternion = sensor_frame.pose.quaternion
         date_time = sensor_frame.date_time
-        image_height = sensor_frame.image.height
-        image_width = sensor_frame.image.width
+        if stored_height is None:
+            image_height = sensor_frame.image.height
+        else:
+            image_height = stored_height
+        if stored_width is None:
+            image_width = sensor_frame.image.width
+        else:
+            image_width = stored_width
         rotation = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
 
         scene_datum_dto = image_pb2.Image(
@@ -425,8 +434,9 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
                 class_map = class_maps.get(annotation_id, None)
                 if class_map is None:
                     class_map = scene.get_class_map(a_type)
-                ontology_proto = class_map_to_ontology_proto(class_map=class_map)
-                onthologie_map[iannotation_id] = ontology_proto
+                if class_map is not None:
+                    ontology_proto = class_map_to_ontology_proto(class_map=class_map)
+                    onthologie_map[iannotation_id] = ontology_proto
         return onthologie_map
 
     def get_scene_sensor_data(

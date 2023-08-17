@@ -1,6 +1,5 @@
 from datetime import datetime
-from functools import lru_cache
-from typing import List, Optional, Set
+from typing import Set
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder
@@ -13,8 +12,6 @@ from paralleldomain.decoding.waymo_open_dataset.sensor_frame_decoder import (
     WaymoOpenDatasetCameraSensorFrameDecoder,
     WaymoOpenDatasetLidarSensorFrameDecoder,
 )
-from paralleldomain.model.class_mapping import ClassDetail
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 
@@ -40,20 +37,15 @@ class WaymoOpenDatasetCameraSensorDecoder(CameraSensorDecoder[datetime]):
                 lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             if self.scene_name in id_map:
-                return [elem["frame_id"] for elem in id_map[self.scene_name]]
+                return {elem["frame_id"] for elem in id_map[self.scene_name]}
 
         record = self._dataset_path / self.scene_name
-        frame_ids = list()
+        frame_ids = set()
         for _, frame_id in get_record_iterator(record_path=record, read_frame=False):
-            frame_ids.append(frame_id)
+            frame_ids.add(frame_id)
         return frame_ids
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[None]:
-        return CameraSensorFrame[None](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
-
-    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[None]:
+    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return WaymoOpenDatasetCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
@@ -87,20 +79,15 @@ class WaymoOpenDatasetLidarSensorDecoder(LidarSensorDecoder[datetime]):
                 lazy_load_cache=self.lazy_load_cache, dataset_name=self.dataset_name, split_name=self.split_name
             )
             if self.scene_name in id_map:
-                return [elem["frame_id"] for elem in id_map[self.scene_name]]
+                return {elem["frame_id"] for elem in id_map[self.scene_name]}
 
         record = self._dataset_path / self.scene_name
-        frame_ids = list()
+        frame_ids = set()
         for _, frame_id in get_record_iterator(record_path=record, read_frame=False):
-            frame_ids.append(frame_id)
+            frame_ids.add(frame_id)
         return frame_ids
 
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
-    ) -> LidarSensorFrame[None]:
-        return LidarSensorFrame[None](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)
-
-    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[None]:
+    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
         return WaymoOpenDatasetLidarSensorFrameDecoder(
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,

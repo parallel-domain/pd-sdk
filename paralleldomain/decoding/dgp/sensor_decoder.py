@@ -7,8 +7,7 @@ from paralleldomain.common.dgp.v0.dtos import SceneDataDTO, SceneSampleDTO
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.dgp.sensor_frame_decoder import DGPCameraSensorFrameDecoder, DGPLidarSensorFrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, SensorDecoder
-from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, LidarSensorFrameDecoder
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame
+from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
@@ -57,11 +56,6 @@ class DGPCameraSensorDecoder(DGPSensorDecoder, CameraSensorDecoder[datetime]):
         super().__init__(**kwargs)
         self._create_camera_sensor_frame_decoder = lru_cache(maxsize=1)(self._create_camera_sensor_frame_decoder)
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, camera_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=camera_name, frame_id=frame_id, decoder=decoder)
-
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[datetime]:
         return DGPCameraSensorFrameDecoder(
             dataset_name=self.dataset_name,
@@ -91,8 +85,3 @@ class DGPLidarSensorDecoder(DGPSensorDecoder, LidarSensorDecoder[datetime]):
             custom_reference_to_box_bottom=self.custom_reference_to_box_bottom,
             settings=self.settings,
         )
-
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, lidar_name: SensorName
-    ) -> LidarSensorFrame[datetime]:
-        return LidarSensorFrame[datetime](sensor_name=lidar_name, frame_id=frame_id, decoder=decoder)

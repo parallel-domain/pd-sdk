@@ -1,7 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-
-import numpy as np
+from typing import Any, Dict, List
 
 from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.flying_chairs.common import frame_id_to_timestamp
@@ -12,12 +10,9 @@ from paralleldomain.decoding.sensor_frame_decoder import (
     LidarSensorFrameDecoder,
     RadarSensorFrameDecoder,
 )
-from paralleldomain.model.class_mapping import ClassDetail
 from paralleldomain.model.ego import EgoPose
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import read_json
 
 
 class FlyingChairsFrameDecoder(FrameDecoder[datetime]):
@@ -62,28 +57,13 @@ class FlyingChairsFrameDecoder(FrameDecoder[datetime]):
             optical_flow_folder=self._optical_flow_folder,
         )
 
-    def _decode_camera_sensor_frame(
-        self, decoder: CameraSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> CameraSensorFrame[datetime]:
-        return CameraSensorFrame[datetime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
-
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[datetime]:
-        raise ValueError("FlyingChairs does not support lidar data!")
-
-    def _decode_lidar_sensor_frame(
-        self, decoder: LidarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> LidarSensorFrame[datetime]:
         raise ValueError("FlyingChairs does not support lidar data!")
 
     def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
         raise ValueError("FlyingChairs does not support radar data!")
 
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[datetime]:
-        raise ValueError("FlyingChairs does not support radar data!")
-
-    def _decode_radar_sensor_frame(
-        self, decoder: RadarSensorFrameDecoder[datetime], frame_id: FrameId, sensor_name: SensorName
-    ) -> RadarSensorFrame[datetime]:
         raise ValueError("FlyingChairs does not support radar data!")
 
     def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:

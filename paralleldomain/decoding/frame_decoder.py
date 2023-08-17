@@ -115,11 +115,10 @@ class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
         pass
 
-    @abc.abstractmethod
     def _decode_camera_sensor_frame(
         self, decoder: CameraSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> CameraSensorFrame[TDateTime]:
-        pass
+        return CameraSensorFrame[TDateTime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     @abc.abstractmethod
     def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
@@ -129,17 +128,15 @@ class FrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[TDateTime]:
         pass
 
-    @abc.abstractmethod
     def _decode_lidar_sensor_frame(
         self, decoder: LidarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> LidarSensorFrame[TDateTime]:
-        pass
+        return LidarSensorFrame[TDateTime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
-    @abc.abstractmethod
     def _decode_radar_sensor_frame(
         self, decoder: RadarSensorFrameDecoder[TDateTime], frame_id: FrameId, sensor_name: SensorName
     ) -> RadarSensorFrame[TDateTime]:
-        pass
+        return RadarSensorFrame[TDateTime](sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
 
     def get_camera_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> CameraSensorFrame[TDateTime]:
         _unique_cache_key = self.get_unique_frame_id(frame_id=frame_id, sensor_name=sensor_name, extra="SensorFrame")

@@ -17,7 +17,7 @@ from paralleldomain.model.sensor import (
     LidarSensor,
     LidarSensorFrame,
     Sensor,
-    SensorDataTypes,
+    SensorDataCopyTypes,
     SensorFrame,
 )
 from paralleldomain.model.unordered_scene import UnorderedScene
@@ -124,7 +124,7 @@ class UnorderedScenePipelineItem(PipelineItem[UnorderedScene]):
 
 
 TPipelineItem = TypeVar("TPipelineItem", bound=PipelineItem)
-DataType = Union[SensorDataTypes, Type[ClassMap]]
+DataType = Union[SensorDataCopyTypes, Type[ClassMap]]
 
 
 class EncodingFormat(Generic[TPipelineItem]):

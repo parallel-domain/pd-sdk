@@ -1,11 +1,11 @@
 import random
 from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Tuple, Type, TypeVar, Union, overload
 
 import pypeln
 
-from paralleldomain.model.annotation import AnnotationType
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
@@ -37,6 +37,9 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
         pass
 
+    def get_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+        pass
+
     def get_frame(
         self,
         scene_name: SceneName,
@@ -59,7 +62,7 @@ class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
     def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
         pass
 
-    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationType, ClassMap]:
+    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
         pass
 
     def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
@@ -80,18 +83,15 @@ class UnorderedScene(Generic[TDateTime]):
 
     Args:
         name: Name of scene
-        available_annotation_types: List of available annotation types for this scene.
         decoder: Decoder instance to be used for loading all relevant objects (frames, annotations etc.)
     """
 
     def __init__(
         self,
         name: SceneName,
-        available_annotation_types: List[AnnotationType],
         decoder: UnorderedSceneDecoderProtocol[TDateTime],
     ):
         self._name = name
-        self._available_annotation_types = available_annotation_types
         self._decoder = decoder
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
@@ -119,8 +119,19 @@ class UnorderedScene(Generic[TDateTime]):
         return self._decoder.get_frame_ids(scene_name=self.name)
 
     @property
-    def available_annotation_types(self):
-        return self._available_annotation_types
+    def available_annotation_types(self) -> List[AnnotationType]:
+        return list({ai.annotation_type for ai in self.available_annotation_identifiers})
+
+    @property
+    def available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        return self._decoder.get_available_annotation_identifiers(scene_name=self.name)
+
+    def get_annotation_identifiers_of_type(self, annotation_type: Type[T]) -> List[AnnotationIdentifier[T]]:
+        return [
+            identifier
+            for identifier in self.available_annotation_identifiers
+            if issubclass(identifier.annotation_type, annotation_type)
+        ]
 
     @property
     def sensor_names(self) -> List[str]:
@@ -185,13 +196,27 @@ class UnorderedScene(Generic[TDateTime]):
         return self._decoder.get_radar_sensor(scene_name=self.name, radar_name=radar_name)
 
     @property
-    def class_maps(self) -> Dict[AnnotationType, ClassMap]:
+    def class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self._decoder.get_class_maps(scene_name=self.name)
 
-    def get_class_map(self, annotation_type: Type[T]) -> ClassMap:
-        if annotation_type not in self._available_annotation_types:
-            raise ValueError(f"No annotation type {annotation_type} available in this dataset!")
-        return self.class_maps[annotation_type]
+    @overload
+    def get_class_map(self, annotation_type: Type[T], name: str = None) -> ClassMap:
+        pass
+
+    @overload
+    def get_class_map(self, annotation_identifier: AnnotationIdentifier[T]) -> ClassMap:
+        pass
+
+    def get_class_map(
+        self, annotation_type: Type[T] = None, annotation_identifier: AnnotationIdentifier[T] = None, name: str = None
+    ) -> ClassMap:
+        annotation_identifier = AnnotationIdentifier.resolve_annotation_identifier(
+            available_annotation_identifiers=self.available_annotation_identifiers,
+            annotation_type=annotation_type,
+            annotation_identifier=annotation_identifier,
+            name=name,
+        )
+        return self.class_maps[annotation_identifier]
 
     def get_sensor_frames(
         self,

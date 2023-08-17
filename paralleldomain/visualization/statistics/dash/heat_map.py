@@ -9,7 +9,7 @@ from paralleldomain.visualization.statistics.viewer import ViewComponent, BACKEN
 
 
 @STATISTIC_VIS_REGISTRY.register_module(reference_model=ClassHeatMaps, is_default=True, backend=BACKEND.DASH)
-class ClassHeatMapsView(ViewComponent):
+class PlotlyClassHeatMapsView(ViewComponent[ClassHeatMaps]):
     def __init__(self, model: ClassHeatMaps, classes_of_interest: List[str] = None) -> None:
         super().__init__(model=model)
         self._classes_of_interest = classes_of_interest

@@ -16,8 +16,14 @@ class ModuleRegistry:
         self._modules: Dict[str, ModuleRegistryEntry] = {}
         self._required_params: List[str] = list(required_params)
 
+    def keys(self):
+        return self._modules.keys()
+
     def items(self):
         return self._modules.items()
+
+    def __getitem__(self, item):
+        return self._modules[item]
 
     def register_module(self, **kwargs: Any):
         def decorator(module: T):
