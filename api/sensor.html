@@ -105,6 +105,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/color_matcher/index.html">Color Matcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/color_matcher/color_matcher.html">Color Matching Image Style Transfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/color_matcher/color_matcher.html#Usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/color_matcher/color_matcher.html#Limitations">Limitations</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -115,6 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.scene_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_identifiers"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_types"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.camera_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataset.html#paralleldomain.model.dataset.Dataset.camera_names"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a></li>
@@ -677,9 +686,14 @@
 <li class="toctree-l1"><a class="reference internal" href="data_lab/generators.html">paralleldomain.data_lab.generators</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior"><code class="docutils literal notranslate"><span class="pre">LookAtPointBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior"><code class="docutils literal notranslate"><span class="pre">RenderEgoBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.StaticBehavior"><code class="docutils literal notranslate"><span class="pre">StaticBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
@@ -702,6 +716,7 @@
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_lab/generators.html#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepGenerator</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utilities/any_path.html">paralleldomain.utilities.any_path</a><ul>
@@ -873,7 +888,7 @@ as described in the
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
 <li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.SensorDecoderProtocol" title="paralleldomain.model.sensor.SensorDecoderProtocol"><em>SensorDecoderProtocol</em></a><em>[</em><em>TSensorFrameType</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -886,8 +901,8 @@ as described in the
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>FrameId</em>) – </p></li>
 <li><p><strong>decoder</strong> (<em>CameraSensorFrameDecoderProtocol</em><em>[</em><em>TDateTime</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -895,7 +910,8 @@ as described in the
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.ego_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to sensor coordinate system</p>
+<dd><p>Transformation from ego to sensor coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -907,26 +923,30 @@ as described in the
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.extrinsic">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.extrinsic" title="Permalink to this definition"></a></dt>
-<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.pose">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.pose" title="Permalink to this definition"></a></dt>
 <dd><p>Local Sensor coordinate system at the current time step to world coordinate system.
-This is the same as the sensor_to_world property</p>
+This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.sensor_to_ego">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.sensor_to_ego" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from sensor to ego coordinate system</p>
+<dd><p>Transformation from sensor to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.sensor_to_world">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.sensor_to_world" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to world coordinate system</p>
+<dd><p>Transformation from ego to world coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -938,7 +958,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.CameraSensorFrame.world_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.CameraSensorFrame.world_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from world to ego coordinate system</p>
+<dd><p>Transformation from world to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 </dd></dl>
@@ -949,7 +970,7 @@ This is the same as the sensor_to_world property</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
 <li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.SensorDecoderProtocol" title="paralleldomain.model.sensor.SensorDecoderProtocol"><em>SensorDecoderProtocol</em></a><em>[</em><em>TSensorFrameType</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -962,8 +983,8 @@ This is the same as the sensor_to_world property</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>FrameId</em>) – </p></li>
 <li><p><strong>decoder</strong> (<em>LidarSensorFrameDecoderProtocol</em><em>[</em><em>TDateTime</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -971,7 +992,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.ego_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to sensor coordinate system</p>
+<dd><p>Transformation from ego to sensor coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -983,26 +1005,30 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.extrinsic">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.extrinsic" title="Permalink to this definition"></a></dt>
-<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.pose">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.pose" title="Permalink to this definition"></a></dt>
 <dd><p>Local Sensor coordinate system at the current time step to world coordinate system.
-This is the same as the sensor_to_world property</p>
+This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.sensor_to_ego">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.sensor_to_ego" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from sensor to ego coordinate system</p>
+<dd><p>Transformation from sensor to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.sensor_to_world">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.sensor_to_world" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to world coordinate system</p>
+<dd><p>Transformation from ego to world coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1014,7 +1040,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.LidarSensorFrame.world_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.LidarSensorFrame.world_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from world to ego coordinate system</p>
+<dd><p>Transformation from world to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1025,7 +1052,7 @@ This is the same as the sensor_to_world property</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
 <li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.SensorDecoderProtocol" title="paralleldomain.model.sensor.SensorDecoderProtocol"><em>SensorDecoderProtocol</em></a><em>[</em><em>TSensorFrameType</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -1038,8 +1065,8 @@ This is the same as the sensor_to_world property</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>FrameId</em>) – </p></li>
 <li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol" title="paralleldomain.model.sensor.RadarSensorFrameDecoderProtocol"><em>RadarSensorFrameDecoderProtocol</em></a><em>[</em><em>TDateTime</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -1047,7 +1074,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.ego_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to sensor coordinate system</p>
+<dd><p>Transformation from ego to sensor coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1059,26 +1087,30 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.extrinsic">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.extrinsic" title="Permalink to this definition"></a></dt>
-<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.pose">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.pose" title="Permalink to this definition"></a></dt>
 <dd><p>Local Sensor coordinate system at the current time step to world coordinate system.
-This is the same as the sensor_to_world property</p>
+This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.sensor_to_ego">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.sensor_to_ego" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from sensor to ego coordinate system</p>
+<dd><p>Transformation from sensor to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.sensor_to_world">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.sensor_to_world" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to world coordinate system</p>
+<dd><p>Transformation from ego to world coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1090,7 +1122,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.RadarSensorFrame.world_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.RadarSensorFrame.world_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from world to ego coordinate system</p>
+<dd><p>Transformation from world to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1106,7 +1139,7 @@ This is the same as the sensor_to_world property</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
 <li><p><strong>decoder</strong> (<a class="reference internal" href="#paralleldomain.model.sensor.SensorDecoderProtocol" title="paralleldomain.model.sensor.SensorDecoderProtocol"><em>SensorDecoderProtocol</em></a><em>[</em><em>TSensorFrameType</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -1335,8 +1368,8 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sensor_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>frame_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>sensor_name</strong> (<em>SensorName</em>) – </p></li>
+<li><p><strong>frame_id</strong> (<em>FrameId</em>) – </p></li>
 <li><p><strong>decoder</strong> (<em>SensorFrameDecoderProtocol</em><em>[</em><em>TDateTime</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -1344,7 +1377,8 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.ego_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ego_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.ego_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to sensor coordinate system</p>
+<dd><p>Transformation from ego to sensor coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1356,26 +1390,30 @@ as <cite>(w,x,y,z)</cite> for function <cite>w + xi+ yj + zk</cite></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.extrinsic">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extrinsic</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorExtrinsic" title="paralleldomain.model.sensor.SensorExtrinsic"><span class="pre">SensorExtrinsic</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.extrinsic" title="Permalink to this definition"></a></dt>
-<dd><p>Local Sensor coordinate system to vehicle coordinate system</p>
+<dd><p>Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.pose">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pose</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#paralleldomain.model.sensor.SensorPose" title="paralleldomain.model.sensor.SensorPose"><span class="pre">SensorPose</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.pose" title="Permalink to this definition"></a></dt>
 <dd><p>Local Sensor coordinate system at the current time step to world coordinate system.
-This is the same as the sensor_to_world property</p>
+This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.sensor_to_ego">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_ego</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.sensor_to_ego" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from sensor to ego coordinate system</p>
+<dd><p>Transformation from sensor to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. Vehicle coordinate system is in FLU.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.sensor_to_world">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_to_world</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.sensor_to_world" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from ego to world coordinate system</p>
+<dd><p>Transformation from ego to world coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1387,7 +1425,8 @@ This is the same as the sensor_to_world property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.model.sensor.SensorFrame.world_to_sensor">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">world_to_sensor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><span class="pre">Transformation</span></a></em><a class="headerlink" href="#paralleldomain.model.sensor.SensorFrame.world_to_sensor" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation from world to ego coordinate system</p>
+<dd><p>Transformation from world to ego coordinate system. Local Sensor coordinates are in RDF for PD data,
+but it can be something else for other dataset types. World coordinate system is Z up.</p>
 </dd></dl>
 
 </dd></dl>

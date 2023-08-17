@@ -22,7 +22,9 @@
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="paralleldomain.model.dataset" href="../../api/dataset.html" />
+    <link rel="prev" title="Color Matcher" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -68,7 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../general/index.html">General Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../general/general_usage.html">Load Dataset</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../general/general_usage.html#Dataset-Information">Dataset Information</a></li>
@@ -106,6 +108,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
 </ul>
 </li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Color Matcher</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Color Matching Image Style Transfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Limitations">Limitations</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -116,6 +126,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.scene_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_identifiers"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_types"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.camera_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../api/dataset.html#paralleldomain.model.dataset.Dataset.camera_names"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a></li>
@@ -678,9 +689,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../../api/data_lab/generators.html">paralleldomain.data_lab.generators</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior"><code class="docutils literal notranslate"><span class="pre">LookAtPointBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior"><code class="docutils literal notranslate"><span class="pre">RenderEgoBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.StaticBehavior"><code class="docutils literal notranslate"><span class="pre">StaticBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
@@ -703,6 +719,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/data_lab/generators.html#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepGenerator</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/any_path.html">paralleldomain.utilities.any_path</a><ul>
@@ -818,6 +835,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Color Matcher</a></li>
       <li class="breadcrumb-item active">Color Matching Image Style Transfer</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../_sources/tutorial/color_matcher/color_matcher.ipynb.txt" rel="nofollow"> View page source</a>
@@ -842,16 +860,16 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>PD Image</p></td>
-<td><p><img alt="PD Highway" src="_static/hue_transform_pd_highway.png" /></p></td>
+<td><p><img alt="PD Highway" src="../../_images/color_matcher_pd_highway.png" /></p></td>
 <td></td>
 </tr>
 <tr class="row-odd"><td><p>Image from <a class="reference external" href="https://ieeexplore.ieee.org/document/7780719">Cityscapes</a></p></td>
-<td><p><img alt="Cityscapes" src="_static/hue_transform_cityscapes.png" /></p></td>
-<td><p><img alt="PD Cityscapes" src="_static/hue_transform_pd_highway_cityscapes.png" /></p></td>
+<td><p><img alt="Cityscapes" src="../../_images/color_matcher_cityscapes.png" /></p></td>
+<td><p><img alt="PD Cityscapes" src="../../_images/color_matcher_pd_highway_cityscapes.png" /></p></td>
 </tr>
 <tr class="row-even"><td><p>Image from <a class="reference external" href="https://arxiv.org/abs/1903.11027">Nuscenes</a></p></td>
-<td><p><img alt="Nuscenes" src="_static/hue_transform_nuscenes.jpeg" /></p></td>
-<td><p><img alt="PD Nuscenes" src="_static/hue_transform_pd_highway_nuscenes.png" /></p></td>
+<td><p><img alt="Nuscenes" src="../../_images/color_matcher_nuscenes.jpeg" /></p></td>
+<td><p><img alt="PD Nuscenes" src="../../_images/color_matcher_pd_highway_nuscenes.png" /></p></td>
 </tr>
 </tbody>
 </table>
@@ -914,13 +932,13 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><img alt="PDNight" src="_static/hue_transform_pd_night.png" /></p></td>
-<td><p><img alt="Cityscapes2" src="_static/hue_transform_cityscapes.png" /></p></td>
-<td><p><img alt="CityscapesNight" src="_static/hue_transform_cityscapes_night.png" /></p></td>
+<tr class="row-even"><td><p><img alt="PDNight" src="../../_images/color_matcher_pd_night.png" /></p></td>
+<td><p><img alt="Cityscapes2" src="../../_images/color_matcher_cityscapes.png" /></p></td>
+<td><p><img alt="CityscapesNight" src="../../_images/color_matcher_cityscapes_night.png" /></p></td>
 </tr>
-<tr class="row-odd"><td><p><img alt="Cityscapes3" src="_static/hue_transform_cityscapes.png" /></p></td>
-<td><p><img alt="PD Night2" src="_static/hue_transform_pd_night.png" /></p></td>
-<td><p><img alt="PDNightCityscapes" src="_static/hue_transform_pd_night_cityscapes.png" /></p></td>
+<tr class="row-odd"><td><p><img alt="Cityscapes3" src="../../_images/color_matcher_cityscapes.png" /></p></td>
+<td><p><img alt="PD Night2" src="../../_images/color_matcher_pd_night.png" /></p></td>
+<td><p><img alt="PDNightCityscapes" src="../../_images/color_matcher_pd_night_cityscapes.png" /></p></td>
 </tr>
 </tbody>
 </table>
@@ -930,7 +948,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Color Matcher" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../api/dataset.html" class="btn btn-neutral float-right" title="paralleldomain.model.dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

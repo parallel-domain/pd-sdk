@@ -104,6 +104,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/color_matcher/index.html">Color Matcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html">Color Matching Image Style Transfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html#Usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html#Limitations">Limitations</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -114,6 +122,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.scene_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_identifiers"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_types"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.camera_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.camera_names"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a></li>
@@ -676,9 +685,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../data_lab/generators.html">paralleldomain.data_lab.generators</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior"><code class="docutils literal notranslate"><span class="pre">LookAtPointBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior"><code class="docutils literal notranslate"><span class="pre">RenderEgoBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.StaticBehavior"><code class="docutils literal notranslate"><span class="pre">StaticBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
@@ -701,6 +715,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data_lab/generators.html#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepGenerator</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="any_path.html">paralleldomain.utilities.any_path</a><ul>
@@ -843,17 +858,16 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__">
 <span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.ColorMatcher.__matmul__" title="Permalink to this definition"></a></dt>
-<dd><p>Applies the color matching to a rgb/rgba image
-:type other: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param other: the image as numpy array
-:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:return: the color transformed image</p>
+<dd><p>Applies the color matching to a rgb/rgba image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> (<em>ndarray</em>) – </p>
+<dd class="field-odd"><p><strong>other</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – the image as numpy array</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>ndarray</em></p>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the color transformed image</p>
 </dd>
 </dl>
 </dd></dl>
@@ -884,25 +898,20 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_dataset" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates color statistics of images in a dataset
-:type dataset: <a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>
-:param dataset: the dataset instance
-:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
-:param use_tqdm: shows a progress bar if true
-:type max_samples: <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>
-:param max_samples: number of images that are used to calculate images. It takes all images if set to -1
-:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
-:return: The color distribution object</p>
+<dd><p>Calculates color statistics of images in a dataset</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> (<a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><em>Dataset</em></a>) – </p></li>
-<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>max_samples</strong> (<em>int</em>) – </p></li>
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – the dataset instance</p></li>
+<li><p><strong>use_tqdm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – shows a progress bar if true</p></li>
+<li><p><strong>max_samples</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of images that are used to calculate images. It takes all images if set to -1</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The color distribution object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -910,22 +919,19 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_folder" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates color statistics of all images in a folder. Note that this only works on flat folders right now
-:type image_folder: <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyPath</span></code></a>]
-:param image_folder: folder with images
-:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
-:param use_tqdm: shows a progress bar if true
-:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
-:return: The color distribution object</p>
+<dd><p>Calculates color statistics of all images in a folder. Note that this only works on flat folders right now</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image_folder</strong> (<em>str</em><em> | </em><a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><em>AnyPath</em></a>) – </p></li>
-<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>image_folder</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyPath</span></code></a>]) – folder with images</p></li>
+<li><p><strong>use_tqdm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – shows a progress bar if true</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The color distribution object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -933,22 +939,19 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_image_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_tqdm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.from_image_stream" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the statistics of all images in the given image stream
-:type image_stream: <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]
-:param image_stream: Iterator over rgb images
-:type use_tqdm: <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>
-:param use_tqdm: shows a progress bar if true
-:rtype: <a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a>
-:return: The color distribution object</p>
+<dd><p>Calculates the statistics of all images in the given image stream</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image_stream</strong> (<em>Iterator</em><em>[</em><em>ndarray</em><em>]</em>) – </p></li>
-<li><p><strong>use_tqdm</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>image_stream</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – Iterator over rgb images</p></li>
+<li><p><strong>use_tqdm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – shows a progress bar if true</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><em>GaussianColorDistribution</em></a></p>
+<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution" title="paralleldomain.utilities.color_matcher.GaussianColorDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianColorDistribution</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The color distribution object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -956,15 +959,13 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.update" title="Permalink to this definition"></a></dt>
-<dd><p>adds the image colors to the color statistics
-:type x: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>
-:param x: image in rgb</p>
+<dd><p>adds the image colors to the color statistics</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – image in rgb</p>
 </dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>x</strong> (<em>ndarray</em>) – </p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -972,15 +973,23 @@ calibrated hue transform improves performance across several tasks.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_distribution" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation that can be used to transform a color value from a unit distribution into this distribution
-:return:</p>
+<dd><p>Transformation that can be used to transform a color value from a unit distribution into this distribution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>4x4 transformation matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_unit_distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#paralleldomain.utilities.color_matcher.GaussianColorDistribution.to_unit_distribution" title="Permalink to this definition"></a></dt>
-<dd><p>Transformation that can be used to transform a color value from this distribution into a unit distribution
-:return:</p>
+<dd><p>Transformation that can be used to transform a color value from this distribution into a unit distribution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>4x4 transformation matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

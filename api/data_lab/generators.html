@@ -105,6 +105,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../../tutorial/ml_data_generator/ml_data_generator.html">Data loader for a Segmentation model</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/color_matcher/index.html">Color Matcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html">Color Matching Image Style Transfer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html#Usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tutorial/color_matcher/color_matcher.html#Limitations">Limitations</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current">
@@ -115,6 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.get_unordered_scene"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.scene_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_identifiers"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.available_annotation_types"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.camera_frames"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../dataset.html#paralleldomain.model.dataset.Dataset.camera_names"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a></li>
@@ -677,9 +686,14 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">paralleldomain.data_lab.generators</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior"><code class="docutils literal notranslate"><span class="pre">LookAtPointBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior"><code class="docutils literal notranslate"><span class="pre">RenderEgoBehavior</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.StaticBehavior"><code class="docutils literal notranslate"><span class="pre">StaticBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
@@ -702,6 +716,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepGenerator</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../utilities/any_path.html">paralleldomain.utilities.any_path</a><ul>
@@ -841,7 +856,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EgoAgentGeneratorParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drone_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ego_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pedestrian_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EgoAgentGeneratorParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drone_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ego_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pedestrian_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traffic_light_color_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_traffic_light_color_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters" title="Permalink to this definition"></a></dt>
 <dd><dl class="simple">
 <dt>Description:</dt><dd><p>Places an ego sensor in the world. Required for every scenario. Only works with VEHICLE agent_type, other agent types not implemented yet.
 All agents placed by the EgoAgentGenerator will have an “EGO” tag added by default.</p>
@@ -871,6 +886,25 @@ All agents placed by the EgoAgentGenerator will have an “EGO” tag added by d
 </dd>
 </dl>
 </p></li>
+<li><p><strong>use_traffic_light_color_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Specifies whether we want to set ego in front of certain traffic light color</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to false</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>traffic_light_color_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">EnumDistribution</span></code>]) – <dl>
+<dt>Description:</dt><dd><p>Specifies desired traffic light distribution to use if <cite>use_traffic_light_color_probability</cite> is true
+Possible values:</p>
+<blockquote>
+<div><p>Red
+Green</p>
+</div></blockquote>
+</dd>
+<dt>Required:</dt><dd><p>No, will use default enum values</p>
+</dd>
+</dl>
+</p></li>
 <li><p><strong>vehicle_spawn_data</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">VehicleSpawnData</span></code>]) – <dl class="simple">
 <dt>Description:</dt><dd><p>Used if <cite>agent_type</cite> is <cite>AgentType.VEHICLE</cite></p>
 </dd>
@@ -894,6 +928,25 @@ All agents placed by the EgoAgentGenerator will have an “EGO” tag added by d
 </p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.EgoAgentGeneratorParameters</em><em>]</em>) – </p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RenderEgoGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ego_asset_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'suv_medium_02'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator" title="Permalink to this definition"></a></dt>
+<dd><p>Allows the ego vehicle to be rendered</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ego_asset_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>Name of the ego vehicle model as it appears in the asset registry</p>
+</dd>
+<dt>Range:</dt><dd><p>Name must match a vehicle in the asset registry</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to “suv_medium_02” if no name is provided</p>
+</dd>
+</dl>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -988,10 +1041,66 @@ If specified, <cite>debris_asset_tag</cite> and <cite>debris_asset_remove_tag</c
 </dd></dl>
 
 <span class="target" id="module-paralleldomain.data_lab.generators.behavior"></span><dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DrivewayCreepBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior" title="Permalink to this definition"></a></dt>
+<dd><p>Controls the behavior of vehicles that perform the driveway creeping behavior</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_line</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>The driveway reference line along which the vehicle should perform the creeping behavior</p>
+</dd>
+<dt>Range:</dt><dd><p>n x 3 numpy array containing n points along the reference line.
+Each point is the [x, y, z] location of that point</p>
+</dd>
+<dt>Required:</dt><dd><p>Yes, unless used in conjunction with DrivewayCreepGenerator.
+When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
+this field is populated automatically</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>behavior_duration</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>Length of time in seconds in which the vehicle should travel from the start to end of the driveway</p>
+</dd>
+<dt>Required:</dt><dd><p>Yes, unless used in conjunction with DrivewayCreepGenerator.
+When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
+this field is populated automatically</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>agent_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>Length of the agent (in meters) to which we are assigning the Driveway Creeping Behavior</p>
+</dd>
+<dt>Required:</dt><dd><p>No, if not provided, a default length of 5.5m is used.
+When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
+this field is populated automatically</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.Gear">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Gear</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.Gear" title="Permalink to this definition"></a></dt>
 <dd><p>Description: This contains the different types of gears for vehicles</p>
 <p>Args:</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.LookAtPointBehavior">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LookAtPointBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">look_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">look_at</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior" title="Permalink to this definition"></a></dt>
+<dd><p>Allows a static agent to be created that faces towards a particular point in world space</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>look_from</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 3x1 numpy array which contains the x,y,z position from which we look at the target</p></li>
+<li><p><strong>look_at</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 3x1 numpy array which contains the x,y,z position of the target to be looked at</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -1006,6 +1115,24 @@ If specified, <cite>debris_asset_tag</cite> and <cite>debris_asset_remove_tag</c
 <li><p><strong>JAYWALKER</strong> – Description: Jaywalking behavior (e.g. crosses the road at a non-crosswalk)</p></li>
 <li><p><strong>EDGESTOPPER</strong> – Description: Spawned on sidewalk in front of tagged agent. Walks towards agent and stops at edge of sidewalk</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.RenderEgoBehavior">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RenderEgoBehavior</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior" title="Permalink to this definition"></a></dt>
+<dd><p>When used in conjunction with RenderEgoGenerator, allows the Ego Vehicle to be rendered</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.StaticBehavior">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StaticBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.StaticBehavior" title="Permalink to this definition"></a></dt>
+<dd><p>Allows a static agent to be created with a given pose</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pose</strong> (<a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – The pose that should be maintained throughout the scenario.  This pose
+will not change throughout the scenario.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1163,11 +1290,11 @@ To set a parking space as a goal use the ParkingSpace lane type:</p>
             <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;ParkingSpace&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
             <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="n">road_type</span><span class="p">:</span> <span class="p">{</span>
-        <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;Parking_Aisle&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+        <span class="p">},</span>
+        <span class="n">road_type</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;Parking_Aisle&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
+            <span class="p">}</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1313,7 +1440,7 @@ parked vehicle should spawn there, (i.e. controls density)</p>
 
 <span class="target" id="module-paralleldomain.data_lab.generators.peripherals"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.peripherals.VehiclePeripheral">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehiclePeripheral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_accessories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_occupants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emergency_light_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randomize_vehicle_parts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spawn_trailer_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trailer_initial_yaw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehiclePeripheral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_accessories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_occupants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emergency_light_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headlight_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randomize_vehicle_parts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_headlight_based_on_time_of_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spawn_trailer_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trailer_initial_yaw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral" title="Permalink to this definition"></a></dt>
 <dd><p>Description: This contains parameters that control vehicle peripheral behavior (i.e. accessory data, color, occupants, etc.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1325,6 +1452,24 @@ parked vehicle should spawn there, (i.e. controls density)</p>
 <li><p><strong>randomize_vehicle_parts</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – Toggle for blueprint feature to randomize color based on agent id</p></li>
 <li><p><strong>emergency_light_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – Chance of turning on emergency lights for police/service vehicles
 Ignored if the vehicle has no emergency lights</p></li>
+<li><p><strong>set_headlight_based_on_time_of_day</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>If true, turn headlights on in night time scenarios and off in day time scenarios.
+If false, use the next field headlight_probability to determine headlight state.</p>
+</dd>
+<dt>Required:</dt><dd><p>No, defaults to true</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>headlight_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Probability of the vehicle having its headlights on. Only used if set_headlight_based_on_time_of_day
+is false. Ignored if it’s true. Has no impact on daytime running lights.</p>
+</dd>
+<dt>Range:</dt><dd><p>[0-1]</p>
+</dd>
+<dt>Required:</dt><dd><p>No, defaults to 1</p>
+</dd>
+</dl>
+</p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.VehiclePeripheral</em><em>]</em>) – </p></li>
 </ul>
 </dd>
@@ -1381,19 +1526,45 @@ In cases where the lane can not be determined automatically, an error will be re
 
 <dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">JunctionSpawnPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_to_junction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">JunctionSpawnPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_to_junction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intersection_type_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_intersection_type_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy" title="Permalink to this definition"></a></dt>
 <dd><dl class="simple">
 <dt>Description:</dt><dd><p>Specifies junction lanes as spawning locations.</p>
 </dd>
 <dt>Required:</dt><dd><p>No</p>
 </dd>
 </dl>
-<p>Args:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>distance_to_junction</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Specifies minimum distance from junction</p>
+</dd>
+<dt>Range:</dt><dd><p>Greater than or equal to 0</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will use default zero values</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>use_intersection_type_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
+<dt>Description:</dt><dd><p>Specifies whether we want to specify probabilities of intersection types</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to false</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>intersection_type_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">EnumDistribution</span></code>]) – <dl>
+<dt>Description:</dt><dd><p>Specifies distribution for intersection types to use if <cite>use_intersection_type_probability</cite> is true
+Possible values:</p>
+<blockquote>
+<div><p>Signaled
+Signed</p>
+</div></blockquote>
+</dd>
+<dt>Required:</dt><dd><p>No, will use default values</p>
+</dd>
+</dl>
+</p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.JunctionSpawnPolicy</em><em>]</em>) – </p></li>
-<li><p><strong>distance_to_junction</strong> (<em>Optional</em><em>[</em><em>_pd_distributions_pb2.ContinousUniformDistribution</em><em>]</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -2023,7 +2194,8 @@ are halved compared to the normal LaneSpawnPolicy defaults.</p>
 </dl>
 </p></li>
 <li><p><strong>spawn_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Within spawn radius, probability that a vehicle will spawn in an available spot. (i.e. controls density)</p>
+<dt>Description:</dt><dd><p>Within spawn radius, probability that a vehicle will spawn in an available spot. (i.e. controls density)
+The distance between available spots is tuned by start_separation_time_map.</p>
 </dd>
 <dt>Range:</dt><dd><p><cite>0.0</cite> to <cite>1.0</cite>, with <cite>1.0</cite> being the most dense. Recommended to use <cite>0.8</cite> for high density.</p>
 </dd>
@@ -2058,7 +2230,9 @@ are halved compared to the normal LaneSpawnPolicy defaults.</p>
 </dl>
 </p></li>
 <li><p><strong>start_separation_time_map</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]]) – <dl>
-<dt>Description:</dt><dd><p>Recommended to leave as default. Map of vehicle type to their start separation time distributions.
+<dt>Description:</dt><dd><p>Controls the minimum distance between traffic vehicles. Actual spawn distance may be higher as
+spawn points are skipped based on spawn_probability.
+Recommended to leave as default. Map of vehicle type to their start separation time distributions.
 Uses initial speed * separation time to determine distance between vehicles.</p>
 </dd>
 <dt>Required:</dt><dd><p>No, if not specified will use defaults, see map below:</p>
@@ -2117,6 +2291,72 @@ Uses initial speed * separation time to determine distance between vehicles.</p>
 </dl>
 </p></li>
 <li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.VehicleGeneratorParameters</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-paralleldomain.data_lab.generators.driveway"></span><dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DrivewayCreepGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">behavior_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_vehicles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_driveway_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driveway_entry_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicles_to_spawn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator" title="Permalink to this definition"></a></dt>
+<dd><p>Places vehicle into driveways within the world.
+These vehicles will traverse along the driveway over the course of the scene</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>behavior_duration</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>Length of time in seconds in which the vehicle should travel from the start to end of the driveway</p>
+</dd>
+<dt>Required:</dt><dd><p>Yes</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>number_of_vehicles</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>Number of vehicles to place in the world</p>
+</dd>
+<dt>Range:</dt><dd><p>Greater than 0</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to 3</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>min_driveway_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>The minimum length of driveway in meters on which to place vehicles</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to 6.0 meters</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>driveway_entry_probability</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>The probability that a placed vehicle will travel inwards on a driveway vs travelling outwards</p>
+</dd>
+<dt>Range:</dt><dd><p>Between 0 and 1.0</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to 0.5</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>vehicles_to_spawn</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – <dl class="simple">
+<dt>Description:</dt><dd><p>The list of vehicles to spawn in Driveways.
+Each placed vehicle will be randomly selected from this list</p>
+</dd>
+<dt>Range:</dt><dd><p>Each name must match a vehicle in the asset registry</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to randomly selecting a vehicle from the following vehicle categories
+(“COMPACT”, “FULLSIZE”, “MIDSIZE”, “SUV”)</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>radius</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
+<dt>Description:</dt><dd><p>The radius in meters around the ego vehicle in which driveways are selected
+for placement of driveway creeping vehicles</p>
+</dd>
+<dt>Range:</dt><dd><p>Greater than 0</p>
+</dd>
+<dt>Required:</dt><dd><p>No, will default to 15 meters</p>
+</dd>
+</dl>
+</p></li>
 </ul>
 </dd>
 </dl>
