@@ -23,7 +23,7 @@ from pd.data_lab.sim_instance import SimulationInstance
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 
 def get_debris_asset_list() -> str:

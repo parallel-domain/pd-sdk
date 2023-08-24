@@ -29,7 +29,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 LOCATION = "SC_W8thAndOrchard"
 
 

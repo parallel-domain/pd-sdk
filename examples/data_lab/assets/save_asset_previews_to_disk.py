@@ -1,14 +1,17 @@
+import json
 import logging.config
 import os
 import sys
 
 import pd.management
+from internal.apps.asset_browser import Constants
 from pd.assets import ObjAssets, init_asset_registry_version
-from pd.util.snapshot import generate_state_for_asset_snap
+from pd.util.snapshot import generate_state_for_asset_snap, get_location_for_asset_snap
 from tqdm import tqdm
 
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
+from tests.helpers import create_minimal_build_sim_state
 
 """
 Asset images generator
@@ -51,7 +54,8 @@ logger = logging.getLogger()
 ASSETS_NAME_FILE = "./out.txt"
 OUTPUT_DIR = "./asset_preview_images"
 IG_ADDRESS = "ssl://ig.step-api-dev.paralleldomain.com:300X"
-IG_VERSION = "v2.4.0-beta"
+SIM_ADDRESS = "ssl://sim.step-api-dev.paralleldomain.com:300X"
+IG_VERSION = "v2.4.1-beta"
 
 pd.management.org = os.environ["PD_CLIENT_ORG_ENV"]
 pd.management.api_key = os.environ["PD_CLIENT_STEP_API_KEY_ENV"]
@@ -66,10 +70,14 @@ rgb_output_path = output_path / "rgb"
 output_path.mkdir(exist_ok=True)
 rgb_output_path.mkdir(exist_ok=True)
 
-session = pd.session.StepSession(request_addr=IG_ADDRESS, client_cert_file=client_cert_file)
+session = pd.session.StepIgSession(request_addr=IG_ADDRESS, client_cert_file=client_cert_file)
+sim_session = pd.session.SimSession(request_addr=SIM_ADDRESS, client_cert_file=client_cert_file)
 
-with session:
+with session, sim_session:
     init_asset_registry_version(IG_VERSION)
+
+    prev_asset_name = None
+    sensor_agent_id_overwrite = pd.state.rand_agent_id()
 
     if ASSETS_NAME_FILE:
         asset_names = []
@@ -84,7 +92,16 @@ with session:
         asset_count = asset_objs.count()
 
     world_time = 0.0
-    location_loaded = False
+
+    logger.info("Loading Location... ")
+    location = get_location_for_asset_snap()
+    time_of_day = Constants.DAY_LIGHTING
+    session.load_location(location, time_of_day)
+
+    build_sim_state = create_minimal_build_sim_state(location=location)
+    build_sim_state_str = json.dumps(build_sim_state.to_dict(), indent=2)
+    sim_session.load_scenario_generation(scenario_gen=build_sim_state_str, location_index=0)
+
     pbar = tqdm(asset_names, total=asset_count)
     for asset_name in pbar:
         pbar.set_description(f"{asset_name:40s}")
@@ -94,23 +111,21 @@ with session:
             logger.warning(f"Failed to find asset '{asset_name}'")
             continue
 
-        state = generate_state_for_asset_snap(asset_obj, resolution)
-        state.simulation_time_sec = world_time
+        state = generate_state_for_asset_snap(asset_obj=asset_obj, resolution=resolution, raycast=sim_session.raycast)
 
-        if not location_loaded:
-            version = session.system_info.version
-            location = state.world_info.location
-            time_of_day = state.world_info.time_of_day
-            session.load_location(location, time_of_day)
-            location_loaded = True
+        if prev_asset_name != asset_name:
+            sensor_agent_id_overwrite = pd.state.rand_agent_id()
+        prev_asset_name = asset_name
+        sensor_agent = next(a for a in state.agents if isinstance(a, pd.state.SensorAgent))
+        sensor_agent.id = sensor_agent_id_overwrite
 
         # Send message data to server
         for i in range(10):
             session.update_state(state)
             world_time += 0.01
+            state.simulation_time_sec = world_time
 
         # RGB image
-        sensor_agent = next(a for a in state.agents if isinstance(a, pd.state.SensorAgent))
         sensor_data = session.query_sensor_data(
             sensor_agent.id, sensor_agent.sensors[0].name, pd.state.SensorBuffer.RGB
         )

@@ -27,7 +27,7 @@ PROXY_OBJECT = "SM_primitive_box_1m"  # used as an approximation for generated o
 PROXY_SCALE_FACTORS = [0.6, 0.4, 0.8]  # L*W*H
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):

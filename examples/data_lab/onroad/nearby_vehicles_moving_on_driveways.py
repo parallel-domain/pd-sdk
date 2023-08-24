@@ -29,7 +29,7 @@ setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logger = logging.getLogger("pd.state.serialize")
 logger.setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 sensor_rig = SensorRig(
     sensor_configs=[

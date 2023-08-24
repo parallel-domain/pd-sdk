@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="0.14.0",
+    version="0.14.1",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -47,7 +47,7 @@ setup(
     data_files=glob.glob("paralleldomain/decoding/waymo_open_dataset/pre_calculated/**"),
     extras_require={
         "data_lab": [
-            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git@v2.4.0-beta",
+            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git@v2.4.1-beta",
             "rerun-sdk>=0.8.0",
             "py7zr>=0.20.5,<1.0.0",
         ],

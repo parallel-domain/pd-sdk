@@ -52,6 +52,10 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
                              detection, needed for p/r curves, higher is better.
     """
 
+    def __init__(self, pointcloud_dim: int, **kwargs):
+        self.pointcloud_dim = pointcloud_dim
+        super().__init__(**kwargs)
+
     def _decode_calibration(self, scene_folder_path: AnyPath, frame_id: FrameId) -> Dict:
         return _cached_sensor_frame_calibrations(scene_folder_path=scene_folder_path, frame_id=frame_id)
 
@@ -75,8 +79,10 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
         dimensions = [float(element) for element in split_line[8:11]]
         return dimensions[0], dimensions[1], dimensions[2]  # height, width, length
 
-    def _get_rdf_position(self, split_line: List[str], height: Optional[float] = None) -> Tuple[float, float, float]:
+    def _get_rdf_position(self, split_line: List[str], height: Optional[float] = 0) -> Tuple[float, float, float]:
         location = [float(element) for element in split_line[11:14]]
+        # Kitti box 3D origin is on the bottom plane, PD-sdk box 3D origin is the true centre of the box
+        # we need to shift up the location by half the height (note: locations are in RDF coordinate)
         return location[0], location[1] - 0.5 * height, location[2]  # RDF coordinate
 
     def _get_class_name(self, split_line: List[str]) -> str:
@@ -92,6 +98,8 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
         calibration_dict = self._decode_calibration(scene_folder_path=scene_folder, frame_id=frame_id)
 
+        # note that 3D annotations are in camera coordinate system (RDF),
+        # PD-SDK annotations need to be in sensor coordinate system (FLU)
         velo_to_cam = Transformation.from_transformation_matrix(
             calibration_dict["Tr_velo_to_cam"], approximate_orthogonal=True
         )
@@ -122,6 +130,7 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
                             order="xyz",
                             degrees=False,
                         )
+                        # re-centre the box pose into FLU sensor coordinate system
                         pose = velo_to_cam.inverse @ pose @ RDF_TO_FLU.inverse
                         box = BoundingBox3D(
                             pose=pose,
@@ -140,7 +149,7 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
             raise NotImplementedError(f"{identifier.annotation_type} is not supported!")
 
     def _read_from_cache_point_cloud(self, pointcloud_file: AnyPath):
-        return _cached_point_cloud(pointcloud_file=str(pointcloud_file))
+        return _cached_point_cloud(pointcloud_file=str(pointcloud_file), pointcloud_dim=self.pointcloud_dim)
 
     def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
         pass

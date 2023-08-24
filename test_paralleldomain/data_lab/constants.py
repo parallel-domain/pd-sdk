@@ -8,7 +8,7 @@ from paralleldomain.data_lab import Location
 
 logger = logging.getLogger(__name__)
 
-LOCATION_VERSION = "v2.4.0-beta"
+LOCATION_VERSION = "v2.4.1-beta"
 setup_datalab(LOCATION_VERSION)
 
 
