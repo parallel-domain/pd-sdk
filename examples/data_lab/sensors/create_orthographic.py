@@ -43,7 +43,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 # BEV Ortho Camera Parameters
 bev_camera_fov = 100  # Camera FOV in meters (square so height=width)

@@ -46,7 +46,7 @@ def test_knows_all_frames(kitti_dataset_train_scene: UnorderedScene):
 
 
 def test_decode_train_scene_names(kitti_train_dataset: Dataset):
-    assert len(kitti_train_dataset.scene_names) == 0
+    assert len(kitti_train_dataset.scene_names) == 1
     scene_names = kitti_train_dataset.unordered_scene_names
     assert 1 == len(scene_names)
 

@@ -41,10 +41,12 @@ class KittiDatasetDecoder(DirectoryDatasetDecoder):
         dataset_path: Union[str, AnyPath],
         class_map: Optional[List[ClassDetail]] = None,
         folder_to_data_type: Optional[Dict[str, SensorDataCopyTypes]] = None,
+        pointcloud_dim: Optional[int] = 4,
         **kwargs,
     ):
         class_map = KITTI_CLASS_MAP if class_map is None else class_map
         folder_to_data_type = FOLDER_TO_DATA_TYPE if folder_to_data_type is None else folder_to_data_type
+        self.pointcloud_dim = pointcloud_dim
         super().__init__(
             dataset_path=dataset_path, class_map=class_map, folder_to_data_type=folder_to_data_type, **kwargs
         )
@@ -55,6 +57,9 @@ class KittiDatasetDecoder(DirectoryDatasetDecoder):
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
         # todo: change?
+        return ["default_scene"]
+
+    def _decode_scene_names(self) -> List[SceneName]:
         return ["default_scene"]
 
     def _decode_dataset_metadata(self) -> DatasetMeta:
@@ -73,12 +78,25 @@ class KittiDatasetDecoder(DirectoryDatasetDecoder):
             folder_to_data_type=self.folder_to_data_type,
             metadata_folder=self.metadata_folder,
             sensor_name=self.sensor_name,
+            pointcloud_dim=self.pointcloud_dim,
         )
 
 
 class KittiDirectorySceneDecoder(DirectorySceneDecoder):
+    def __init__(
+        self,
+        pointcloud_dim: int,
+        **kwargs,
+    ):
+        self.pointcloud_dim = pointcloud_dim
+        super().__init__(**kwargs)
+
     def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
+        self,
+        scene_name: SceneName,
+        lidar_name: SensorName,
+        dataset_name: str,
+        pointcloud_dim: Optional[int] = 4,
     ) -> LidarSensorDecoder[None]:
         return KittiLidarSensorDecoder(
             dataset_name=self.dataset_name,
@@ -88,6 +106,7 @@ class KittiDirectorySceneDecoder(DirectorySceneDecoder):
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             class_map=self._class_map,
+            pointcloud_dim=self.pointcloud_dim,
         )
 
     def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder[None]:
@@ -100,4 +119,8 @@ class KittiDirectorySceneDecoder(DirectorySceneDecoder):
             metadata_folder=self._metadata_folder,
             sensor_name=self._sensor_name,
             class_map=self._class_map,
+            pointcloud_dim=self.pointcloud_dim,
         )
+
+    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
+        return {fid: int(fid) for fid in self.get_frame_ids(scene_name=scene_name)}

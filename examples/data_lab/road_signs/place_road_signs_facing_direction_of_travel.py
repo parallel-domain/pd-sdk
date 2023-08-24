@@ -30,7 +30,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 SIGN_POST_LIST = [
     "post_round_metal_0365h_06r",

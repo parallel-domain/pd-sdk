@@ -31,7 +31,7 @@ logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 PROXY_OBJECT = "SM_NCAP_Male_Child_2yo_A_BobbyCar_01"  # used as an approximation for generated object's shape
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):

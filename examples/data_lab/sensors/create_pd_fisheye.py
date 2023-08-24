@@ -46,7 +46,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.0-beta")
+setup_datalab("v2.4.1-beta")
 
 sensor_rig = data_lab.SensorRig().add_camera(
     name="PD_Fisheye_Front",

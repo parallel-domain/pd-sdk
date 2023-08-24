@@ -9,6 +9,7 @@ from paralleldomain.decoding.directory.decoder import DirectoryDatasetDecoder
 from paralleldomain.decoding.flying_chairs.decoder import FlyingChairsDatasetDecoder
 from paralleldomain.decoding.flying_things.decoder import FlyingThingsDatasetDecoder
 from paralleldomain.decoding.gta5.decoder import GTADatasetDecoder
+from paralleldomain.decoding.kitti.decoder import KittiDatasetDecoder
 from paralleldomain.decoding.kitti_flow.decoder import KITTIFlowDatasetDecoder
 from paralleldomain.decoding.nuimages.decoder import NuImagesDatasetDecoder
 from paralleldomain.decoding.nuscenes.decoder import NuScenesDatasetDecoder
@@ -24,6 +25,7 @@ known_decoders: List[Type[DatasetDecoder]] = [
     FlyingThingsDatasetDecoder,
     FlyingChairsDatasetDecoder,
     GTADatasetDecoder,
+    KittiDatasetDecoder,
     KITTIFlowDatasetDecoder,
     NuImagesDatasetDecoder,
     NuScenesDatasetDecoder,
