@@ -6,6 +6,7 @@ from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.sensor_rig import DistortionParams
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
@@ -43,7 +44,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 # BEV Ortho Camera Parameters
 bev_camera_fov = 100  # Camera FOV in meters (square so height=width)

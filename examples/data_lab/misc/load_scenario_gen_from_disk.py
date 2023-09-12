@@ -6,6 +6,7 @@ from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.sensor_rig import SensorConfig, SensorRig
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
@@ -16,7 +17,7 @@ from paralleldomain.visualization.model_visualization import show_frame
 setup_loggers(logger_names=[__name__, "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 sensor_rig = SensorRig(
@@ -47,6 +48,7 @@ for frame, scene in data_lab.create_frame_stream(
     scenario=loaded_scenario,
     sim_instance=SimulationInstance(name="<instance name>"),
     render_instance=RenderInstance(name="<instance name>"),
+    scene_indices=[0],
 ):
     show_frame(frame=frame)
     for camera_frame in frame.camera_frames:

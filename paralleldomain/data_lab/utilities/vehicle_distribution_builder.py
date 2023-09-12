@@ -1,14 +1,10 @@
-from typing import Dict, List, Iterable
+from typing import Dict, Iterable, List
 
 from pd.assets import DataVehicle, ObjAssets
 from pd.core import PdError
 from pd.data_lab.config.distribution import VehicleCategoryWeight
-from pd.data_lab.context import setup_datalab, get_datalab_context
-from pd.internal.assets.asset_registry import (
-    DataVehicleTypeSpawnChance,
-    UtilVehicleTypes,
-    UtilAssetCategories,
-)
+from pd.data_lab.context import get_datalab_context, setup_datalab
+from pd.internal.assets.asset_registry import DataVehicleTypeSpawnChance, UtilAssetCategories, UtilVehicleTypes
 from peewee import ModelSelect
 
 
@@ -146,9 +142,9 @@ class VehicleDistributionBuilder:
         Set specified vehicle classes to 0
         """
         vehicle_classes = set(vehicle_classes)
-        self._vehicle_individual_weights = {
-            vehicle: 0 if vehicle in vehicle_classes else weight
-            for vehicle, weight in self._vehicle_individual_weights.items()
+        self._vehicle_class_weights = {
+            vehicle_class: 0 if vehicle_class in vehicle_classes else weight
+            for vehicle_class, weight in self._vehicle_class_weights.items()
         }
         self._update_full_configuration()
 

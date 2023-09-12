@@ -33,10 +33,11 @@ class ReactorObject:
     new_class_id: int
     prompts: List[str]
     asset_name: str
-    registry_class_id: int = field(init=False)
+    registry_class_id: int = None
 
-    def __post_init__(self):
-        self.registry_class_id = get_asset_registry_class_id(asset_name=self.asset_name)
+    def init_asset_registry_class_id(self):
+        if self.registry_class_id is None:
+            self.registry_class_id = get_asset_registry_class_id(asset_name=self.asset_name)
 
 
 @dataclass

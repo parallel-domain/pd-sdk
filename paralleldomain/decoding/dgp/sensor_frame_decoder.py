@@ -495,6 +495,12 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
                 sensor_name=sensor_name, frame_id=frame_id, identifier=annotation_identifiers[data_type]
             )
             return self._dataset_path / self.scene_name / relative_path
+        elif data_type in annotation_identifiers:
+            # Note: We also support Type[Annotation] for data_type for backwards compatibility
+            relative_path = self._get_annotation_relative_path(
+                sensor_name=sensor_name, frame_id=frame_id, identifier=annotation_identifiers[data_type]
+            )
+            return self._dataset_path / self.scene_name / relative_path
         elif issubclass(data_type, Image):
             datum = self._get_sensor_frame_data_datum(frame_id=frame_id, sensor_name=sensor_name)
             return self._dataset_path / self.scene_name / datum.image.filename

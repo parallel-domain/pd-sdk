@@ -10,6 +10,7 @@ from paralleldomain.model.annotation import BoundingBoxes2D
 from paralleldomain.model.statistics.base import Statistic
 from paralleldomain.model.statistics.constants import STATISTICS_REGISTRY
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.model.image import Image
 
 
 @STATISTICS_REGISTRY.register_module()
@@ -35,6 +36,7 @@ class Aggregated2DBoundingBoxAnnotations(Statistic):
 
         bbox_2d_annotations["img_height"] = sensor_frame.image.height
         bbox_2d_annotations["img_width"] = sensor_frame.image.width
+        bbox_2d_annotations["img_filepath"] = sensor_frame.get_file_path(Image)
 
         bbox_2d: BoundingBoxes2D = sensor_frame.get_annotations(annotation_type=BoundingBoxes2D)
         class_map = sensor_frame.class_maps[BoundingBoxes2D]

@@ -104,7 +104,9 @@ class KITTIFlowCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
     ) -> Optional[AnyPath]:
         annotation_identifiers = self.get_available_annotation_identifiers(sensor_name=sensor_name, frame_id=frame_id)
-        if isinstance(data_type, AnnotationIdentifier) and issubclass(data_type.annotation_type, OpticalFlow):
+        if (isinstance(data_type, AnnotationIdentifier) and issubclass(data_type.annotation_type, OpticalFlow)) or (
+            data_type is OpticalFlow
+        ):
             if data_type in annotation_identifiers:
                 if self._use_non_occluded:
                     annotation_path = self._dataset_path / self._noc_optical_flow_folder / f"{frame_id}"

@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+from math import sqrt
 from more_itertools import windowed
 from pd.core import PdError
 from pd.internal.proto.umd.generated.wrapper.utils import register_wrapper
@@ -296,11 +297,16 @@ class MapQuery:
             area_node_id = f"{NodePrefix.AREA}_{area.id}"
             self._add_vertex(element=area, vertex_id=area_node_id)
 
-    def get_lane_segments_near(self, pose: Transformation, radius: float = 10) -> List[LaneSegment]:
+    def get_lane_segments_near(
+        self, pose: Transformation, radius: float = 10, method: str = "overlap"
+    ) -> List[LaneSegment]:
         bounds = BoundingBox2DBaseGeometry(
-            x=pose.translation[0], y=pose.translation[1], width=2 * radius, height=2 * radius
+            x=pose.translation[0] - radius,
+            y=pose.translation[1] - radius,
+            width=radius,
+            height=radius,
         )
-        return self.get_lane_segments_within_bounds(bounds=bounds, method="inside")
+        return self.get_lane_segments_within_bounds(bounds=bounds, method=method)
 
     def get_random_area_object(self, area_type: UMD_pb2.Area.AreaType, random_seed: int) -> Optional[UMD_pb2.Area]:
         random_state = random.Random(random_seed)
@@ -724,7 +730,7 @@ class MapQuery:
 
         Args:
             lane_id: The ID of the lane which exists on the road we wish to find the edge of
-            which_edge: Choose to return either the left or right edge
+            side: Choose to return either the left or right edge
 
         Returns:
             An Edge object of the edge of the road corresponding to the inputted parameters
@@ -768,3 +774,63 @@ class MapQuery:
             point = line[-1]
 
         return point
+
+    def find_lane_id_from_pose(self, pose: Transformation) -> int:
+        lanes_near = [
+            lane
+            for lane in self.get_lane_segments_within_bounds(
+                bounds=BoundingBox2DBaseGeometry(x=pose.translation[0], y=pose.translation[1], width=0, height=0),
+                method="overlap",
+            )
+            if lane.type == LaneSegment.LaneType.DRIVABLE
+        ]
+
+        lines_near = [self.map.edges[lane.reference_line].as_polyline().to_numpy() for lane in lanes_near]
+
+        dist_to_lines = np.array([np.min(np.linalg.norm(line - pose.translation, axis=1)) for line in lines_near])
+
+        pose_front_direction = pose.quaternion.rotation_matrix @ np.array([0, 1, 0])
+
+        # Check where there are more than one lane near the pose
+        half_lane_width = 1.5
+
+        if (dist_to_lines < half_lane_width).sum() == 1:  # If there's only one lane near, this is the lane to return
+            current_lane = lanes_near[np.argmin(dist_to_lines)]
+
+            return current_lane.id
+
+        # If we get to this point, there are overlapping lanes, so need to find which lane matches pose rotation best
+        indices_to_compare = np.where(dist_to_lines < half_lane_width)[0]  # Indices of potentially overlapping lanes
+
+        # Initialize some variables to keep track of which lane to return in the below loop
+        min_angle_difference_counter = 4.0
+        current_lane = lanes_near[indices_to_compare[0]]
+
+        # Loop through the potentially overlapping lanes
+        for i in indices_to_compare:
+            # Pull the line that we want to compare
+            line = lines_near[i]
+
+            # Store the index of the point on the line which is closest to the pose
+            point_on_line_index = np.argmin(np.linalg.norm(line - pose.translation, axis=1))
+
+            # Calculate the vector on that point on the line, if it's the last point then use the previous vector
+            if point_on_line_index == len(line) - 1:
+                vector_near_pose = line[point_on_line_index] - line[point_on_line_index - 1]
+            else:
+                vector_near_pose = line[point_on_line_index + 1] - line[point_on_line_index]
+
+            # Find the difference between the line vector and the pose's forward direction vector
+            angle_difference = np.arccos(
+                np.dot(
+                    pose_front_direction / np.linalg.norm(pose_front_direction),
+                    vector_near_pose / np.linalg.norm(vector_near_pose),
+                )
+            )
+
+            # If this lane is more aligned with the pose, store it
+            if angle_difference < min_angle_difference_counter:
+                min_angle_difference_counter = angle_difference
+                current_lane = lanes_near[i]
+
+        return current_lane.id

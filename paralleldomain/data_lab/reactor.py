@@ -3,7 +3,7 @@ import json
 import logging
 import random
 from dataclasses import dataclass
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, List
 
 import cv2
 import numpy as np
@@ -99,6 +99,7 @@ class ReactorFrameStreamGenerator:
         self._current_scene: Optional[Scene] = None
         self._current_scene_decoder: Optional[InMemorySceneDecoder] = None
         self._reactor_config = reactor_config
+        self._reactor_config.reactor_object.init_asset_registry_class_id()
 
     def create_reactor_frame(self, reactor_input: ReactorInput) -> Tuple[Frame, Scene]:
         scene_name = reactor_input.paired_scene.name
@@ -388,11 +389,19 @@ def change_shape(
     return output_image, output_mask
 
 
-def clear_output_path(output_path: AnyPath):
-    scene_paths = [a for a in output_path.glob(pattern="scene_*")]
-    for scene in scene_paths:
-        [i.rm(missing_ok=True) for i in scene.rglob(pattern="*.png")]
-        [j.rm(missing_ok=True) for j in scene.rglob(pattern="*.json")]
-        [p.rm(missing_ok=True) for p in scene.rglob(pattern="*.pickle")]
-        if scene.is_file():
-            scene.rm(missing_ok=True)
+def clear_output_path(output_path: AnyPath, scene_indices: List[int]):
+    for scene_index in scene_indices:
+        scene = "scene_{:06d}".format(scene_index)
+        for scene_path in output_path.glob(pattern=scene):
+            if scene_path.is_cloud_path is True:
+                scene_json_paths = [j for j in scene_path.glob(pattern="scene*.json")]
+                if len(scene_json_paths) > 0:
+                    raise ValueError(
+                        f"Path to scene is not empty {scene_json_paths} and deletion of files in s3 is not supported. "
+                        f"To use cached_reactor_states, manually delete scenes in {output_path} "
+                        f"before starting the script."
+                    )
+            [i.rm(missing_ok=True) for i in scene_path.rglob(pattern="*.png")]
+            [j.rm(missing_ok=True) for j in scene_path.rglob(pattern="*.json")]
+            if scene_path.is_file():
+                scene_path.rm(missing_ok=True)

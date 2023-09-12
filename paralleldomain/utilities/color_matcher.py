@@ -241,7 +241,7 @@ class ColorMatcher:
         elif other.dtype != np.float32:
             raise ValueError()
 
-        if len(original_shape) != 3 or not original_shape[-1] in [3, 4]:
+        if len(original_shape) != 3 or original_shape[-1] not in [3, 4]:
             raise ValueError(f"Invalid shape {original_shape}! Has to be an numpy array of shape MxNx3 or  MxNx4!")
 
         transform_input = cv2.cvtColor(transform_input, cv2.COLOR_RGB2LAB)

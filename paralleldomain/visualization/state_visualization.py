@@ -8,10 +8,19 @@ import ujson
 from pd.internal.assets.asset_registry import ObjAssets
 from pd.state import ModelAgent, State, VehicleAgent
 
-from paralleldomain.data_lab.config.map import UniversalMap
+from paralleldomain.data_lab.config.map import Area, UniversalMap
 from paralleldomain.utilities.coordinate_system import SIM_TO_INTERNAL
 from paralleldomain.utilities.transformation import Transformation
 from paralleldomain.visualization.initialization import initialize_viewer
+
+EXCLUDE_AREA_TYPES = {
+    Area.AreaType.PARKING_SPACE,
+    Area.AreaType.POWER,
+    Area.AreaType.ZONE_COMMERCIAL,
+    Area.AreaType.ZONE_GREEN,
+    Area.AreaType.ZONE_INDUSTRIAL,
+    Area.AreaType.ZONE_RETAIL,
+}
 
 
 def parse_user_data(user_data: Any) -> Dict[str, Any]:
@@ -85,6 +94,8 @@ def show_map(umd_map: UniversalMap, entity_root: str = "world"):
 
     area_type_map = None
     for area_id, area in umd_map.areas.items():
+        if area.type in EXCLUDE_AREA_TYPES:
+            continue
         if area_type_map is None:  # initialize dictionary once
             area_type_map = {v: k for k, v in area.AreaType.__dict__.items() if not k.startswith("_")}
 

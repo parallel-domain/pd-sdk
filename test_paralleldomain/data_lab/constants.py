@@ -5,10 +5,11 @@ from pd.data_lab.context import get_datalab_context, setup_datalab
 from pd.management import Levelpak
 
 from paralleldomain.data_lab import Location
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 
 logger = logging.getLogger(__name__)
 
-LOCATION_VERSION = "v2.4.1-beta"
+LOCATION_VERSION = DEFAULT_DATA_LAB_VERSION
 setup_datalab(LOCATION_VERSION)
 
 
