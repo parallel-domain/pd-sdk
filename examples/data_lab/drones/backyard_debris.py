@@ -16,6 +16,7 @@ from pd.internal.assets.asset_registry import ObjAssets, UtilAssetCategories
 from pd.internal.proto.umd.generated.python import UMD_pb2
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.map import Area, MapQuery
 from paralleldomain.model.geometry.bounding_box_3d import BoundingBox3DGeometry
 from paralleldomain.utilities.any_path import AnyPath
@@ -29,7 +30,7 @@ setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 LOCATION = "SC_W8thAndOrchard"
 
 

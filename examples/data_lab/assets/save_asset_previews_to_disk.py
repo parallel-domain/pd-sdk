@@ -4,14 +4,13 @@ import os
 import sys
 
 import pd.management
-from internal.apps.asset_browser import Constants
 from pd.assets import ObjAssets, init_asset_registry_version
 from pd.util.snapshot import generate_state_for_asset_snap, get_location_for_asset_snap
 from tqdm import tqdm
 
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import write_png
-from tests.helpers import create_minimal_build_sim_state
 
 """
 Asset images generator
@@ -51,11 +50,83 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger()
 
+
+def create_minimal_build_sim_state(location: str):
+    """
+    Creates a minimal BuildSimState message that can be loaded in Sim
+    TODO: Replace with Sim load_location call when that's ready
+    """
+    from pd.internal.proto.keystone.generated.wrapper.pd_distributions_pb2 import (
+        Bucket,
+        CategoricalDistribution,
+        ConstantDistribution,
+        Distribution,
+    )
+    from pd.internal.proto.keystone.generated.wrapper.pd_environments_pb2 import (
+        EnvironmentDefinition,
+        EnvironmentPreset,
+    )
+    from pd.internal.proto.keystone.generated.wrapper.pd_scenario_pb2 import ScenarioGenConfig, ScenarioLocation
+    from pd.internal.proto.keystone.generated.wrapper.pd_sensor_pb2 import (
+        CameraIntrinsic,
+        SensorConfig,
+        SensorExtrinsic,
+        SensorRigConfig,
+    )
+    from pd.internal.proto.keystone.generated.wrapper.pd_sim_state_pb2 import BuildSimState
+    from pd.internal.proto.keystone.generated.wrapper.pd_spawn_pb2 import (
+        GeneratorConfig,
+        GeneratorConfigPreset,
+        SpawnConfig,
+        SpawnConfigPreset,
+    )
+
+    build_sim_state = BuildSimState()
+    build_sim_state.locations = [
+        ScenarioLocation(
+            location=location,
+            generator_config=GeneratorConfig(
+                preset_distribution=CategoricalDistribution(buckets=[Bucket(probability=1.0)]),
+                presets=[GeneratorConfigPreset()],
+            ),
+        )
+    ]
+    build_sim_state.sensor_rig = SensorRigConfig()
+    build_sim_state.scenario_gen = ScenarioGenConfig(
+        spawn_config=SpawnConfig(
+            preset_distribution=CategoricalDistribution(buckets=[Bucket(probability=1.0)]),
+            presets=[SpawnConfigPreset()],
+        ),
+        environment=EnvironmentDefinition(
+            preset_distribution=CategoricalDistribution(buckets=[Bucket(probability=1.0)]),
+            presets=[
+                EnvironmentPreset(
+                    time_of_day=CategoricalDistribution(buckets=[Bucket(string_value="DAY", probability=1.0)]),
+                    cloud_coverage=Distribution(constant=ConstantDistribution(float_value=0.0)),
+                    rain_intensity=Distribution(constant=ConstantDistribution(float_value=0.0)),
+                    fog_intensity=Distribution(constant=ConstantDistribution(float_value=0.0)),
+                    wetness=Distribution(constant=ConstantDistribution(float_value=0.0)),
+                )
+            ],
+        ),
+    )
+    build_sim_state.sensor_rig = SensorRigConfig(
+        sensor_configs=[
+            SensorConfig(
+                display_name="Front",
+                camera_intrinsic=CameraIntrinsic(width=1920, height=1080, fov=90.0),
+                sensor_extrinsic=SensorExtrinsic(yaw=0, pitch=0, roll=0, x=0, y=0, z=0),
+            )
+        ]
+    )
+    return build_sim_state
+
+
 ASSETS_NAME_FILE = "./out.txt"
 OUTPUT_DIR = "./asset_preview_images"
-IG_ADDRESS = "ssl://ig.step-api-dev.paralleldomain.com:300X"
-SIM_ADDRESS = "ssl://sim.step-api-dev.paralleldomain.com:300X"
-IG_VERSION = "v2.4.1-beta"
+IG_ADDRESS = "ssl://<instance name>.step-api.paralleldomain.com:9000"
+SIM_ADDRESS = "ssl://<instance name>.step-api.paralleldomain.com:9002"
+IG_VERSION = DEFAULT_DATA_LAB_VERSION
 
 pd.management.org = os.environ["PD_CLIENT_ORG_ENV"]
 pd.management.api_key = os.environ["PD_CLIENT_STEP_API_KEY_ENV"]
@@ -95,7 +166,7 @@ with session, sim_session:
 
     logger.info("Loading Location... ")
     location = get_location_for_asset_snap()
-    time_of_day = Constants.DAY_LIGHTING
+    time_of_day = "LS_sky_noon_mostlySunny_1250_HDS025"
     session.load_location(location, time_of_day)
 
     build_sim_state = create_minimal_build_sim_state(location=location)

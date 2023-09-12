@@ -9,6 +9,7 @@ from pd.data_lab.scenario import Scenario
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.reactor import ReactorConfig, ReactorObject
 from paralleldomain.data_lab.config.sensor_rig import DistortionParams
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
@@ -31,7 +32,7 @@ logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 PROXY_OBJECT = "SM_NCAP_Male_Child_2yo_A_BobbyCar_01"  # used as an approximation for generated object's shape
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):

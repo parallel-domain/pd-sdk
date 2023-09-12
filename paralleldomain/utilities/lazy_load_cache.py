@@ -177,7 +177,7 @@ class LazyLoadCache(Cache):
             pass
 
     def clear_prefix(self, prefix: str):
-        keys = [k for k in self._Cache__data.keys() if isinstance(k, str) and k.startswith(prefix)]
+        keys = [k for k in list(self._Cache__data.keys()) if isinstance(k, str) and k.startswith(prefix)]
         for k in keys:
             self.pop(k)
 

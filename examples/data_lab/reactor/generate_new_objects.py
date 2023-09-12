@@ -12,6 +12,7 @@ from pd.data_lab.sim_instance import SimulationInstance
 from pd.sim import Raycast
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.reactor import ReactorConfig, ReactorObject
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
@@ -27,7 +28,7 @@ PROXY_OBJECT = "SM_primitive_box_1m"  # used as an approximation for generated o
 PROXY_SCALE_FACTORS = [0.6, 0.4, 0.8]  # L*W*H
 OUTPUT_DATASET_PATH = tempfile.mkdtemp()
 print(f"Output path is {OUTPUT_DATASET_PATH}")
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 class BlockEgoBehaviour(data_lab.CustomSimulationAgentBehaviour):

@@ -8,6 +8,7 @@ from pd.data_lab.context import setup_datalab
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.generators.debris import DebrisGeneratorParameters
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import (
@@ -22,7 +23,7 @@ from paralleldomain.utilities.transformation import Transformation
 setup_loggers(logger_names=[__name__, "paralleldomain"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 sensor_rig = data_lab.SensorRig(
@@ -93,11 +94,12 @@ scenario.add_agents(
     )
 )
 
+number_of_scenes = 2
 output_folder = Path(tempfile.mkdtemp())
 data_lab.encode_sim_states(
     scenario=scenario,
     frames_per_scene=100,
-    number_of_scenes=2,
+    scene_indices=list(range(number_of_scenes)),
     sim_capture_rate=2,
     sim_instance=SimulationInstance(name="<instance name>"),
     render_instance=None,

@@ -48,6 +48,7 @@ class InMemorySensorFrameDecoder(Generic[TDateTime]):
     def get_file_path(
         self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
     ) -> Optional[AnyPath]:
+        # Note: We also support Type[Annotation] for data_type for backwards compatibility
         return None
 
     def get_available_annotation_identifiers(

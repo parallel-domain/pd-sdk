@@ -8,7 +8,14 @@ from pd.data_lab.context import setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
-from paralleldomain.data_lab import Location, SensorConfig, SensorRig, TimeOfDays, preview_scenario
+from paralleldomain.data_lab import (
+    Location,
+    SensorConfig,
+    SensorRig,
+    TimeOfDays,
+    preview_scenario,
+    DEFAULT_DATA_LAB_VERSION,
+)
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
 from paralleldomain.data_lab.config.world import EnvironmentParameters, ParkingSpaceData
 from paralleldomain.data_lab.generators.behavior import VehicleBehavior
@@ -25,7 +32,7 @@ from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 sensor_rig = SensorRig(
     sensor_configs=[
@@ -149,6 +156,6 @@ preview_scenario(
     scenario=scenario,
     frames_per_scene=10,
     sim_capture_rate=100,
-    sim_instance=SimulationInstance(address="<instance name>"),
+    sim_instance=SimulationInstance(name="<instance name>"),
     render_instance=RenderInstance(name="<instance name>"),
 )

@@ -104,6 +104,10 @@ class FlyingChairsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
         if isinstance(data_type, AnnotationIdentifier) and data_type.annotation_type is OpticalFlow:
             annotation_path = self._dataset_path / self._optical_flow_folder / f"{frame_id}"
             return annotation_path
+        elif data_type is OpticalFlow:
+            # Note: We also support Type[Annotation] for data_type for backwards compatibility
+            annotation_path = self._dataset_path / self._optical_flow_folder / f"{frame_id}"
+            return annotation_path
         elif issubclass(data_type, Image):
             img_path = self._dataset_path / self._image_folder / f"{frame_id}"
             return img_path

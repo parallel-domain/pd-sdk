@@ -328,6 +328,7 @@ class SensorFrame(Generic[TDateTime]):
         )
 
     def get_file_path(self, data_type: SensorDataCopyTypes) -> Optional[AnyPath]:
+        # Note: We also support Type[Annotation] for data_type for backwards compatibility
         return self._decoder.get_file_path(
             sensor_name=self.sensor_name,
             frame_id=self.frame_id,

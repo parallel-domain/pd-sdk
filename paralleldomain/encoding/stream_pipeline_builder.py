@@ -140,7 +140,6 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
     def __init__(
         self,
         frame_stream: Generator[Tuple[Frame, Scene], None, None],
-        number_of_scenes: int,
         number_of_frames_per_scene: int,
         scene_aggregator: EncoderStep = None,
         workers: int = 4,
@@ -156,7 +155,6 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
         copy_all_available_sensors_and_annotations: bool = False,
         run_env: Literal["thread", "process", "sync"] = "thread",
     ):
-        self.number_of_scenes = number_of_scenes
         self.number_of_frames_per_scene = number_of_frames_per_scene
         self._seen_scene_frames = dict()
         self.workers = workers

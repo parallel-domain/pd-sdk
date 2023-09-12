@@ -68,6 +68,7 @@ class SensorFrameDecoder(Generic[TDateTime], LazyLoadPropertyMixin):
     def get_file_path(
         self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
     ) -> Optional[AnyPath]:
+        # Note: We also support Type[Annotation] for data_type for backwards compatibility
         _unique_cache_key = self.get_unique_sensor_frame_id(
             sensor_name=sensor_name, frame_id=frame_id, extra=f"-file_path-{data_type.__name__}"
         )

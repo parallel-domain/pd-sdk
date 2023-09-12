@@ -7,6 +7,7 @@ from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.utilities.any_path import AnyPath
@@ -18,7 +19,7 @@ setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 sensor_rig = data_lab.SensorRig(
@@ -54,8 +55,9 @@ LOCATIONS = [
     "SJ_KettmanAndOrinda_aus",
 ]
 
+number_of_scenes = 1
 for tod in TIMES_OF_DAY:  # 4 time of day groups
-    for i, j, k, l in itertools.product(WEATHER_INTENSITIES, repeat=4):  # 81 weather combinations
+    for i, j, k, m in itertools.product(WEATHER_INTENSITIES, repeat=4):  # 81 weather combinations
         # Create scenario
         scenario = data_lab.Scenario(sensor_rig=sensor_rig)
         scenario.random_seed = 1337  # set to a fixed integer to keep scenario generation deterministic
@@ -66,7 +68,7 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
         scenario.environment.clouds.set_constant_value(i)
         scenario.environment.rain.set_constant_value(j)
         scenario.environment.wetness.set_constant_value(k)
-        scenario.environment.fog.set_constant_value(l)
+        scenario.environment.fog.set_constant_value(m)
 
         # Select an environment
         scenario.set_location(data_lab.Location(name="SF_6thAndMission_medium"))
@@ -92,7 +94,7 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
         for frame, scene in data_lab.create_frame_stream(
             scenario=scenario,
             frames_per_scene=1,
-            number_of_scenes=1,
+            scene_indices=list(range(number_of_scenes)),
             sim_settle_frames=1,
             sim_instance=SimulationInstance(name="<instance name>"),
             render_instance=RenderInstance(name="<instance name>"),
@@ -105,6 +107,6 @@ for tod in TIMES_OF_DAY:  # 4 time of day groups
                 write_png(
                     obj=camera_frame.image.rgb,
                     path=output_directory
-                    / f"{camera_frame.sensor_name}_{camera_frame.frame_id}_{tod.value}_{i}_{j}_{k}_{l}.png",
+                    / f"{camera_frame.sensor_name}_{camera_frame.frame_id}_{tod.value}_{i}_{j}_{k}_{m}.png",
                 )
-                logger.info(f"Complete scene {tod.value} - clouds: {i} rain: {j}, wetness: {k}, fog: {l}")
+                logger.info(f"Complete scene {tod.value} - clouds: {i} rain: {j}, wetness: {k}, fog: {m}")

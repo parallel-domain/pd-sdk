@@ -14,6 +14,7 @@ from paralleldomain.data_lab import (
     SensorRig,
     TimeOfDays,
     preview_scenario,
+    DEFAULT_DATA_LAB_VERSION,
 )
 from paralleldomain.data_lab.config.map import MapQuery, RoadSegment, Side
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
@@ -32,7 +33,7 @@ from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 sensor_rig = SensorRig(

@@ -138,6 +138,12 @@ class FlyingThingsCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime]):
                 return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=True)
             if data_type.annotation_type is BackwardOpticalFlow:
                 return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=False)
+        # Note: We also support Type[Annotation] for data_type for backwards compatibility
+        elif data_type is OpticalFlow:
+            return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=True)
+        elif data_type is BackwardOpticalFlow:
+            return self._get_flow_file_path(sensor_name=sensor_name, frame_id=frame_id, forward=False)
+
         elif issubclass(data_type, Image):
             img_path = self._get_image_file_path(sensor_name=sensor_name, frame_id=frame_id)
             return img_path

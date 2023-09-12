@@ -154,7 +154,7 @@ class DGPSceneDecoder(SceneDecoder[datetime], _DatasetDecoderMixin):
     def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
         dto = self._decode_dataset_dto()
         return [
-            AnnotationIdentifier(annotation_type=ANNOTATION_TYPE_MAP[str(a)])
+            AnnotationIdentifier(annotation_type=ANNOTATION_TYPE_MAP[a])
             for a in dto.metadata.available_annotation_types
         ]
 

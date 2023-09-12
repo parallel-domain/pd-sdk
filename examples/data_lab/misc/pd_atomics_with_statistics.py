@@ -2,6 +2,7 @@ import logging
 import random
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.generators.debris import DebrisGeneratorParameters
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
@@ -23,7 +24,7 @@ from pd.data_lab.sim_instance import SimulationInstance
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 def get_debris_asset_list() -> str:

@@ -80,6 +80,14 @@ class DirectoryBaseSensorFrameDecoder(SensorFrameDecoder[None]):
                 self._dataset_path / self._data_type_to_folder_name[SemanticSegmentation2D] / f"{frame_id}"
             )
             return annotation_path
+
+        elif data_type is SemanticSegmentation2D:
+            # Note: We also support Type[Annotation] for data_type for backwards compatibility
+            annotation_path = (
+                self._dataset_path / self._data_type_to_folder_name[SemanticSegmentation2D] / f"{frame_id}"
+            )
+            return annotation_path
+
         elif issubclass(data_type, Image):
             img_path = self._dataset_path / self._image_folder / f"{frame_id}"
             return img_path

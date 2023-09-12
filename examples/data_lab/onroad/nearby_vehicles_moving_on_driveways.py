@@ -8,6 +8,7 @@ from pd.data_lab.context import load_map, setup_datalab
 from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab import Location, SensorConfig, SensorRig, TimeOfDays, preview_scenario
 from paralleldomain.data_lab.config.map import LaneSegment, MapQuery, RoadSegment
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
@@ -29,7 +30,7 @@ setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logger = logging.getLogger("pd.state.serialize")
 logger.setLevel(logging.CRITICAL)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 sensor_rig = SensorRig(
     sensor_configs=[

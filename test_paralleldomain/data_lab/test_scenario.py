@@ -484,11 +484,12 @@ class TestScenario:
         frame_count = 0
         for frame, scene in create_frame_stream(
             scenario=scenario,
+            scene_indices=list(range(number_of_scenes)),
             frames_per_scene=frames_per_scene,
-            number_of_scenes=number_of_scenes,
             sim_instance=sim_instance,
             render_instance=render_instance,
             label_engine_instance=label_engine_instance,
+            use_label_engine=True,
             dataset_name="test",
             available_annotation_identifiers=[
                 AnnotationIdentifier(annotation_type=a) for a in sensor_rig.available_annotations
@@ -661,7 +662,7 @@ class TestScenario:
             encode_sim_states(
                 scenario=atomic_only_scenario,
                 output_folder=tmp_dir,
-                number_of_scenes=number_of_scenes,
+                scene_indices=list(range(number_of_scenes)),
                 start_skip_frames=start_skip_frames,
                 frames_per_scene=frames_per_scene,
                 sim_instance=sim_instance,
@@ -738,7 +739,7 @@ class TestScenario:
             encode_sim_states(
                 scenario=mixed_scenario,
                 output_folder=tmp_dir,
-                number_of_scenes=number_of_scenes,
+                scene_indices=list(range(number_of_scenes)),
                 frames_per_scene=frames_per_scene,
                 sim_instance=sim_instance,
                 render_instance=None,
@@ -803,7 +804,7 @@ class TestScenario:
             encode_sim_states(
                 scenario=mixed_scenario,
                 output_folder=tmp_dir,
-                number_of_scenes=number_of_scenes,
+                scene_indices=list(range(number_of_scenes)),
                 frames_per_scene=frames_per_scene,
                 start_skip_frames=start_skip_frames,
                 sim_instance=sim_instance_1,
@@ -813,8 +814,8 @@ class TestScenario:
 
             collection = SimulatedScenarioCollection(storage_folder=tmp_dir)
             collection_2 = SimulatedScenarioCollection(storage_folder=tmp_dir)
-            discrete_scenario_1 = collection.get_discrete_scenario(scenario_index=0)
-            discrete_scenario_2 = collection_2.get_discrete_scenario(scenario_index=0)
+            discrete_scenario_1 = collection.get_discrete_scenario(scene_index=0)
+            discrete_scenario_2 = collection_2.get_discrete_scenario(scene_index=0)
             state_stream_1 = sim_stream_from_discrete_scenario(
                 discrete_scenario=discrete_scenario_1,
                 sim_state_type=ExtendedSimState,

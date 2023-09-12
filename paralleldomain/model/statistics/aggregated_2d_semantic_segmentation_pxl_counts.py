@@ -10,6 +10,7 @@ from paralleldomain.model.annotation import SemanticSegmentation2D
 from paralleldomain.model.statistics.base import Statistic
 from paralleldomain.model.statistics.constants import STATISTICS_REGISTRY
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.model.image import Image
 
 
 @STATISTICS_REGISTRY.register_module()
@@ -34,6 +35,7 @@ class Aggregated2DSemanticSegmentationPixelCounts(Statistic):
         semseg_2d_pixel_counts = {
             "img_height": sensor_frame.image.height,
             "img_width": sensor_frame.image.width,
+            "img_filepath": sensor_frame.get_file_path(Image),
         }
 
         semseg_2d: SemanticSegmentation2D = sensor_frame.get_annotations(annotation_type=SemanticSegmentation2D)

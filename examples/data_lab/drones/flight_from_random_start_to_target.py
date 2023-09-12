@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 from pd.data_lab.config.distribution import CenterSpreadConfig, MinMaxConfigInt
 from pd.data_lab.context import load_map, setup_datalab
@@ -7,6 +7,8 @@ from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
+from paralleldomain.data_lab import preview_scenario
 from paralleldomain.data_lab.config.map import MapQuery
 from paralleldomain.data_lab.config.types import Float3
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
@@ -19,18 +21,15 @@ from paralleldomain.data_lab.generators.random_pedestrian import RandomPedestria
 from paralleldomain.data_lab.generators.spawn_data import AgentSpawnData, VehicleSpawnData
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.data_lab.generators.vehicle import VehicleGeneratorParameters
-from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
-from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.fsio import write_png
+from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.visualization.model_visualization import show_frame
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-setup_datalab("v2.4.1-beta")
+setup_datalab(DEFAULT_DATA_LAB_VERSION)
 
 
 class EgoDroneStraightLineBehaviour(data_lab.CustomSimulationAgentBehaviour):
@@ -127,7 +126,7 @@ scenario.add_ego(
         sensor_rig=sensor_rig,
         asset_name="",
         lock_to_ground=False,
-    ).set_behaviour(
+    ).set_behavior(
         EgoDroneStraightLineBehaviour(start_pose=start_pose, target_pose=target_pose, flight_time=flight_time)
     )
 )
@@ -177,7 +176,7 @@ scenario.add_agents(
 
 scenario.add_agents(
     generator=RandomPedestrianGeneratorParameters(
-        num_of_pedestrians_range=MinMaxConfigInt(min=30, max=50),
+        num_of_pedestrians_range=MinMaxConfigInt(min=3, max=20),
         position_request=PositionRequest(
             location_relative_position_request=LocationRelativePositionRequest(
                 agent_tags=["STAR"],  # anchor around star vehicle
@@ -186,25 +185,6 @@ scenario.add_agents(
         ),
     )
 )
-
-
-def preview_scenario(
-    scenario,
-    number_of_scenes: int = 1,
-    frames_per_scene: int = 10,
-    annotations_to_show: List[AnnotationType] = None,
-    **kwargs,
-):
-    AnyPath("out").mkdir(exist_ok=True)
-    for frame, scene in data_lab.create_frame_stream(
-        scenario=scenario, frames_per_scene=frames_per_scene, number_of_scenes=number_of_scenes, **kwargs
-    ):
-        show_frame(frame=frame, annotations_to_show=annotations_to_show)
-        for camera_frame in frame.camera_frames:
-            write_png(
-                obj=camera_frame.image.rgb,
-                path=AnyPath(f"out/{camera_frame.sensor_name}_{camera_frame.frame_id:0>18}.png"),
-            )
 
 
 preview_scenario(
