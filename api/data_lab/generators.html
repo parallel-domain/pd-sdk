@@ -688,13 +688,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepBehavior</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.Gear"><code class="docutils literal notranslate"><span class="pre">Gear</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior"><code class="docutils literal notranslate"><span class="pre">LookAtPointBehavior</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.PedestrianBehavior"><code class="docutils literal notranslate"><span class="pre">PedestrianBehavior</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior"><code class="docutils literal notranslate"><span class="pre">RenderEgoBehavior</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.StaticBehavior"><code class="docutils literal notranslate"><span class="pre">StaticBehavior</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.behavior.VehicleBehavior"><code class="docutils literal notranslate"><span class="pre">VehicleBehavior</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters</span></code></a></li>
@@ -898,10 +891,11 @@ All agents placed by the EgoAgentGenerator will have an “EGO” tag added by d
 Possible values:</p>
 <blockquote>
 <div><p>Red
+Yellow
 Green</p>
 </div></blockquote>
 </dd>
-<dt>Required:</dt><dd><p>No, will use default enum values</p>
+<dt>Required:</dt><dd><p>If <cite>use_traffic_light_color_probability</cite> is set to true, it is required.</p>
 </dd>
 </dl>
 </p></li>
@@ -1040,293 +1034,7 @@ If specified, <cite>debris_asset_tag</cite> and <cite>debris_asset_remove_tag</c
 </dl>
 </dd></dl>
 
-<span class="target" id="module-paralleldomain.data_lab.generators.behavior"></span><dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DrivewayCreepBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">behavior_duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.DrivewayCreepBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>Controls the behavior of vehicles that perform the driveway creeping behavior</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>reference_line</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – <dl class="simple">
-<dt>Description:</dt><dd><p>The driveway reference line along which the vehicle should perform the creeping behavior</p>
-</dd>
-<dt>Range:</dt><dd><p>n x 3 numpy array containing n points along the reference line.
-Each point is the [x, y, z] location of that point</p>
-</dd>
-<dt>Required:</dt><dd><p>Yes, unless used in conjunction with DrivewayCreepGenerator.
-When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
-this field is populated automatically</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>behavior_duration</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – <dl class="simple">
-<dt>Description:</dt><dd><p>Length of time in seconds in which the vehicle should travel from the start to end of the driveway</p>
-</dd>
-<dt>Required:</dt><dd><p>Yes, unless used in conjunction with DrivewayCreepGenerator.
-When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
-this field is populated automatically</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>agent_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – <dl class="simple">
-<dt>Description:</dt><dd><p>Length of the agent (in meters) to which we are assigning the Driveway Creeping Behavior</p>
-</dd>
-<dt>Required:</dt><dd><p>No, if not provided, a default length of 5.5m is used.
-When DrivewayCreepBehavior is used in conjunction with DrivewayCreepGenerator,
-this field is populated automatically</p>
-</dd>
-</dl>
-</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.Gear">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Gear</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.Gear" title="Permalink to this definition"></a></dt>
-<dd><p>Description: This contains the different types of gears for vehicles</p>
-<p>Args:</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.LookAtPointBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LookAtPointBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">look_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">look_at</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.LookAtPointBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>Allows a static agent to be created that faces towards a particular point in world space</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>look_from</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 3x1 numpy array which contains the x,y,z position from which we look at the target</p></li>
-<li><p><strong>look_at</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – 3x1 numpy array which contains the x,y,z position of the target to be looked at</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.PedestrianBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PedestrianBehavior</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.PedestrianBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>Description: This contains parameters that control pedestrian behavior</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>NORMAL</strong> – Description: Walks on sidewalks/crosswalks and only crosses roads at crosswalks</p></li>
-<li><p><strong>STATIC</strong> – Description: Stays in place</p></li>
-<li><p><strong>JAYWALKER</strong> – Description: Jaywalking behavior (e.g. crosses the road at a non-crosswalk)</p></li>
-<li><p><strong>EDGESTOPPER</strong> – Description: Spawned on sidewalk in front of tagged agent. Walks towards agent and stops at edge of sidewalk</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.RenderEgoBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RenderEgoBehavior</span></span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.RenderEgoBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>When used in conjunction with RenderEgoGenerator, allows the Ego Vehicle to be rendered</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.StaticBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StaticBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.StaticBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>Allows a static agent to be created with a given pose</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>pose</strong> (<a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – The pose that should be maintained throughout the scenario.  This pose
-will not change throughout the scenario.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="paralleldomain.data_lab.generators.behavior.VehicleBehavior">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VehicleBehavior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_dynamic_lane_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_obstacle_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_speed_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_cooldown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_change_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_amplitude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_drift_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lane_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parking_scenario_goal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parking_scenario_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gear</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_separation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_aggression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.behavior.VehicleBehavior" title="Permalink to this definition"></a></dt>
-<dd><p>Description: This contains parameters that control vehicle behavior (i.e. lane change, speed, etc.)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>start_speed</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies start speed of vehicle</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than or equal to <cite>0.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>target_speed</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies target speed of vehicle (i.e. speed vehicle tries to achieve while scenario is running). Note: If there is a speed limit, speed will not go greater than it, unless specified by ignore_speed_limit</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than to equal to <cite>0.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>ignore_speed_limit</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies whether vehicle should ignore the speed limit specified on roads.
-If true, then vehicle will use the target_speed specified even if it over the speed limit</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default value</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>lane_offset</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies lane offset in percentage of lane width in vehicle’s motion plan, relative to lane center line.
-Positive means offset to the right. Negative means offset to the left.</p>
-</dd>
-<dt>Range:</dt><dd><p><cite>-1.0</cite> to <cite>1.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>lane_drift_scale</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>The slight weaving of vehicles within their lanes is modelled as a perlin noise driven wave that has an amplitude and frequency.
-Tunes the frequency of the motion line/perlin noise wave.
-Larger values result in lower frequency.</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>lane_drift_amplitude</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>The slight weaving of vehicles within their lanes is modelled as a perlin noise driven wave that has an amplitude and frequency.
-Tunes the amplitude of the motion line/perlin noise wave.</p>
-</dd>
-<dt>Range:</dt><dd><p>No specified range. Note: large values are not recommended as it would look unrealistic</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>lane_change_probability</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies probability of making a lane change</p>
-</dd>
-<dt>Range:</dt><dd><p><cite>0.0</cite> to <cite>1.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>lane_change_cooldown</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies how long we don’t want to consider a lane change for</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than or equal to <cite>0.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>enable_dynamic_lane_selection</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>If true, randomly selects lanes to spawn in during simulation.
-If false, randomly selects lanes to spawn in during scenario generation.</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default value</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>start_gear</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Gear</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies what to set the vehicle’s gear to</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default value</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>start_separation_time</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Used to calculate lane spacing when spawning vehicles.</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than or equal to <cite>0.0</cite></p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>target_separation_time</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Used to calculate longitudinal distance vehicles try to maintain between each other</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than or equal to 0</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>vehicle_aggression</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies how aggressive vehicle should be (i.e. aggressive lane changes, turns).
-Specifically, this is the amount the target speed is increased by.</p>
-</dd>
-<dt>Range:</dt><dd><p>Greater than or equal to 0</p>
-</dd>
-<dt>Required:</dt><dd><p>No, will use default 0 values</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>ignore_obstacle_types</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ObstacleType</span></code>]]) – <dl class="simple">
-<dt>Description:</dt><dd><p>Specifies whether vehicle should ignore obstacle types</p>
-</dd>
-<dt>Required:</dt><dd><p>No, if not specified will not ignore any obstacles</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>parking_scenario_goal</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PositionRequest</span></code>]) – <dl>
-<dt>Description:</dt><dd><p>Goal position request for a parking/unparking scenario.
-<cite>parking_scenario_goal</cite> is used in two ways:
-To park, set a parking space as a goal in parking_scenario_goal and leave the position_request field empty.
-To set a parking space as a goal use the ParkingSpace lane type:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="n">lane_spawn_policy</span><span class="p">:</span> <span class="p">{</span>
-        <span class="n">lane_type</span><span class="p">:</span> <span class="p">{</span>
-            <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;ParkingSpace&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>If you want to park only in a parking lot, add a road_type distribution with Parking_Aisle set to 1:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="n">lane_spawn_policy</span><span class="p">:</span> <span class="p">{</span>
-        <span class="n">lane_type</span><span class="p">:</span> <span class="p">{</span>
-            <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;ParkingSpace&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="n">road_type</span><span class="p">:</span> <span class="p">{</span>
-            <span class="n">probabilities</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;Parking_Aisle&quot;</span><span class="p">:</span> <span class="mf">1.0</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>To park outside of a parking lot, change the road type distribution to the roads of your choosing (eg.
-Residential, Primary, Secondary, etc.).
-Please see the LaneSpawnPolicy for more documentation on setting what angle to park into.
-To unpark, set the position_request to a parking space (see above) and set the parking_scenario_goal to be a
-ParkingAisle lane type to unpark in a parking lot. Unparking from a street space is not yet supported.
-Only <cite>AbsolutePositionRequest</cite> and <cite>LaneSpawnPolicy</cite> position request types are supported.</p>
-</dd>
-<dt>Required:</dt><dd><p>No, if empty will run default behavior.</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>parking_scenario_time</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ContinousUniformDistribution</span></code>]) – <dl class="simple">
-<dt>Description:</dt><dd><p>time it takes to reach parking_maneuver_request goal. assume constant accel
-from initial speed to target speed
-is approximate, does not account for slowing down for obstacles</p>
-</dd>
-<dt>Required:</dt><dd><p>No, if empty will default to 5 seconds</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>proto</strong> (<em>Optional</em><em>[</em><em>pd_unified_generator_pb2.VehicleBehavior</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<span class="target" id="module-paralleldomain.data_lab.generators.drone"></span><dl class="py class">
+<span class="target" id="module-paralleldomain.data_lab.generators.behavior"></span><span class="target" id="module-paralleldomain.data_lab.generators.drone"></span><dl class="py class">
 <dt class="sig sig-object py" id="paralleldomain.data_lab.generators.drone.DroneGeneratorParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DroneGeneratorParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drone_spawn_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters" title="Permalink to this definition"></a></dt>
 <dd><p>Description: Not implemented</p>
@@ -1560,7 +1268,7 @@ Possible values:</p>
 Signed</p>
 </div></blockquote>
 </dd>
-<dt>Required:</dt><dd><p>No, will use default values</p>
+<dt>Required:</dt><dd><p>If <cite>use_intersection_type_probability</cite> is true, it is required.</p>
 </dd>
 </dl>
 </p></li>
