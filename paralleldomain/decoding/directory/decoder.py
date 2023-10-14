@@ -7,7 +7,7 @@ from paralleldomain.decoding.directory.frame_decoder import DirectoryFrameDecode
 from paralleldomain.decoding.directory.sensor_decoder import DirectoryCameraSensorDecoder, DirectoryLidarSensorDecoder
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.image import Image
@@ -22,6 +22,10 @@ AVAILABLE_ANNOTATION_IDENTIFIERS = [
     AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes3D),
 ]
 METADATA_FOLDER_NAME = "metadata"
+FOLDER_TO_DATA_TYPE = {
+    "image": Image,
+    "semantic_segmentation": AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
+}
 
 
 class DirectoryDatasetDecoder(DatasetDecoder):
@@ -36,12 +40,15 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self,
         dataset_path: Union[str, AnyPath],
         class_map: List[ClassDetail],
-        folder_to_data_type: Dict[str, SensorDataCopyTypes],
+        folder_to_data_type: Optional[Dict[str, SensorDataCopyTypes]] = None,
         settings: Optional[DecoderSettings] = None,
         metadata_folder: Optional[str] = METADATA_FOLDER_NAME,
         sensor_name: Optional[str] = "default",
+        img_file_extension: Optional[str] = "png",
         **kwargs,
     ):
+        folder_to_data_type = FOLDER_TO_DATA_TYPE if folder_to_data_type is None else folder_to_data_type
+
         self._init_kwargs = dict(
             dataset_path=dataset_path,
             class_map=class_map,
@@ -56,6 +63,7 @@ class DirectoryDatasetDecoder(DatasetDecoder):
         self.folder_to_data_type = folder_to_data_type
         self.metadata_folder = metadata_folder
         self.sensor_name = sensor_name
+        self.img_file_extension = img_file_extension
         dataset_name = "-".join(list([str(dataset_path)]))
         super().__init__(dataset_name=dataset_name, settings=settings)
 
@@ -68,10 +76,20 @@ class DirectoryDatasetDecoder(DatasetDecoder):
             folder_to_data_type=self.folder_to_data_type,
             metadata_folder=self.metadata_folder,
             sensor_name=self.sensor_name,
+            img_file_extension=self.img_file_extension,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
-        return [folder.name for folder in self._dataset_path.iterdir() if folder.is_dir()]
+        scene_list = [
+            folder.name
+            for folder in self._dataset_path.iterdir()
+            if (folder.is_dir()) and (folder.name not in self.folder_to_data_type.keys())
+        ]
+        if len(scene_list) == 0:
+            return ["default_scene"]
+        else:
+            return scene_list
 
     def _decode_scene_names(self) -> List[SceneName]:
         return list()
@@ -99,45 +117,48 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
+        scene_name: SceneName,
         class_map: List[ClassDetail],
         settings: DecoderSettings,
         folder_to_data_type: Dict[str, SensorDataCopyTypes],
         metadata_folder: Optional[str],
-        sensor_name: Optional[str] = "default",
+        sensor_name: Optional[str],
+        img_file_extension: Optional[str] = "png",
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        super().__init__(dataset_name=dataset_name, settings=settings)
+        super().__init__(dataset_name=dataset_name, settings=settings, scene_name=scene_name)
         self._class_map = class_map
         self._folder_to_data_type = folder_to_data_type
         self._metadata_folder = metadata_folder
         self._sensor_name = sensor_name
+        self._img_file_extension = img_file_extension
 
-    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    def _decode_set_metadata(self) -> Dict[str, Any]:
         return dict()
 
-    def _decode_set_description(self, scene_name: SceneName) -> str:
+    def _decode_set_description(self) -> str:
         return ""
 
-    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
+    def _decode_frame_id_set(self) -> Set[FrameId]:
         default_folder = next(iter(self._folder_to_data_type.keys()))
         scene_images_folder = (
-            resolve_scene_folder(dataset_path=self._dataset_path, scene_name=scene_name) / default_folder
+            resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name) / default_folder
         )
         return {path.stem for path in scene_images_folder.iterdir()}
 
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_sensor_names(self) -> List[SensorName]:
         return [self._sensor_name]
 
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_camera_names(self) -> List[SensorName]:
         return [self._sensor_name] if any([d == Image for d in self._folder_to_data_type.values()]) else []
 
-    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_lidar_names(self) -> List[SensorName]:
         return [self._sensor_name] if any([d == PointCloud for d in self._folder_to_data_type.values()]) else []
 
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_radar_names(self) -> List[SensorName]:
         return [self._sensor_name] if any([d == RadarPointCloud for d in self._folder_to_data_type.values()]) else []
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         annotation_types = [
             annotation_type
             for annotation_type in self._folder_to_data_type.values()
@@ -145,51 +166,56 @@ class DirectorySceneDecoder(SceneDecoder[None]):
         ]
         return decode_class_maps(class_map=self._class_map, annotation_types=annotation_types)
 
-    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         return AVAILABLE_ANNOTATION_IDENTIFIERS
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[None]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[None]:
         return DirectoryCameraSensorDecoder(
             dataset_name=self.dataset_name,
+            sensor_name=sensor_name,
             dataset_path=self._dataset_path,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             class_map=self._class_map,
+            img_file_extension=self._img_file_extension,
+            scene_decoder=self,
+            is_unordered_scene=True,
         )
 
-    def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[None]:
+    def _create_lidar_sensor_decoder(self, sensor_name: SensorName) -> LidarSensorDecoder[None]:
         return DirectoryLidarSensorDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            sensor_name=sensor_name,
+            scene_name=self.scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             class_map=self._class_map,
+            scene_decoder=self,
+            is_unordered_scene=True,
         )
 
-    def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder[None]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[None]:
         return DirectoryFrameDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            frame_id=frame_id,
+            scene_name=self.scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             sensor_name=self._sensor_name,
             class_map=self._class_map,
+            img_file_extension=self._img_file_extension,
+            scene_decoder=self,
+            is_unordered_scene=True,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, None]:
-        return {fid: None for fid in self.get_frame_ids(scene_name=scene_name)}
+    def _decode_frame_id_to_date_time_map(self) -> Dict[FrameId, None]:
+        return {fid: None for fid in self.get_frame_ids()}
 
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[TDateTime]:
+    def _create_radar_sensor_decoder(self, sensor_name: SensorName) -> RadarSensorDecoder[TDateTime]:
         raise ValueError("Loading from directory does not support radar data!")

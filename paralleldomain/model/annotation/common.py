@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, Optional, Type, TypeVar, List
+from typing import Generic, List, Optional, Type, TypeVar
 
 
 class Annotation:
@@ -16,9 +16,16 @@ AnnotationType = Type[Annotation]
 class AnnotationIdentifier(Generic[T]):
     """
     Used to identify annotations. In case there are multiple annotations of the same type you'll be able
-    to differentiate them through their name.
-    For backwards compatibility reasons, a name with some annotation_type T and name None is equal to the type T, also
-    having the same hash.
+        to differentiate them through their name. For backwards compatibility reasons, a name with some
+        annotation_type T and name None is equal to the type T, also having the same hash.
+
+    Args:
+        annotation_type: :attr:`AnnotationIdentifier`
+        name: :attr:`name`
+
+    Attributes:
+        annotation_type: The annotation type
+        name: The name of the annotation
     """
 
     annotation_type: Type[T]
@@ -45,6 +52,7 @@ class AnnotationIdentifier(Generic[T]):
 
     @property
     def __name__(self):
+        """Returns the name of the annotation"""
         return str(self)
 
     @staticmethod
@@ -56,15 +64,16 @@ class AnnotationIdentifier(Generic[T]):
     ) -> "AnnotationIdentifier":
         """
         Resolves the given arguments into a valid annotation identifier, throws a ValueError if that's not possible.
-        This method is used to be backwards compatible in most cases: Specifying the annotation_type is enough to
-        resolve an identifier, unless there are multiple identifiers of the same annotation type in
-        available_annotation_identifiers.
-        Either annotation_type or annotation_identifier has to be not None.
+            This method is used to be backwards compatible in most cases: Specifying the annotation_type is enough to
+            resolve an identifier, unless there are multiple identifiers of the same annotation type in
+            available_annotation_identifiers.
+            Either annotation_type or annotation_identifier has to be not None.
+
         Args:
-            available_annotation_identifiers: The list of identifiers that the result is selected from
-            annotation_type: (Optional) the annotation type the identifier should have
-            annotation_identifier: (Optional) an annotation identifier, specifying the type + optionally the name.
-            name: (Optional) the name of the annotation identifier
+            available_annotation_identifiers: List of identifiers that the result is selected from
+            annotation_type: Annotation Type of the identifier
+            annotation_identifier: An annotation identifier, specifying the type + optionally the name.
+            name: Name of the annotation identifier
 
         Returns:
             The resolved annotation identifier.
@@ -85,7 +94,7 @@ class AnnotationIdentifier(Generic[T]):
         if len(matching_identifiers) > 1:
             raise ValueError(
                 f"Multiple annotation identifiers matching {annotation_identifier} available! Please specify a name to "
-                f"select one."
+                "select one."
             )
 
         return matching_identifiers[0]

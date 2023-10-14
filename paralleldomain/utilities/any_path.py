@@ -3,7 +3,7 @@ import os
 import shutil
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Any
 from urllib.parse import urlparse
 
 from awscli.clidriver import create_clidriver
@@ -334,3 +334,11 @@ class AnyPath:
 
     def __gt__(self, other):
         return str(self) > str(other)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, AnyPath):
+            return False
+        return str(self) == str(other)
+
+    def __hash__(self) -> int:
+        return hash(str(self))

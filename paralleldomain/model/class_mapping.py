@@ -37,13 +37,17 @@ class ClassIdMap:
 class ClassDetail:
     name: str
     id: int
-    instanced: bool = False
+    instanced: Optional[bool] = False  # TODO deprecate this parameter
     meta: Dict[str, Any] = field(default_factory=lambda: {})
 
 
 class ClassMap:
     def __init__(self, classes: List[ClassDetail]):
         self._class_id_to_class_detail = {c.id: c for c in classes}
+
+    @property
+    def class_details(self) -> List[ClassDetail]:
+        return list(self._class_id_to_class_detail.values())
 
     @property
     def class_ids(self) -> List[int]:

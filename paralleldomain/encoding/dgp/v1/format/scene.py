@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Tuple, Union, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from google.protobuf import timestamp_pb2
@@ -32,6 +32,7 @@ from paralleldomain.encoding.dgp.v1.format.common import (
 )
 from paralleldomain.encoding.dgp.v1.utils import class_map_to_ontology_proto
 from paralleldomain.encoding.pipeline_encoder import PipelineItem, ScenePipelineItem
+from paralleldomain.model.annotation import AnnotationIdentifier
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame
 from paralleldomain.model.type_aliases import FrameId, SensorName
@@ -51,9 +52,9 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         },
     )
 
-    def aggregate_sensor_frame(self, pipeline_item: ScenePipelineItem):
+    def aggregate_sensor_frame(self, pipeline_item: ScenePipelineItem, dataset_output_path: AnyPath):
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
-        self.store_data_for_aggregation(pipeline_item=pipeline_item)
+        self.store_data_for_aggregation(pipeline_item=pipeline_item, output_folder=dataset_output_path)
 
     def save_aggregated_scene(self, pipeline_item: ScenePipelineItem, dataset_output_path: AnyPath, save_binary: bool):
         self.ensure_format_data_exists(pipeline_item=pipeline_item)
@@ -148,7 +149,9 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         calibration_data = dict()
         ontology_maps = dict()
         frame_map = dict()
-        for pipeline_item in self.load_camera_data_for_aggregation(scene_name=scene_name):
+        for pipeline_item in self.load_camera_data_for_aggregation(
+            scene_name=scene_name, output_folder=scene_output_path.parent
+        ):
             if pipeline_item.camera_frame is not None:
                 if pipeline_item.target_sensor_name not in calibration_data:
                     intrinsics = self.encode_camera_intrinsic(sensor_frame=pipeline_item.camera_frame)
@@ -181,7 +184,9 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         calibration_data = dict()
         ontology_maps = dict()
         frame_map = dict()
-        for pipeline_item in self.load_lidar_data_for_aggregation(scene_name=scene_name):
+        for pipeline_item in self.load_lidar_data_for_aggregation(
+            scene_name=scene_name, output_folder=scene_output_path.parent
+        ):
             if pipeline_item.lidar_frame is not None:
                 if pipeline_item.target_sensor_name not in calibration_data:
                     intrinsics = self.encode_lidar_intrinsic(sensor_frame=pipeline_item.lidar_frame)
@@ -433,7 +438,14 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
                 a_type = ANNOTATION_TYPE_MAP[iannotation_id]
                 class_map = class_maps.get(annotation_id, None)
                 if class_map is None:
-                    class_map = scene.get_class_map(a_type)
+                    if (
+                        AnnotationIdentifier.resolve_annotation_identifier(
+                            available_annotation_identifiers=scene.available_annotation_identifiers,
+                            annotation_type=a_type,
+                        )
+                        in scene.class_maps
+                    ):
+                        class_map = scene.get_class_map(a_type)
                 if class_map is not None:
                     ontology_proto = class_map_to_ontology_proto(class_map=class_map)
                     onthologie_map[iannotation_id] = ontology_proto

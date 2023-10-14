@@ -52,7 +52,7 @@ class BoundingBox2DDGPV1Mixin(CommonDGPV1FormatMixin):
         else:
             annotations = [self.encode_bounding_box_2d(b) for b in data.boxes]
             boxes2d_dto = annotations_pb2.BoundingBox2DAnnotations(annotations=annotations)
-            output_path = str(fsio.write_message(obj=boxes2d_dto, path=output_path, append_sha1=True))
+            output_path = str(fsio.write_message(obj=boxes2d_dto, path=output_path, append_sha1=False))
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.BoundingBoxes2D])

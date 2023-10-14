@@ -8,34 +8,35 @@ from paralleldomain.model.annotation.common import Annotation
 
 @dataclass
 class BackwardSceneFlow(Annotation):
-    """Represents a Backwards Scene Flow mask for a point cloud.
+    """
+    Backwards Scene Flow mask for a point cloud.
 
     Args:
-        vectors: :attr:`paralleldomain.model.annotation.scene_flow.BackwardSceneFlow.vectors`
-        valid_mask: :attr:`paralleldomain.model.annotation.scene_flow.BackwardSceneFlow.valid_mask`
+        vectors: :attr:`BackwardSceneFlow.vectors`
+        valid_mask: :attr:`BackwardSceneFlow.valid_mask`
 
     Attributes:
-        vectors: Matrix of shape `(N x 3)`, where `N` is the number of points of the corresponding
-            point cloud. The second axis contains the x, y and z offset to the position the sampled point will be at
-            in the previous frame. Note: This exact position might not be sampled by a Lidar in the previous frame!
-        valid_mask: Matrix of shape `(N X 1)` with values {0,1}. 1 indicates a point with a valid flow label in the
-            vectors attribute. 0 indicates no groundtruth flow at that pixel.
+        vectors: Array containing the x, y, z components of the vector denoting the movement of each point in the
+            point cloud between the frame and the corresponding pixel at the previous timestep. Vector is calculated by
+            subtracting point position at time i from point position from time i-1
+        valid_mask: Array containing a boolean value which is True when that point contains a valid backwards scene
+            flow vector at that points array location in :attr::`BackwardSceneFlow.vectors`, and False when there is no
+            valid vector
 
     Example:
-        Using the Scene Flow vector mask in combination with :attr:`.PointCloud.xyz` to get a view of the
-        previous frame.
-        ::
+        Using the Scene Flow vector mask in combination with :attr:`AnnotationTypes.PointCloud.xyz` to get a view of the
+        previous frame ::
 
-            lidar_frame: LidarSensorFrame = ...  # get any lidars's SensorFrame
-
-            flow = lidar_frame.get_annotations(AnnotationTypes.BackwardSceneFlow)
-            xyz = lidar_frame.point_cloud.xyz
-            previous_frame_xyz = xyz + flow.vectors
-
-            import open3d as o3d
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(previous_frame_xyz)
-            o3d.visualization.draw_geometries([pcd])
+            >>> lidar_frame: LidarSensorFrame = ...  # get any lidars's SensorFrame
+            >>>
+            >>> flow = lidar_frame.get_annotations(AnnotationTypes.BackwardSceneFlow)
+            >>> xyz = lidar_frame.point_cloud.xyz
+            >>> previous_frame_xyz = xyz + flow.vectors
+            >>>
+            >>> import open3d as o3d
+            >>> pcd = o3d.geometry.PointCloud()
+            >>> pcd.points = o3d.utility.Vector3dVector(previous_frame_xyz)
+            >>> o3d.visualization.draw_geometries([pcd])
     """
 
     vectors: np.ndarray

@@ -8,7 +8,7 @@ from paralleldomain.decoding.gta5.common import GTA_CLASSES
 from paralleldomain.decoding.gta5.frame_decoder import GTAFrameDecoder
 from paralleldomain.decoding.gta5.sensor_decoder import GTACameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationType, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import SensorDataCopyTypes
@@ -61,6 +61,7 @@ class GTADatasetDecoder(DirectoryDatasetDecoder):
             folder_to_data_type=self.folder_to_data_type,
             metadata_folder=self.metadata_folder,
             sensor_name=self.sensor_name,
+            scene_name=scene_name,
         )
 
     @staticmethod
@@ -73,6 +74,7 @@ class GTASceneDecoder(DirectorySceneDecoder):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
+        scene_name: SceneName,
         class_map: List[ClassDetail],
         settings: DecoderSettings,
         folder_to_data_type: Dict[str, SensorDataCopyTypes],
@@ -87,29 +89,34 @@ class GTASceneDecoder(DirectorySceneDecoder):
             folder_to_data_type=folder_to_data_type,
             metadata_folder=metadata_folder,
             sensor_name=sensor_name,
+            scene_name=scene_name,
         )
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[None]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[None]:
         return GTACameraSensorDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            sensor_name=sensor_name,
+            scene_name=self.scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             class_map=self._class_map,
+            scene_decoder=self,
+            is_unordered_scene=True,
         )
 
-    def _create_frame_decoder(self, scene_name: SceneName, frame_id: FrameId, dataset_name: str) -> FrameDecoder[None]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[None]:
         return GTAFrameDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
+            frame_id=frame_id,
             dataset_path=self._dataset_path,
             settings=self.settings,
             folder_to_data_type=self._folder_to_data_type,
             metadata_folder=self._metadata_folder,
             sensor_name=self._sensor_name,
             class_map=self._class_map,
+            scene_decoder=self,
+            is_unordered_scene=True,
         )

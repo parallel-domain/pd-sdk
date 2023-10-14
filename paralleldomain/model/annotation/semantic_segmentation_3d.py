@@ -10,7 +10,7 @@ class SemanticSegmentation3D(Annotation):
     """Represents a 3D Semantic Segmentation mask for a point cloud.
 
     Args:
-        class_ids: :attr:`paralleldomain.model.annotation.semantic_segmentation_3d.SemanticSegmentation3D.class_ids`
+        class_ids: :attr:`SemanticSegmentation3D.class_ids`
 
     Attributes:
         class_ids: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.

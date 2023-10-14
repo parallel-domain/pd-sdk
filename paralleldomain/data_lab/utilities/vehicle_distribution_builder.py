@@ -3,7 +3,7 @@ from typing import Dict, Iterable, List
 from pd.assets import DataVehicle, ObjAssets
 from pd.core import PdError
 from pd.data_lab.config.distribution import VehicleCategoryWeight
-from pd.data_lab.context import get_datalab_context, setup_datalab
+from pd.data_lab.context import get_datalab_context
 from pd.internal.assets.asset_registry import DataVehicleTypeSpawnChance, UtilAssetCategories, UtilVehicleTypes
 from peewee import ModelSelect
 
@@ -42,30 +42,41 @@ def _get_vehicle_weights_from_db() -> ModelSelect:
 
 
 class VehicleDistributionBuilder:
-    """Vehicle distribution builder object.
+    """
+    Helper class for building vehicle distributions compatible with PD SDK, and Data Lab
 
-    A helper class for building vehicle distributions that are compatible with the PD SDK, and Data Lab in particular.
+    Note:
+        The class takes no parameters on initialization and loads the default vehicle distribution on initialization
 
-    Example:
-        builder = VehicleDistributionBuilder()
-        builder.initialize_from_defaults()
-        builder.set_vehicle_class_weights({"BUS": 10.0})
-        scenario.add_agents(
-            generator=ParkedVehicleGeneratorParameters(
-                spawn_probability=CenterSpreadConfig(center=0.99),
-                position_request=PositionRequest(
-                    location_relative_position_request=LocationRelativePositionRequest(
-                        agent_tags=["EGO"],
-                        max_spawn_radius=100.0,
-                    )
-                ),
-                vehicle_distribution=builder.get_configuration(),
-            )
-        )
+    Examples::
 
+        >>> builder = VehicleDistributionBuilder()
+        >>> builder.initialize_from_defaults()
+        >>> builder.set_vehicle_class_weights({"BUS": 10.0})
+        >>> scenario.add_agents(
+        >>>     generator=ParkedVehicleGeneratorParameters(
+        >>>         spawn_probability=CenterSpreadConfig(center=0.99),
+        >>>         position_request=PositionRequest(
+        >>>             location_relative_position_request=LocationRelativePositionRequest(
+        >>>                 agent_tags=["EGO"],
+        >>>                 max_spawn_radius=100.0,
+        >>>             )
+        >>>         ),
+        >>>         vehicle_distribution=builder.get_configuration(),
+        >>>     )
+        >>> )
+
+    Raises:
+        PdError: If the Data Lab context is invalid or not setup. Ensure setup_datalab() has been called prior
     """
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Returns the str of the vehicle distribution contained within the object
+
+        Returns:
+            String of the vehicle distribution contained within the object
+        """
         return str(self._full_vehicle_dist_config_dict)
 
     def __init__(self):
@@ -84,9 +95,7 @@ class VehicleDistributionBuilder:
         self._pd_class_weights_dict: Dict[str, float] = dict(_get_vehicle_class_weights_from_db().tuples())
 
     def _update_full_configuration(self):
-        """
-        Updates the full vehicle distribution based on current vehicle weights and class weights
-        """
+        """Updates the full vehicle distribution based on current vehicle weights and class weights"""
         vehicle_config = dict()
 
         for vehicle_type in self._vehicle_class_weights.keys():
@@ -122,12 +131,12 @@ class VehicleDistributionBuilder:
                 f" {invalid_vehicle_names}"
             )
 
-    def remove_vehicles(self, vehicle_names: Iterable[str]):
+    def remove_vehicles(self, vehicle_names: Iterable[str]) -> None:
         """
-        Sets specified vehicle weights to 0
+        Allows specified vehicles to be removed from the vehicle distribution of the object
 
         Args:
-            vehicle_names:
+            vehicle_names: The names of the vehicles to be removed from the vehicle distribution
 
         """
         vehicle_names = set(vehicle_names)
@@ -137,9 +146,12 @@ class VehicleDistributionBuilder:
         }
         self._update_full_configuration()
 
-    def remove_vehicle_classes(self, vehicle_classes: Iterable[str]):
+    def remove_vehicle_classes(self, vehicle_classes: Iterable[str]) -> None:
         """
-        Set specified vehicle classes to 0
+        Allows specified classes of vehicles to be removed from the vehicle distribution of the object
+
+        Args:
+            vehicle_classes: The names of the classes of vehicles to be removed from the vehicle distribution
         """
         vehicle_classes = set(vehicle_classes)
         self._vehicle_class_weights = {
@@ -148,31 +160,33 @@ class VehicleDistributionBuilder:
         }
         self._update_full_configuration()
 
-    def set_vehicle_weights(self, vehicle_weights: Dict[str, float]):
+    def set_vehicle_weights(self, vehicle_weights: Dict[str, float]) -> None:
         """
+        Set specified vehicles to have a certain spawn weight in the vehicle distribution of the object
 
         Args:
-            vehicle_weights: dictionary mapping vehicle model names to desired weight
-
+            vehicle_weights: Dictionary containing the name of the vehicles and their respective weights to be added or
+                modified in the vehicle distribution of the object
         """
         self._vehicle_individual_weights.update(vehicle_weights)
         self._validate_inputs()
         self._update_full_configuration()
 
-    def set_vehicle_class_weights(self, class_weights: Dict[str, float]):
+    def set_vehicle_class_weights(self, class_weights: Dict[str, float]) -> None:
         """
+        Set specified vehicle classes to have a certain spawn weight in the vehicle distribution of the object
 
-        Args:
-            class_weights: dictionary mapping vehicle class to desired weight
-
+            Args:
+                class_weights: Dictionary containing the name of the vehicles classes and their respective weights
+                    to be added or modified in the vehicle distribution of the object
         """
         self._vehicle_class_weights.update(class_weights)
         self._validate_inputs()
         self._update_full_configuration()
 
-    def initialize_from_defaults(self):
+    def initialize_from_defaults(self) -> None:
         """
-        Initializes a vehicle distribution directly from our asset db. ie from pd default values
+        Initializes the vehicle distribution with default values
         """
         self._vehicle_class_weights = self._pd_class_weights_dict
         self._vehicle_individual_weights = self._pd_vehicle_weights_dict
@@ -180,7 +194,11 @@ class VehicleDistributionBuilder:
 
     def get_configuration(self) -> Dict[str, VehicleCategoryWeight]:
         """
-        Returns a vehicle distribution in the format expected by Data Lab for configuring a vehicle distribution
+        Retrieves the vehicle distribution in the object in a format directly digestible by Data Lab
+
+        Returns:
+            A dictionary representation of the created vehicle distribution outlining the spawn weights of each vehicle
+                class and the spawn weights of specific vehicles within each class
         """
         vehicle_dist = dict()
         self._update_full_configuration()
@@ -195,7 +213,13 @@ class VehicleDistributionBuilder:
     @staticmethod
     def get_vehicle_names_from_class(vehicle_class: str) -> List[str]:
         """
-        Helper method to retrieve all vehicle names from specified vehicle class
+        Retrieve all vehicle names within a specified vehicle class
+
+        Args:
+            vehicle_class: The name of the vehicle class within which we wish to find all vehicle names
+
+        Returns:
+            A list of all vehicle names within the specified class
         """
         pd_vehicle_name_to_class_dict = dict(_get_vehicle_name_to_class_from_db().tuples())
         vehicle_names = [
@@ -207,8 +231,14 @@ class VehicleDistributionBuilder:
 
     @property
     def class_weights(self) -> Dict[str, float]:
+        """
+        Dictionary containing the assigned weights of each of the vehicle classes
+        """
         return self._vehicle_class_weights
 
     @property
     def vehicle_weights(self) -> Dict[str, float]:
+        """
+        Dictionary containing the assigned weights of each vehicle
+        """
         return self._vehicle_individual_weights

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from paralleldomain import Dataset, Scene
 from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import (
     CameraSensor,
     CameraSensorFrame,
@@ -62,8 +63,10 @@ class PipelineItem(Generic[TSceneType]):
     target_sensor_name: Optional[str]
     scene_reference_timestamp: Optional[datetime]
     custom_data: Dict[str, Any] = field(default_factory=dict)
+    is_end_of_frame: bool = False
     is_end_of_scene: bool = False
     is_end_of_dataset: bool = False
+    total_sensors_in_frame: Optional[int] = -1
     total_frames_in_scene: Optional[int] = -1
     total_scenes_in_dataset: Optional[int] = -1
 
@@ -81,6 +84,12 @@ class PipelineItem(Generic[TSceneType]):
         pass
 
     @property
+    def frame(self) -> Optional[Frame]:
+        if self.frame_id is not None:
+            return self.scene.get_frame(frame_id=self.frame_id)
+        return None
+
+    @property
     def sensor(self) -> Optional[Sensor]:
         if self.sensor_name is not None:
             return self.scene.get_sensor(sensor_name=self.sensor_name)
@@ -88,19 +97,21 @@ class PipelineItem(Generic[TSceneType]):
 
     @property
     def sensor_frame(self) -> Optional[SensorFrame]:
-        if self.frame_id is not None:
-            return self.sensor.get_frame(frame_id=self.frame_id)
+        if self.frame_id is not None and self.sensor_name is not None:
+            return self.frame.get_sensor(sensor_name=self.sensor_name)
         return None
 
     @property
     def camera_frame(self) -> Optional[CameraSensorFrame]:
         if self.sensor is not None and isinstance(self.sensor, CameraSensor):
+            # return self.frame.get_sensor(sensor_name=self.sensor_name)
             return self.sensor.get_frame(frame_id=self.frame_id)
         return None
 
     @property
     def lidar_frame(self) -> Optional[LidarSensorFrame]:
         if self.sensor is not None and isinstance(self.sensor, LidarSensor):
+            # return self.frame.get_sensor(sensor_name=self.sensor_name)
             return self.sensor.get_frame(frame_id=self.frame_id)
         return None
 
@@ -145,6 +156,10 @@ class EncodingFormat(Generic[TPipelineItem]):
         pass
 
     @abstractmethod
+    def save_frame(self, pipeline_item: TPipelineItem, data: Any = None):
+        pass
+
+    @abstractmethod
     def save_dataset(self, pipeline_item: TPipelineItem, data: Any = None):
         pass
 
@@ -181,12 +196,10 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         pipeline_builder: PipelineBuilder[TPipelineItem],
         encoding_format: EncodingFormat[TPipelineItem],
         use_tqdm: bool = True,
-        run_env: Literal["thread", "process", "sync"] = "thread",
     ):
         self.encoding_format = encoding_format
         self.pipeline_builder = pipeline_builder
         self.use_tqdm = use_tqdm
-        self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
 
     @staticmethod
     def build_pipeline(
@@ -202,7 +215,6 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         encoder_steps = self.pipeline_builder.build_encoder_steps(encoding_format=self.encoding_format)
         stage = self.build_pipeline(source_generator=stage, encoder_steps=encoder_steps)
 
-        stage = self.run_env.to_iterable(stage)
         if self.use_tqdm:
             stage = tqdm(
                 stage,
@@ -219,9 +231,6 @@ class DatasetPipelineEncoder(Generic[TPipelineItem]):
         pipeline_builder: PipelineBuilder,
         encoding_format: EncodingFormat,
         use_tqdm: bool = True,
-        run_env: Literal["thread", "process", "sync"] = "thread",
         **kwargs,
     ) -> "DatasetPipelineEncoder":
-        return cls(
-            use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format, run_env=run_env
-        )
+        return cls(use_tqdm=use_tqdm, pipeline_builder=pipeline_builder, encoding_format=encoding_format)

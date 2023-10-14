@@ -3,8 +3,7 @@ from typing import Generic, List, TypeVar
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_3d import Point3DBaseGeometry, Point3DGeometry
-from paralleldomain.utilities.geometry import interpolate_points
+from paralleldomain.model.geometry.point_3d import Point3DBaseGeometry
 from paralleldomain.utilities.transformation import Transformation
 
 T = TypeVar("T", int, float)
@@ -81,17 +80,18 @@ class Polyline3DBaseGeometry(Generic[T]):
         elif num_lines == 1:
             return self.lines[0].to_numpy()
         else:
-            return np.vstack([ll.to_numpy()[0] for ll in self.lines] + [self.lines[-1].to_numpy()[1]])
+            return np.vstack([self.lines[0].start.to_numpy()] + [ll.end.to_numpy() for ll in self.lines])
 
     def transform(self, tf: Transformation) -> "Polyline3DBaseGeometry[T]":
         return Polyline3DBaseGeometry[T](lines=[ll.transform(tf=tf) for ll in self.lines])
 
     @classmethod
-    def from_numpy(cls, points: np.ndarray, **kwargs) -> "Polyline3DBaseGeometry[T]":
-        points = points.reshape(-1, 3)
+    def from_numpy(cls, points: np.ndarray) -> "Polyline3DBaseGeometry[T]":
+        if points.shape[1] != 3:
+            raise ValueError(f"Expected array with shape (N x 3) but got array with shape {points.shape}")
+
         point_pairs = np.hstack([points[:-1], points[1:]])
-        kwargs["lines"] = np.apply_along_axis(Line3DGeometry.from_numpy, point_pairs)
-        return cls(**kwargs)
+        return cls(lines=list(map(Line3DGeometry.from_numpy, point_pairs)))
 
 
 class Polyline3DGeometry(Polyline3DBaseGeometry[float]):

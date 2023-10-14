@@ -1,47 +1,48 @@
-from datetime import datetime
-from typing import Any, Dict, Generator, Generic, List, TypeVar, Union
+from __future__ import annotations
 
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional, Protocol, TypeVar, Union
 
 from paralleldomain.model.ego import EgoFrame
 from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 
+if TYPE_CHECKING:
+    from paralleldomain.model.scene import Scene
+    from paralleldomain.model.unordered_scene import UnorderedScene
+
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class FrameDecoderProtocol(Protocol[TDateTime]):
-    def get_camera_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> CameraSensorFrame[TDateTime]:
+    def get_camera_sensor_frame(self, sensor_name: SensorName) -> CameraSensorFrame[TDateTime]:
         pass
 
-    def get_lidar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
+    def get_lidar_sensor_frame(self, sensor_name: SensorName) -> LidarSensorFrame[TDateTime]:
         pass
 
-    def get_radar_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
+    def get_radar_sensor_frame(self, sensor_name: SensorName) -> RadarSensorFrame[TDateTime]:
         pass
 
-    def get_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
+    def get_sensor_names(self) -> List[SensorName]:
         pass
 
-    def get_camera_names(self, frame_id: FrameId) -> List[SensorName]:
+    def get_camera_names(self) -> List[SensorName]:
         pass
 
-    def get_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
+    def get_lidar_names(self) -> List[SensorName]:
         pass
 
-    def get_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+    def get_radar_names(self) -> List[SensorName]:
         pass
 
-    def get_ego_frame(self, frame_id: FrameId) -> EgoFrame:
+    def get_ego_frame(self) -> EgoFrame:
         pass
 
-    def get_date_time(self, frame_id: FrameId) -> TDateTime:
+    def get_date_time(self) -> TDateTime:
         pass
 
-    def get_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+    def get_metadata(self) -> Dict[str, Any]:
         pass
 
     @property
@@ -52,15 +53,20 @@ class FrameDecoderProtocol(Protocol[TDateTime]):
     def scene_name(self) -> SceneName:
         pass
 
+    @property
+    def frame_id(self) -> FrameId:
+        pass
+
+    def get_scene(self) -> Union[Scene, UnorderedScene]:
+        pass
+
 
 class Frame(Generic[TDateTime]):
     def __init__(
         self,
-        frame_id: FrameId,
         decoder: FrameDecoderProtocol[TDateTime],
     ):
         self._decoder = decoder
-        self._frame_id = frame_id
 
     @property
     def dataset_name(self) -> str:
@@ -71,31 +77,71 @@ class Frame(Generic[TDateTime]):
         return self._decoder.scene_name
 
     @property
+    def scene(self) -> Union[Scene, UnorderedScene]:
+        return self._decoder.get_scene()
+
+    @property
+    def next_frame(self) -> Optional[Frame[TDateTime]]:
+        next_frame_id = self.next_frame_id
+        if next_frame_id is not None:
+            return self.scene.get_frame(frame_id=next_frame_id)
+        return None
+
+    @property
+    def previous_frame(self) -> Optional[Frame[TDateTime]]:
+        previous_frame_id = self.previous_frame_id
+        if previous_frame_id is not None:
+            return self.scene.get_frame(frame_id=previous_frame_id)
+        return None
+
+    @property
+    def next_frame_id(self) -> Optional[FrameId]:
+        scene = self.scene
+        if not scene.is_ordered:
+            return None
+        frame_ids = scene.frame_ids
+        next_frame_id_idx = frame_ids.index(self.frame_id) + 1
+        if 0 <= next_frame_id_idx < len(frame_ids):
+            return frame_ids[next_frame_id_idx]
+        return None
+
+    @property
+    def previous_frame_id(self) -> Optional[FrameId]:
+        scene = self.scene
+        if not scene.is_ordered:
+            return None
+        frame_ids = scene.frame_ids
+        previous_frame_id_idx = frame_ids.index(self.frame_id) - 1
+        if 0 <= previous_frame_id_idx < len(frame_ids):
+            return frame_ids[previous_frame_id_idx]
+        return None
+
+    @property
     def frame_id(self) -> FrameId:
-        return self._frame_id
+        return self._decoder.frame_id
 
     @property
     def date_time(self) -> TDateTime:
-        return self._decoder.get_date_time(frame_id=self.frame_id)
+        return self._decoder.get_date_time()
 
     @property
     def ego_frame(self) -> EgoFrame:
-        return self._decoder.get_ego_frame(frame_id=self.frame_id)
+        return self._decoder.get_ego_frame()
 
     def get_camera(self, camera_name: SensorName) -> CameraSensorFrame[TDateTime]:
         if camera_name not in self.camera_names:
             raise ValueError(f"Camera {camera_name} could not be found.")
-        return self._decoder.get_camera_sensor_frame(frame_id=self.frame_id, sensor_name=camera_name)
+        return self._decoder.get_camera_sensor_frame(sensor_name=camera_name)
 
     def get_lidar(self, lidar_name: SensorName) -> LidarSensorFrame[TDateTime]:
         if lidar_name not in self.lidar_names:
             raise ValueError(f"LiDAR {lidar_name} could not be found.")
-        return self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=lidar_name)
+        return self._decoder.get_lidar_sensor_frame(sensor_name=lidar_name)
 
     def get_radar(self, radar_name: SensorName) -> RadarSensorFrame[TDateTime]:
         if radar_name not in self.radar_names:
             raise ValueError(f"Radar {radar_name} could not be found.")
-        return self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=radar_name)
+        return self._decoder.get_radar_sensor_frame(sensor_name=radar_name)
 
     def get_sensor(self, sensor_name: SensorName) -> SensorFrame[TDateTime]:
         if sensor_name in self.camera_names:
@@ -107,21 +153,33 @@ class Frame(Generic[TDateTime]):
         else:
             raise ValueError(f"Sensor {sensor_name} could not be found.")
 
+    def _get_sensor_names(self) -> List[SensorName]:
+        return self._decoder.get_sensor_names()
+
     @property
     def sensor_names(self) -> List[SensorName]:
-        return self._decoder.get_sensor_names(frame_id=self.frame_id)
+        return self._get_sensor_names()
+
+    def _get_camera_names(self) -> List[SensorName]:
+        return self._decoder.get_camera_names()
 
     @property
     def camera_names(self) -> List[SensorName]:
-        return self._decoder.get_camera_names(frame_id=self.frame_id)
+        return self._get_camera_names()
+
+    def _get_lidar_names(self) -> List[SensorName]:
+        return self._decoder.get_lidar_names()
 
     @property
     def lidar_names(self) -> List[SensorName]:
-        return self._decoder.get_lidar_names(frame_id=self.frame_id)
+        return self._get_lidar_names()
+
+    def _get_radar_names(self) -> List[SensorName]:
+        return self._decoder.get_radar_names()
 
     @property
     def radar_names(self) -> List[SensorName]:
-        return self._decoder.get_radar_names(frame_id=self.frame_id)
+        return self._get_radar_names()
 
     @property
     def sensor_frames(self) -> Generator[SensorFrame[TDateTime], None, None]:
@@ -129,26 +187,19 @@ class Frame(Generic[TDateTime]):
 
     @property
     def camera_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
-        return (
-            self._decoder.get_camera_sensor_frame(frame_id=self.frame_id, sensor_name=name)
-            for name in self.camera_names
-        )
+        return (self._decoder.get_camera_sensor_frame(sensor_name=name) for name in self.camera_names)
 
     @property
     def lidar_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
-        return (
-            self._decoder.get_lidar_sensor_frame(frame_id=self.frame_id, sensor_name=name) for name in self.lidar_names
-        )
+        return (self._decoder.get_lidar_sensor_frame(sensor_name=name) for name in self.lidar_names)
 
     @property
     def radar_frames(self) -> Generator[RadarSensorFrame[TDateTime], None, None]:
-        return (
-            self._decoder.get_radar_sensor_frame(frame_id=self.frame_id, sensor_name=name) for name in self.radar_names
-        )
+        return (self._decoder.get_radar_sensor_frame(sensor_name=name) for name in self.radar_names)
 
     @property
     def metadata(self) -> Dict[str, Any]:
-        return self._decoder.get_metadata(frame_id=self.frame_id)
+        return self._decoder.get_metadata()
 
     def __lt__(self, other: "Frame[TDateTime]"):
         if self.date_time is not None and other.date_time is not None:

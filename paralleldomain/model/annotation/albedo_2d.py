@@ -7,16 +7,15 @@ from paralleldomain.model.annotation.common import Annotation
 
 @dataclass
 class Albedo2D(Annotation):
-    """Contains the base color of each pixel per in the corresponding camera image.
-
-
+    """
+    Contains the base color of each pixel per in the corresponding camera image.
 
     Args:
-        color: :attr:`~.BaseColor.color:`
+        color: :attr:`Albedo2D.color`
 
     Attributes:
-        color:: Matrix of shape `(H X W x 3)`, , where `H` is the height and `W` is the width of corresponding
-            camera image. The third axis contains the base color of each pixel before lighting takes place.
+        color: Array containing the base color in RGB format for each pixel of an image, prior to lighting affects being
+            applied to the scenario
 
     """
 

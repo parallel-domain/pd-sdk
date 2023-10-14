@@ -7,13 +7,14 @@ from paralleldomain.model.annotation.polyline_2d import Polyline2D
 
 @dataclass
 class Polygon2D(Polyline2D):
-    """A closed polygon made a collection of 2D Lines.
+    """
+    A closed polygon made up of a collection of 2D Lines.
 
     Args:
-        lines: :attr:`paralleldomain.model.annotation.polygon_2d.Polygon2D.lines`
-        class_id: :attr:`paralleldomain.model.annotation.polygon_2d.Polygon2D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.polygon_2d.Polygon2D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.polygon_2d.Polygon2D.attributes`
+        lines: :attr:`Polygon2D.lines`
+        class_id: :attr:`Polygon2D.class_id`
+        instance_id: :attr:`Polygon2D.instance_id`
+        attributes: :attr:`Polygon2D.attributes`
 
     Attributes:
         lines: Ordered list of :obj:`Line2D` instances
@@ -32,7 +33,7 @@ class Polygons2D(Annotation):
     """Collection of 2D Polygons
 
     Args:
-        polygons: :attr:`paralleldomain.model.annotation.polygon_2d.Polygons2D.polygons`
+        polygons: :attr:`Polygons2D.polygons`
 
     Attributes:
         polygons: Ordered list of :obj:`Polygon2D` instances

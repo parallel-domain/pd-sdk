@@ -14,7 +14,8 @@ from test_paralleldomain.decoding.constants import DGP_DATASET_PATH_ENV, DGP_V1_
     params=[
         ("dgp", DGPDatasetDecoder, DGP_DATASET_PATH_ENV),
         ("dgpv1", DGPV1DatasetDecoder, DGP_V1_DATASET_PATH_ENV),
-    ]
+    ],
+    scope="function",
 )
 def decoder(request) -> DatasetDecoder:
     dataset_format, decoder_class, path_env = request.param

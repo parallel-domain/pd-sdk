@@ -56,18 +56,22 @@ class BoundingBox2DBaseGeometry(Generic[T]):
 
     @property
     def x_min(self) -> T:
+        """Returns the minimum x value of the corners of the 2D Bounding Box"""
         return self.x
 
     @property
     def y_min(self) -> T:
+        """Returns the minimum y value of the corners of the 2D Bounding Box"""
         return self.y
 
     @property
     def x_max(self) -> T:
+        """Returns the maximum x value of the corners of the 2D Bounding Box"""
         return self.x + self.width
 
     @property
     def y_max(self) -> T:
+        """Returns the maximum y value of the corners of the 2D Bounding Box"""
         return self.y + self.height
 
     @property

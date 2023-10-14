@@ -109,6 +109,11 @@ class Point2DBaseGeometry(Generic[T]):
         else:
             raise ValueError(f"Unsupported value {other}!")
 
+    @classmethod
+    def from_numpy(cls, point: np.ndarray):
+        point = point.reshape(2)
+        return cls(x=point[0], y=point[1])
+
 
 class Point2DGeometry(Point2DBaseGeometry[int]):
     pass

@@ -1,6 +1,6 @@
 import abc
 import math
-from typing import Optional
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
@@ -251,3 +251,31 @@ def points_2d_inside_image(
         & (points_2d[:, 1] < height)
         & (points_3d[:, 2] > 0 if camera_model in (CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_OPENCV_FISHEYE) else True)
     )
+
+
+def fov_to_focal_length(fov: float, sensor_size: int) -> float:
+    """Calculates the focal length from a given field of view (FOV) and image size.
+        FOV is defined as the angle around the optical axis covered by the image.
+
+    Args:
+        fov: Field of view in radians.
+        sensor_size: Sensor size along the axis of `fov`.
+
+    Returns:
+        Focal length. Returns `0.0` if `fov <= 0.0`.
+    """
+    return sensor_size / (2 * math.tan(fov / 2)) if fov > 0.0 else 0.0
+
+
+def focal_length_to_fov(focal_length: float, sensor_size: int) -> float:
+    """Calculates the field of view (FOV) from a given focal length and image size.
+        FOV is defined as the angle around the optical axis covered by the image.
+
+    Args:
+        focal_length: Focal length.
+        sensor_size: Sensor size along the axis of `focal_length`.
+
+    Returns:
+        Field of view in radians. Returns `0.0` if `focal_length <= 0.0`.
+    """
+    return 2 * math.atan(sensor_size / (2 * focal_length)) if focal_length > 0.0 else 0.0

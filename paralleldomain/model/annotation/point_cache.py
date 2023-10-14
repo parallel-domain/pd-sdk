@@ -1,27 +1,49 @@
 from dataclasses import dataclass
 from sys import getsizeof
-from typing import List
+from typing import List, Optional, Protocol
 
 import numpy as np
 
-try:
-    from typing import Optional, Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
-
 from paralleldomain.model.annotation.common import Annotation
-from paralleldomain.utilities.transformation import Transformation
 
 
 class PointCachePointsDecoderProtocol(Protocol):
+    """
+    Base class for decoding Point Cache Points
+    """
+
     def get_points_xyz(self) -> Optional[np.ndarray]:
+        """
+        Base implementation of method that extracts xyz positions of points within the point cache
+
+        Returns:
+            Array of xyz positions of each point within the point cache
+        """
         pass
 
     def get_points_normals(self) -> Optional[np.ndarray]:
+        """
+        Base implementation of method that extracts surface normals of points within the point cache
+
+        Returns:
+            Array of vector components of the surface normals of each point within the point cache
+        """
         pass
 
 
 class PointCacheComponent:
+    """
+    A component of a point cache, which contains a subset of points with associated xyz positions and surface normals
+
+    Args:
+        component_name: :attr:`PointCacheComponent.component_name`
+        points_decoder: An implementation of :obj:`PointCachePointsDecoderProtocol` which defines how the xyz positions
+            and surface normals of the points are extracted
+
+    Attributes:
+        component_name: The name of the component
+    """
+
     def __init__(self, component_name: str, points_decoder: PointCachePointsDecoderProtocol):
         self._points_decoder = points_decoder
         self.component_name = component_name
@@ -38,12 +60,14 @@ class PointCacheComponent:
 
     @property
     def points(self) -> Optional[np.ndarray]:
+        """Returns the xyz positions of the points within the :obj:`PointCacheComponent`"""
         if self._points is None:
             self._points = self._points_decoder.get_points_xyz()
         return self._points
 
     @property
     def normals(self) -> Optional[np.ndarray]:
+        """Returns the surface normals of the points within the :obj:`PointCacheComponent`"""
         if self._normals is None:
             self._normals = self._points_decoder.get_points_normals()
         return self._normals
@@ -51,16 +75,18 @@ class PointCacheComponent:
 
 @dataclass
 class PointCache:
-    """Represents a 3D Bounding Box geometry.
+    """
+    A collection of :obj:`PointCacheComponents` which make up the total point cache of a particular object
 
     Args:
-        instance_id: :attr:`~.PointCache.instance_id`
-        components: :attr:`~.PointCache.components`
+        instance_id: :attr:`PointCache.instance_id`
+        components: :attr:`PointCache.components`
 
     Attributes:
         instance_id: Instance ID of annotated object. Can be used to cross-reference with
-            other instance annotation types, e.g., :obj:`BoundingBox3D` or :obj:`InstanceSegmentation3D`.
-        components: The point cache component containing the point cloud.
+            other instance annotation type
+        components: List of point cache components which make up a collection of points which is the total point cache
+            of an object
     """
 
     instance_id: int
@@ -72,16 +98,14 @@ class PointCache:
 
 @dataclass
 class PointCaches(Annotation):
-    """Represents a 3D Bounding Box geometry.
+    """
+    A list of :obj:`PointCache` objects for various objects
 
     Args:
-        instance_id: :attr:`~.PointCache.instance_id`
-        components: :attr:`~.PointCache.components`
+        caches: :attr:`PointCaches.caches`
 
     Attributes:
-        instance_id: Instance ID of annotated object. Can be used to cross-reference with
-            other instance annotation types, e.g., :obj:`BoundingBox3D` or :obj:`InstanceSegmentation3D`.
-        components: The point cache component containing the point cloud.
+        caches: A list of :obj:`PointCache` objects which are each the point cache of a distinct objects
     """
 
     caches: List[PointCache]

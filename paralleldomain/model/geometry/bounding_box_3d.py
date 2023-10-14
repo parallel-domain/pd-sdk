@@ -3,7 +3,6 @@ from typing import Generic, TypeVar
 
 import numpy as np
 
-# _UNIT_BOUNDING_BOX_3D = (CoordinateSystem("FLU") > INTERNAL_COORDINATE_SYSTEM).rotation_matrix @ np.array(
 from paralleldomain.utilities.transformation import Transformation
 
 _UNIT_BOUNDING_BOX_3D = np.array(

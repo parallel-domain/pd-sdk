@@ -1,6 +1,6 @@
 from collections import defaultdict
 from contextlib import suppress
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 import rerun as rr
@@ -11,7 +11,7 @@ from pd.state import ModelAgent, State, VehicleAgent
 from paralleldomain.data_lab.config.map import Area, UniversalMap
 from paralleldomain.utilities.coordinate_system import SIM_TO_INTERNAL
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.visualization.initialization import initialize_viewer
+from paralleldomain.visualization import initialize_viewer
 
 EXCLUDE_AREA_TYPES = {
     Area.AreaType.PARKING_SPACE,
@@ -22,6 +22,8 @@ EXCLUDE_AREA_TYPES = {
     Area.AreaType.ZONE_RETAIL,
 }
 
+STROKE_AUTO = np.finfo(np.float32).max
+
 
 def parse_user_data(user_data: Any) -> Dict[str, Any]:
     user_data_out = {}
@@ -30,10 +32,19 @@ def parse_user_data(user_data: Any) -> Dict[str, Any]:
     return user_data_out
 
 
-def show_map(umd_map: UniversalMap, entity_root: str = "world"):
-    initialize_viewer(entity_root=entity_root, timeless=False)
+def show_map(
+    umd_map: UniversalMap,
+    recording_id: Optional[str],
+    application_id: str,
+    entity_root: str = "world",
+):
+    initialize_viewer(entity_root=entity_root, timeless=False, recording_id=recording_id, application_id=application_id)
     map_entity = f"{entity_root}/sim/map"
-    rr.log_view_coordinates(entity_path=map_entity, xyz="FLU", timeless=True)  # X=Right, Y=Down, Z=Forward
+    rr.log(
+        map_entity,
+        rr.ViewCoordinates(xyz=rr.components.ViewCoordinates(coordinates=[5, 4, 1])),  # FLU
+        timeless=True,
+    )
 
     edges_by_type = defaultdict(dict)
     reference_lines_by_type = defaultdict(dict)
@@ -48,45 +59,53 @@ def show_map(umd_map: UniversalMap, entity_root: str = "world"):
         left_edge = umd_map.edges[lane_segment.left_edge] if lane_segment.left_edge > 0 else None
         right_edge = umd_map.edges[lane_segment.right_edge] if lane_segment.right_edge > 0 else None
 
-        left_edge_np: np.ndarray = left_edge.as_polyline().to_numpy()
-        left_edge_np = SIM_TO_INTERNAL @ left_edge_np
+        if left_edge is not None:
+            left_edge_np: np.ndarray = left_edge.as_polyline().to_numpy()
+            left_edge_np = SIM_TO_INTERNAL @ left_edge_np
 
-        edges_by_type[lane_segment_type][left_edge.id] = [
-            (  # use list so we can expand data if needed
-                left_edge_np if left_edge.open else np.vstack([left_edge_np, left_edge_np[0]])
-            ),
-        ]
+            edges_by_type[lane_segment_type][left_edge.id] = [
+                (  # use list so we can expand data if needed
+                    left_edge_np if left_edge.open else np.vstack([left_edge_np, left_edge_np[0]])
+                ),
+            ]
 
-        right_edge_np: np.ndarray = right_edge.as_polyline().to_numpy()
-        right_edge_np = SIM_TO_INTERNAL @ right_edge_np
+        if right_edge is not None:
+            right_edge_np: np.ndarray = right_edge.as_polyline().to_numpy()
+            right_edge_np = SIM_TO_INTERNAL @ right_edge_np
 
-        edges_by_type[lane_segment_type][right_edge.id] = [
-            right_edge_np if right_edge.open else np.vstack([right_edge_np, right_edge_np[0]])
-        ]
+            edges_by_type[lane_segment_type][right_edge.id] = [
+                right_edge_np if right_edge.open else np.vstack([right_edge_np, right_edge_np[0]])
+            ]
 
         reference_line = umd_map.edges[lane_segment.reference_line] if lane_segment.reference_line > 0 else None
-        reference_line_np: np.ndarray = reference_line.as_polyline().to_numpy()
-        reference_line_np = SIM_TO_INTERNAL @ reference_line_np
 
-        reference_lines_by_type[lane_segment_type][reference_line.id] = [
-            reference_line_np if reference_line.open else np.vstack([reference_line_np, reference_line_np[0]]),
-        ]
+        if reference_line is not None:
+            reference_line_np: np.ndarray = reference_line.as_polyline().to_numpy()
+            reference_line_np = SIM_TO_INTERNAL @ reference_line_np
+
+            reference_lines_by_type[lane_segment_type][reference_line.id] = [
+                reference_line_np if reference_line.open else np.vstack([reference_line_np, reference_line_np[0]]),
+            ]
 
     for ls_type, edges in edges_by_type.items():
-        rr.log_line_strips_3d(
-            entity_path=f"{map_entity}/lane_segments/{ls_type}/edges",
-            line_strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
-            identifiers=sorted(edges.keys()),
-            colors=[0, 150, 255],
+        rr.log(
+            f"{map_entity}/lane_segments/{ls_type}/edges",
+            rr.LineStrips3D(
+                strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
+                instance_keys=sorted(edges.keys()),
+                colors=[0, 150, 255],
+            ),
             timeless=True,
         )
 
     for ls_type, edges in reference_lines_by_type.items():
-        rr.log_line_strips_3d(
-            entity_path=f"{map_entity}/lane_segments/{ls_type}/reference_lines",
-            line_strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
-            identifiers=sorted(edges.keys()),
-            colors=[255, 95, 31],
+        rr.log(
+            f"{map_entity}/lane_segments/{ls_type}/reference_lines",
+            rr.LineStrips3D(
+                strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
+                instance_keys=sorted(edges.keys()),
+                colors=[255, 95, 31],
+            ),
             timeless=True,
         )
 
@@ -110,11 +129,13 @@ def show_map(umd_map: UniversalMap, entity_root: str = "world"):
             ]
 
     for area_type, edges in areas_by_type.items():
-        rr.log_line_strips_3d(
-            entity_path=f"{map_entity}/areas/{area_type}/edges",
-            line_strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
-            identifiers=sorted(edges.keys()),
-            colors=[250, 200, 152],
+        rr.log(
+            f"{map_entity}/areas/{area_type}/edges",
+            rr.LineStrips3D(
+                strips=[v[0] for k, v in sorted(edges.items(), key=lambda x: x[0])],
+                instance_keys=sorted(edges.keys()),
+                colors=[250, 200, 152],
+            ),
             timeless=True,
         )
 
@@ -130,20 +151,26 @@ def show_map(umd_map: UniversalMap, entity_root: str = "world"):
                 edge_np if edge.open else np.vstack([edge_np, edge_np[0]]),
             ]
 
-    rr.log_line_strips_3d(
-        entity_path=f"{map_entity}/lane_segments/JUNCTION/edges",
-        line_strips=[v[0] for k, v in sorted(junctions_by_id.items(), key=lambda x: x[0])],
-        identifiers=sorted(junctions_by_id.keys()),
-        colors=[0, 150, 255],
+    rr.log(
+        f"{map_entity}/lane_segments/JUNCTION/edges",
+        rr.LineStrips3D(
+            strips=[v[0] for k, v in sorted(junctions_by_id.items(), key=lambda x: x[0])],
+            instance_keys=sorted(junctions_by_id.keys()),
+            colors=[0, 150, 255],
+        ),
         timeless=True,
     )
 
 
-def show_agents(sim_state: State, entity_root: str = "world"):
-    initialize_viewer(entity_root=entity_root, timeless=False)
+def show_agents(sim_state: State, recording_id: Optional[str], application_id: str, entity_root: str = "world"):
+    initialize_viewer(entity_root=entity_root, timeless=False, recording_id=recording_id, application_id=application_id)
     agent_root = f"{entity_root}/sim/agents"
-    rr.log_view_coordinates(entity_path=agent_root, xyz="FLU", timeless=True)  # X=Right, Y=Down, Z=Forward
-    rr.set_time_seconds(timeline="time", seconds=sim_state.simulation_time_sec)
+    rr.log(
+        agent_root,
+        rr.ViewCoordinates(xyz=rr.components.ViewCoordinates(coordinates=[5, 4, 1])),  # FLU
+        timeless=True,
+    )
+    rr.set_time_seconds(timeline="seconds", seconds=sim_state.simulation_time_sec)
 
     agents = [a for a in sim_state.agents if isinstance(a, ModelAgent) or isinstance(a, VehicleAgent)]
 
@@ -175,16 +202,20 @@ def show_agents(sim_state: State, entity_root: str = "world"):
             )
         )
 
-        rr.log_obb(
-            entity_path=f"{agent_root}/{agent.id}",
-            half_size=half_size,
-            position=pose.translation + np.array([0.0, 0.0, half_size[2]]),
-            rotation_q=[
-                pose.quaternion.x,
-                pose.quaternion.y,
-                pose.quaternion.z,
-                pose.quaternion.w,
-            ],
-            ext=metadata,
+        rr.log(
+            f"{agent_root}/{agent.id}",
+            rr.Boxes3D(
+                half_sizes=[half_size],
+                centers=[pose.translation + np.array([0.0, 0.0, half_size[2]])],
+                rotations=[
+                    [
+                        pose.quaternion.x,
+                        pose.quaternion.y,
+                        pose.quaternion.z,
+                        pose.quaternion.w,
+                    ]
+                ],
+            ),
+            rr.AnyValues(**{k: [v] for k, v in metadata.items()}),
             timeless=False,
         )

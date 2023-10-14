@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from math import atan
 from typing import Generic, List, Optional, Tuple, TypeVar
 
 import numpy as np
 
-from paralleldomain.model.geometry.point_2d import Point2DBaseGeometry, Point2DGeometry
+from paralleldomain.model.geometry.point_2d import Point2DBaseGeometry
 
 T = TypeVar("T", int, float)
 
@@ -94,6 +93,13 @@ class Line2DBaseGeometry(Generic[T]):
             intersection = q + u * s
             return intersection, 0 <= t <= 1, 0 <= u <= 1
 
+    @classmethod
+    def from_numpy(cls, points: np.ndarray) -> "Line2DBaseGeometry[T]":
+        points = points.reshape(2, 2)
+        return Line2DBaseGeometry[T](
+            start=Point2DBaseGeometry[T].from_numpy(points[0]), end=Point2DBaseGeometry[T].from_numpy(points[1])
+        )
+
 
 class Line2DGeometry(Line2DBaseGeometry[int]):
     pass
@@ -125,7 +131,15 @@ class Polyline2DBaseGeometry(Generic[T]):
         elif num_lines == 1:
             return self.lines[0].to_numpy()
         else:
-            return np.vstack([ll.to_numpy()[0] for ll in self.lines[:-1]] + [self.lines[-1].to_numpy()[1]])
+            return np.vstack([self.lines[0].start.to_numpy()] + [ll.end.to_numpy() for ll in self.lines])
+
+    @classmethod
+    def from_numpy(cls, points: np.ndarray):
+        if points.shape[1] != 2:
+            raise ValueError(f"Expected array with shape (N x 2) but got array with shape {points.shape}")
+
+        point_pairs = np.hstack([points[:-1], points[1:]])
+        return cls(lines=list(map(Line2DGeometry.from_numpy, point_pairs)))
 
 
 class Polyline2DGeometry(Polyline2DBaseGeometry[int]):

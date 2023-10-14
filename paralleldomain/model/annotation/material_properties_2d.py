@@ -7,10 +7,11 @@ from paralleldomain.model.annotation.common import Annotation
 
 @dataclass
 class MaterialProperties2D(Annotation):
-    """Contains the Metallic/Specular roughness of each pixel per in the corresponding camera image.
+    """
+    Contains the Metallic/Specular roughness of each pixel per in the corresponding camera image.
 
     Args:
-        roughness: :attr:`~.MetallicSpecularRoughness.roughness:`
+        roughness: :attr:`MaterialProperties2D.roughness`
 
     Attributes:
         roughness: Matrix of shape `(H X W x 3)`, where `H` is the height and `W` is the width of corresponding

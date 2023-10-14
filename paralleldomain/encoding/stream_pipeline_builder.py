@@ -6,7 +6,7 @@ from paralleldomain import Scene
 from paralleldomain.decoding.in_memory.dataset_decoder import InMemoryDatasetDecoder
 from paralleldomain.decoding.in_memory.frame_decoder import InMemoryFrameDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
-from paralleldomain.encoding.generic_pipeline_builder import GenericSceneAggregator
+from paralleldomain.encoding.generic_pipeline_builder import GenericEncoderStep, GenericSceneAggregator
 from paralleldomain.encoding.pipeline_encoder import (
     NAME_TO_RUNENV,
     DatasetPipelineEncoder,
@@ -32,117 +32,13 @@ from paralleldomain.model.type_aliases import FrameId
 logger = logging.getLogger(__name__)
 
 
-class StreamGenericEncoderStep(EncoderStep):
-    def __init__(
-        self,
-        encoding_format: EncodingFormat[StreamPipelineItem],
-        fs_copy: bool,
-        copy_data_types: Optional[List[SensorDataCopyTypes]] = None,
-        should_copy_callbacks: Optional[
-            Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
-        ] = None,
-        workers: int = 1,
-        in_queue_size: int = 1,
-        run_env: Literal["thread", "process", "sync"] = "thread",
-        copy_all_available_sensors_and_annotations: bool = False,
-    ):
-        self.copy_data_types = copy_data_types
-        self.copy_all_available_sensors_and_annotations = copy_all_available_sensors_and_annotations
-        self.should_copy_callbacks = should_copy_callbacks
-        self.encoding_format = encoding_format
-        self.in_queue_size = in_queue_size
-        self.workers = workers
-        self.fs_copy = fs_copy
-        self.run_env = NAME_TO_RUNENV[run_env]  # maps to pypeln thread, process or sync
-
-    def _get_data_types_to_copy(
-        self, sensor_frame: SensorFrame
-    ) -> List[Union[SensorDataCopyTypes, AnnotationIdentifier]]:
-        if self.copy_data_types is None:
-            if self.copy_all_available_sensors_and_annotations:
-                copy_data_types: List[
-                    Union[SensorDataCopyTypes, AnnotationIdentifier]
-                ] = sensor_frame.available_annotation_identifiers
-                if isinstance(sensor_frame, CameraSensorFrame):
-                    copy_data_types.append(FilePathedDataType.Image)
-                if isinstance(sensor_frame, LidarSensorFrame):
-                    copy_data_types.append(FilePathedDataType.PointCloud)
-            else:
-                raise ValueError("Will encode Nothing!")
-        else:
-            copy_data_types = self.copy_data_types
-        return [
-            c
-            for c in copy_data_types
-            if self.should_copy_callbacks is None
-            or c not in self.should_copy_callbacks
-            or self.should_copy_callbacks[c](c, sensor_frame)
-        ]
-
-    def encode_frame_data(
-        self,
-        pipeline_item: StreamPipelineItem,
-    ) -> StreamPipelineItem:
-        sensor_frame = pipeline_item.sensor_frame
-
-        if sensor_frame is not None:
-            for data_type in self._get_data_types_to_copy(sensor_frame=sensor_frame):
-                data_or_path = None
-
-                load_data = True
-                if self.fs_copy:
-                    if (
-                        isinstance(data_type, AnnotationIdentifier)
-                        and data_type in sensor_frame.available_annotation_identifiers
-                    ):
-                        file_path = sensor_frame.get_file_path(data_type=data_type)
-                    elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
-                        file_path = sensor_frame.get_file_path(data_type=data_type)
-                    elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
-                        file_path = sensor_frame.get_file_path(data_type=data_type)
-                    else:
-                        file_path = None
-
-                    if file_path and self.encoding_format.supports_copy(
-                        pipeline_item=pipeline_item, data_type=data_type, data_path=file_path
-                    ):
-                        data_or_path = file_path
-                        load_data = False
-
-                if load_data:
-                    if (
-                        isinstance(data_type, AnnotationIdentifier)
-                        and data_type in sensor_frame.available_annotation_identifiers
-                    ):
-                        data_or_path = sensor_frame.get_annotations(annotation_identifier=data_type)
-                    elif issubclass(data_type, Image) and pipeline_item.camera_frame is not None:
-                        data_or_path = pipeline_item.camera_frame.image.rgba
-                    elif issubclass(data_type, PointCloud) and pipeline_item.lidar_frame is not None:
-                        data_or_path = pipeline_item.lidar_frame.point_cloud
-
-                if data_or_path is not None:
-                    self.encoding_format.save_data(pipeline_item=pipeline_item, data=data_or_path, data_type=data_type)
-
-        return pipeline_item
-
-    def apply(self, input_stage: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
-        stage = input_stage
-        stage = self.run_env.map(
-            f=self.encode_frame_data,
-            stage=stage,
-            workers=self.workers,
-            maxsize=self.in_queue_size,
-        )
-        return stage
-
-
 class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
     def __init__(
         self,
         frame_stream: Generator[Tuple[Frame, Scene], None, None],
         number_of_frames_per_scene: int,
         scene_aggregator: EncoderStep = None,
-        workers: int = 4,
+        workers: int = 2,
         max_in_queue_size: int = 6,
         custom_encoder_steps: List[EncoderStep] = None,
         sensor_names: Optional[Union[List[str], Dict[str, str]]] = None,
@@ -152,7 +48,7 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
             Dict[SensorDataCopyTypes, Callable[[SensorDataCopyTypes, SensorFrame], bool]]
         ] = None,
         target_dataset_name: str = "MiniBatchDataset",
-        copy_all_available_sensors_and_annotations: bool = False,
+        copy_all_available_sensors_and_annotations: bool = True,
         run_env: Literal["thread", "process", "sync"] = "thread",
     ):
         self.number_of_frames_per_scene = number_of_frames_per_scene
@@ -175,7 +71,7 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
         encoder_steps = list()
         if self.copy_data_types is not None or self.copy_all_available_sensors_and_annotations:
             encoder_steps.append(
-                StreamGenericEncoderStep(
+                GenericEncoderStep(
                     encoding_format=encoding_format,
                     copy_data_types=self.copy_data_types,
                     should_copy_callbacks=self.should_copy_callbacks,
@@ -240,6 +136,7 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
 
             self._seen_scene_frames[scene_name] += 1
 
+            total_sensors_in_frame = 0
             for sensor_frame in frame.sensor_frames:
                 yield StreamPipelineItem(
                     frame_decoder=in_memory_frame_decoder,
@@ -256,6 +153,24 @@ class StreamEncodingPipelineBuilder(PipelineBuilder[StreamPipelineItem]):
                     available_annotation_types=sensor_frame.available_annotation_types,
                 )
                 scene_sensor_frames_count[scene_name] += 1
+                total_sensors_in_frame += 1
+            # End of frame
+            yield StreamPipelineItem(
+                frame_decoder=in_memory_frame_decoder,
+                sensor_name=None,
+                frame_id=frame.frame_id,
+                scene_name=scene_name,
+                dataset_path=None,
+                dataset_format="step",
+                decoder_kwargs=dict(),
+                target_sensor_name=None,
+                scene_reference_timestamp=scene_reference_timestamp,
+                dataset_decoder=dataset_decoder,
+                scene_decoder=scene_decoders[scene_name],
+                available_annotation_types=None,
+                is_end_of_frame=True,
+                total_sensors_in_frame=total_sensors_in_frame,
+            )
 
             if self._seen_scene_frames[scene_name] >= self.number_of_frames_per_scene:
                 # End of Scene
@@ -304,7 +219,6 @@ class StreamDatasetPipelineEncoder(DatasetPipelineEncoder):
         encoder_steps = self.pipeline_builder.build_encoder_steps(encoding_format=self.encoding_format)
         stage = self.build_pipeline(source_generator=stage, encoder_steps=encoder_steps)
 
-        stage: Iterable[StreamPipelineItem] = self.run_env.to_iterable(stage)
         for item in stage:
             if item.sensor_frame is not None:
                 yield item

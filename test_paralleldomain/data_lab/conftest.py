@@ -1,9 +1,6 @@
-import os
-
-import pytest
+from pd.data_lab.context import setup_datalab
 
 from test_paralleldomain.data_lab.constants import LOCATION_VERSION
-from pd.data_lab.context import setup_datalab
 
 
 def pytest_sessionstart(session):

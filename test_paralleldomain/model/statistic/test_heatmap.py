@@ -4,18 +4,18 @@ import numpy as np
 
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
-from paralleldomain.model.annotation import BoundingBox2D, BoundingBoxes2D, AnnotationIdentifier
-from paralleldomain.model.class_mapping import ClassMap, ClassDetail
+from paralleldomain.model.annotation import AnnotationIdentifier, BoundingBox2D, BoundingBoxes2D
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
+from paralleldomain.model.sensor import CameraSensorFrame, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.statistics import ClassHeatMaps
 
 
 def test_bounding_boxes():
     heatmaps = ClassHeatMaps()
 
-    scene_decoder = InMemorySceneDecoder(frame_ids=["1"])
-    scene = Scene(name="test_scene", decoder=scene_decoder)
+    scene_decoder = InMemorySceneDecoder(frame_ids=["1"], scene_name="scene_01")
+    scene = Scene(decoder=scene_decoder)
 
     image = np.zeros([450, 450, 3], dtype=np.uint8)
     boxes = []
@@ -38,6 +38,8 @@ def test_bounding_boxes():
     frame_decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test_scene",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
         annotations={annotation_key: bbox_2d},
@@ -50,7 +52,7 @@ def test_bounding_boxes():
         date_time=datetime.now(),
     )
 
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=frame_decoder)
+    sensor_frame = CameraSensorFrame(decoder=frame_decoder)
     heatmaps.update(scene=scene, sensor_frame=sensor_frame)
 
     heat_map_ped = np.zeros([450, 450], dtype=np.int32)

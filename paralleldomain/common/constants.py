@@ -1,5 +1,3 @@
-import logging
-
 from paralleldomain.model.annotation import AnnotationTypes
 
 ANNOTATION_NAME_TO_CLASS = {

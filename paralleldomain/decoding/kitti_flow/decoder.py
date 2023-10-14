@@ -8,7 +8,7 @@ from paralleldomain.decoding.kitti_flow.common import frame_id_to_timestamp
 from paralleldomain.decoding.kitti_flow.frame_decoder import KITTIFlowFrameDecoder
 from paralleldomain.decoding.kitti_flow.sensor_decoder import KITTIFlowCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -62,6 +62,7 @@ class KITTIFlowDatasetDecoder(DatasetDecoder):
             noc_optical_flow_folder=self.noc_optical_flow_folder,
             use_non_occluded=self._use_non_occluded,
             camera_name=self.camera_name,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -98,6 +99,7 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
+        scene_name: SceneName,
         settings: DecoderSettings,
         image_folder: str,
         occ_optical_flow_folder: str,
@@ -106,14 +108,14 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         camera_name: str,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        super().__init__(dataset_name=dataset_name, settings=settings)
+        super().__init__(dataset_name=dataset_name, settings=settings, scene_name=scene_name)
         self._image_folder = image_folder
         self._occ_optical_flow_folder = occ_optical_flow_folder
         self._noc_optical_flow_folder = noc_optical_flow_folder
         self._use_non_occluded = use_non_occluded
         self._camera_name = camera_name
 
-    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    def _decode_set_metadata(self) -> Dict[str, Any]:
         metadata_dict = dict(
             name=self.dataset_name,
             available_annotation_types=[AnnotationTypes.OpticalFlow],
@@ -125,71 +127,69 @@ class KITTIFlowSceneDecoder(SceneDecoder[datetime]):
         )
         return metadata_dict
 
-    def _decode_set_description(self, scene_name: SceneName) -> str:
+    def _decode_set_description(self) -> str:
         return ""
 
-    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        frame_ids = {scene_name + "_10.png", scene_name + "_11.png"}
+    def _decode_frame_id_set(self) -> Set[FrameId]:
+        frame_ids = {self.scene_name + "_10.png", self.scene_name + "_11.png"}
         return frame_ids
 
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_sensor_names(self) -> List[SensorName]:
         return [self._camera_name]
 
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_camera_names(self) -> List[SensorName]:
         return [self._camera_name]
 
-    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_lidar_names(self) -> List[SensorName]:
         return []
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return dict()
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[datetime]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[datetime]:
         return KITTIFlowCameraSensorDecoder(
             dataset_name=self.dataset_name,
             dataset_path=self._dataset_path,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
+            sensor_name=sensor_name,
             settings=self.settings,
             image_folder=self._image_folder,
             occ_optical_flow_folder=self._occ_optical_flow_folder,
             noc_optical_flow_folder=self._noc_optical_flow_folder,
             use_non_occluded=self._use_non_occluded,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[datetime]:
+    def _create_lidar_sensor_decoder(self, sensor_name: SensorName) -> LidarSensorDecoder[datetime]:
         raise ValueError("KITTI-flow does not support lidar data!")
 
-    def _create_frame_decoder(
-        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
-    ) -> FrameDecoder[datetime]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[datetime]:
         return KITTIFlowFrameDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             dataset_path=self._dataset_path,
+            frame_id=frame_id,
             settings=self.settings,
             image_folder=self._image_folder,
             occ_optical_flow_folder=self._occ_optical_flow_folder,
             noc_optical_flow_folder=self._noc_optical_flow_folder,
             use_non_occluded=self._use_non_occluded,
             camera_name=self._camera_name,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        fids = self._decode_frame_id_set(scene_name=scene_name)
+    def _decode_frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
+        fids = self._decode_frame_id_set()
         return {fid: frame_id_to_timestamp(frame_id=fid) for fid in fids}
 
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_radar_names(self) -> List[SensorName]:
         """Radar not supported"""
         return list()
 
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[datetime]:
+    def _create_radar_sensor_decoder(self, sensor_name: SensorName) -> RadarSensorDecoder[datetime]:
         raise ValueError("KITTI-flow does not support radar data!")
 
-    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         return AVAILABLE_ANNOTATION_IDENTIFIERS

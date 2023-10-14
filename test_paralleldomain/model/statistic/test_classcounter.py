@@ -1,24 +1,28 @@
 from datetime import datetime
 
 import numpy as np
+import pytest
 
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
 from paralleldomain.model.annotation import (
+    AnnotationIdentifier,
     BoundingBox2D,
     BoundingBoxes2D,
-    SemanticSegmentation2D,
     InstanceSegmentation2D,
-    AnnotationIdentifier,
+    SemanticSegmentation2D,
 )
-from paralleldomain.model.class_mapping import ClassMap, ClassDetail
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
+from paralleldomain.model.sensor import CameraSensorFrame, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.statistics import ClassDistribution
 
 
 def test_dataset_distribution(decoder: DatasetDecoder):
+    if decoder.get_format() != "dgp":
+        # Sensor names are hard coded to the dgp dataset. WOnt return any samples for other sets
+        pytest.skip()
     dataset = decoder.get_dataset()
 
     source_annotation_types = [SemanticSegmentation2D]
@@ -36,8 +40,8 @@ def test_bounding_boxes():
     source_annotation_types = [BoundingBoxes2D]
     class_distribution = ClassDistribution(source_annotation_types=source_annotation_types)
 
-    scene_decoder = InMemorySceneDecoder(frame_ids=["1"])
-    scene = Scene(name="test_scene", decoder=scene_decoder)
+    scene_decoder = InMemorySceneDecoder(frame_ids=["1"], scene_name="scene_01")
+    scene = Scene(decoder=scene_decoder)
 
     image = np.zeros([512, 512, 3], dtype=np.uint8)
     boxes = []
@@ -58,6 +62,8 @@ def test_bounding_boxes():
     frame_decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test_scene",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
         annotations={annotation_key: bbox_2d},
@@ -70,7 +76,7 @@ def test_bounding_boxes():
         date_time=datetime.now(),
     )
 
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=frame_decoder)
+    sensor_frame = CameraSensorFrame(decoder=frame_decoder)
     class_distribution.update(scene=scene, sensor_frame=sensor_frame)
 
     TEST_INSTANCE_COUNTS = {"pedestrian": 1, "car": 2, "animal": 1}
@@ -84,9 +90,8 @@ def test_semantic_segmentation():
     source_annotation_types = [SemanticSegmentation2D]
     class_distribution = ClassDistribution(source_annotation_types=source_annotation_types)
 
-    scene_decoder = InMemorySceneDecoder(frame_ids=["1"])
+    scene_decoder = InMemorySceneDecoder(frame_ids=["1"], scene_name="scene_01")
     scene = Scene(
-        name="test_scene",
         decoder=scene_decoder,
     )
 
@@ -119,6 +124,8 @@ def test_semantic_segmentation():
     frame_decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test_scene",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
         annotations={semseg_annotation_key: semseg2d, instance_seg_annotation_key: instance2d},
@@ -131,7 +138,7 @@ def test_semantic_segmentation():
         date_time=datetime.now(),
     )
 
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=frame_decoder)
+    sensor_frame = CameraSensorFrame(decoder=frame_decoder)
     class_distribution.update(scene=scene, sensor_frame=sensor_frame)
 
     TEST_INSTANCE_COUNTS = {"pedestrian": 1, "car": 2, "animal": 1}

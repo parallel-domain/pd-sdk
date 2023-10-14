@@ -66,7 +66,7 @@ class NuScenesDataAccessMixin:
     def nu_table_storage(self) -> _FixedStorage:
         return NuScenesDataAccessMixin._storage
 
-    def get_unique_id(
+    def get_unique_table_storage_id(
         self,
         scene_name: Optional[SceneName] = None,
         sensor_name: Optional[SensorName] = None,
@@ -83,7 +83,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_logs(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_logs")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_logs")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -96,7 +96,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_instance(self) -> Dict[str, Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_instance")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_instance")
 
         def get_nu_instance() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="instance", split_name=self.split_name)
@@ -108,8 +108,20 @@ class NuScenesDataAccessMixin:
         )
 
     @property
+    def nu_instance_to_instance_id_map(self) -> Dict[str, int]:
+        _unique_cache_key = self.get_unique_table_storage_id(extra="instance_to_instance_id_map")
+
+        def get_nu_instance_id_map() -> Dict[str, int]:
+            return {key: i for i, key in enumerate(self.nu_instance.keys())}
+
+        return self.nu_table_storage.get_item(
+            key=_unique_cache_key,
+            loader=get_nu_instance_id_map,
+        )
+
+    @property
     def nu_map(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_map")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_map")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -118,7 +130,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_sample_annotation(self) -> Dict[str, List[Dict[str, Any]]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_sample_annotation")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_sample_annotation")
 
         def get_nu_sample_annotation() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(
@@ -136,7 +148,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_scene(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_scene")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_scene")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -153,7 +165,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_visibility(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_visibility")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_visibility")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -164,7 +176,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_samples(self) -> Dict[str, List[Dict[str, Any]]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_samples")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_samples")
 
         def get_nu_samples() -> Dict[str, List[Dict[str, Any]]]:
             samples = load_table(dataset_root=self._dataset_path, table_name="sample", split_name=self.split_name)
@@ -180,7 +192,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_sensors(self) -> List[Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_sensors")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_sensors")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -197,12 +209,14 @@ class NuScenesDataAccessMixin:
         a foreign key that isn't available in nuScenes. This dictionary enables fast lookup of all sample_data for a
         given sample_token.
         """
-        _unique_cache_key = self.get_unique_id(extra="nu_samples_data")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_samples_data")
 
         def get_nu_samples_data_by_sample() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(dataset_root=self._dataset_path, table_name="sample_data", split_name=self.split_name)
             out_dict = defaultdict(list)
-            [out_dict[d["sample_token"]].append(d) for d in data if d["is_key_frame"]]
+            for d in data:
+                if d["is_key_frame"]:
+                    out_dict[d["sample_token"]].append(d)
             return out_dict
 
         return self.nu_table_storage.get_item(
@@ -212,7 +226,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_samples_data_by_token(self) -> Dict[str, Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_samples_data_by_token")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_samples_data_by_token")
 
         def get_nu_samples_data_by_token() -> Dict[str, Dict[str, Any]]:
             return {s["token"]: s for d in self.nu_samples_data.values() for s in d}
@@ -224,7 +238,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_frame_id_to_available_anno_types(self) -> Dict[str, Tuple[bool, bool]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_sample_data_tokens_to_available_anno_types")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_sample_data_tokens_to_available_anno_types")
 
         def get_nu_frame_id_tokens_to_available_anno_types() -> Dict[str, Tuple[bool, bool]]:
             sample_annotation = self.nu_sample_annotation
@@ -240,7 +254,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_calibrated_sensors(self) -> Dict[str, Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_calibrated_sensors")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_calibrated_sensors")
 
         def get_nu_calibrated_sensors() -> Dict[str, Dict[str, Any]]:
             data = load_table(
@@ -255,7 +269,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_ego_pose(self) -> Dict[str, List[Dict[str, Any]]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_ego_pose")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_ego_pose")
 
         def get_nu_ego_pose_by_token() -> Dict[str, List[Dict[str, Any]]]:
             data = load_table(dataset_root=self._dataset_path, table_name="ego_pose", split_name=self.split_name)
@@ -271,7 +285,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_category(self) -> Dict[str, Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_category")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_category")
 
         def get_nu_category() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="category", split_name=self.split_name)
@@ -284,7 +298,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_attribute(self) -> Dict[str, Dict[str, Any]]:
-        _unique_cache_key = self.get_unique_id(extra="nu_attribute")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_attribute")
 
         def get_nu_attribute() -> Dict[str, Dict[str, Any]]:
             data = load_table(dataset_root=self._dataset_path, table_name="attribute", split_name=self.split_name)
@@ -297,7 +311,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_name_to_index(self) -> Dict[str, int]:
-        _unique_cache_key = self.get_unique_id(extra="nu_name_to_index")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_name_to_index")
 
         return self.nu_table_storage.get_item(
             key=_unique_cache_key,
@@ -330,7 +344,9 @@ class NuScenesDataAccessMixin:
         return self.nu_sample_data_ids_by_frame_and_sensor(scene_token=scene_token)[(frame_id, sensor_name)]
 
     def nu_sample_data_ids_by_frame_and_sensor(self, scene_token: str) -> Dict[Tuple[FrameId, SensorName], str]:
-        _unique_cache_key = self.get_unique_id(extra="nu_sample_data_ids_by_frame_and_sensor", scene_name=scene_token)
+        _unique_cache_key = self.get_unique_table_storage_id(
+            extra="nu_sample_data_ids_by_frame_and_sensor", scene_name=scene_token
+        )
 
         def get_nu_sample_data_ids_by_frame_and_sensor() -> Dict[Tuple[FrameId, SensorName], str]:
             samples = self.nu_samples[scene_token]
@@ -357,7 +373,7 @@ class NuScenesDataAccessMixin:
 
     @property
     def nu_class_infos(self) -> List[ClassDetail]:
-        _unique_cache_key = self.get_unique_id(extra="nu_class_infos")
+        _unique_cache_key = self.get_unique_table_storage_id(extra="nu_class_infos")
 
         def get_nu_class_infos() -> List[ClassDetail]:
             name_to_index = name_to_index_mapping(category=list(self.nu_category.values()))

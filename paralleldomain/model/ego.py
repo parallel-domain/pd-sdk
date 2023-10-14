@@ -1,9 +1,6 @@
-from paralleldomain.utilities.transformation import Transformation
+from typing import Callable
 
-try:
-    from typing import Callable, Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
+from paralleldomain.utilities.transformation import Transformation
 
 
 class EgoPose(Transformation):

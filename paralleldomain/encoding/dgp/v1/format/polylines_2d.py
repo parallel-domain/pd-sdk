@@ -30,7 +30,7 @@ class Polyline2DDGPV1Mixin(CommonDGPV1FormatMixin):
             scene_output_path=scene_output_path,
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path = fsio.write_message(obj=keylines2d_dto, path=output_path, append_sha1=True)
+        output_path = fsio.write_message(obj=keylines2d_dto, path=output_path, append_sha1=False)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Polylines2D])

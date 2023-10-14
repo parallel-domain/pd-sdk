@@ -14,6 +14,32 @@ def frame(scene: Scene) -> Frame:
 
 
 class TestSceneFrames:
+    def test_can_access_neighboring_frames(self, scene: Scene):
+        # ensure correct order so that we get the first sensor frame
+        fids = [f for f in scene.frame_ids if f in scene.frame_ids]
+        frame = scene.get_frame(frame_id=fids[0])
+        f_type = type(frame)
+        frame_count = 1
+        while frame is not None:
+            frame = frame.next_frame
+            if frame is not None:
+                frame_count += 1
+                assert isinstance(frame, f_type)
+        assert frame_count == len(fids)
+
+    def test_can_access_neighboring_prev_frames(self, scene: Scene):
+        # ensure correct order so that we get the first sensor frame
+        fids = [f for f in scene.frame_ids if f in scene.frame_ids]
+        frame = scene.get_frame(frame_id=fids[-1])
+        f_type = type(frame)
+        frame_count = 1
+        while frame is not None:
+            frame = frame.previous_frame
+            if frame is not None:
+                frame_count += 1
+                assert isinstance(frame, f_type)
+        assert frame_count == len(fids)
+
     def test_frame_camera_names_are_loadable(self, frame: Frame):
         camera_names = frame.camera_names
         assert len(camera_names) > 0

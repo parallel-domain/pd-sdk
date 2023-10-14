@@ -30,7 +30,7 @@ class Point2DDGPV1Mixin(CommonDGPV1FormatMixin):
             scene_output_path=scene_output_path,
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path = fsio.write_message(obj=keypoints2d_dto, path=output_path, append_sha1=True)
+        output_path = fsio.write_message(obj=keypoints2d_dto, path=output_path, append_sha1=False)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Points2D])
@@ -43,7 +43,7 @@ class Point2DDGPV1Mixin(CommonDGPV1FormatMixin):
             attributes={
                 _attribute_key_dump(k): _attribute_value_dump(v) for k, v in point.attributes.items() if k != "key"
             },
-            point=annotations_pb2.KeyPoint2D(x=point.x, y=point.y),
+            point=annotations_pb2.KeyPoint2D(x=int(point.x), y=int(point.y)),
             key=point.attributes["key"] if "key" in point.attributes else "",
         )
 

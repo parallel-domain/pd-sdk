@@ -8,7 +8,7 @@ from paralleldomain.decoding.nuimages.common import NuImagesDataAccessMixin
 from paralleldomain.decoding.nuimages.frame_decoder import NuImagesFrameDecoder
 from paralleldomain.decoding.nuimages.sensor_decoder import NuImagesCameraSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -48,6 +48,7 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
             dataset_name=self.dataset_name,
             split_name=self.split_name,
             settings=self.settings,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -88,33 +89,38 @@ class NuImagesDatasetDecoder(DatasetDecoder, NuImagesDataAccessMixin):
 
 class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
     def __init__(
-        self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, settings: DecoderSettings
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        split_name: str,
+        scene_name: SceneName,
+        settings: DecoderSettings,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path), settings=settings)
+        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path), settings=settings, scene_name=scene_name)
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
-    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
-        log = self.nu_logs_by_log_token[scene_name]
+    def _decode_set_metadata(self) -> Dict[str, Any]:
+        log = self.nu_logs_by_log_token[self.scene_name]
         return log
 
-    def _decode_set_description(self, scene_name: SceneName) -> str:
+    def _decode_set_description(self) -> str:
         return ""
 
-    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
+    def _decode_frame_id_set(self) -> Set[FrameId]:
         sample_data_ids = set()
-        for sample in self.nu_samples[scene_name]:
+        for sample in self.nu_samples[self.scene_name]:
             sample_data_ids.add(sample["key_camera_token"])
         nu_samples_data = self.nu_samples_data
         return {str(nu_samples_data[sample_id]["timestamp"]) for sample_id in sample_data_ids}
 
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self.get_camera_names(scene_name=scene_name)
+    def _decode_sensor_names(self) -> List[SensorName]:
+        return self.get_camera_names()
 
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        samples = self.nu_samples[scene_name]
+    def _decode_camera_names(self) -> List[SensorName]:
+        samples = self.nu_samples[self.scene_name]
         key_camera_tokens = [sample["key_camera_token"] for sample in samples]
         camera_names = set()
         data_dict = self.nu_samples_data
@@ -127,52 +133,50 @@ class NuImagesSceneDecoder(SceneDecoder[datetime], NuImagesDataAccessMixin):
                 camera_names.add(sensor["channel"])
         return list(camera_names)
 
-    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_lidar_names(self) -> List[SensorName]:
         return list()
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[datetime]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[datetime]:
         return NuImagesCameraSensorDecoder(
             dataset_path=self._dataset_path,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset_name,
+            sensor_name=sensor_name,
             split_name=self.split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[datetime]:
+    def _create_lidar_sensor_decoder(self, sensor_name: SensorName) -> LidarSensorDecoder[datetime]:
         raise ValueError("NuImages does not contain lidar data!")
 
-    def _create_frame_decoder(
-        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
-    ) -> FrameDecoder[datetime]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[datetime]:
         return NuImagesFrameDecoder(
             dataset_path=self._dataset_path,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset_name,
+            frame_id=frame_id,
             split_name=self.split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids(scene_name=scene_name)}
+    def _decode_frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
+        return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids()}
 
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_radar_names(self) -> List[SensorName]:
         """Radar not supported"""
         return list()
 
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[None]:
+    def _create_radar_sensor_decoder(self, sensor_name: SensorName) -> RadarSensorDecoder[None]:
         raise ValueError("NuImages does not contain radar data!")
 
-    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         if self.split_name == "v1.0-test":
             return []
         samples = self.nu_sample_data_tokens_to_available_anno_types

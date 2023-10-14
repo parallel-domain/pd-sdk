@@ -8,10 +8,6 @@
 Parallel Domain SDK
 ===============================================
 
-.. only: not latex
-
-    Contents:
-
 .. toctree::
     :maxdepth: 1
     :caption: Getting Started
@@ -19,35 +15,10 @@ Parallel Domain SDK
     getting_started
     license
 
-
 .. toctree::
-    :maxdepth: 1
-    :caption: Tutorials
-
-    tutorial/general/index
-    tutorial/any_path/index
-    tutorial/ml_data_generator/index
-    tutorial/color_matcher/index
-
-
-.. toctree::
-    :maxdepth: 2
     :caption:  API Reference
 
-    api/dataset
-    api/scene
-    api/sensor
-    api/annotation
-    api/geometry
-    api/data_lab/generators.rst
-    api/utilities/any_path
-    api/utilities/transformation
-    api/utilities/geometry
-    api/utilities/projection
-    api/utilities/mask
-    api/utilities/os
-    api/utilities/color_matcher
-
+    paralleldomain <paralleldomain/__index>
 
 
 Indices and tables

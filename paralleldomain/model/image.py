@@ -1,15 +1,7 @@
 import abc
-from typing import Optional, Tuple
+from typing import Protocol, Tuple
 
 import numpy as np
-
-from paralleldomain.model.type_aliases import FrameId, SensorName
-from paralleldomain.utilities.any_path import AnyPath
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
 
 
 class Image:
@@ -44,18 +36,44 @@ class Image:
         return np.stack([y_coords, x_coords], axis=-1)
 
 
+class InMemoryImage(Image):
+    def __init__(self, rgba: np.ndarray, width: int, height: int, channels: int):
+        self._rgba = rgba
+        self._width = width
+        self._height = height
+        self._channels = channels
+
+    @property
+    def rgba(self) -> np.ndarray:
+        return self._rgba
+
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self) -> int:
+        return self._height
+
+    @property
+    def channels(self) -> int:
+        return self._channels
+
+    @property
+    def rgb(self):
+        return self.rgba[..., :3]
+
+
 class ImageDecoderProtocol(Protocol):
-    def get_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+    def get_image_dimensions(self) -> Tuple[int, int, int]:
         pass
 
-    def get_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def get_image_rgba(self) -> np.ndarray:
         pass
 
 
 class DecoderImage(Image):
-    def __init__(self, decoder: ImageDecoderProtocol, sensor_name: SensorName, frame_id: FrameId):
-        self.frame_id = frame_id
-        self.sensor_name = sensor_name
+    def __init__(self, decoder: ImageDecoderProtocol):
         self._decoder = decoder
         self._data_rgba = None
         self._image_dims = None
@@ -63,13 +81,13 @@ class DecoderImage(Image):
     @property
     def _image_dimensions(self) -> Tuple[int, int, int]:
         if self._image_dims is None:
-            self._image_dims = self._decoder.get_image_dimensions(sensor_name=self.sensor_name, frame_id=self.frame_id)
+            self._image_dims = self._decoder.get_image_dimensions()
         return self._image_dims
 
     @property
     def rgba(self) -> np.ndarray:
         if self._data_rgba is None:
-            self._data_rgba = self._decoder.get_image_rgba(sensor_name=self.sensor_name, frame_id=self.frame_id)
+            self._data_rgba = self._decoder.get_image_rgba()
         return self._data_rgba
 
     @property

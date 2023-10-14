@@ -38,6 +38,32 @@ pd_dataset = decode_dataset(dataset_path="s3://bucket/with/dgp/dataset", dataset
 for sensor_frame, frame, scene in pd_dataset.sensor_frame_pipeline():
     show_frame(frame=frame, annotations_to_show=[AnnotationTypes.BoundingBoxes2D])
 ```
+Or
+```python
+from paralleldomain.decoding.helper import decode_dataset
+from paralleldomain.visualization.model_visualization import show_dataset
+
+pd_dataset = decode_dataset(dataset_path="s3://bucket/with/dgp/dataset", dataset_format="dgp")
+show_dataset(pd_dataset=pd_dataset)
+```
+
+### CLI Visualization
+You can also use the cli to visualize datasets stored locally or on s3. To do so, you need to install the `visualization` dependencies with one of the methods described in [Installation](#installation).
+
+a stored dataset can be visualized like this:
+```bash
+pd visualize s3://bucket/with/dgp/dataset --dataset_format dgp
+```
+
+if you only want to show Depth annotations of the first scene you can run:
+```bash
+pd visualize s3://bucket/with/dgp/dataset -f dgp --annotations Depth --scene_names scene_000000
+```
+
+For more information on the cli run:
+```bash
+pd visualize -h
+```
 
 For more examples make sure to check out our [Documentation](#documentation).
 
@@ -91,9 +117,15 @@ These optional extras can be installed to enhance the functionality of PD SDK ba
 
 - `data_lab`: This extra includes dependencies for Data Lab, PD's synthetic data generation platform (includes `visualization`).
 
+  `pip install -e data_lab`
+
 - `visualization`: Install this extra to include `opencv` with GUI components, helpful to visualize data.
 
+  `pip install -e opencv`
+
 - `dev`: The development extra contains dependencies for developers, such as testing tools, pre-commit hooks, and other utilities that assist in maintaining code quality and ensuring a smooth development process. This is recommended for users who plan to contribute to the project or work extensively with the source code.
+
+  `pip install -e dev`
 
 
 ## Testing

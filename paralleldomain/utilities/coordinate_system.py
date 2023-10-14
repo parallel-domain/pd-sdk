@@ -15,8 +15,6 @@ class CoordinateSystem:
 
     Attributes:
         axis_directions (str): A string representing the three orthogonal directions of the coordinate system.
-        _base_matrix (np.ndarray): A 4x4 numpy array representing the matrix used to transform coordinates from
-            the base coordinate system to the current coordinate system.
         is_right_handed (bool): A boolean indicating whether the coordinate system is right-handed or not.
 
     Methods:
@@ -33,6 +31,7 @@ class CoordinateSystem:
         **{character: axis for character, axis in zip("FLU", np.identity(3))},
         **{character: axis for character, axis in zip("BRD", -np.identity(3))},
     )
+    _axis_to_yaw_pitch_roll_index: Dict[str, int] = {"B": 0, "F": 0, "R": 1, "L": 1, "U": 2, "D": 2}
 
     def __init__(self, axis_directions: str):
         """A class to represent a 3D coordinate system and perform transformation between
@@ -53,7 +52,7 @@ class CoordinateSystem:
             axis_directions(str): A string representing the three orthogonal directions of the coordinate system
 
         Returns:
-            np.ndarray: A 4x4 numpy array representing the matrix used to transform coordinates from the base
+            A 4x4 numpy array representing the matrix used to transform coordinates from the base
                 coordinate system to the current coordinate system.
 
         Raises:
@@ -79,7 +78,7 @@ class CoordinateSystem:
             other (CoordinateSystem): The coordinate system to which coordinates will be transformed.
 
         Returns:
-            Transformation: A Transformation object representing the transformation from this coordinate system
+            A Transformation object representing the transformation from this coordinate system
                 to the `other` coordinate system.
 
         Raises:
@@ -100,8 +99,8 @@ class CoordinateSystem:
             other (CoordinateSystem): The coordinate system to be transformed.
 
         Returns:
-            Transformation: A Transformation object that represents the transformation required to convert
-                other coordinate system to the current instance of CoordinateSystem.
+            A Transformation object that represents the transformation required to convert other coordinate system
+                to the current instance of CoordinateSystem.
         """
         return other > self
 
@@ -114,22 +113,20 @@ class CoordinateSystem:
             to_axis_directions (str): A string representing a direction in the target coordinate system.
 
         Returns:
-
+            A `Transformation` object that can be used to transform points between coordinate systems.
         """
         return CoordinateSystem(from_axis_directions) > CoordinateSystem(to_axis_directions)
 
     @staticmethod
-    def print_convention():
-        """Prints the convention used to define the front, left and up axis of the coordinate system.
-
-        Returns:
-            None: This method does not return anything. It only logs the information using the logger module.
-        """
+    def print_convention() -> None:
+        """Prints the convention used to define the front, left and up axis of the coordinate system."""
         logger.info(f"Front axis: {CoordinateSystem._axis_char_map['F']}")
         logger.info(f"Left axis: {CoordinateSystem._axis_char_map['L']}")
         logger.info(f"Up axis: {CoordinateSystem._axis_char_map['U']}")
 
-    def quaternion_from_rpy(self, roll: float, pitch: float, yaw: float, degrees: bool = False, order: str = "xyz"):
+    def quaternion_from_rpy(
+        self, roll: float, pitch: float, yaw: float, degrees: bool = False, order: str = "xyz"
+    ) -> Quaternion:
         """Convert the given roll, pitch and yaw angles (in radius or degree) into a quaternion representation.
         The rotation order is specified by the `order` argument.
 
@@ -142,7 +139,7 @@ class CoordinateSystem:
                         of rotation (e.g., "xyz" for roll-pitch-yaw in that order).
 
         Returns:
-            Quaternion: A unit quaternions class to represent rotations in 3D space (w, x, y, z)
+            A unit quaternions class to represent rotations in 3D space (w, x, y, z)
 
         """
         transform = CoordinateSystem("FLU") > self
@@ -166,8 +163,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the forward direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the forward direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the forward direction vector of the coordinate system.
         """
         return self._base_matrix[0, :3]
 
@@ -176,8 +172,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the backward direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the backward direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the backward direction vector of the coordinate system.
         """
         return -1.0 * self.forward
 
@@ -186,8 +181,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the left direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the left direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the left direction vector of the coordinate system.
         """
         return self._base_matrix[1, :3]
 
@@ -196,8 +190,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the right direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the right direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the right direction vector of the coordinate system.
         """
         return -1.0 * self.left
 
@@ -206,8 +199,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the up direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the up direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the up direction vector of the coordinate system.
         """
         return self._base_matrix[2, :3]
 
@@ -216,8 +208,7 @@ class CoordinateSystem:
         """Returns a numpy array that represents the down direction vector of the coordinate system.
 
         Returns:
-        numpy.ndarray: A numpy array with shape (3,) that represents the down direction vector
-            of the coordinate system.
+            A numpy array with shape (3,) that represents the down direction vector of the coordinate system.
         """
         return -1.0 * self.up
 
@@ -238,11 +229,18 @@ class CoordinateSystem:
             target_system: the coordinate system to change to
 
         Returns:
-        Transformation: A transformation of the same meaning, but with the changed coordinate system interpretation
+            A transformation of the same meaning, but with the changed coordinate system interpretation
         """
         transformation_to_target = CoordinateSystem(transformation_system) > CoordinateSystem(target_system)
         target_to_transformation = transformation_to_target.inverse
         return transformation_to_target @ transformation @ target_to_transformation
+
+    def get_yaw_pitch_roll_order_string(self) -> str:
+        axis_indices_sorted_by_order = list(range(3))
+        axis_indices_sorted_by_order.sort(
+            key=lambda axis_index: CoordinateSystem._axis_to_yaw_pitch_roll_index[self.axis_directions[axis_index]]
+        )
+        return "".join(["xyz"[i] for i in axis_indices_sorted_by_order])
 
 
 INTERNAL_COORDINATE_SYSTEM = CoordinateSystem("FLU")

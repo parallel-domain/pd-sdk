@@ -1,9 +1,11 @@
-from typing import List, Optional, TypeVar, Union
+from typing import List, Optional, TypeVar, Union, TYPE_CHECKING
 
 import numpy as np
 from pyquaternion import Quaternion
 from transforms3d.euler import euler2mat, mat2euler
 
+if TYPE_CHECKING:
+    from paralleldomain.utilities.coordinate_system import CoordinateSystem
 
 T = TypeVar("T")
 
@@ -59,8 +61,10 @@ class Transformation:
 
     def __matmul__(self, other: T) -> T:
         if isinstance(other, Transformation):
-            transform = self.transformation_matrix @ other.transformation_matrix
-            return Transformation.from_transformation_matrix(mat=transform)
+            # (s @ o) @ x = s.r @ (o.r @ x + o.t) + s.t = (s.r @ o.r) @ x + s.r @ o.t + s.t
+            rotation = self.quaternion * other.quaternion
+            translation = self.quaternion.rotate(other.translation) + self.translation
+            return Transformation(quaternion=rotation, translation=translation)
         elif isinstance(other, np.ndarray):
             if (len(other.shape) == 1 and other.shape[0] == 3) or (len(other.shape) == 2 and other.shape[1] == 3):
                 if len(other.shape) == 2 and other.shape[1] == 3:
@@ -231,7 +235,7 @@ class Transformation:
 
         Args:
             order: Defines the axes rotation order. Use lower case for extrinsic rotation, upper case for intrinsic
-               rotation. Ex: `xyz`, `ZYX`, `xzx`.
+                rotation. Ex: `xyz`, `ZYX`, `xzx`.
             degrees: Defines if euler angles should be returned in degrees instead of radians. Default: `False`
         Returns:
             Ordered array of euler angles with length 3.
@@ -248,6 +252,20 @@ class Transformation:
             return np.rad2deg(angles)
         else:
             return angles
+
+    def as_yaw_pitch_roll(self, coordinate_system: "CoordinateSystem", degrees: bool = False) -> np.ndarray:
+        """Returns the rotation of a `Transformation` object as yaw pitch roll euler angles.
+        Please note that the direction of a positive angle is dependent on the given coordinate_system. For example a
+        positive pitch only rotates upwards if the right axis is part of the coordinate system directions.
+
+        Args:
+            coordinate_system: CoordinateSystem the Transformation is in. Determines the correct euler axis order.
+            degrees: Defines if euler angles should be returned in degrees instead of radians. Default: `False`
+        Returns:
+            Array contain [yaw angle, pitch angle, roll angle]
+        """
+        axis_order = coordinate_system.get_yaw_pitch_roll_order_string()
+        return self.as_euler_angles(order=axis_order, degrees=degrees)[::-1]
 
     def apply_to(self, points_3d: np.ndarray) -> np.ndarray:
         return apply_transform_3d(tf=self, points_3d=points_3d)
@@ -279,7 +297,7 @@ class Transformation:
         def slerp(p: Quaternion, q: Quaternion, factor: float) -> Quaternion:
             return p * (p.conjugate * q) ** factor
 
-        return Transformation(
+        return cls(
             translation=lerp(p0=tf0.translation, p1=tf1.translation, factor=factor),
             quaternion=slerp(p=tf0.quaternion, q=tf1.quaternion, factor=factor),
         )
@@ -298,7 +316,7 @@ class Transformation:
             angles: Ordered euler angles array with length 3
             translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
             order: Defines the axes rotation order. Use lower case for extrinsic rotation, upper case for intrinsic
-               rotation. Ex: `xyz`, `ZYX`, `xzx`.
+                rotation. Ex: `xyz`, `ZYX`, `xzx`.
             degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
         Returns:
             Instance of :obj:`Transformation` with provided parameters.
@@ -319,7 +337,70 @@ class Transformation:
         mat = euler2mat(ai=angles[0], aj=angles[1], ak=angles[2], axes=tf3d_order)
         quat = Quaternion(matrix=mat)
 
-        return Transformation(quaternion=quat, translation=translation)
+        return cls(quaternion=quat, translation=translation)
+
+    @classmethod
+    def from_yaw_pitch_roll(
+        cls,
+        coordinate_system: "CoordinateSystem",
+        yaw: float = 0,
+        pitch: float = 0,
+        roll: float = 0,
+        translation: Optional[Union[np.ndarray, List[float]]] = None,
+        degrees: bool = False,
+    ) -> "Transformation":
+        """
+        Creates a transformation object from yaw pitch roll angles and optionally translation (default: (0,0,0)).
+        The returned transformation first rotates by roll around the front/back axis, then by pitch around the
+        left/right axis and finally by yaw around the up/down axis (from an extrinsic perspective).
+        Please note that the direction of a positive angle is dependent on the given coordinate_system. For example a
+        positive pitch only rotates upwards if the right axis is part of the coordinate system directions.
+
+        Args:
+            coordinate_system: determines the correct euler rotation axis order.
+            yaw: rotation around up/down
+            pitch: rotation around left/right
+            roll: rotation round front/back
+            translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
+            degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
+
+        Returns:
+            Instance of :obj:`Transformation` with provided parameters.
+        """
+        order_string = coordinate_system.get_yaw_pitch_roll_order_string()
+        return cls.from_euler_angles(
+            angles=[roll, pitch, yaw], order=order_string, translation=translation, degrees=degrees
+        )
+
+    @classmethod
+    def from_axis_angle(
+        cls,
+        axis: Union[np.ndarray, List[float]],
+        angle: float,
+        translation: Optional[Union[np.ndarray, List[float]]] = None,
+        degrees: bool = False,
+    ) -> "Transformation":
+        """Creates a transformation object from axis and angle, and optionally translation (default: (0,0,0))
+
+        Args:
+            axis: A vector that represents the axis of rotation. Will be normalized, if not already.
+            angle: The angle of rotation in radians. If `degrees` is `True`, this value is expected to be in degrees.
+            translation: Translation vector in order `(x,y,z)`. Default: `[0,0,0]`
+            degrees: Defines if euler angles are provided in degrees instead of radians. Default: `False`
+        Returns:
+            Instance of :obj:`Transformation` with provided parameters.
+        """
+        if translation is None:
+            translation = np.array([0.0, 0.0, 0.0])
+        elif isinstance(translation, list):
+            translation = np.array(translation)
+        if degrees:
+            angle = np.deg2rad(angle)
+
+        axis = axis / np.linalg.norm(axis)
+        quat = Quaternion(axis=axis, angle=angle)
+
+        return cls(quaternion=quat, translation=translation)
 
     @staticmethod
     def look_at(

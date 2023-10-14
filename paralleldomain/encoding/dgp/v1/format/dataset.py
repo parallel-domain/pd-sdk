@@ -75,3 +75,13 @@ class DatasetDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
         output_path = dataset_output_path / f"scene_dataset.{file_suffix}"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         write_message(obj=dataset_proto, path=output_path)
+
+        folder_path = dataset_output_path / ENCODED_SCENE_AGGREGATION_FOLDER_NAME
+        for path in list(reversed(list(folder_path.rglob("*")))):
+            path.rm(missing_ok=True)
+        if folder_path.exists():
+            try:
+                folder_path.rmdir()
+            except OSError:
+                # in case of a race condition, this folder might already be gone
+                pass

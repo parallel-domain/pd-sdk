@@ -201,6 +201,7 @@ class FlyingThingsDatasetDecoder(DatasetDecoder):
             split_name=self.split_name,
             is_full_dataset_format=self.is_full_dataset_format,
             split_list=self.split_list,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -251,6 +252,7 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         self,
         dataset_path: Union[str, AnyPath],
         dataset_name: str,
+        scene_name: SceneName,
         settings: DecoderSettings,
         split_name: str,
         split_list: List[int],
@@ -261,28 +263,28 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
         self._is_driving_subset = is_driving_subset
         self._split_list = split_list
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        super().__init__(dataset_name=dataset_name, settings=settings)
+        super().__init__(dataset_name=dataset_name, settings=settings, scene_name=scene_name)
         self._split_name = split_name
 
-    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    def _decode_set_metadata(self) -> Dict[str, Any]:
         metadata_dict = dict(
             name=self.dataset_name,
             available_annotation_types=[AnnotationTypes.OpticalFlow],
             dataset_path=self._dataset_path,
             split_name=self._split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
         )
         return metadata_dict
 
-    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         return AVAILABLE_ANNOTATION_IDENTIFIERS
 
-    def _decode_set_description(self, scene_name: SceneName) -> str:
+    def _decode_set_description(self) -> str:
         return ""
 
-    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
+    def _decode_frame_id_set(self) -> Set[FrameId]:
         return decode_frame_id_set(
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
@@ -290,60 +292,58 @@ class FlyingThingsSceneDecoder(SceneDecoder[datetime]):
             sensor_name=LEFT_SENSOR_NAME,
         )
 
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_camera_names(scene_name=scene_name)
+    def _decode_sensor_names(self) -> List[SensorName]:
+        return self._decode_camera_names()
 
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_camera_names(self) -> List[SensorName]:
         return [LEFT_SENSOR_NAME, RIGHT_SENSOR_NAME]
 
-    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_lidar_names(self) -> List[SensorName]:
         raise ValueError("FlyingThings decoder does not currently support lidar data!")
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return dict()
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[datetime]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[datetime]:
         return FlyingThingsCameraSensorDecoder(
             dataset_name=self.dataset_name,
+            sensor_name=sensor_name,
             dataset_path=self._dataset_path,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
             is_driving_subset=self._is_driving_subset,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[datetime]:
+    def _create_lidar_sensor_decoder(self, sensor_name: SensorName) -> LidarSensorDecoder[datetime]:
         raise ValueError("FlyingThings does not support lidar data!")
 
-    def _create_frame_decoder(
-        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
-    ) -> FrameDecoder[datetime]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[datetime]:
         return FlyingThingsFrameDecoder(
             dataset_name=self.dataset_name,
-            scene_name=scene_name,
+            frame_id=frame_id,
+            scene_name=self.scene_name,
             dataset_path=self._dataset_path,
             settings=self.settings,
             split_name=self._split_name,
             split_list=self._split_list,
             is_full_dataset_format=self._is_full_dataset_format,
             is_driving_subset=self._is_driving_subset,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        fids = self._decode_frame_id_set(scene_name=scene_name)
+    def _decode_frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
+        fids = self._decode_frame_id_set()
         return {fid: frame_id_to_timestamp(frame_id=fid) for fid in fids}
 
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_radar_names(self) -> List[SensorName]:
         """Radar not supported"""
         return list()
 
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[datetime]:
+    def _create_radar_sensor_decoder(self, sensor_name: SensorName) -> RadarSensorDecoder[datetime]:
         raise ValueError("FlyingThings does not support radar data!")

@@ -6,16 +6,6 @@ from paralleldomain.utilities.transformation import Transformation
 
 
 @inherit_docs
-class SpecialAgentTag(pd_unified_generator_pb2.SpecialAgentTag):
-    ...
-
-
-@inherit_docs
-class RoadPitchPositionRequest(pd_unified_generator_pb2.RoadPitchPositionRequest):
-    ...
-
-
-@inherit_docs
 class PathTimeRelativePositionRequest(pd_unified_generator_pb2.PathTimeRelativePositionRequest):
     ...
 
@@ -44,6 +34,17 @@ class JunctionSpawnPolicy(pd_unified_generator_pb2.JunctionSpawnPolicy):
 class AbsolutePositionRequest(pd_unified_generator_pb2.AbsolutePositionRequest):
     @classmethod
     def from_transformation(cls, transformation: Transformation) -> "AbsolutePositionRequest":
+        """
+        Generates and AbsolutePositionRequest object which corresponds to a location specified in a Transformation
+            object
+
+        Args:
+            transformation: A Transformation object containing the location which the created AbsolutePositionRequest
+                object should specify
+
+        Returns:
+            An AbsolutePositionRequest object which specifies the region passed in the transformation parameter
+        """
         x, y, z = transformation.translation
         R = transformation.rotation
 

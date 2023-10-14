@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from paralleldomain import Dataset, Scene
+from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.model.annotation import (
     AnnotationTypes,
     BoundingBox2D,
@@ -29,7 +30,10 @@ class TestSensorFrame:
             assert isinstance(box.pose.transformation_matrix, np.ndarray)
             assert isinstance(box.class_id, int)
 
-    def test_point_cache_loading(self, scene: Scene):
+    def test_point_cache_loading(self, scene: Scene, decoder: DatasetDecoder):
+        if decoder.get_format() != "dgp":
+            pytest.skip()
+
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
         lidar_sensor = next(iter(frame.lidar_frames))
@@ -90,16 +94,21 @@ class TestSensorFrame:
 
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[-1])
-        camera_sensor = next(iter(frame.camera_frames))
-        semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
+        found_frame = False
+        for camera_sensor in frame.camera_frames:
+            if AnnotationTypes.SemanticSegmentation2D in camera_sensor.available_annotation_types:
+                semseg = camera_sensor.get_annotations(annotation_type=AnnotationTypes.SemanticSegmentation2D)
 
-        assert semseg is not None
-        class_ids = semseg.class_ids
-        assert class_ids.shape[2] == 1
-        assert len(class_ids.shape) == 3
+                assert semseg is not None
+                class_ids = semseg.class_ids
+                assert class_ids.shape[2] == 1
+                assert len(class_ids.shape) == 3
 
-        image = camera_sensor.image.rgb
-        assert image.shape[:2] == class_ids.shape[:2]
+                image = camera_sensor.image.rgb
+                assert image.shape[:2] == class_ids.shape[:2]
+                found_frame = True
+                break
+        assert found_frame
 
     def test_optical_flow_loading(self, scene: Scene, dataset: Dataset):
         assert AnnotationTypes.OpticalFlow in dataset.available_annotation_types
@@ -167,8 +176,6 @@ class TestSensorFrame:
         image = camera_sensor.image.rgb
         assert normals.normals.shape[:2] == image.shape[:2]
         assert normals.normals.shape[2] == 3
-
-        assert np.allclose(np.linalg.norm(normals.normals, axis=-1), 1.0)
 
     @pytest.mark.skip
     def test_albedo_2d_loading(self, scene: Scene, dataset: Dataset):

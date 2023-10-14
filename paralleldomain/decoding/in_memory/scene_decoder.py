@@ -13,6 +13,7 @@ TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 @dataclass
 class InMemorySceneDecoder:
+    scene_name: str
     description: str = ""
     frame_ids: List[FrameId] = field(default_factory=list)
     camera_names: List[SensorName] = field(default_factory=list)
@@ -23,62 +24,62 @@ class InMemorySceneDecoder:
     class_maps: Dict[AnnotationIdentifier, ClassMap] = field(default_factory=dict)
     frame_id_to_date_time_map: Dict[FrameId, datetime] = field(default_factory=dict)
 
-    def get_set_description(self, scene_name: SceneName) -> str:
+    def get_set_description(self) -> str:
         return self.description
 
-    def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    def get_set_metadata(self) -> Dict[str, Any]:
         return self.metadata
 
     def get_frame(
         self,
-        scene_name: SceneName,
         frame_id: FrameId,
     ) -> Frame[TDateTime]:
         return self.frames[frame_id]
 
-    def get_sensor_names(self, scene_name: SceneName) -> List[str]:
+    def get_sensor_names(self) -> List[str]:
         return self.camera_names + self.lidar_names + self.radar_names
 
-    def get_camera_names(self, scene_name: SceneName) -> List[str]:
+    def get_camera_names(self) -> List[str]:
         return self.camera_names
 
-    def get_lidar_names(self, scene_name: SceneName) -> List[str]:
+    def get_lidar_names(self) -> List[str]:
         return self.lidar_names
 
-    def get_radar_names(self, scene_name: SceneName) -> List[str]:
+    def get_radar_names(self) -> List[str]:
         return self.radar_names
 
-    def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
+    def get_frame_ids(self) -> Set[FrameId]:
         return set(self.frame_ids)
 
-    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.class_maps
 
-    def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName):
+    def get_camera_sensor(self, camera_name: SensorName):
         raise NotImplementedError("Not supported!")
 
-    def get_lidar_sensor(self, scene_name: SceneName, lidar_name: SensorName):
+    def get_lidar_sensor(self, lidar_name: SensorName):
         raise NotImplementedError("Not supported!")
 
-    def get_radar_sensor(self, scene_name: SceneName, radar_name: SensorName):
+    def get_radar_sensor(self, radar_name: SensorName):
         raise NotImplementedError("Not supported!")
 
-    def get_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
+    def get_frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
         return self.frame_id_to_date_time_map
 
     @staticmethod
     def from_scene(scene: Scene) -> "InMemorySceneDecoder":
         return InMemorySceneDecoder(
+            scene_name=scene.name,
             frame_ids=scene.frame_ids,
             camera_names=scene.camera_names,
             lidar_names=scene.lidar_names,
             class_maps=scene.class_maps,
             metadata=dict(scene.metadata),
-            frame_id_to_date_time_map=scene._decoder.get_frame_id_to_date_time_map(scene_name=scene.name),
+            frame_id_to_date_time_map=scene._decoder.get_frame_id_to_date_time_map(),
         )
 
-    def clear_from_cache(self, scene_name: SceneName):
+    def clear_from_cache(self):
         pass
 
-    def get_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         return list(self.class_maps.keys())

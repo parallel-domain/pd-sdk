@@ -9,14 +9,12 @@ from paralleldomain.model.annotation.common import Annotation
 class Depth(Annotation):
     """Represents a Depth mask for a camera image.
 
-
-
     Args:
-        depth: :attr:`paralleldomain.model.annotation.depth.Depth.depth`
+        depth: :attr:`Depth.depth`
 
     Attributes:
-        depth: Matrix of shape `(H X W x 1)`, , where `H` is the height and `W` is the width of corresponding
-            camera image. The third axis contains the depth distance for each pixel as `float` in meter.
+        depth: Matrix containing the distance (in meters) from the camera plane to the world within that pixel in the
+            image
 
     """
 

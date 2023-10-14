@@ -55,8 +55,8 @@ def test_knows_all_frames(dgpv1_dataset_train_scenes: List, dgpv1_train_dataset:
 
 
 def test_decode_train_scene_names(dgpv1_train_dataset: Dataset):
-    assert len(dgpv1_train_dataset.scene_names) == 46
-    assert len(dgpv1_train_dataset.unordered_scene_names) == 46
+    assert len(dgpv1_train_dataset.scene_names) == 5
+    assert len(dgpv1_train_dataset.unordered_scene_names) == 5
 
 
 def test_decode_camera_image(dgpv1_dataset_train_scene: Scene):
@@ -67,8 +67,8 @@ def test_decode_camera_image(dgpv1_dataset_train_scene: Scene):
     assert image is not None
     rgb = image.rgb
     assert isinstance(rgb, np.ndarray)
-    assert rgb.shape[0] == 900
-    assert rgb.shape[1] == 1600
+    assert rgb.shape[0] == 1080
+    assert rgb.shape[1] == 1920
     assert rgb.shape[2] in [3, 4]
     assert rgb.shape[0] == image.height
     assert rgb.shape[1] == image.width
@@ -80,8 +80,8 @@ def test_decode_camera_semseg_2d(dgpv1_dataset_train_scene: Scene):
     assert semseg is not None
     class_ids = semseg.class_ids
     assert isinstance(class_ids, np.ndarray)
-    assert class_ids.shape == (900, 1600, 1)
-    assert np.all(np.logical_and(np.unique(class_ids) <= 31, np.unique(class_ids) >= 0))
+    assert class_ids.shape == (1080, 1920, 1)
+    assert np.all(np.logical_and(np.unique(class_ids) <= 256, np.unique(class_ids) >= 0))
 
 
 def test_decode_file_path(dgpv1_dataset_train_scene: Scene):
