@@ -1,3 +1,4 @@
+import datetime
 from itertools import islice
 from typing import List, Optional, Union
 
@@ -111,7 +112,7 @@ def show_sensor_frame(
                     instance_ids.append(box.instance_id)
                     class_ids.append(box.class_id)
                     for k, v in metadata.items():
-                        v.append(box.attributes.get(k, None))
+                        v.append(box.attributes.get(k, box.attributes.get("user_data", {}).get(k, None)))
 
                 rr.log(
                     f"{annotation_ref}/{annotation_identifier}",
@@ -260,7 +261,13 @@ def show_frame(
             frame_int_id = frame_index
         rr.set_time_sequence(timeline="frame_idx", sequence=frame_int_id)
     else:
-        rr.set_time_seconds(timeline="seconds", seconds=frame.date_time.timestamp())
+        try:
+            reference_datetime = frame.scene.frames[0].date_time
+        except AttributeError:
+            # in memory frame decoders don't support scene access from frame
+            reference_datetime = datetime.datetime(year=1970, month=1, day=1, tzinfo=frame.date_time.tzinfo)
+        seconds = (frame.date_time - reference_datetime).total_seconds()
+        rr.set_time_seconds(timeline="seconds", seconds=seconds)
 
     for sensor_frame in frame.camera_frames:
         show_sensor_frame(sensor_frame=sensor_frame, annotations_to_show=annotations_to_show, entity_root=entity_root)

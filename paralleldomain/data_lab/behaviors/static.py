@@ -44,7 +44,7 @@ class LookAtPointBehavior(CustomSimulationAgentBehavior):
         up_vector = np.cross(forward_vector, left_vector)
         up_vector = up_vector / np.linalg.norm(up_vector)
 
-        # Create an empty tranformation matrix
+        # Create an empty transformation matrix
         tf = np.eye(4)
 
         # Populate the transformation matrix with the vectors calculated above

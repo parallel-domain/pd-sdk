@@ -148,7 +148,7 @@ class StreetLightOrParkingPullOut(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[Location, Lighting]:
-        return Location(name="SF_6thAndMission_medium"), "LS_sky_dusk_partlyCloudy_2040_HDS036"
+        return Location(name="SF_6thAndMission_medium"), "dusk_partlyCloudy_02"
 
 
 if __name__ == "__main__":

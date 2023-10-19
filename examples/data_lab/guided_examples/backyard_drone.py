@@ -261,7 +261,7 @@ class BackyardDrone(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[data_lab.Location, Lighting]:
-        return data_lab.Location(name="SJ_EssexAndBradford"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return data_lab.Location(name="SJ_EssexAndBradford"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

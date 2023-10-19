@@ -438,14 +438,17 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
                 a_type = ANNOTATION_TYPE_MAP[iannotation_id]
                 class_map = class_maps.get(annotation_id, None)
                 if class_map is None:
-                    if (
-                        AnnotationIdentifier.resolve_annotation_identifier(
-                            available_annotation_identifiers=scene.available_annotation_identifiers,
-                            annotation_type=a_type,
-                        )
-                        in scene.class_maps
-                    ):
-                        class_map = scene.get_class_map(a_type)
+                    try:
+                        if (
+                            AnnotationIdentifier.resolve_annotation_identifier(
+                                available_annotation_identifiers=scene.available_annotation_identifiers,
+                                annotation_type=a_type,
+                            )
+                            in scene.class_maps
+                        ):
+                            class_map = scene.get_class_map(a_type)
+                    except ValueError:
+                        pass
                 if class_map is not None:
                     ontology_proto = class_map_to_ontology_proto(class_map=class_map)
                     onthologie_map[iannotation_id] = ontology_proto

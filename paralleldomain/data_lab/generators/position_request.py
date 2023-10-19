@@ -46,14 +46,14 @@ class AbsolutePositionRequest(pd_unified_generator_pb2.AbsolutePositionRequest):
             An AbsolutePositionRequest object which specifies the region passed in the transformation parameter
         """
         x, y, z = transformation.translation
-        R = transformation.rotation
+        r = transformation.rotation
 
         return cls(
             position=Float3(x=x, y=y, z=z),
             rotation=Float3x3(
-                r0=Float3(x=R[0, 0], y=R[0, 1], z=R[0, 2]),
-                r1=Float3(x=R[1, 0], y=R[1, 1], z=R[1, 2]),
-                r2=Float3(x=R[2, 0], y=R[2, 1], z=R[2, 2]),
+                r0=Float3(x=r[0, 0], y=r[0, 1], z=r[0, 2]),
+                r1=Float3(x=r[1, 0], y=r[1, 1], z=r[1, 2]),
+                r2=Float3(x=r[2, 0], y=r[2, 1], z=r[2, 2]),
             ),
         )
 

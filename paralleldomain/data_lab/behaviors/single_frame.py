@@ -3,10 +3,7 @@ import random
 from typing import Callable, List, Optional
 
 import numpy as np
-from pd.core import PdError
 from pd.sim import Raycast
-from pd.state import VehicleAgent
-from pd.state.state import PosedAgent
 from pyquaternion import Quaternion
 
 from paralleldomain import data_lab
@@ -85,7 +82,7 @@ class SingleFrameVehicleBehavior(CustomSimulationAgentBehavior):
 
         return pose
 
-    # This method will setup the state of the Custom Agent at the beginning of the scenario
+    # This method will set up the state of the Custom Agent at the beginning of the scenario
     def set_initial_state(
         self,
         sim_state: ExtendedSimState,
@@ -178,7 +175,7 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
         self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Callable
     ) -> Transformation:
         # Use the MapQuery object to search for all lane segments near the ego pose.  This is done by extracting the
-        # ego_pose from the sim_state. A list comprehension is then used to keep only the LaneSegments that correpond
+        # ego_pose from the sim_state. A list comprehension is then used to keep only the LaneSegments that correspond
         # to the LaneType specified
         lane_objects = [
             lane
@@ -282,7 +279,7 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
             # If lateral offset for spawn location is specified
             if self._max_lateral_offset is not None:
                 # Create a vector that defines the direction in which the lateral offset will be applied.  Note that
-                # this is calculated through maxtrix multiplication with the pose's rotation matrix. Also note we
+                # this is calculated through matrix multiplication with the pose's rotation matrix. Also note we
                 # randomly choose whether offset to the left or right
                 offset_direction = (
                     self._random_state.choice([-1.0, 1.0])

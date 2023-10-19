@@ -215,7 +215,7 @@ class StaticAssetBehavior(data_lab.CustomSimulationAgentBehavior):
         if not self._found_valid_placement:
             warnings.warn(
                 f"Could not find a collision-free placement for asset {agent.step_agent.asset_name}. Placing with "
-                f"possible collision "
+                "possible collision "
             )
 
         agent.set_pose(pose=self._pose.transformation_matrix)
@@ -347,7 +347,7 @@ class BackyardDebris(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[data_lab.Location, Lighting]:
-        return data_lab.Location(name="A2_Kerrytown"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return data_lab.Location(name="A2_Kerrytown"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

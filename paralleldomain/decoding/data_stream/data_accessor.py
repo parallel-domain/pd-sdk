@@ -12,14 +12,14 @@ from pd.internal.proto.label_engine.generated.python import transform_map_pb2
 from pd.internal.proto.label_engine.generated.python.data_pb2 import DataTypeRecord
 from pd.internal.proto.label_engine.generated.python.mesh_map_pb2 import MeshMap
 from pd.internal.proto.label_engine.generated.python.options_pb2 import DataType
-from pd.label_engine import LabelData
+from pd.label_engine import LabelData, load_pipeline_config
 from pd.state import Pose6D
 from pd.state.sensor import CameraSensor, Sensor, sensors_from_json
 from pd.state.state import PosedAgent, SensorAgent
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.data_stream.common import TYPE_TO_FILE_FORMAT
-from paralleldomain.model.annotation import AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.ego import EgoPose
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import LidarSensor, RadarSensor, SensorDataCopyTypes
@@ -35,10 +35,9 @@ PathsByStreamType = DefaultDict[StreamType, List[AnyPath]]
 
 
 class DataStreamDataAccessor(ABC):
-    def __init__(self, camera_image_stream_name: str, scene_name: SceneName, ontology_stream_name: str):
+    def __init__(self, camera_image_stream_name: str, scene_name: SceneName):
         self.camera_image_stream_name = camera_image_stream_name
         self.scene_name = scene_name
-        self.ontology_stream_name = ontology_stream_name
 
     @property
     @abstractmethod
@@ -102,14 +101,9 @@ class DataStreamDataAccessor(ABC):
     def get_frame_id_to_date_time_map(self) -> Dict[str, datetime]:
         ...
 
-    def get_ontology_data(self, frame_id: FrameId) -> LabelData:
-        label_data = self.get_label_data(
-            stream_name=self.ontology_stream_name,
-            sensor_name=None,
-            frame_id=frame_id,
-            file_ending="pb.json",
-        )
-        return label_data
+    @abstractmethod
+    def get_ontology_data(self, frame_id: FrameId, annotation_identifier: AnnotationIdentifier) -> Optional[LabelData]:
+        pass
 
 
 class StoredDataStreamDataAccessor(DataStreamDataAccessor):
@@ -119,12 +113,10 @@ class StoredDataStreamDataAccessor(DataStreamDataAccessor):
         scene_name: SceneName,
         camera_image_stream_name: str,
         potentially_available_annotation_identifiers: List[AnnotationIdentifier],
-        ontology_stream_name: str,
     ):
         super().__init__(
             camera_image_stream_name=camera_image_stream_name,
             scene_name=scene_name,
-            ontology_stream_name=ontology_stream_name,
         )
         self.scene_path = scene_path
         self._potentially_available_annotation_identifiers = potentially_available_annotation_identifiers
@@ -137,19 +129,34 @@ class StoredDataStreamDataAccessor(DataStreamDataAccessor):
         self._available_annotation_identifiers: Optional[List[AnnotationIdentifier]] = None
         self._sensors: Optional[Dict[FrameId, Dict[SensorName, Sensor]]] = None
 
-    def get_ontology_data(self, frame_id: FrameId) -> LabelData:
-        if DataType.eSemanticLabelMap in self.sensor_agnostic_streams:
-            # todo: figure out which stram to use. Might want to store it in type file of each semantic stream
-            ontology_stream_name = self.sensor_agnostic_streams[DataType.eSemanticLabelMap][0].name
+    def get_ontology_data(self, frame_id: FrameId, annotation_identifier: AnnotationIdentifier) -> Optional[LabelData]:
+        sensor_agnostic_annotation_stream = [
+            s for s in self.sensor_agnostic_streams[DataType.eAnnotation] if s.name == annotation_identifier.name
+        ]
+        # if identifier is sensor agnostic don't append camera name to folder path
+        if len(sensor_agnostic_annotation_stream) > 0:
+            folder = self.scene_path / annotation_identifier.name
         else:
-            ontology_stream_name = self.ontology_stream_name
-        label_data = self.get_label_data(
-            stream_name=ontology_stream_name,
-            sensor_name=None,
-            frame_id=frame_id,
-            file_ending="pb.json",
-        )
-        return label_data
+            camera_name = next(iter(self.cameras[frame_id]))
+            # assumes ontology is the same across cameras
+            folder = self.scene_path / annotation_identifier.name / camera_name
+
+        type_file = folder / ".type"
+        if not folder.is_dir() or not type_file.exists():
+            raise ValueError(f"Can not find type file for {annotation_identifier.name}")
+        with type_file.open("r") as fp:
+            data_type_record = json_format.Parse(text=fp.read(), message=DataTypeRecord())
+
+        ontology_stream_name = data_type_record.ontology
+        if ontology_stream_name is not None and ontology_stream_name != "":
+            label_data = self.get_label_data(
+                stream_name=ontology_stream_name,
+                sensor_name=None,
+                frame_id=frame_id,
+                file_ending="pb.json",
+            )
+            return label_data
+        return None
 
     def get_ego_pose(self, frame_id: FrameId) -> EgoPose:
         if frame_id in self.frame_id_to_ego_telemetry_file:
@@ -431,12 +438,11 @@ class LabelEngineDataStreamDataAccessor(DataStreamDataAccessor):
         camera_image_stream_name: str,
         scene_name: SceneName,
         available_annotation_identifiers: List[AnnotationIdentifier],
-        ontology_stream_name: str,
+        label_engine_config_name: str,
     ):
         super().__init__(
             camera_image_stream_name=camera_image_stream_name,
             scene_name=scene_name,
-            ontology_stream_name=ontology_stream_name,
         )
         self._label_engine_instance = labeled_state_reference.label_engine
         self._frame_ids = set()
@@ -445,6 +451,7 @@ class LabelEngineDataStreamDataAccessor(DataStreamDataAccessor):
         self._frame_id_to_ego_agent: Dict[FrameId, SensorAgent] = dict()
         self.update_labeled_state_reference(labeled_state_reference=labeled_state_reference)
         self._available_annotation_identifiers = available_annotation_identifiers
+        self._label_engine_pipeline_config = json.loads(load_pipeline_config(name=label_engine_config_name))
 
     def get_ego_pose(self, frame_id: FrameId) -> EgoPose:
         ego_agent = self._frame_id_to_ego_agent[frame_id]
@@ -523,6 +530,63 @@ class LabelEngineDataStreamDataAccessor(DataStreamDataAccessor):
 
     def get_frame_id_to_date_time_map(self) -> Dict[str, datetime]:
         return self._frame_id_to_date_time
+
+    def get_ontology_data(self, frame_id: FrameId, annotation_identifier: AnnotationIdentifier) -> Optional[LabelData]:
+        ontology_stream_name = self.get_ontology_name(annotation_identifier=annotation_identifier)
+        if ontology_stream_name is not None and ontology_stream_name != "":
+            label_data = self.get_label_data(
+                stream_name=ontology_stream_name,
+                sensor_name=None,
+                frame_id=frame_id,
+                file_ending="pb.json",
+            )
+            return label_data
+        return None
+
+    def get_ontology_name(self, annotation_identifier: AnnotationIdentifier) -> str:
+        # Resolves ontology name based on node type in label engine config file
+        # Requires a unique mapping from node_type to ontology name
+        # TODO request ontology name for annotation identifier from LE directly
+        if annotation_identifier.annotation_type == AnnotationTypes.Points2D:
+            ontology_name = self._resolve_ontology_stream_name(
+                node_type="type.googleapis.com/pd.data.InstancePoint3DAnnotatorConfig",
+            )
+        elif annotation_identifier.annotation_type == AnnotationTypes.Points3D:
+            ontology_name = self._resolve_ontology_stream_name(
+                node_type="type.googleapis.com/pd.data.InstancePoint3DAnnotatorConfig",
+            )
+        elif annotation_identifier.annotation_type in [
+            AnnotationTypes.SemanticSegmentation2D,
+            AnnotationTypes.InstanceSegmentation2D,
+            AnnotationTypes.BoundingBoxes2D,
+            AnnotationTypes.BoundingBoxes3D,
+        ]:
+            ontology_name = self._resolve_ontology_stream_name(
+                node_type="type.googleapis.com/pd.data.GenerateCustomMeshSemanticMapConfig"
+            )
+        else:
+            ontology_name = ""
+        return ontology_name
+
+    def _resolve_ontology_stream_name(self, node_type: str) -> str:
+        potential_ontology_configs = [
+            a for a in self._label_engine_pipeline_config["nodes"] if a["config"]["@type"] == node_type
+        ]
+        if len(potential_ontology_configs) == 1:
+            ontology_node = potential_ontology_configs[0]
+            config = ontology_node.get("config")
+            if config is not None:
+                ontology_stream_name = config.get("output_ontology_path")
+                if ontology_stream_name is not None:
+                    return ontology_stream_name
+                else:
+                    raise ValueError(f"Can not find output_ontology_path in label engine config {config}.")
+            else:
+                raise ValueError(f"Can not find config in label engine config node {ontology_node}")
+        else:
+            raise ValueError(
+                f"Can not resolve ontology stream name from label engine pipeline config {potential_ontology_configs}"
+            )
 
 
 @lru_cache(maxsize=1000)

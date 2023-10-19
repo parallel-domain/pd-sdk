@@ -6,7 +6,7 @@ from pd.data_lab import LabeledStateReference
 from pd.label_engine import DEFAULT_LABEL_ENGINE_CONFIG_NAME, load_pipeline_config
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.data_stream import INSTANCE_POINT_COLOR_MAP
+from paralleldomain.decoding.data_stream.common import decode_class_map
 from paralleldomain.decoding.data_stream.data_accessor import (
     DataStreamDataAccessor,
     LabelEngineDataStreamDataAccessor,
@@ -18,8 +18,8 @@ from paralleldomain.decoding.data_stream.sensor_decoder import DataStreamCameraS
 from paralleldomain.decoding.decoder import DatasetDecoder, SceneDecoder, TDateTime
 from paralleldomain.decoding.frame_decoder import FrameDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
@@ -159,9 +159,6 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
         if state_reference is not None:
             label_engine_config_name = state_reference.label_engine.config_name
         label_engine_pipeline_config = json.loads(load_pipeline_config(label_engine_config_name))
-        ontology_stream_name = DataStreamSceneDecoder._resolve_ontology_stream_name(
-            label_engine_pipeline_config=label_engine_pipeline_config
-        )
         output_path_to_generator_type = {
             node["config"]["@type"]: node["config"]["output_path"] for node in label_engine_pipeline_config["nodes"]
         }
@@ -214,7 +211,6 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
                     scene_name=scene_name,
                     camera_image_stream_name=camera_image_stream_name,
                     potentially_available_annotation_identifiers=available_annotation_identifiers,
-                    ontology_stream_name=ontology_stream_name,
                 )
             else:
                 data_accessor: DataStreamDataAccessor = StoredDataStreamDataAccessor(
@@ -222,7 +218,6 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
                     scene_name=scene_name,
                     camera_image_stream_name=camera_image_stream_name,
                     potentially_available_annotation_identifiers=available_annotation_identifiers,
-                    ontology_stream_name=ontology_stream_name,
                 )
         else:
             if available_annotation_identifiers is None:
@@ -244,7 +239,7 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
                 scene_name=scene_name,
                 camera_image_stream_name=camera_image_stream_name,
                 available_annotation_identifiers=available_annotation_identifiers,
-                ontology_stream_name=ontology_stream_name,
+                label_engine_config_name=label_engine_config_name,
             )
         return data_accessor
 
@@ -274,24 +269,16 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
     def _decode_radar_names(self) -> List[SensorName]:
         return list({s for fid, sensors in self._data_accessor.radars.items() for s in sensors.keys()})
 
-    def _decode_class_maps(self) -> Dict[AnnotationType, ClassMap]:
-        label_data = self._data_accessor.get_ontology_data(frame_id=next(iter(self.get_frame_ids())))
-        ontology = label_data.data_as_semantic_label_map
-        semantic_label_map = ontology.semantic_label_map
-        pd_class_details = []
-        for semantic_id in semantic_label_map:
-            c = semantic_label_map[semantic_id]
-            class_detail = ClassDetail(
-                name=c.label,
-                id=int(c.id),
-                instanced=False,  # TODO deprecate this parameter
-                meta=dict(supercategory="", color={"r": c.color.red, "g": c.color.green, "b": c.color.blue}),
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
+        available_annotation_identifiers = self.get_available_annotation_identifiers()
+        class_maps = {}
+        for annotation_identifier in available_annotation_identifiers:
+            ontology_data = self._data_accessor.get_ontology_data(
+                frame_id=next(iter(self.get_frame_ids())), annotation_identifier=annotation_identifier
             )
-            pd_class_details.append(class_detail)
-
-        class_maps = {
-            identifier: ClassMap(classes=pd_class_details) for identifier in self.get_available_annotation_identifiers()
-        }
+            if ontology_data is not None:
+                class_map = decode_class_map(ontology_data=ontology_data)
+                class_maps[annotation_identifier] = class_map
         return class_maps
 
     def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[TDateTime]:
@@ -327,24 +314,3 @@ class DataStreamSceneDecoder(SceneDecoder[datetime]):
 
     def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         return self._data_accessor.available_annotation_identifiers
-
-    @staticmethod
-    def _resolve_ontology_stream_name(label_engine_pipeline_config: dict) -> str:
-        potential_ontology_configs = [
-            a for a in label_engine_pipeline_config["nodes"] if a["name"] == "gen_dgp_semantic_map"
-        ]
-        if len(potential_ontology_configs) == 1:
-            ontology_node = potential_ontology_configs[0]
-            config = ontology_node.get("config")
-            if config is not None:
-                ontology_stream_name = config.get("output_ontology_path")
-                if ontology_stream_name is not None:
-                    return ontology_stream_name
-                else:
-                    raise ValueError(f"Can not find output_ontology_path in label engine config {config}.")
-            else:
-                raise ValueError(f"Can not find config in label engine config node {ontology_node}")
-        else:
-            raise ValueError(
-                f"Can not resolve ontology stream name from label engine pipeline config {potential_ontology_configs}"
-            )

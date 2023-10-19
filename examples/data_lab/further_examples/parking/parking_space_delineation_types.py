@@ -140,7 +140,7 @@ class ParkingSpaceDelineationTypes(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[paralleldomain.data_lab.Location, Lighting]:
-        return paralleldomain.data_lab.Location(name="SF_VanNessAveAndTurkSt"), "LS_sky_dusk_partlyCloudy_2040_HDS036"
+        return paralleldomain.data_lab.Location(name="SF_VanNessAveAndTurkSt"), "dusk_partlyCloudy_02"
 
 
 if __name__ == "__main__":

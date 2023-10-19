@@ -75,7 +75,7 @@ _ = Scenario
 # Maintained for backwards compatibility
 CustomSimulationAgentBehaviour = CustomSimulationAgentBehavior
 
-DEFAULT_DATA_LAB_VERSION = "v2.7.0+20231013CL65445"
+DEFAULT_DATA_LAB_VERSION = "v2.7.0+20231018CL65575"
 """Default Data Lab version to use across examples"""
 
 coordinate_system = CoordinateSystem("RFU")

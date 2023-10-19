@@ -90,7 +90,8 @@ class InMemoryCameraFrameDecoder(InMemorySensorFrameDecoder[TDateTime]):
         class_maps = dict()
         for anno_identifier in camera_frame.available_annotation_identifiers:
             annotations[anno_identifier] = camera_frame.get_annotations(annotation_identifier=anno_identifier)
-            class_maps[anno_identifier] = camera_frame.class_maps[anno_identifier]
+            if anno_identifier in camera_frame.class_maps:
+                class_maps[anno_identifier] = camera_frame.class_maps[anno_identifier]
 
         return InMemoryCameraFrameDecoder(
             dataset_name=camera_frame.dataset_name,

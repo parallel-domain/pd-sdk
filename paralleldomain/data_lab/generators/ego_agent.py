@@ -32,6 +32,8 @@ class RenderEgoGenerator(CustomAtomicGenerator):
     ):
         self._ego_asset_name = ego_asset_name
 
+        super().__init__()
+
     # This is a very simple Custom Generator which only places 1 Custom Agent and assigns the RenderEgoBehavior Custom
     # Behavior to that agent
     def create_agents_for_new_scene(self, state: ExtendedSimState, random_seed: int) -> List[CustomSimulationAgent]:

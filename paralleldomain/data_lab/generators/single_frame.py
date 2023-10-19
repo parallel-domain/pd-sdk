@@ -3,9 +3,8 @@ import random
 from enum import Enum
 from typing import List, Optional
 
-from pd.data_lab.generators.custom_simulation_agent import CustomPedestrianSimulationAgent, CustomVehicleSimulationAgent
+from pd.data_lab.generators.custom_simulation_agent import CustomPedestrianSimulationAgent
 from pd.internal.assets.asset_registry import DataCharacter, DataVehicle, ObjAssets, UtilVehicleTypes
-from pd.state import VehicleAgent
 
 from paralleldomain import data_lab
 from paralleldomain.data_lab import SensorRig
@@ -28,8 +27,6 @@ class SingleFrameEgoGenerator(data_lab.CustomAtomicGenerator):
         ego_asset_name: The name of the vehicle asset which should be used as the ego vehicle
         lane_type: The type of lane on which the ego vehicle should be placed
         random_seed: The integer to seed all random functions with, allowing scenario generation to be deterministic
-        sim_capture_rate: Controls the frame rate of the scenario where `scenario_frame_rate = 100 / sim_capture_rate`.
-            For single frame scenarios, value of 10 is recommended
         sensor_rig: The sensor rig which should be attached to the ego for rendering
     """
 
@@ -119,7 +116,7 @@ class SingleFrameNonEgoVehicleGenerator(data_lab.CustomAtomicGenerator):
         selected_vehicle_types = ["COMPACT", "FULLSIZE", "MIDSIZE", "SUV"]
 
         # Create a database query that uses the ObjAssets, DataVehicle and UtilVehicleTypes tables to retrieve the
-        # required information about the vehicles.  The UtilVehicleTypes and DataVehicle are joined to tehe ObjAssets
+        # required information about the vehicles.  The UtilVehicleTypes and DataVehicle are joined to the ObjAssets
         # table, and only rows corresponding to the above vehicle types are extracted
         valid_vehicles = (
             ObjAssets.select(ObjAssets.id, ObjAssets.name, ObjAssets.length, UtilVehicleTypes.name)

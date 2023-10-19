@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 
-from pd.data_lab import ScenarioCreator, ScenarioSource, RenderInstance
+from pd.data_lab import RenderInstance, ScenarioCreator, ScenarioSource
 from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
 from pd.data_lab.config.location import Location
 from pd.data_lab.scenario import Lighting
@@ -105,7 +105,7 @@ class IterationFlowExample(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[Location, Lighting]:
-        return data_lab.Location(name="SF_6thAndMission_medium"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return data_lab.Location(name="SF_6thAndMission_medium"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

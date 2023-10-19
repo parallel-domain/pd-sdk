@@ -89,7 +89,7 @@ class EgoVehicleInCamera(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[Location, Lighting]:
-        return Location(name="A2_BurnsPark"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return Location(name="A2_BurnsPark"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

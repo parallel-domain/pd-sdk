@@ -100,20 +100,22 @@ class MockSimulationInstance(SimulationInstance):
         self._ego_agent = ego_agent
         self._add_ego_agent = ego_agent is None
         self.query_sim_state_calls = 0
+        self._location = None
 
     def query_sim_state(self) -> pd.state.State:
+        assert self._location
         self._simulation_time_sec += self.scenario.sim_state.scenario_gen.sim_update_time
         self._ego_agent.step_agent.pose = np.eye(4) * self._simulation_time_sec
         if self._add_ego_agent:
             sim_state = pd.state.State(
                 simulation_time_sec=self._simulation_time_sec,
-                world_info=pd.state.WorldInfo(location="SF_6thAndMission_medium"),
+                world_info=pd.state.WorldInfo(location=self._location.name),
                 agents=[self._ego_agent.step_agent],
             )
         else:
             sim_state = pd.state.State(
                 simulation_time_sec=self._simulation_time_sec,
-                world_info=pd.state.WorldInfo(location="SF_6thAndMission_medium"),
+                world_info=pd.state.WorldInfo(location=self._location.name),
                 agents=[],
             )
         self.query_sim_state_calls += 1
@@ -132,6 +134,7 @@ class MockSimulationInstance(SimulationInstance):
                 sensors=[s.to_step_sensor() for s in self.scenario.sensor_rig.sensor_configs],
             )
         self._ego_agent = ego_agent
+        self._location = location
         self._session = mock.MagicMock()
         self._session.raycast = None
         self._session.load_scenario_generation.return_value = (self.scenario.location.name, ego_agent.agent_id)
@@ -628,7 +631,7 @@ class TestScenario:
         update_calls = (
             (frames_per_scene - 1) * scenario.sim_state.scenario_gen.sim_capture_rate
             + scenario.sim_state.scenario_gen.start_skip_frames
-            + 2
+            + 1
         )
         self.run_mocked_frame_generation(scenario=scenario, ego_agent=ego_agent, frames_per_scene=frames_per_scene)
         assert cnt_mock.setup_count == 1
@@ -702,6 +705,40 @@ class TestScenario:
                     assert isinstance(decoded, pd.state.State)
                     # in our mock we just add 1 agent
                     assert len(decoded.agents) == 1
+
+    def test_sim_state_contains_location_and_time_of_day(self, atomic_only_scenario: Scenario):
+        simulator = MockSimulationInstance(scenario=atomic_only_scenario, ego_agent=None)
+
+        number_of_scenes = 1
+        frames_per_scene = 10
+
+        class _Provider(ScenarioCreator):
+            def create_scenario(
+                self, random_seed: int, scene_index: int, number_of_scenes: int, location: Location, **kwargs
+            ) -> ScenarioSource:
+                return atomic_only_scenario
+
+            def get_location(
+                self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
+            ) -> Tuple[Location, Lighting]:
+                return Location("TestLocation"), "LS_sky_afternoon_clear_1709_HDS002"
+
+        state_stream_1 = create_sensor_sim_stream(
+            scenario_creator=_Provider(),
+            sim_state_type=ExtendedSimState,
+            simulator=simulator,
+            sim_capture_rate=1,
+            start_skip_frames=1,
+            scene_index=0,
+            random_seed=0,
+            data_lab_version="local",
+            number_of_scenes=number_of_scenes,
+            frames_per_scene=frames_per_scene,
+            yield_every_sim_state=True,
+        )
+        states_1 = [state_reference.state for state_reference in state_stream_1]
+        assert all(s.world_info.location == "TestLocation" for s in states_1)
+        assert all(s.world_info.time_of_day == "LS_sky_afternoon_clear_1709_HDS002" for s in states_1)
 
     def test_sim_stream_from_scenario_yields_same_states(self, mixed_scenario: Scenario):
         class StreetCreepBehavior(CustomSimulationAgentBehavior):

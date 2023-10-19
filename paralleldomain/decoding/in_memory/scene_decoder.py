@@ -23,6 +23,7 @@ class InMemorySceneDecoder:
     frames: Dict[FrameId, Frame] = field(default_factory=dict)
     class_maps: Dict[AnnotationIdentifier, ClassMap] = field(default_factory=dict)
     frame_id_to_date_time_map: Dict[FrameId, datetime] = field(default_factory=dict)
+    available_annotation_identifiers: List[AnnotationIdentifier] = field(default_factory=list)
 
     def get_set_description(self) -> str:
         return self.description
@@ -76,10 +77,11 @@ class InMemorySceneDecoder:
             class_maps=scene.class_maps,
             metadata=dict(scene.metadata),
             frame_id_to_date_time_map=scene._decoder.get_frame_id_to_date_time_map(),
+            available_annotation_identifiers=scene.available_annotation_identifiers.copy(),
         )
 
     def clear_from_cache(self):
         pass
 
     def get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
-        return list(self.class_maps.keys())
+        return self.available_annotation_identifiers

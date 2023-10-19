@@ -145,7 +145,7 @@ class DrivewayCreepBehavior(CustomSimulationAgentBehavior):
     def update_state(
         self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Optional[Callable] = None
     ):
-        # Calculate the meters along the drivway the vehicle has travelled based on the sim_time of the sim_state
+        # Calculate the meters along the driveway the vehicle has travelled based on the sim_time of the sim_state
         meters_travelled = (sim_state.sim_time / self._behavior_duration) * (
             self._cumulative_distances[-1] - self._agent_length
         ) + (self._agent_length / 2)

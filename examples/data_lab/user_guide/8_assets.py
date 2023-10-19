@@ -1,5 +1,3 @@
-from pd.internal.assets.asset_registry import ObjAssets, DataVehicle, UtilVehicleTypes, DataVehicleTypeSpawnChance
-
 import logging
 import random
 from typing import Tuple
@@ -8,14 +6,12 @@ from pd.data_lab import ScenarioCreator, ScenarioSource
 from pd.data_lab.config.distribution import EnumDistribution
 from pd.data_lab.config.location import Location
 from pd.data_lab.scenario import Lighting
+from pd.internal.assets.asset_registry import DataVehicle, DataVehicleTypeSpawnChance, ObjAssets, UtilVehicleTypes
 
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
-from paralleldomain.data_lab.generators.position_request import (
-    LaneSpawnPolicy,
-    PositionRequest,
-)
+from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
@@ -135,7 +131,7 @@ class AssetLookupExample(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[Location, Lighting]:
-        return data_lab.Location(name="SF_6thAndMission_medium"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return data_lab.Location(name="SF_6thAndMission_medium"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

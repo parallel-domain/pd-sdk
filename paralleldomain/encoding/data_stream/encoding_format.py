@@ -1,8 +1,10 @@
 from collections import defaultdict
 from copy import deepcopy
+from functools import lru_cache
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
+from google.protobuf import json_format
 from pd.internal.proto.keystone.generated.python import pd_sensor_pb2
 from pd.internal.proto.label_engine.generated.python import (  # telemetry_pb2,
     annotation_pb2,
@@ -30,6 +32,7 @@ from paralleldomain.model.annotation import (
     Polygon2D,
     Polyline2D,
 )
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import CameraModel, CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.utilities.any_path import AnyPath
@@ -43,6 +46,9 @@ from paralleldomain.utilities.fsio import (
     write_png,
 )
 from paralleldomain.utilities.transformation import Transformation
+
+_DEFAULT_ONTOLOGY_NAME = "ontology"
+_KEYPOINT_ONTOLOGY_NAME = "keypoint_ontology"
 
 
 class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, UnorderedScenePipelineItem]]):
@@ -231,6 +237,8 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
         # TODO: Point3D, Polygon3D, Polyline3D, PointCloud, RadarPointCloud
 
         if isinstance(data_type, AnnotationIdentifier):
+            ontology_name_map = self._get_ontology_name_map(class_maps=pipeline_item.sensor_frame.class_maps)
+            ontology_name = ontology_name_map.get(data_type, "")
             if data_type.annotation_type == AnnotationTypes.BoundingBoxes2D:
                 path = self._get_storage_path(
                     scene_name=pipeline_item.scene_name,
@@ -240,6 +248,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                     file_ending=f"pb.{self.message_suffix}",
                     create_folders=True,
                     data_type=options_pb2.DataType.eAnnotation,
+                    ontology_name=ontology_name,
                 )
                 if isinstance(data, AnnotationTypes.BoundingBoxes2D):
                     write_message(
@@ -261,6 +270,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                     data_type=options_pb2.DataType.eAnnotation,
                     aggregation_folder=True,
                     aggregation_folder_name="aggregate_bbox_3d",
+                    ontology_name=ontology_name,
                 )
                 if isinstance(data, AnnotationTypes.BoundingBoxes3D):
                     sensor_to_world = pipeline_item.sensor_frame.sensor_to_world
@@ -315,6 +325,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                     file_ending="png",
                     create_folders=True,
                     data_type=options_pb2.DataType.eImage,
+                    ontology_name=ontology_name,
                 )
                 if isinstance(data, AnnotationTypes.InstanceSegmentation2D):
                     class_ids = data.instance_ids.astype(np.uint16).view(np.uint8)
@@ -358,6 +369,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                     file_ending=f"pb.{self.message_suffix}",
                     create_folders=True,
                     data_type=options_pb2.DataType.eAnnotation,
+                    ontology_name=ontology_name,
                 )
                 if isinstance(data, AnnotationTypes.Points2D):
                     write_message(
@@ -417,6 +429,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                     file_ending="png",
                     create_folders=True,
                     data_type=options_pb2.DataType.eImage,
+                    ontology_name=ontology_name,
                 )
                 if isinstance(data, AnnotationTypes.SemanticSegmentation2D):
                     class_ids = data.class_ids.astype(np.uint16).view(np.uint8)
@@ -455,6 +468,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
         create_folders: bool = False,
         aggregation_folder: bool = False,
         aggregation_folder_name: str = "aggregation",
+        ontology_name: str = "",
     ) -> AnyPath:
         frame_id = f"{int(frame_id):09d}"
 
@@ -474,18 +488,26 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
             path.parent.mkdir(parents=True, exist_ok=True)
             if sensor_name is not None:
                 self._write_type_file(folder_path=scene_folder / stream_name, data_type=options_pb2.DataType.eNone)
-                self._write_type_file(folder_path=scene_folder / stream_name / sensor_name, data_type=data_type)
+                self._write_type_file(
+                    folder_path=scene_folder / stream_name / sensor_name,
+                    data_type=data_type,
+                    ontology_name=ontology_name,
+                )
             else:
-                self._write_type_file(folder_path=scene_folder / stream_name, data_type=data_type)
+                self._write_type_file(
+                    folder_path=scene_folder / stream_name,
+                    data_type=data_type,
+                    ontology_name=ontology_name,
+                )
 
         return path
 
     @staticmethod
-    def _write_type_file(data_type: options_pb2.DataType, folder_path: AnyPath):
+    def _write_type_file(data_type: options_pb2.DataType, folder_path: AnyPath, ontology_name: str = ""):
         type_file = folder_path / ".type"
         if not type_file.exists():
             type_file.parent.mkdir(parents=True, exist_ok=True)
-            write_json_message(obj=data_pb2.DataTypeRecord(type=data_type), path=type_file)
+            write_json_message(obj=data_pb2.DataTypeRecord(type=data_type, ontology=ontology_name), path=type_file)
 
     def supports_copy(
         self,
@@ -506,12 +528,13 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
         )
         self._write_telemetry(pipeline_item=pipeline_item)
         self._aggregate_3d_boxes(pipeline_item=pipeline_item)
-        self._write_ontology(pipeline_item=pipeline_item)
+        self._write_ontologies(pipeline_item=pipeline_item)
 
     def _aggregate_3d_boxes(self, pipeline_item: Union[ScenePipelineItem, UnorderedScenePipelineItem]):
         aggregation_folder = self._get_aggregation_folder_path(
             scene_name=pipeline_item.scene_name, aggregation_folder_name="aggregate_bbox_3d"
         )
+        ontology_name = ""
         if aggregation_folder.exists():
             for bbox_3d_stream in aggregation_folder.iterdir():
                 if bbox_3d_stream.is_dir():
@@ -528,6 +551,9 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                                     existing_primitives_instance_ids.add(metadata.instance_id)
                                     primitives.append(box)
                             frame_file.rm(missing_ok=True)
+                            # We assume ontology is the same across sensors
+                            if ontology_name == "":
+                                ontology_name = get_type_file_ontology(folder=sensor_stream)
 
                     path = self._get_storage_path(
                         scene_name=pipeline_item.scene_name,
@@ -537,6 +563,7 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
                         file_ending=f"pb.{self.message_suffix}",
                         create_folders=True,
                         data_type=options_pb2.DataType.eAnnotation,
+                        ontology_name=ontology_name,
                     )
                     obj = annotation_pb2.Annotation(geometry=annotation_pb2.GeometryCollection(primitives=primitives))
                     write_message(
@@ -598,41 +625,46 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
             path=path,
         )
 
-    def _write_ontology(self, pipeline_item: Union[ScenePipelineItem, UnorderedScenePipelineItem]):
+    def _write_ontologies(self, pipeline_item: Union[ScenePipelineItem, UnorderedScenePipelineItem]):
         scene = pipeline_item.scene
         annotation_identifiers = scene.available_annotation_identifiers
-        class_map = {}
-        for annotation_identifier in annotation_identifiers:
-            class_map = scene.get_class_map(annotation_identifier=annotation_identifier)
-            # For now class map is the same for all annotation_identifiers
-            break
+        ontology_name_map = self._get_ontology_name_map(class_maps=scene.class_maps)
 
-        semantic_label_map = {}
-        for class_id, class_detail in class_map.items():
-            semantic_label_map[class_id] = mesh_map_pb2.SemanticLabelInfo(
-                id=class_detail.id,
-                label=class_detail.name,
-                color=mesh_map_pb2.Color(
-                    red=class_detail.meta["color"]["r"],
-                    green=class_detail.meta["color"]["g"],
-                    blue=class_detail.meta["color"]["b"],
-                ),
-            )
-        path = self._get_storage_path(
-            scene_name=pipeline_item.scene_name,
-            frame_id=pipeline_item.frame_id,
-            stream_name="ontology",
-            sensor_name=None,
-            file_ending="pb.json",
-            create_folders=True,
-            data_type=options_pb2.DataType.eSemanticLabelMap,
-        )
-        write_message(
-            obj=mesh_map_pb2.SemanticLabelMap(
-                semantic_label_map=semantic_label_map,
-            ),
-            path=path,
-        )
+        for annotation_identifier in annotation_identifiers:
+            if annotation_identifier in scene.class_maps:
+                class_map = scene.class_maps[annotation_identifier]
+                semantic_label_map = {}
+                for class_id, class_detail in class_map.items():
+                    red = class_detail.meta["color"]["r"] if "color" in class_detail.meta else 0
+                    green = class_detail.meta["color"]["g"] if "color" in class_detail.meta else 0
+                    blue = class_detail.meta["color"]["b"] if "color" in class_detail.meta else 0
+                    semantic_label_map[class_id] = mesh_map_pb2.SemanticLabelInfo(
+                        id=class_detail.id,
+                        label=class_detail.name,
+                        color=mesh_map_pb2.Color(
+                            red=red,
+                            green=green,
+                            blue=blue,
+                        ),
+                    )
+                if len(semantic_label_map) > 0:
+                    ontology_name = ontology_name_map.get(annotation_identifier, "")
+                    path = self._get_storage_path(
+                        scene_name=pipeline_item.scene_name,
+                        frame_id=pipeline_item.frame_id,
+                        stream_name=ontology_name,
+                        sensor_name=None,
+                        file_ending="pb.json",
+                        create_folders=True,
+                        data_type=options_pb2.DataType.eSemanticLabelMap,
+                        ontology_name=ontology_name,
+                    )
+                    write_message(
+                        obj=mesh_map_pb2.SemanticLabelMap(
+                            semantic_label_map=semantic_label_map,
+                        ),
+                        path=path,
+                    )
 
     def _sensor_to_proto(self, sensor_frame: SensorFrame, sensor_name_wo_agent_id: str) -> sensor_le_pb2.SensorConfigLE:
         transform = sensor_frame.sensor_to_ego
@@ -690,6 +722,45 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
             )
 
     @staticmethod
+    def _get_ontology_name_map(class_maps: Dict[AnnotationIdentifier, ClassMap]) -> Dict[AnnotationIdentifier, str]:
+        # Group class_maps by class_names, to write one ontology data stream for the entire group
+        rev_class_maps = {}
+        for identifier, class_map in class_maps.items():
+            class_names_and_ids = [f"{c.name + str(c.id)}" for c in class_map.class_details]
+            rev_class_maps.setdefault(frozenset(class_names_and_ids), set()).add(identifier)
+        class_map_groups = [values for key, values in rev_class_maps.items() if len(values) > 1]
+        class_map_groups.sort(key=len, reverse=True)
+
+        ontology_name_map = {}
+        for i, class_map_group in enumerate(class_map_groups):
+            if i == 0:
+                # We assign default name to the largest class map group.
+                ontology_name = _DEFAULT_ONTOLOGY_NAME
+            else:
+                # Check if group is keypoint ontology
+                is_key_point_ontology = False
+                for identifier in class_map_group:
+                    if "instance_points" in identifier.name:
+                        is_key_point_ontology = True
+                        break
+                # be consistent with batch keypoint ontology naming
+                if is_key_point_ontology is True:
+                    ontology_name = _KEYPOINT_ONTOLOGY_NAME
+                else:
+                    ontology_name = f"{list(class_map_group)[0].name}_{_DEFAULT_ONTOLOGY_NAME}"
+                # Avoid duplicate ontology names
+                if ontology_name in ontology_name_map.values():
+                    ontology_name = f"{ontology_name}_{i:02d}"
+
+            for identifier in class_map_group:
+                ontology_name_map[identifier] = ontology_name
+
+        single_annotation_identifiers = [list(values)[0] for key, values in rev_class_maps.items() if len(values) == 1]
+        for annotation_identifier in single_annotation_identifiers:
+            ontology_name_map[annotation_identifier] = f"{annotation_identifier.name}_{_DEFAULT_ONTOLOGY_NAME}"
+        return ontology_name_map
+
+    @staticmethod
     def _np_to_vector3(vec: np.ndarray) -> geometry_pb2.Vector3:
         vec = vec.reshape(-1)
         return geometry_pb2.Vector3(
@@ -719,8 +790,6 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
             orientation=DataStreamEncodingFormat._convert_quaternion(trans.quaternion),
         )
 
-    #     )
-
     def save_scene(self, pipeline_item: Union[ScenePipelineItem, UnorderedScenePipelineItem], data: Any = None):
         aggregation_folder = self._get_aggregation_folder_path(
             scene_name=pipeline_item.scene_name, aggregation_folder_name="aggregate_bbox_3d"
@@ -737,3 +806,13 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
     @staticmethod
     def get_format() -> str:
         return "data-stream"
+
+
+@lru_cache(maxsize=1000)
+def get_type_file_ontology(folder: AnyPath) -> Optional[str]:
+    type_file = folder / ".type"
+    if not folder.is_dir() or not type_file.exists():
+        return None
+    with type_file.open("r") as fp:
+        data_type_record = json_format.Parse(text=fp.read(), message=data_pb2.DataTypeRecord())
+    return data_type_record.ontology

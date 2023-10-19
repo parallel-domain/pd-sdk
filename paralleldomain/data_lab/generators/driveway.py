@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Any
 import numpy as np
 import random
 import logging
@@ -6,7 +6,7 @@ import logging
 from pd.core import PdError
 
 from paralleldomain import data_lab
-from paralleldomain.data_lab.config.map import LaneSegment, Edge, RoadSegment
+from paralleldomain.data_lab.config.map import LaneSegment, RoadSegment
 from paralleldomain.data_lab.behaviors.vehicle import DrivewayCreepBehavior
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 
@@ -59,9 +59,11 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
             else self._get_default_vehicle_data()
         )
 
+        super().__init__()
+
     # This method takes a list of vehicle names are queries the Data Lab asset database to get information about the
     # physical properties of these vehicles
-    def _get_vehicle_data_from_names(self, vehicle_list: List[str]) -> Dict[str, Union[str, float]]:
+    def _get_vehicle_data_from_names(self, vehicle_list: List[str]) -> List[dict[str, Any]]:
         # Select all the rows of the ObjAssets table in the asset database with a name that matches the list of
         # vehicle names we have provided.  From the OBjAssets table, we extract the name of the asset and its length
         vehicle_info = ObjAssets.select(ObjAssets.name, ObjAssets.length).where(ObjAssets.name.in_(vehicle_list))
@@ -91,7 +93,7 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
     # This method is used to query the asset database for information about the physical properties of vehicle.
     # This method is used when a list of vehicles to spawn is not used.  Instead, this method will query properties
     # of all vehicles available in the database
-    def _get_default_vehicle_data(self) -> Dict[str, Union[str, float]]:
+    def _get_default_vehicle_data(self) -> List[dict[str, Any]]:
         # If no vehicles are specified, we will use all vehicles in these categories
         selected_vehicle_types = ["COMPACT", "FULLSIZE", "MIDSIZE", "SUV"]
 
@@ -143,7 +145,7 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
             rs.lane_segments[0] for rs in potential_driveway_road_segments if rs.type is RoadSegment.RoadType.DRIVEWAY
         ]
 
-        # Store both the actual lane segment and the reference line of that lane segement for driveway lane segments
+        # Store both the actual lane segment and the reference line of that lane segment for driveway lane segments
         # we found above
         driveway_lane_information = [
             (
@@ -153,7 +155,7 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
             for ls_id in driveway_lane_segment_ids
         ]
 
-        # We retain driveway lane segements only if they are longer that the specified minimum driveway length
+        # We retain driveway lane segments only if they are longer that the specified minimum driveway length
         driveway_lane_segments = [
             dl[0]
             for dl in driveway_lane_information

@@ -15,14 +15,12 @@ from pd.state import CameraSensor, Pose6D
 from pyquaternion import Quaternion
 
 from paralleldomain.decoding.common import DecoderSettings
-from paralleldomain.decoding.data_stream import INSTANCE_POINT_COLOR_MAP
-from paralleldomain.decoding.data_stream.common import TYPE_TO_FILE_FORMAT
+from paralleldomain.decoding.data_stream.common import TYPE_TO_FILE_FORMAT, decode_class_map
 from paralleldomain.decoding.data_stream.data_accessor import DataStreamDataAccessor
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder, SensorFrameDecoder, T
 from paralleldomain.model.annotation import (
     Albedo2D,
     AnnotationIdentifier,
-    AnnotationTypes,
     BackwardOpticalFlow,
     BoundingBox2D,
     BoundingBox3D,
@@ -39,7 +37,7 @@ from paralleldomain.model.annotation import (
     SemanticSegmentation2D,
     SurfaceNormals2D,
 )
-from paralleldomain.model.class_mapping import ClassDetail, ClassMap
+from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.sensor import CameraModel, SensorDataCopyTypes, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -73,22 +71,15 @@ class DataStreamSensorFrameDecoder(SensorFrameDecoder[datetime]):
         self._data_accessor = data_accessor
 
     def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
-        label_data = self._data_accessor.get_ontology_data(frame_id=self.frame_id)
-        ontology = label_data.data_as_semantic_label_map
-        semantic_label_map = ontology.semantic_label_map
-        pd_class_details = []
-        for semantic_id in semantic_label_map:
-            c = semantic_label_map[semantic_id]
-            class_detail = ClassDetail(
-                name=c.label,
-                id=int(c.id),
-                meta=dict(supercategory="", color={"r": c.color.red, "g": c.color.green, "b": c.color.blue}),
+        available_annotation_identifiers = self.get_available_annotation_identifiers()
+        class_maps = {}
+        for annotation_identifier in available_annotation_identifiers:
+            ontology_data = self._data_accessor.get_ontology_data(
+                frame_id=self.frame_id, annotation_identifier=annotation_identifier
             )
-            pd_class_details.append(class_detail)
-
-        class_maps = {
-            identifier: ClassMap(classes=pd_class_details) for identifier in self.get_available_annotation_identifiers()
-        }
+            if ontology_data is not None:
+                class_map = decode_class_map(ontology_data=ontology_data)
+                class_maps[annotation_identifier] = class_map
         return class_maps
 
     def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:

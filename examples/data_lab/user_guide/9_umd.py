@@ -1,9 +1,3 @@
-from pd.data_lab.context import load_map
-
-from paralleldomain.data_lab.config.map import MapQuery, LaneSegment, RoadSegment, Area
-from paralleldomain.utilities.transformation import Transformation
-
-
 import logging
 import random
 from typing import Tuple
@@ -11,16 +5,16 @@ from typing import Tuple
 from pd.data_lab import ScenarioCreator, ScenarioSource
 from pd.data_lab.config.distribution import EnumDistribution
 from pd.data_lab.config.location import Location
+from pd.data_lab.context import load_map
 from pd.data_lab.scenario import Lighting
 
 import paralleldomain.data_lab as data_lab
+from paralleldomain.data_lab.config.map import Area, LaneSegment, MapQuery, RoadSegment
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
-from paralleldomain.data_lab.generators.position_request import (
-    LaneSpawnPolicy,
-    PositionRequest,
-)
+from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.utilities.logging import setup_loggers
+from paralleldomain.utilities.transformation import Transformation
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
 logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
@@ -174,7 +168,7 @@ class UMDLookupExample(ScenarioCreator):
     def get_location(
         self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
     ) -> Tuple[Location, Lighting]:
-        return data_lab.Location(name="SF_6thAndMission_medium"), "LS_sky_noon_mostlyCloudy_1205_HDS001"
+        return data_lab.Location(name="SF_6thAndMission_medium"), "day_partlyCloudy_03"
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@ from paralleldomain.data_lab import (
 )
 from paralleldomain.data_lab.config.map import LaneSegment, RoadSegment, Side
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
-from paralleldomain.utilities.geometry import random_point_within_2d_polygon
 from paralleldomain.utilities.transformation import Transformation
 
 
@@ -289,6 +288,7 @@ class TrafficSignPoleBehavior(CustomSimulationAgentBehavior):
             min_distance_between_signs=self._min_distance_between_signs,
             single_frame_mode=self._single_frame_mode,
             max_retries=self._max_retries,
+            orient_signs_facing_travel_direction=self._orient_signs_facing_travel_direction,
         )
 
 
