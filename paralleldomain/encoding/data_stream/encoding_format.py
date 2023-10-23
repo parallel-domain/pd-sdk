@@ -174,6 +174,8 @@ class DataStreamEncodingFormat(EncodingFormat[Union[ScenePipelineItem, Unordered
             "instance_point_name",
             "distance_from_ego",
             "visibility",
+            "instance_id",
+            "semantic_id",
         ]
 
         attr = deepcopy(point.attributes)

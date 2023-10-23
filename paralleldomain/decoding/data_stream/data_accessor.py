@@ -1,7 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Any, DefaultDict, Dict, List, Optional, Set
 
@@ -367,10 +367,13 @@ class StoredDataStreamDataAccessor(DataStreamDataAccessor):
 
     def get_frame_id_to_date_time_map(self) -> Dict[str, datetime]:
         try:
-            return {fid: datetime.fromtimestamp(int(fid) / FRAME_IDS_PER_SECOND) for fid in self.get_frame_ids()}
+            return {
+                fid: datetime.fromtimestamp(int(fid) / FRAME_IDS_PER_SECOND, tz=timezone.utc)
+                for fid in self.get_frame_ids()
+            }
         except ValueError:
             # assume nano seconds
-            return {fid: datetime.fromtimestamp(int(fid) / 1000000) for fid in self.get_frame_ids()}
+            return {fid: datetime.fromtimestamp(int(fid) / 1_000_000, tz=timezone.utc) for fid in self.get_frame_ids()}
 
 
 class StoredBatchDataStreamDataAccessor(StoredDataStreamDataAccessor):

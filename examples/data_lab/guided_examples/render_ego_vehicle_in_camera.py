@@ -7,7 +7,7 @@ from pd.data_lab.config.location import Location
 from pd.data_lab.scenario import Lighting
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters, RenderEgoGenerator
+from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.position_request import LaneSpawnPolicy, PositionRequest
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
@@ -21,11 +21,11 @@ vehicle will be rendered in this scenario.
 
 This script highlights the use of Pre-Built Generators, Custom Behaviors and Custom Agents.
 
-Last revised: 29/Sept/2023
+Last revised: 19/Oct/2023
 """
 
 
-# We create a custom class that inherits from the ScenarioCreator class.  This is where we will provide our scenario
+# We create a custom class that inherits from the ScenarioCreator class. This is where we will provide our scenario
 # generation instructions that will instruct our Data Lab instance
 class EgoVehicleInCamera(ScenarioCreator):
     # The create_scenario method is where we provide our Data Lab Instance with the scenario generation instructions it
@@ -35,7 +35,11 @@ class EgoVehicleInCamera(ScenarioCreator):
     ) -> ScenarioSource:
         # Create a simple 1920x1080 pinhole camera. In order to demonstrate the rendering of the ego vehicle, we offset
         # the sensor to the left by 4.0 meters and locate it 0.5 meters above the round.  We also rotate it leftwards
-        # (about the z axis) by 70 degrees
+        # (about the z axis) by 70 degrees.
+        # We also set `render_ego` to True, which will render the ego vehicle in the camera image. Once any of the
+        # sensors in the sensor rig has `render_ego` set to True, the ego vehicle will be rendered in all sensors in
+        # the sensor rig.
+
         sensor_rig = data_lab.SensorRig(
             sensor_configs=[
                 data_lab.SensorConfig.create_camera_sensor(
@@ -46,6 +50,7 @@ class EgoVehicleInCamera(ScenarioCreator):
                     pose=Transformation.from_euler_angles(
                         angles=[0.0, 0.0, 70.0], order="xyz", degrees=True, translation=[4.0, 0.0, 0.5]
                     ),
+                    render_ego=True,
                 )
             ],
         )
@@ -69,14 +74,6 @@ class EgoVehicleInCamera(ScenarioCreator):
                         )
                     )
                 ),
-            ),
-        )
-
-        # Use a Custom Generator to render the ego vehicle. Full details on the Custom Generator can be found in the
-        # source file.
-        scenario.add_agents(
-            generator=RenderEgoGenerator(
-                ego_asset_name="suv_medium_02",
             ),
         )
 

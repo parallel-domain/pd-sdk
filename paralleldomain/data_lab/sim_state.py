@@ -6,12 +6,12 @@ import pd.state
 from pd.data_lab.sim_state import SimState
 from pd.state.state import PosedAgent
 
+from paralleldomain.data_lab import CustomSimulationAgent
 from paralleldomain.data_lab.config.map import MapQuery
 from paralleldomain.model.geometry.bounding_box_3d import BoundingBox3DGeometry
 from paralleldomain.model.occupancy import OccupancyGrid
 from paralleldomain.utilities.coordinate_system import SIM_TO_INTERNAL, CoordinateSystem
 from paralleldomain.utilities.transformation import Transformation
-from paralleldomain.data_lab import CustomSimulationAgent
 
 
 class ExtendedSimState(SimState):
@@ -30,6 +30,7 @@ class ExtendedSimState(SimState):
     """
 
     @property
+    @lru_cache(maxsize=1)
     def map_query(self) -> MapQuery:
         """Returns MapQuery object of the current simulation state"""
         return MapQuery(map=self.map)

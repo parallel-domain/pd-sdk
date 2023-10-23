@@ -250,9 +250,6 @@ def show_frame(
         timeless=False,
     )
 
-    # if frame.date_time is not None:
-    #     rr.set_time_seconds(timeline="seconds", seconds=frame.date_time.timestamp())
-
     if frame.date_time is None:
         rr.log(entity_root, rr.Clear(recursive=True))
         try:
@@ -261,13 +258,7 @@ def show_frame(
             frame_int_id = frame_index
         rr.set_time_sequence(timeline="frame_idx", sequence=frame_int_id)
     else:
-        try:
-            reference_datetime = frame.scene.frames[0].date_time
-        except AttributeError:
-            # in memory frame decoders don't support scene access from frame
-            reference_datetime = datetime.datetime(year=1970, month=1, day=1, tzinfo=frame.date_time.tzinfo)
-        seconds = (frame.date_time - reference_datetime).total_seconds()
-        rr.set_time_seconds(timeline="seconds", seconds=seconds)
+        rr.set_time_seconds(timeline="seconds", seconds=frame.date_time.timestamp())
 
     for sensor_frame in frame.camera_frames:
         show_sensor_frame(sensor_frame=sensor_frame, annotations_to_show=annotations_to_show, entity_root=entity_root)

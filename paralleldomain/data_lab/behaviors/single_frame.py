@@ -38,14 +38,16 @@ class SingleFrameVehicleBehavior(CustomSimulationAgentBehavior):
 
     # The method finds a valid pose that the Custom Agent to which this behavior is assigned can be placed
     def _find_new_pose(self, sim_state: ExtendedSimState) -> Transformation:
+        map_query = sim_state.map_query
+
         # Use the MapQuery object to find a random LaneSegment that corresponds to the LaneType specified
-        lane_object = sim_state.map_query.get_random_lane_type_object(
+        lane_object = map_query.get_random_lane_type_object(
             lane_type=self._lane_type,
             random_seed=self._random_seed,
         )
 
         # Retrieve the reference line of the found LaneSegment as a numpy array
-        reference_line = sim_state.map.edges[lane_object.reference_line].as_polyline().to_numpy()
+        reference_line = map_query.get_edge(edge_id=lane_object.reference_line).as_polyline().to_numpy()
 
         # If the lane segment is defined in the backwards direction, flip it
         if lane_object.direction == LaneSegment.Direction.BACKWARD:
@@ -174,12 +176,14 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
     def _find_new_pose(
         self, sim_state: ExtendedSimState, agent: CustomSimulationAgent, raycast: Callable
     ) -> Transformation:
+        map_query = sim_state.map_query
+
         # Use the MapQuery object to search for all lane segments near the ego pose.  This is done by extracting the
         # ego_pose from the sim_state. A list comprehension is then used to keep only the LaneSegments that correspond
         # to the LaneType specified
         lane_objects = [
             lane
-            for lane in sim_state.map_query.get_lane_segments_near(pose=sim_state.ego_pose, radius=self._spawn_radius)
+            for lane in map_query.get_lane_segments_near(pose=sim_state.ego_pose, radius=self._spawn_radius)
             if lane.type == self._lane_type
         ]
 
@@ -202,7 +206,7 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
         lane_id_lane_object_map = dict()
 
         for lane in lane_objects:
-            reference_line = sim_state.map.edges[lane.reference_line].as_polyline().to_numpy()
+            reference_line = map_query.get_edge(lane.reference_line).as_polyline().to_numpy()
             reference_line_candidate_points = reference_line[
                 np.linalg.norm(reference_line - sim_state.ego_pose.translation, axis=1) < self._spawn_radius
             ]
@@ -363,14 +367,14 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
                 vehicle_boxes = [
                     BoundingBox3DGeometry(
                         # Apply @ SIM_TO_INTERNAL.inverse to bring pose rotation from RFU to FLU
-                        pose=Transformation.from_transformation_matrix(agent.pose, approximate_orthogonal=True)
+                        pose=Transformation.from_transformation_matrix(a.pose, approximate_orthogonal=True)
                         @ SIM_TO_INTERNAL.inverse,
-                        width=agent.width,
-                        height=agent.height,
-                        length=agent.length,
+                        width=a.width,
+                        height=a.height,
+                        length=a.length,
                     )
-                    for agent in sim_state.current_agents
-                    if isinstance(agent.step_agent, tuple(self._occupancy_check_agent_types))
+                    for a in sim_state.current_agents
+                    if isinstance(a.step_agent, tuple(self._occupancy_check_agent_types))
                 ]
                 occupancy_grid = OccupancyGrid.from_bounding_boxes_3d(boxes=vehicle_boxes)
 
@@ -393,9 +397,7 @@ class SingleFramePlaceNearEgoBehavior(CustomSimulationAgentBehavior):
             else:  # If valid spawn not found, do the loop again
                 attempts += 1
 
-        spawn_pose = self._orient_to_ground(raycast=raycast, current_pose=spawn_pose)
-
-        return spawn_pose
+        return self._orient_to_ground(raycast=raycast, current_pose=spawn_pose)
 
     def _orient_to_ground(self, raycast: Callable, current_pose: Transformation):
         current_xyz = current_pose.translation

@@ -269,7 +269,7 @@ if __name__ == "__main__":
     # scenario generated is different.  We also request 30 rendered frames at a frame rate of 10 Hz.
     preview_scenario(
         scenario_creator=BackyardDrone(),
-        random_seed=random.randint(0, 100000),
+        random_seed=2023,
         frames_per_scene=30,
         sim_capture_rate=10,
         instance_name="<instance name>",

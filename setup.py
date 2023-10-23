@@ -35,6 +35,7 @@ setup(
         "more-itertools>=8.11.0,<9.0.0",
         "numpy>=1.19,<2.0",
         "opencv-python-headless>=4.5.3.56,<5.0.0.0",
+        "opensimplex>=0.4.4,<1.0.0",
         "protobuf>=3.20.1,<4.0.0",
         "pypeln>=0.4.9,<1.0.0",
         "pyquaternion>=0.9.9,<1.0.0",
@@ -42,7 +43,6 @@ setup(
         "tqdm>=4.55.3,<5.0.0",
         "transforms3d>=0.3.1,<1.0.0",
         "ujson>=5.1.0,<6.0.0",
-        "opensimplex>=0.4.4,<1.0.0",
     ],
     include_package_data=True,
     package_dir={

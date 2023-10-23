@@ -523,7 +523,7 @@ class TestScenario:
             def get_location(
                 self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
             ) -> Tuple[Location, Lighting]:
-                return scenario.location, "LS_sky_noon_mostlyCloudy_1205_HDS001"
+                return scenario.location, "day_partlyCloudy_03"
 
         async def do_nothing(**kwargs):
             pass
@@ -666,7 +666,7 @@ class TestScenario:
             def get_location(
                 self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
             ) -> Tuple[Location, Lighting]:
-                return atomic_only_scenario.location, "LS_sky_noon_mostlyCloudy_1205_HDS001"
+                return atomic_only_scenario.location, "day_partlyCloudy_03"
 
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = AnyPath(tmp_dir)
@@ -721,7 +721,7 @@ class TestScenario:
             def get_location(
                 self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
             ) -> Tuple[Location, Lighting]:
-                return Location("TestLocation"), "LS_sky_afternoon_clear_1709_HDS002"
+                return Location("TestLocation"), "day_clear_03"
 
         state_stream_1 = create_sensor_sim_stream(
             scenario_creator=_Provider(),
@@ -738,7 +738,7 @@ class TestScenario:
         )
         states_1 = [state_reference.state for state_reference in state_stream_1]
         assert all(s.world_info.location == "TestLocation" for s in states_1)
-        assert all(s.world_info.time_of_day == "LS_sky_afternoon_clear_1709_HDS002" for s in states_1)
+        assert all(s.world_info.time_of_day == "day_clear_03" for s in states_1)
 
     def test_sim_stream_from_scenario_yields_same_states(self, mixed_scenario: Scenario):
         class StreetCreepBehavior(CustomSimulationAgentBehavior):
@@ -791,7 +791,7 @@ class TestScenario:
             def get_location(
                 self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
             ) -> Tuple[Location, Lighting]:
-                return mixed_scenario.location, "LS_sky_noon_mostlyCloudy_1205_HDS001"
+                return mixed_scenario.location, "day_partlyCloudy_03"
 
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = AnyPath(tmp_dir)
@@ -824,7 +824,7 @@ class TestScenario:
                 def get_location(
                     self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
                 ) -> Tuple[Location, Lighting]:
-                    return mixed_scenario.location, "LS_sky_noon_mostlyCloudy_1205_HDS001"
+                    return mixed_scenario.location, "day_partlyCloudy_03"
 
             state_stream_1 = create_sensor_sim_stream(
                 scenario_creator=_Provider(),
@@ -849,7 +849,7 @@ class TestScenario:
                 def get_location(
                     self, random_seed: int, scene_index: int, number_of_scenes: int, **kwargs
                 ) -> Tuple[Location, Lighting]:
-                    return mixed_scenario.location, "LS_sky_noon_mostlyCloudy_1205_HDS001"
+                    return mixed_scenario.location, "day_partlyCloudy_03"
 
             state_stream_2 = create_sensor_sim_stream(
                 scenario_creator=_Provider(),

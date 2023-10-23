@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # and the wireframe representation of the state.
     data_lab.preview_scenario(
         scenario_creator=OutputAndAnnotationsExample(),
-        random_seed=random.randint(0, 100000),
+        random_seed=2023,
         frames_per_scene=100,
         sim_capture_rate=10,
         instance_name="<instance name>",
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # visualizing them. The function has been defined at the top of this file.
     # images_to_disk(
     #     scenario_creator=OutputAndAnnotationsExample(),
-    #     random_seed=random.randint(0, 100000),
+    #     random_seed=2023,
     #     frames_per_scene=100,
     #     sim_capture_rate=10,
     #     storage_path=AnyPath("output"),

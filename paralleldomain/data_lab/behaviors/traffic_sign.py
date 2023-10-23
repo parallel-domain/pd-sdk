@@ -61,9 +61,10 @@ class TrafficSignPoleBehavior(CustomSimulationAgentBehavior):
 
     # The internal function is used to find a valid place to spawn a traffic pole
     def _find_spawn_point(self, sim_state: ExtendedSimState, agent: CustomSimulationAgent) -> Transformation:
+        map_query = sim_state.map_query
+
         # The first thing we must do is define a valid search region centered the specified distance ahead of the ego
         # vehicle
-
         # Define a vector which denotes how far in front of the ego the center of the valid spawn region should be. To
         # do this, we use the ego_pose in the sim_state
         ego_forward_direction = (
@@ -96,7 +97,7 @@ class TrafficSignPoleBehavior(CustomSimulationAgentBehavior):
 
         roads_near = [
             road
-            for road in sim_state.map_query.get_road_segments_within_bounds(bounds=bounds, method="overlap")
+            for road in map_query.get_road_segments_within_bounds(bounds=bounds, method="overlap")
             if road.type not in invalid_road_types
         ]
 
@@ -108,8 +109,8 @@ class TrafficSignPoleBehavior(CustomSimulationAgentBehavior):
         road_valid_spawn_point_map = defaultdict(dict)
         road_id_weight_map = dict()
         for road in roads_near:
-            right_edge = sim_state.map_query.get_edge_of_road_from_lane(road.lane_segments[0], side=Side.RIGHT)
-            left_edge = sim_state.map_query.get_edge_of_road_from_lane(road.lane_segments[0], side=Side.LEFT)
+            right_edge = map_query.get_edge_of_road_from_lane(road.lane_segments[0], side=Side.RIGHT)
+            left_edge = map_query.get_edge_of_road_from_lane(road.lane_segments[0], side=Side.LEFT)
             right_edge_ref_line = right_edge.as_polyline().to_numpy()
             left_edge_ref_line = left_edge.as_polyline().to_numpy()
 
@@ -189,10 +190,8 @@ class TrafficSignPoleBehavior(CustomSimulationAgentBehavior):
                 # Now ensure that the pole (and by extension the signs) are always facing the right direction
 
                 if self._orient_signs_facing_travel_direction:
-                    spawn_road_object = sim_state.map_query.get_road_segment(road_to_spawn_on)
-                    lane_segments = [
-                        sim_state.map_query.get_lane_segment(lane_id) for lane_id in spawn_road_object.lane_segments
-                    ]
+                    spawn_road_object = map_query.get_road_segment(road_to_spawn_on)
+                    lane_segments = [map_query.get_lane_segment(lane_id) for lane_id in spawn_road_object.lane_segments]
                     drivable_lane_segments = [
                         lane_seg for lane_seg in lane_segments if lane_seg.type == LaneSegment.LaneType.DRIVABLE
                     ]

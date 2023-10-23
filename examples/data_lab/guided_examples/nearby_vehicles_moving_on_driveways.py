@@ -70,9 +70,11 @@ def get_valid_spawn_point(
     retries = 0  # Count the number of attempts at finding a spawn location
 
     while retries <= 1000:
+        retries += 1
+
         # Use the MapQuery object to find a random Driveway road, based on the random seed of the scenario
         driveway_point = map_query.get_random_road_type_object(
-            road_type=RoadSegment.RoadType.DRIVEWAY, random_seed=scenario.random_seed
+            road_type=RoadSegment.RoadType.DRIVEWAY, random_seed=scenario.random_seed + retries
         )
 
         # If we can't find any driveways on the map, it is likely that the selection Location has no driveways
@@ -112,14 +114,13 @@ def get_valid_spawn_point(
         # Keep only the LaneSegments which are drivable, as these are the only ones which we want to spawn our
         # ego vehicle on
         spawn_point_segment = next(
-            (ls for ls in lanes_near_spawn_point if ls.type is LaneSegment.LaneType.DRIVABLE), None
+            (ls for ls in lanes_near_spawn_point if ls.type == LaneSegment.LaneType.DRIVABLE), None
         )
 
         # If there are no valid LaneSegments, then there is no where we can spawn the ego vehicle. We increment the
         # seed and begin the search loop again.
         if spawn_point_segment is None:
             logger.info(f"Failed to find valid spawn point at seed {scenario.random_seed} - incrementing and retrying")
-            scenario.random_seed += 1
         else:  # If there is a valid LaneSegment which we can spawn the ego vehicle on
             # We find the reference line of the identified LaneSegment
             spawn_point_line = map_query.edges[int(spawn_point_segment.reference_line)].as_polyline().to_numpy()

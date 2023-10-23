@@ -87,6 +87,7 @@ class SceneDGPV1Mixin(CommonDGPV1FormatMixin, DataAggregationMixin):
 
         available_annotation_types = [int(k) for k in ontologies.keys()]
         for frame_id, date_time in list(sorted(frame_map.items(), key=lambda item: item[1])):
+            frame_id = str(int(frame_id))  # remove leading zeros since sensor data contains str(int) frame id
             frame_data = [
                 scene_sensor_data[sn][frame_id]
                 for sn in sorted(scene_sensor_data.keys())

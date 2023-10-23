@@ -66,7 +66,13 @@ class ReactorObject:
                     f"Use one of the following assets {supported_assets} instead."
                 )
         elif class_map is not None and self.registry_class_name is not None:
-            self.registry_class_id = class_map.get_class_detail_from_name(class_name=self.registry_class_name).id
+            class_detail = class_map.get_class_detail_from_name(class_name=self.registry_class_name)
+            if class_detail is not None:
+                self.registry_class_id = class_detail.id
+            else:
+                raise ValueError(
+                    f"Did not find class name {self.registry_class_name} in ontology {class_map.class_names}."
+                )
         else:
             raise ValueError(
                 "Need to provide either asset name or class_map and registry_class_name to set registry_class_id."

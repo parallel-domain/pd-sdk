@@ -139,7 +139,7 @@ if __name__ == "__main__":
     # Preview the scenario
     data_lab.preview_scenario(
         scenario_creator=EnvironmentConfigExample(),
-        random_seed=random.randint(0, 100000),
+        random_seed=2023,
         frames_per_scene=100,
         sim_capture_rate=10,
         instance_name="<instance name>",

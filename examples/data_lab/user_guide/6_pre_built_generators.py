@@ -119,7 +119,7 @@ class PreBuiltGeneratorExample(ScenarioCreator):
 if __name__ == "__main__":
     data_lab.preview_scenario(
         scenario_creator=PreBuiltGeneratorExample(),
-        random_seed=random.randint(0, 100000),
+        random_seed=2023,
         frames_per_scene=100,
         sim_capture_rate=10,
         instance_name="<instance name>",

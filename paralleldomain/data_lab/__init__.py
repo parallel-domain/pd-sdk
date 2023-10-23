@@ -75,7 +75,7 @@ _ = Scenario
 # Maintained for backwards compatibility
 CustomSimulationAgentBehaviour = CustomSimulationAgentBehavior
 
-DEFAULT_DATA_LAB_VERSION = "v2.7.0+20231018CL65575"
+DEFAULT_DATA_LAB_VERSION = "v2.7.0"
 """Default Data Lab version to use across examples"""
 
 coordinate_system = CoordinateSystem("RFU")
@@ -129,6 +129,7 @@ def _create_decoded_stream_from_scenario(
         List[AnnotationIdentifier]
     ] = None,  # required if label_engine_instance in kwargs
     auto_start_instance: bool = False,
+    data_lab_version: str = DEFAULT_DATA_LAB_VERSION,
     dataset_name: str = "Default Dataset Name",
     end_skip_frames: Optional[int] = None,
     frames_per_scene: Optional[int] = None,
@@ -139,9 +140,11 @@ def _create_decoded_stream_from_scenario(
     settings: Optional[DecoderSettings] = None,
     **kwargs,
 ) -> Generator[Tuple[Frame[datetime], Scene], None, None]:
-    if (renderer is None and instance_name is None and auto_start_instance is False) or renderer is False:
+    if (
+        data_lab_version != "local" and renderer is None and instance_name is None and auto_start_instance is False
+    ) or renderer is False:
         raise ValueError(
-            "Either a renderer or an instance name has to be passed in order to create frames with sensor data!"
+            "Either an instance name or a renderer object has to be passed in order to create frames with sensor data"
         )
 
     gen = create_sensor_sim_stream(
@@ -160,6 +163,7 @@ def _create_decoded_stream_from_scenario(
         simulator=simulator,
         renderer=renderer,
         label_engine=label_engine,
+        data_lab_version=data_lab_version,
         **kwargs,
     )
     scene_name = scene_index_to_name(scene_index=scene_index)
@@ -232,7 +236,7 @@ def create_frame_stream(
     if "number_of_scenes" in kwargs and scene_indices is None:
         number_of_scenes = kwargs.get("number_of_scenes")
         if number_of_scenes < 1:
-            raise ValueError("A number of scenes > 0 has to be passed!")
+            raise ValueError("A number of scenes > 0 has to be passed")
         scene_indices = list(range(number_of_scenes))
 
     for scene_index in scene_indices:
@@ -426,7 +430,7 @@ def _get_local_encoder(
     pipeline_kwargs = pipeline_kwargs if pipeline_kwargs is not None else dict()
 
     if frames_per_scene < 1:
-        raise ValueError("A number of frames per scene > 0 has to be passed!")
+        raise ValueError("A number of frames per scene > 0 has to be passed")
 
     if isinstance(format, str):
         encoding_format = get_encoding_format(format_name=format, output_path=output_path)
@@ -622,7 +626,7 @@ def _get_instance_wise_kwargs(
             if not len(set(instance_names)) == 1:
                 raise ValueError(
                     "If no data_lab_instances names are passed and you want to encode remotely, "
-                    "you cant use local instances!"
+                    "you cant use local instances"
                 )
             else:
                 data_lab_instances = [instance_names[0]]
@@ -795,11 +799,11 @@ def create_mini_batch(
     if (data_lab_instances is None or len(data_lab_instances) == 0) and renderer is None and simulator is None:
         raise ValueError(
             "You need to either pass a list of instance names via data_lab_instances or a"
-            "renderer and simulator. In order to encode a dataset!"
+            "renderer and simulator. In order to encode a dataset"
         )
 
     if number_of_scenes < 1:
-        raise ValueError("A number of scenes > 0 has to be passed!")
+        raise ValueError("A number of scenes > 0 has to be passed")
     scene_indices = list(range(number_of_scenes))
 
     if scene_index_offset is not None:
@@ -875,7 +879,13 @@ def preview_scenario(
         statistic = resolve_statistics(statistics=statistic)
         _ = StatisticViewer.resolve_default_viewers(statistic=statistic, backend=BACKEND.RERUN)
 
-    if renderer is None and instance_name is None and auto_start_instance is False:
+    if (
+        data_lab_version != "local"
+        and renderer is None
+        and simulator is not None
+        and instance_name is None
+        and auto_start_instance is False
+    ) or (data_lab_version == "local" and renderer is None and simulator is not None):
         for scene_index in range(number_of_scenes):
             set_active_recording_and_application_ids(
                 recording_id=f"{dataset_name}-{scene_index_to_name(scene_index=scene_index)}",
@@ -960,33 +970,32 @@ def save_sim_state_archive(
         **kwargs,
     )
 
-    archive_dir = AnyPath("state")
-    scenario_file_path = AnyPath(f"scenario_{(scenario_index_offset + scene_index):09}.7z")
+    with TemporaryDirectory() as temp_dir:
+        archive_dir = AnyPath(temp_dir) / "state"
+        os.makedirs(str(archive_dir))
 
-    if not output_path.is_cloud_path:
-        output_path.mkdir(exist_ok=True)
-    archive_dir.mkdir(exist_ok=True)
+        scenario_file_name = f"scenario_{(scenario_index_offset + scene_index):09}.7z"
+        scenario_file_path = AnyPath(temp_dir) / scenario_file_name
 
-    for temporal_sensor_session_reference in gen:
-        # serialize out our sim state
-        state_bytes = state_to_bytes(state=temporal_sensor_session_reference.state)
+        if not output_path.is_cloud_path:
+            output_path.mkdir(exist_ok=True)
+        archive_dir.mkdir(exist_ok=True)
 
-        frame_id = temporal_sensor_session_reference.frame_id
+        for temporal_sensor_session_reference in gen:
+            # serialize out our sim state
+            state_bytes = state_to_bytes(state=temporal_sensor_session_reference.state)
 
-        state_filepath = archive_dir / f"{frame_id}.pd"
-        with state_filepath.open("wb") as f:
-            f.write(state_bytes)
+            frame_id = int(temporal_sensor_session_reference.frame_id)
 
-    with py7zr.SevenZipFile(str(scenario_file_path), "w") as zip_file:
-        zip_file.writeall(path=str(archive_dir))
+            state_filepath = archive_dir / f"{frame_id:09}.pd"
+            with state_filepath.open("wb") as f:
+                f.write(state_bytes)
 
-    for file in archive_dir.iterdir():
-        file.rm(missing_ok=False)
-    archive_dir.rmdir()
+        with py7zr.SevenZipFile(str(scenario_file_path), "w") as zip_file:
+            zip_file.writeall(path=str(archive_dir), arcname="state")
 
-    scenario_file_path.copy(target=output_path / scenario_file_path)
-    scenario_file_path.rm(missing_ok=False)
+        scenario_file_path.copy(target=output_path / scenario_file_name)
 
-    logger.info(f"State file outputted to: {str(output_path / scenario_file_path)}")
+    logger.info(f"State file outputted to: {str(output_path / scenario_file_name)}")
 
-    return output_path / scenario_file_path
+    return output_path / scenario_file_name

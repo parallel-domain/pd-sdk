@@ -125,6 +125,8 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
     # This private method is used to find driveways near the ego's position (remember the ego has already been placed
     # by the time this generator is invoked) that are suitable for spawning vehicles on
     def _find_valid_driveways(self, state: data_lab.ExtendedSimState, radius: float = 15.0) -> [LaneSegment]:
+        map_query = state.map_query
+
         # We create a search perimeter around the ego vehicle by accessing the sim state's ego pose.  This bounds object
         # defines the perimeter of the area we will look for driveways within
         bounds = BoundingBox2DBaseGeometry(
@@ -136,21 +138,21 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
 
         # We use the MapQuery object which is contained in the state, to get all RoadSegments within the search
         # perimeter we defined above
-        potential_driveway_road_segments = state.map_query.get_road_segments_within_bounds(
-            bounds=bounds, method="overlap"
-        )
+        potential_driveway_road_segments = map_query.get_road_segments_within_bounds(bounds=bounds, method="overlap")
 
         # We keep only the road segments ids of RoadSegments that are driveways
         driveway_lane_segment_ids = [
-            rs.lane_segments[0] for rs in potential_driveway_road_segments if rs.type is RoadSegment.RoadType.DRIVEWAY
+            rs.lane_segments[0] for rs in potential_driveway_road_segments if rs.type == RoadSegment.RoadType.DRIVEWAY
         ]
 
         # Store both the actual lane segment and the reference line of that lane segment for driveway lane segments
         # we found above
         driveway_lane_information = [
             (
-                state.map.lane_segments[int(ls_id)],
-                state.map_query.edges[state.map.lane_segments[int(ls_id)].reference_line].as_polyline().to_numpy(),
+                map_query.get_lane_segment(int(ls_id)),
+                map_query.get_edge(edge_id=map_query.get_lane_segment(lane_segment_id=int(ls_id)).reference_line)
+                .as_polyline()
+                .to_numpy(),
             )
             for ls_id in driveway_lane_segment_ids
         ]
@@ -179,6 +181,8 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
     def create_agents_for_new_scene(
         self, state: data_lab.ExtendedSimState, random_seed: int
     ) -> List[data_lab.CustomSimulationAgent]:
+        map_query = state.map_query
+
         # Use the method implemented above to find driveways near the ego vehicle that are suitable for placing vehicles
         # on
         valid_driveways = self._find_valid_driveways(state=state, radius=self._radius)
@@ -189,7 +193,7 @@ class DrivewayCreepGenerator(data_lab.CustomAtomicGenerator):
         # Loop through all the valid driveways which we found above
         for driveway in valid_driveways:
             # Get the reference line of the driveway we are spawning vehicles on
-            reference_line = state.map.edges[driveway.reference_line].as_polyline().to_numpy()
+            reference_line = map_query.get_edge(driveway.reference_line).as_polyline().to_numpy()
 
             # Randomly choose a vehicle type to spawn from either the specified list of vehicles or the default list
             agent_to_spawn = random.choice(self._vehicle_data)

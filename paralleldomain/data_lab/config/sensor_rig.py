@@ -215,7 +215,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         sim_pose = self.get_sensor_to_ego(coordinate_system=SIM_COORDINATE_SYSTEM.axis_directions)
         sim_pose = pd.state.Pose6D.from_transformation_matrix(matrix=sim_pose.transformation_matrix)
         if self.is_camera:
-            return CameraSensor(
+            sensor = CameraSensor(
                 name=self.display_name,
                 pose=sim_pose,
                 width=self.camera_intrinsic.width,
@@ -250,8 +250,11 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
                 distortion_lookup_table=self.camera_intrinsic.distortion_lookup_table,
                 time_offset=self.camera_intrinsic.time_offset,
             )
+            sensor.render_ego = self.render_ego
+
+            return sensor
         elif self.is_lidar:
-            return LiDARSensor(
+            sensor = LiDARSensor(
                 name=self.display_name,
                 pose=sim_pose,
                 azimuth_max=self.lidar_intrinsic.azimuth_max,
@@ -281,6 +284,9 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
                 sample_rate=self.lidar_intrinsic.sample_rate,
                 time_offset_ms=self.lidar_intrinsic.time_offset,
             )
+            sensor.render_ego = self.render_ego
+
+            return sensor
         else:
             raise NotImplementedError()
 
@@ -315,6 +321,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         annotation_types = annotation_types if annotation_types is not None else []
         return SensorConfig(
             display_name=name,
+            render_ego=kwargs.pop("render_ego", False),
             sensor_extrinsic=extrinsic,
             camera_intrinsic=CameraIntrinsic(
                 width=width,
