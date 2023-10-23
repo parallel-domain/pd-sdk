@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>paralleldomain.model.geometry.bounding_box_3d &#8212; Parallel Domain SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=d70321b6" />
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="paralleldomain.model.geometry.point_2d" href="point_2d.html" />
+    <link rel="prev" title="paralleldomain.model.geometry.bounding_box_2d" href="bounding_box_2d.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#paralleldomain/api/model/geometry/bounding_box_3d" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../../index.html" title="Parallel Domain SDK  documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Parallel Domain SDK</span>
+          <span class="md-header-nav__topic"> paralleldomain.model.geometry.bounding_box_3d </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="../../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../../"versions.json"",
+        target_loc = "../../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../../index.html" class="md-tabs__link">Parallel Domain SDK  documentation</a></li>
+          <li class="md-tabs__item"><a href="../../../__index.html" class="md-tabs__link">paralleldomain</a></li>
+          <li class="md-tabs__item"><a href="../../../model.html" class="md-tabs__link">paralleldomain.model</a></li>
+          <li class="md-tabs__item"><a href="__index.html" class="md-tabs__link">paralleldomain.model.geometry</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../../index.html" title="Parallel Domain SDK documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../../index.html"
+       title="Parallel Domain SDK documentation">Parallel Domain SDK</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">Getting Started</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../../getting_started.html" class="md-nav__link">Parallel Domain SDK</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../../license.html" class="md-nav__link">License</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">API Reference</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../__index.html" class="md-nav__link">paralleldomain</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../data_lab.html" class="md-nav__link">data_lab</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../model.html" class="md-nav__link">model</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../annotation/__index.html" class="md-nav__link">annotation</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../class_distribution.html" class="md-nav__link">class_distribution</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../class_mapping.html" class="md-nav__link">class_mapping</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../dataset.html" class="md-nav__link">dataset</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../ego.html" class="md-nav__link">ego</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../frame.html" class="md-nav__link">frame</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="__index.html" class="md-nav__link">geometry</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="bounding_box_2d.html" class="md-nav__link">bounding_box_2d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> bounding_box_3d </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">bounding_box_3d</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-model-geometry-bounding-box-3d--page-root" class="md-nav__link">paralleldomain.model.geometry.bounding_box_3d</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.pose</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.length</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.width</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.height</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.class_id</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.instance_id</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.num_points</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.attributes</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.merge_boxes()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.edges</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.faces</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.vertices</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.volume</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.merge_boxes()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.edges</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.faces</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.vertices</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.volume</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../../_sources/paralleldomain/api/model/geometry/bounding_box_3d.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.pose</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.length</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.width</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.height</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.class_id</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.instance_id</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.num_points</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.attributes</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.merge_boxes()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.edges</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.faces</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.vertices</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.volume</span></code></a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry</span></code></a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.merge_boxes()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.edges</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.faces</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.vertices</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.volume</span></code></a>
+      
+    
+    </li></ul>
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="point_2d.html" class="md-nav__link">point_2d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="point_3d.html" class="md-nav__link">point_3d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="polygon_2d.html" class="md-nav__link">polygon_2d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="polygon_3d.html" class="md-nav__link">polygon_3d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="polyline_2d.html" class="md-nav__link">polyline_2d</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="polyline_3d.html" class="md-nav__link">polyline_3d</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../image.html" class="md-nav__link">image</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../occupancy.html" class="md-nav__link">occupancy</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../point_cloud.html" class="md-nav__link">point_cloud</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../radar_point_cloud.html" class="md-nav__link">radar_point_cloud</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../scene.html" class="md-nav__link">scene</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../sensor.html" class="md-nav__link">sensor</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../type_aliases.html" class="md-nav__link">type_aliases</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../utilities.html" class="md-nav__link">utilities</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../visualization.html" class="md-nav__link">visualization</a>
+      
+    
+    </li></ul>
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-model-geometry-bounding-box-3d--page-root" class="md-nav__link">paralleldomain.model.geometry.bounding_box_3d</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.pose</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.length</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.width</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.height</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.class_id</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.instance_id</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.num_points</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.attributes</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.merge_boxes()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.edges</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.faces</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.vertices</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry.volume</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.merge_boxes()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.edges</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.faces</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.vertices</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">BoundingBox3DGeometry.volume</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../../_sources/paralleldomain/api/model/geometry/bounding_box_3d.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="module-paralleldomain.model.geometry.bounding_box_3d">
+<span id="paralleldomain-model-geometry-bounding-box-3d"></span><h1 id="paralleldomain-api-model-geometry-bounding-box-3d--page-root">paralleldomain.model.geometry.bounding_box_3d<a class="headerlink" href="#paralleldomain-api-model-geometry-bounding-box-3d--page-root" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BoundingBox3DBaseGeometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="Link to this definition">¶</a></dt>
+<dd><p>Represents a 3D Bounding Box geometry with a generic coordinate precision of either int or float.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pose</strong> (<a class="reference internal" href="../../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>) – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.pose"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pose</span></code></a></p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypeVar" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)) – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.length"><code class="xref py py-attr docutils literal notranslate"><span class="pre">length</span></code></a></p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypeVar" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)) – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">width</span></code></a></p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypeVar" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)) – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.height"><code class="xref py py-attr docutils literal notranslate"><span class="pre">height</span></code></a></p></li>
+<li><p><strong>class_id</strong> – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.class_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">class_id</span></code></a></p></li>
+<li><p><strong>instance_id</strong> – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.instance_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">instance_id</span></code></a></p></li>
+<li><p><strong>num_points</strong> – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.num_points"><code class="xref py py-attr docutils literal notranslate"><span class="pre">num_points</span></code></a></p></li>
+<li><p><strong>attributes</strong> – <a class="reference internal" href="../annotation/bounding_box_3d.html#paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes" title="paralleldomain.model.annotation.bounding_box_3d.BoundingBox3D.attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">attributes</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose">
+<span class="sig-name descname"><span class="pre">pose</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.pose" title="Link to this definition">¶</a></dt>
+<dd><p>6D Pose for box in 3D sensor space.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length">
+<span class="sig-name descname"><span class="pre">length</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.length" title="Link to this definition">¶</a></dt>
+<dd><p>Length of box in meter along x-axis.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width">
+<span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.width" title="Link to this definition">¶</a></dt>
+<dd><p>Width of box in meter along y-axis.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height">
+<span class="sig-name descname"><span class="pre">height</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.height" title="Link to this definition">¶</a></dt>
+<dd><p>Height of box in meter along z-axis.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id">
+<span class="sig-name descname"><span class="pre">class_id</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.class_id" title="Link to this definition">¶</a></dt>
+<dd><p>Class ID of annotated object. Can be used to lookup more details in <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassMap</span></code>.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id">
+<span class="sig-name descname"><span class="pre">instance_id</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.instance_id" title="Link to this definition">¶</a></dt>
+<dd><p>Instance ID of annotated object. Can be used to cross-reference with
+other instance annotation types, e.g., <code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation2D</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">InstanceSegmentation3D</span></code>.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points">
+<span class="sig-name descname"><span class="pre">num_points</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.num_points" title="Link to this definition">¶</a></dt>
+<dd><p>Number of LiDAR points of related <code class="xref py py-obj docutils literal notranslate"><span class="pre">Sensor</span></code>.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes">
+<span class="sig-name descname"><span class="pre">attributes</span></span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.attributes" title="Link to this definition">¶</a></dt>
+<dd><p>Dictionary of arbitrary object attributes.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_box</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.merge_boxes" title="Link to this definition">¶</a></dt>
+<dd><p>Takes two 3D box geometries as input and merges both into a new box geometry.
+The resulting box geometry has dimensions from <cite>target_box</cite> and <cite>source_box</cite>
+merged into it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypeVar" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)]</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>target_box</strong> (<a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><em>BoundingBox3DBaseGeometry</em></a>) – </p></li>
+<li><p><strong>source_box</strong> (<a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><em>BoundingBox3DBaseGeometry</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.edges" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D edges of a bounding box.</p>
+<p>Edges are returned in order of connecting the vertices in the following order:</p>
+<ul class="simple">
+<li><p><cite>[0, 1]</cite></p></li>
+<li><p><cite>[1, 2]</cite></p></li>
+<li><p><cite>[2, 3]</cite></p></li>
+<li><p><cite>[3, 0]</cite></p></li>
+<li><p><cite>[4, 5]</cite></p></li>
+<li><p><cite>[5, 6]</cite></p></li>
+<li><p><cite>[6, 7]</cite></p></li>
+<li><p><cite>[7, 4]</cite></p></li>
+<li><p><cite>[2, 6]</cite></p></li>
+<li><p><cite>[7, 3]</cite></p></li>
+<li><p><cite>[1, 5]</cite></p></li>
+<li><p><cite>[4, 0]</cite></p></li>
+</ul>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.faces" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D faces of a bounding box.</p>
+<p>Faces are returned in order of connecting the vertices in the following order:</p>
+<ul class="simple">
+<li><p><cite>[0, 1, 2, 3]</cite> (front)</p></li>
+<li><p><cite>[4, 5, 6, 7]</cite> (back)</p></li>
+<li><p><cite>[3, 2, 6, 7]</cite> (left)</p></li>
+<li><p><cite>[0, 1, 5, 4]</cite> (right)</p></li>
+<li><p><cite>[6, 2, 1, 5]</cite> (top)</p></li>
+<li><p><cite>[7, 3, 0, 4]</cite> (bottom)</p></li>
+</ul>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D vertices of a bounding box.</p>
+<p>Vertices are returned in the following order:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">T</span></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry.volume" title="Link to this definition">¶</a></dt>
+<dd><p>Returns volume of 3D Bounding Box in cubic meter.</p>
+</dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BoundingBox3DGeometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pose</strong> (<a class="reference internal" href="../../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><em>Transformation</em></a>) – </p></li>
+<li><p><strong>width</strong> (<em>T</em>) – </p></li>
+<li><p><strong>height</strong> (<em>T</em>) – </p></li>
+<li><p><strong>length</strong> (<em>T</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge_boxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_box</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.merge_boxes" title="Link to this definition">¶</a></dt>
+<dd><p>Takes two 3D box geometries as input and merges both into a new box geometry.
+The resulting box geometry has dimensions from <cite>target_box</cite> and <cite>source_box</cite>
+merged into it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoundingBox3DBaseGeometry</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypeVar" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></a>(<code class="docutils literal notranslate"><span class="pre">T</span></code>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>)]</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>target_box</strong> (<a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><em>BoundingBox3DBaseGeometry</em></a>) – </p></li>
+<li><p><strong>source_box</strong> (<a class="reference internal" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry" title="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DBaseGeometry"><em>BoundingBox3DBaseGeometry</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.edges" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D edges of a bounding box.</p>
+<p>Edges are returned in order of connecting the vertices in the following order:</p>
+<ul class="simple">
+<li><p><cite>[0, 1]</cite></p></li>
+<li><p><cite>[1, 2]</cite></p></li>
+<li><p><cite>[2, 3]</cite></p></li>
+<li><p><cite>[3, 0]</cite></p></li>
+<li><p><cite>[4, 5]</cite></p></li>
+<li><p><cite>[5, 6]</cite></p></li>
+<li><p><cite>[6, 7]</cite></p></li>
+<li><p><cite>[7, 4]</cite></p></li>
+<li><p><cite>[2, 6]</cite></p></li>
+<li><p><cite>[7, 3]</cite></p></li>
+<li><p><cite>[1, 5]</cite></p></li>
+<li><p><cite>[4, 0]</cite></p></li>
+</ul>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faces</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.faces" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D faces of a bounding box.</p>
+<p>Faces are returned in order of connecting the vertices in the following order:</p>
+<ul class="simple">
+<li><p><cite>[0, 1, 2, 3]</cite> (front)</p></li>
+<li><p><cite>[4, 5, 6, 7]</cite> (back)</p></li>
+<li><p><cite>[3, 2, 6, 7]</cite> (left)</p></li>
+<li><p><cite>[0, 1, 5, 4]</cite> (right)</p></li>
+<li><p><cite>[6, 2, 1, 5]</cite> (top)</p></li>
+<li><p><cite>[7, 3, 0, 4]</cite> (bottom)</p></li>
+</ul>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the 3D vertices of a bounding box.</p>
+<p>Vertices are returned in the following order:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span>   <span class="mi">5</span><span class="o">--------</span><span class="mi">6</span>
+  <span class="o">/|</span>   <span class="n">top</span> <span class="o">/|</span>
+ <span class="o">/</span> <span class="o">|</span>      <span class="o">/</span> <span class="o">|</span>
+<span class="mi">1</span><span class="o">--------</span><span class="mi">2</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="mi">4</span><span class="o">-----|--</span><span class="mi">7</span>
+<span class="o">|</span> <span class="o">/</span>      <span class="o">|</span> <span class="o">/</span>
+<span class="o">|/</span>       <span class="o">|/</span> <span class="n">left</span>
+<span class="mi">0</span><span class="o">--------</span><span class="mi">3</span>
+  <span class="n">front</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">T</span></em><a class="headerlink" href="#paralleldomain.model.geometry.bounding_box_3d.BoundingBox3DGeometry.volume" title="Link to this definition">¶</a></dt>
+<dd><p>Returns volume of 3D Bounding Box in cubic meter.</p>
+</dd></dl>
+</dd></dl>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="bounding_box_2d.html" title="paralleldomain.model.geometry.bounding_box_2d"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> paralleldomain.model.geometry.bounding_box_2d </span>
+              </div>
+            </a>
+          
+          
+            <a href="point_2d.html" title="paralleldomain.model.geometry.point_2d"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> "Next" </span> paralleldomain.model.geometry.point_2d </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Parallel Domain.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

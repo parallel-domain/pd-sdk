@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>paralleldomain.data_lab.generators &#8212; Parallel Domain SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=d70321b6" />
+    <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="paralleldomain.data_lab.generators.debris" href="debris.html" />
+    <link rel="prev" title="paralleldomain.data_lab.constants" href="../constants.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#paralleldomain/api/data_lab/generators/__index" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../../index.html" title="Parallel Domain SDK  documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Parallel Domain SDK</span>
+          <span class="md-header-nav__topic"> paralleldomain.data_lab.generators </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="../../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../../"versions.json"",
+        target_loc = "../../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../../index.html" class="md-tabs__link">Parallel Domain SDK  documentation</a></li>
+          <li class="md-tabs__item"><a href="../../../__index.html" class="md-tabs__link">paralleldomain</a></li>
+          <li class="md-tabs__item"><a href="../../../data_lab.html" class="md-tabs__link">paralleldomain.data_lab</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../../index.html" title="Parallel Domain SDK documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../../index.html"
+       title="Parallel Domain SDK documentation">Parallel Domain SDK</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">Getting Started</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../../getting_started.html" class="md-nav__link">Parallel Domain SDK</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../../license.html" class="md-nav__link">License</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">API Reference</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../__index.html" class="md-nav__link">paralleldomain</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../data_lab.html" class="md-nav__link">data_lab</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../behaviors/__index.html" class="md-nav__link">behaviors</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../config/__index.html" class="md-nav__link">config</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../constants.html" class="md-nav__link">constants</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> generators </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">generators</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../../_sources/paralleldomain/api/data_lab/generators/__index.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="debris.html" class="md-nav__link">debris</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="ego_agent.html" class="md-nav__link">ego_agent</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="drone.html" class="md-nav__link">drone</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="driveway.html" class="md-nav__link">driveway</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="parked_vehicle.html" class="md-nav__link">parked_vehicle</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="pedestrian.html" class="md-nav__link">pedestrian</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="peripherals.html" class="md-nav__link">peripherals</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="position_request.html" class="md-nav__link">position_request</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="random_pedestrian.html" class="md-nav__link">random_pedestrian</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="spawn_data.html" class="md-nav__link">spawn_data</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="static_agent.html" class="md-nav__link">static_agent</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="traffic.html" class="md-nav__link">traffic</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="vehicle.html" class="md-nav__link">vehicle</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../reactor.html" class="md-nav__link">reactor</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../reactor_undistortion.html" class="md-nav__link">reactor_undistortion</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../sim_state.html" class="md-nav__link">sim_state</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../utilities/__index.html" class="md-nav__link">utilities</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../model.html" class="md-nav__link">model</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../utilities.html" class="md-nav__link">utilities</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../visualization.html" class="md-nav__link">visualization</a>
+      
+    
+    </li></ul>
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../../_sources/paralleldomain/api/data_lab/generators/__index.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="module-paralleldomain.data_lab.generators">
+<span id="paralleldomain-data-lab-generators"></span><h1 id="paralleldomain-api-data-lab-generators-index--page-root">paralleldomain.data_lab.generators<a class="headerlink" href="#paralleldomain-api-data-lab-generators-index--page-root" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="debris.html">debris</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.spawn_probability"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.spawn_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.debris_center_bias"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.debris_center_bias</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.min_debris_distance"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.min_debris_distance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.max_debris_distance"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.max_debris_distance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.debris_asset_tag"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.debris_asset_tag</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.debris_asset_remove_tag"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.debris_asset_remove_tag</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.asset_distribution"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.asset_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.agent_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="debris.html#paralleldomain.data_lab.generators.debris.DebrisGeneratorParameters.from_position_request"><code class="docutils literal notranslate"><span class="pre">DebrisGeneratorParameters.from_position_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ego_agent.html">ego_agent</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.agent_type"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.agent_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.ego_model"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.ego_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.use_traffic_light_color_probability"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.use_traffic_light_color_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.traffic_light_color_probability"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.traffic_light_color_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.vehicle_spawn_data"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.vehicle_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.pedestrian_spawn_data"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.pedestrian_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.EgoAgentGeneratorParameters.drone_spawn_data"><code class="docutils literal notranslate"><span class="pre">EgoAgentGeneratorParameters.drone_spawn_data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.RenderEgoGenerator"><code class="docutils literal notranslate"><span class="pre">RenderEgoGenerator</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType"><code class="docutils literal notranslate"><span class="pre">AgentType</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.ANIMAL"><code class="docutils literal notranslate"><span class="pre">AgentType.ANIMAL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.DRONE"><code class="docutils literal notranslate"><span class="pre">AgentType.DRONE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.PARKED_VEHICLE"><code class="docutils literal notranslate"><span class="pre">AgentType.PARKED_VEHICLE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.PEDESTRIAN"><code class="docutils literal notranslate"><span class="pre">AgentType.PEDESTRIAN</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.STATIC_OBJECT"><code class="docutils literal notranslate"><span class="pre">AgentType.STATIC_OBJECT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.TRAILER_VEHICLE"><code class="docutils literal notranslate"><span class="pre">AgentType.TRAILER_VEHICLE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.UNSPECIFIED"><code class="docutils literal notranslate"><span class="pre">AgentType.UNSPECIFIED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ego_agent.html#paralleldomain.data_lab.generators.ego_agent.AgentType.VEHICLE"><code class="docutils literal notranslate"><span class="pre">AgentType.VEHICLE</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="drone.html">drone</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="drone.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="drone.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="drone.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters.drone_spawn_data"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters.drone_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="drone.html#paralleldomain.data_lab.generators.drone.DroneGeneratorParameters.from_position_request"><code class="docutils literal notranslate"><span class="pre">DroneGeneratorParameters.from_position_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="driveway.html">driveway</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="driveway.html#paralleldomain.data_lab.generators.driveway.DrivewayCreepGenerator"><code class="docutils literal notranslate"><span class="pre">DrivewayCreepGenerator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parked_vehicle.html">parked_vehicle</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parked_vehicle.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parked_vehicle.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="parked_vehicle.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters.spawn_probability"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters.spawn_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="parked_vehicle.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters.vehicle_distribution"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters.vehicle_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="parked_vehicle.html#paralleldomain.data_lab.generators.parked_vehicle.ParkedVehicleGeneratorParameters.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">ParkedVehicleGeneratorParameters.agent_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pedestrian.html">pedestrian</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pedestrian.html#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pedestrian.html#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pedestrian.html#paralleldomain.data_lab.generators.pedestrian.PedestrianGeneratorParameters.ped_spawn_data"><code class="docutils literal notranslate"><span class="pre">PedestrianGeneratorParameters.ped_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">peripherals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.spawn_trailer_probability"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.spawn_trailer_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.trailer_initial_yaw"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.trailer_initial_yaw</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.disable_occupants"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.disable_occupants</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.disable_accessories"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.disable_accessories</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.randomize_vehicle_parts"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.randomize_vehicle_parts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.emergency_light_probability"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.emergency_light_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.set_headlight_based_on_time_of_day"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.set_headlight_based_on_time_of_day</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="peripherals.html#paralleldomain.data_lab.generators.peripherals.VehiclePeripheral.headlight_probability"><code class="docutils literal notranslate"><span class="pre">VehiclePeripheral.headlight_probability</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="position_request.html">position_request</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest.position"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest.position</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest.rotation"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest.rotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest.lane_id"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest.lane_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest.resolve_z"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest.resolve_z</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.AbsolutePositionRequest.from_transformation"><code class="docutils literal notranslate"><span class="pre">AbsolutePositionRequest.from_transformation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy"><code class="docutils literal notranslate"><span class="pre">JunctionSpawnPolicy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy.distance_to_junction"><code class="docutils literal notranslate"><span class="pre">JunctionSpawnPolicy.distance_to_junction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy.use_intersection_type_probability"><code class="docutils literal notranslate"><span class="pre">JunctionSpawnPolicy.use_intersection_type_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.JunctionSpawnPolicy.intersection_type_probability"><code class="docutils literal notranslate"><span class="pre">JunctionSpawnPolicy.intersection_type_probability</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.min_num_lanes_in_same_direction"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.min_num_lanes_in_same_direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.lane_type"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.lane_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.min_num_lanes_in_opposite_direction"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.min_num_lanes_in_opposite_direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.lateral_offset"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.lateral_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.bicycles_only_in_bike_lanes"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.bicycles_only_in_bike_lanes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.nearby_asset_policy"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.nearby_asset_policy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.road_type"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.road_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.position_of_interest_policy"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.position_of_interest_policy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.min_path_length"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.min_path_length</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.min_length_behind"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.min_length_behind</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.on_road_parking_angle_distribution"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.on_road_parking_angle_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LaneSpawnPolicy.lane_decoration_distribution"><code class="docutils literal notranslate"><span class="pre">LaneSpawnPolicy.lane_decoration_distribution</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest.agent_tags"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest.agent_tags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest.max_spawn_radius"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest.max_spawn_radius</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.LocationRelativePositionRequest.lane_spawn_policy"><code class="docutils literal notranslate"><span class="pre">LocationRelativePositionRequest.lane_spawn_policy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest.agent_tags"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest.agent_tags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest.time_to_path"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest.time_to_path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest.time_along_path"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest.time_along_path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PathTimeRelativePositionRequest.incident_angle"><code class="docutils literal notranslate"><span class="pre">PathTimeRelativePositionRequest.incident_angle</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy"><code class="docutils literal notranslate"><span class="pre">PositionOfInterestPolicy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy.lane_curvature_spawn_policy"><code class="docutils literal notranslate"><span class="pre">PositionOfInterestPolicy.lane_curvature_spawn_policy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionOfInterestPolicy.junction_spawn_policy"><code class="docutils literal notranslate"><span class="pre">PositionOfInterestPolicy.junction_spawn_policy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest"><code class="docutils literal notranslate"><span class="pre">PositionRequest</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.longitudinal_offset"><code class="docutils literal notranslate"><span class="pre">PositionRequest.longitudinal_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.lateral_offset"><code class="docutils literal notranslate"><span class="pre">PositionRequest.lateral_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.yaw_offset"><code class="docutils literal notranslate"><span class="pre">PositionRequest.yaw_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.absolute_position_request"><code class="docutils literal notranslate"><span class="pre">PositionRequest.absolute_position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.path_time_relative_position_request"><code class="docutils literal notranslate"><span class="pre">PositionRequest.path_time_relative_position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.location_relative_position_request"><code class="docutils literal notranslate"><span class="pre">PositionRequest.location_relative_position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.lane_spawn_policy"><code class="docutils literal notranslate"><span class="pre">PositionRequest.lane_spawn_policy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="position_request.html#paralleldomain.data_lab.generators.position_request.PositionRequest.road_pitch_position_request"><code class="docutils literal notranslate"><span class="pre">PositionRequest.road_pitch_position_request</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="random_pedestrian.html">random_pedestrian</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters.speed_range"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters.speed_range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters.num_of_pedestrians_range"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters.num_of_pedestrians_range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters.min_radius_between_pedestrians"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters.min_radius_between_pedestrians</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="random_pedestrian.html#paralleldomain.data_lab.generators.random_pedestrian.RandomPedestrianGeneratorParameters.ped_spawn_data"><code class="docutils literal notranslate"><span class="pre">RandomPedestrianGeneratorParameters.ped_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spawn_data.html">spawn_data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.AgentSpawnData"><code class="docutils literal notranslate"><span class="pre">AgentSpawnData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.AgentSpawnData.tags"><code class="docutils literal notranslate"><span class="pre">AgentSpawnData.tags</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.ascend_probability"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.ascend_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.ground_asset_probability"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.ground_asset_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.ground_assets"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.ground_assets</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.flight_path_dir"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.flight_path_dir</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.agent_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.height_offset"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.height_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.DroneSpawnData.ground_asset_height_offset"><code class="docutils literal notranslate"><span class="pre">DroneSpawnData.ground_asset_height_offset</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.pedestrian_color_override_probability"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.pedestrian_color_override_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.pedestrian_color_override_rgb"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.pedestrian_color_override_rgb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.orient_to_velocity"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.orient_to_velocity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.check_occupancy"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.check_occupancy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.jaywalker_ego_fwd_offset"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.jaywalker_ego_fwd_offset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.agent_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.ped_behavior"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.ped_behavior</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.asset_name"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.asset_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.PedestrianSpawnData.speed"><code class="docutils literal notranslate"><span class="pre">PedestrianSpawnData.speed</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData"><code class="docutils literal notranslate"><span class="pre">VehicleSpawnData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData.vehicle_behavior"><code class="docutils literal notranslate"><span class="pre">VehicleSpawnData.vehicle_behavior</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData.vehicle_peripheral"><code class="docutils literal notranslate"><span class="pre">VehicleSpawnData.vehicle_peripheral</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spawn_data.html#paralleldomain.data_lab.generators.spawn_data.VehicleSpawnData.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">VehicleSpawnData.agent_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="static_agent.html">static_agent</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="static_agent.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="static_agent.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="static_agent.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters.model"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="static_agent.html#paralleldomain.data_lab.generators.static_agent.StaticAgentGeneratorParameters.agent_spawn_data"><code class="docutils literal notranslate"><span class="pre">StaticAgentGeneratorParameters.agent_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="traffic.html">traffic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.spawn_probability"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.spawn_probability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.vehicle_spawn_data"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.vehicle_spawn_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.vehicle_distribution"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.vehicle_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.start_separation_time_map"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.start_separation_time_map</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="traffic.html#paralleldomain.data_lab.generators.traffic.TrafficGeneratorParameters.target_separation_time_map"><code class="docutils literal notranslate"><span class="pre">TrafficGeneratorParameters.target_separation_time_map</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vehicle.html">vehicle</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vehicle.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vehicle.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters.model"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="vehicle.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters.position_request"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters.position_request</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="vehicle.html#paralleldomain.data_lab.generators.vehicle.VehicleGeneratorParameters.vehicle_spawn_data"><code class="docutils literal notranslate"><span class="pre">VehicleGeneratorParameters.vehicle_spawn_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="../constants.html" title="paralleldomain.data_lab.constants"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> paralleldomain.data_lab.constants </span>
+              </div>
+            </a>
+          
+          
+            <a href="debris.html" title="paralleldomain.data_lab.generators.debris"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> "Next" </span> paralleldomain.data_lab.generators.debris </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Parallel Domain.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

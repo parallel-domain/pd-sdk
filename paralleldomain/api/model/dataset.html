@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>paralleldomain.model.dataset &#8212; Parallel Domain SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d70321b6" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="paralleldomain.model.ego" href="ego.html" />
+    <link rel="prev" title="paralleldomain.model.class_mapping" href="class_mapping.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#paralleldomain/api/model/dataset" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../index.html" title="Parallel Domain SDK  documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Parallel Domain SDK</span>
+          <span class="md-header-nav__topic"> paralleldomain.model.dataset </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../"versions.json"",
+        target_loc = "../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../index.html" class="md-tabs__link">Parallel Domain SDK  documentation</a></li>
+          <li class="md-tabs__item"><a href="../../__index.html" class="md-tabs__link">paralleldomain</a></li>
+          <li class="md-tabs__item"><a href="../../model.html" class="md-tabs__link">paralleldomain.model</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../index.html" title="Parallel Domain SDK documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../index.html"
+       title="Parallel Domain SDK documentation">Parallel Domain SDK</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">Getting Started</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../getting_started.html" class="md-nav__link">Parallel Domain SDK</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../license.html" class="md-nav__link">License</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">API Reference</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../__index.html" class="md-nav__link">paralleldomain</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../data_lab.html" class="md-nav__link">data_lab</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../model.html" class="md-nav__link">model</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="annotation/__index.html" class="md-nav__link">annotation</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="class_distribution.html" class="md-nav__link">class_distribution</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="class_mapping.html" class="md-nav__link">class_mapping</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> dataset </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">dataset</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-model-dataset--page-root" class="md-nav__link">paralleldomain.model.dataset</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_scene()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_sensor_frames()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_unordered_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scene_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.available_annotation_identifiers" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.available_annotation_types" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.camera_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.camera_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.decoder_init_kwargs" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.decoder_init_kwargs</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.format" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.format</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.lidar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.lidar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.metadata" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.metadata</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.name" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.name</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.path" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.path</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.radar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.radar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scenes</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.unordered_scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scene_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.unordered_scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scenes</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/model/dataset.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.get_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_scene()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_sensor_frames()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.get_unordered_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.scene_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.available_annotation_identifiers" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.available_annotation_types" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.camera_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.camera_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.decoder_init_kwargs" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.decoder_init_kwargs</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.format" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.format</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.lidar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_frames</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.lidar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_names</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.metadata" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.metadata</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.name" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.name</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.path" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.path</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.radar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_frames</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.radar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_names</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_names</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scenes</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frames</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.unordered_scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scene_names</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.model.dataset.Dataset.unordered_scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scenes</span></code></a>
+      
+    
+    </li></ul>
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="ego.html" class="md-nav__link">ego</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="frame.html" class="md-nav__link">frame</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="geometry/__index.html" class="md-nav__link">geometry</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="image.html" class="md-nav__link">image</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="occupancy.html" class="md-nav__link">occupancy</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="point_cloud.html" class="md-nav__link">point_cloud</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="radar_point_cloud.html" class="md-nav__link">radar_point_cloud</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="scene.html" class="md-nav__link">scene</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="sensor.html" class="md-nav__link">sensor</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="type_aliases.html" class="md-nav__link">type_aliases</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../utilities.html" class="md-nav__link">utilities</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../visualization.html" class="md-nav__link">visualization</a>
+      
+    
+    </li></ul>
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-model-dataset--page-root" class="md-nav__link">paralleldomain.model.dataset</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_scene()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_sensor_frames()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.get_unordered_scene" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.get_unordered_scene()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scene_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_pipeline()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frame_pipeline()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.available_annotation_identifiers" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_identifiers</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.available_annotation_types" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.available_annotation_types</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.camera_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.camera_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.camera_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.decoder_init_kwargs" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.decoder_init_kwargs</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.format" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.format</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.lidar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.lidar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.lidar_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.metadata" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.metadata</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.name" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.name</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.path" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.path</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.radar_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.radar_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.radar_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scene_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.scenes</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.sensor_frames" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.sensor_frames</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.unordered_scene_names" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scene_names</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.model.dataset.Dataset.unordered_scenes" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">Dataset.unordered_scenes</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/model/dataset.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="module-paralleldomain.model.dataset">
+<span id="paralleldomain-model-dataset"></span><h1 id="paralleldomain-api-model-dataset--page-root">paralleldomain.model.dataset<a class="headerlink" href="#paralleldomain-api-model-dataset--page-root" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset" title="Link to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#paralleldomain.model.dataset.Dataset" title="paralleldomain.model.dataset.Dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dataset</span></code></a> object is the entry point for loading any data.</p>
+<p>A dataset manages all attached scenes and its sensor data. It takes care of calling the decoder when specific
+data is required and stores it in the PD SDK model classes and attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>decoder</strong> (<em>DatasetDecoderProtocol</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.get_scene">
+<span class="sig-name descname"><span class="pre">get_scene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_scene" title="Link to this definition">¶</a></dt>
+<dd><p>Allows access to a scene by using its name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scene_name</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of scene to be returned</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Scene</span></code> object for a scene name.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.get_sensor_frames">
+<span class="sig-name descname"><span class="pre">get_sensor_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_cameras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_radars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_lidars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_sensor_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all sensor frames from the scenes with the given names.
+If None is passed for scenes_names all scenes in this dataset are used. Same for sensor_names and frame_ids.
+None means all available will be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a>]], <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sensor_names</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>] </em><em>| </em><em>None</em>) – </p></li>
+<li><p><strong>frame_ids</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>] </em><em>| </em><em>None</em>) – </p></li>
+<li><p><strong>scene_names</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><em>Iterable</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>] </em><em>| </em><em>None</em>) – </p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>concurrent</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>max_queue_size</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>max_workers</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>only_cameras</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>only_radars</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>only_lidars</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.get_unordered_scene">
+<span class="sig-name descname"><span class="pre">get_unordered_scene</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.get_unordered_scene" title="Link to this definition">¶</a></dt>
+<dd><p>Allows access to a sensor frame set by using its name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scene_name</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Name of sensor frame set to be returned</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the <cite>SensorFrameSet</cite> object for a sensor frame set name.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.scene_pipeline">
+<span class="sig-name descname"><span class="pre">scene_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endless_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_ordered_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.scene_pipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all scenes from the dataset with the given names.
+If None is passed for scenes_names all scenes in this dataset are returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code>, <a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a>], <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>concurrent</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>endless_loop</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>scene_names</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>] </em><em>| </em><em>None</em>) – </p></li>
+<li><p><strong>only_ordered_scenes</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p></li>
+<li><p><strong>max_queue_size</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>max_workers</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.sensor_frame_pipeline">
+<span class="sig-name descname"><span class="pre">sensor_frame_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endless_loop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scene_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_ordered_scenes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_cameras</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_radars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_lidars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.sensor_frame_pipeline" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields tuples of SensorFrame, Frame, Scene from the dataset.
+It can also be configured to only return certain scenes, frames, sensors.
+By setting shuffle = True the data is returned a randomized order.
+By setting concurrent = True threads are used to speed up the generator.</p>
+<p>You can use this as quick access to sensor frames to load images, annotations etc. and feed those to
+your models or to encode the sensor frames into another data format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if = True the data is returned a randomized order</p></li>
+<li><p><strong>concurrent</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if = True threads are used to speed up the generator</p></li>
+<li><p><strong>endless_loop</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – whether to iterate over the scenes of the dataset in an endless loop</p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – seed used for shuffling the data</p></li>
+<li><p><strong>scene_names</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – optional iterable of scene_names, if set, only frames from these scenes are yielded</p></li>
+<li><p><strong>frame_ids</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]], <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – <dl class="simple">
+<dt>optional, dict/iterable containing frame_ids::</dt><dd><ul>
+<li><p>if frame_ids is None, yield all frames from each scene</p></li>
+<li><dl class="simple">
+<dt>if frame_ids is a dictionary, mapping scene_names to frame_ids:</dt><dd><ul>
+<li><p>if a scene_name is among the dictionary keys, the corresponding value defines which
+frames to yield from that scene</p></li>
+<li><p>if a scene_name is not in the dictionary, yield all frames from that scene</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>if frame_ids is an iterable, yield the same set of frames from each scene</p></li>
+</ul>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>sensor_names</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Iterable" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – optional iterable of sensor_names, if set, only frames recorded with these sensors are yielded</p></li>
+<li><p><strong>only_ordered_scenes</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if = True, only yield frames from ordered scenes</p></li>
+<li><p><strong>max_queue_size</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – maximum queue size</p></li>
+<li><p><strong>max_workers</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – max number of worker threads</p></li>
+<li><p><strong>only_cameras</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – only yield camera frames</p></li>
+<li><p><strong>only_radars</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – only yield radar frames</p></li>
+<li><p><strong>only_lidars</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – only yield lidar frames</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">SensorFrame</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></a>]], <a class="reference internal" href="frame.html#paralleldomain.model.frame.Frame" title="paralleldomain.model.frame.Frame"><code class="xref py py-class docutils literal notranslate"><span class="pre">Frame</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">UnorderedScene</span></code>, <a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><code class="xref py py-class docutils literal notranslate"><span class="pre">Scene</span></code></a>]], <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.available_annotation_identifiers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_annotation_identifiers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="annotation/common.html#paralleldomain.model.annotation.common.AnnotationIdentifier" title="paralleldomain.model.annotation.common.AnnotationIdentifier"><span class="pre">AnnotationIdentifier</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.available_annotation_identifiers" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of available annotation identifiers for the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.available_annotation_types">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">available_annotation_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Type" title="(in Python v3.10)"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Annotation</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.available_annotation_types" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of available annotation types for the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.camera_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.CameraSensorFrame" title="paralleldomain.model.sensor.CameraSensorFrame"><span class="pre">CameraSensorFrame</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.camera_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all CameraSensorFrames of all the unordered scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.camera_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Set" title="(in Python v3.10)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.camera_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the names of all camera sensors across all scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.decoder_init_kwargs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decoder_init_kwargs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.decoder_init_kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an optional path to a file or a folder where the dataset is stored.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.format" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a str with the name of the dataset storage format (e.g. dgp, cityscapes, nuscenes).</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.lidar_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lidar_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.LidarSensorFrame" title="paralleldomain.model.sensor.LidarSensorFrame"><span class="pre">LidarSensorFrame</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.lidar_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all LidarSensorFrames of all the unordered scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.lidar_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lidar_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Set" title="(in Python v3.10)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.lidar_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the names of all lidar sensors across all scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.metadata">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DatasetMeta</span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of scene names within the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../utilities/any_path.html#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><span class="pre">AnyPath</span></a></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.path" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an optional path to a file or a folder where the dataset is stored.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.radar_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">radar_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.RadarSensorFrame" title="paralleldomain.model.sensor.RadarSensorFrame"><span class="pre">RadarSensorFrame</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.radar_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all RadarSensorFrames of all the unordered scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.radar_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">radar_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Set" title="(in Python v3.10)"><span class="pre">Set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.radar_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the names of all Radar sensors across all scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.scene_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scene_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.scene_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of scene names within the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.scenes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scenes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="scene.html#paralleldomain.model.scene.Scene" title="paralleldomain.model.scene.Scene"><span class="pre">Scene</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.scenes" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Scene</span></code> instances with the scene name as key.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.sensor_frames">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensor_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Generator" title="(in Python v3.10)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="sensor.html#paralleldomain.model.sensor.SensorFrame" title="paralleldomain.model.sensor.SensorFrame"><span class="pre">SensorFrame</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.sensor_frames" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a generator that yields all SensorFrames (Lidar and Camera) of all the unordered scenes in this dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.unordered_scene_names">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unordered_scene_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.unordered_scene_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a list of sensor frame set names within the dataset.</p>
+</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="paralleldomain.model.dataset.Dataset.unordered_scenes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unordered_scenes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">UnorderedScene</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/datetime.html#datetime.datetime" title="(in Python v3.10)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#paralleldomain.model.dataset.Dataset.unordered_scenes" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of <code class="xref py py-obj docutils literal notranslate"><span class="pre">SensorFrameSet</span></code> instances with the scene name as key. This a superset of
+scenes and hence will also include all scenes (Scenes that have sensor frames with a date time).</p>
+</dd></dl>
+</dd></dl>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="class_mapping.html" title="paralleldomain.model.class_mapping"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> paralleldomain.model.class_mapping </span>
+              </div>
+            </a>
+          
+          
+            <a href="ego.html" title="paralleldomain.model.ego"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> "Next" </span> paralleldomain.model.ego </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Parallel Domain.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

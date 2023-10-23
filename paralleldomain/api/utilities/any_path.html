@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>paralleldomain.utilities.any_path &#8212; Parallel Domain SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d70321b6" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="paralleldomain.utilities.color_matcher" href="color_matcher.html" />
+    <link rel="prev" title="paralleldomain.utilities" href="../../utilities.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#paralleldomain/api/utilities/any_path" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../index.html" title="Parallel Domain SDK  documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Parallel Domain SDK</span>
+          <span class="md-header-nav__topic"> paralleldomain.utilities.any_path </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../"versions.json"",
+        target_loc = "../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../index.html" class="md-tabs__link">Parallel Domain SDK  documentation</a></li>
+          <li class="md-tabs__item"><a href="../../__index.html" class="md-tabs__link">paralleldomain</a></li>
+          <li class="md-tabs__item"><a href="../../utilities.html" class="md-tabs__link">paralleldomain.utilities</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../index.html" title="Parallel Domain SDK documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../index.html"
+       title="Parallel Domain SDK documentation">Parallel Domain SDK</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">Getting Started</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../getting_started.html" class="md-nav__link">Parallel Domain SDK</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../license.html" class="md-nav__link">License</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">API Reference</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../__index.html" class="md-nav__link">paralleldomain</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../data_lab.html" class="md-nav__link">data_lab</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../model.html" class="md-nav__link">model</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../utilities.html" class="md-nav__link">utilities</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> any_path </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">any_path</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-utilities-any-path--page-root" class="md-nav__link">paralleldomain.utilities.any_path</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.exists" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.exists()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.glob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.glob()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_absolute" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_absolute()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_dir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_dir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_fifo" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_fifo()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_file" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_file()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_mount" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_mount()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_socket" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_socket()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_symlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_symlink()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.iterdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.iterdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.mkdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.mkdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.open" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.open()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.owner" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.owner()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rename" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rename()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.replace" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.replace()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rglob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rglob()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rm" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rm()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rmdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rmdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.samefile" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.samefile()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.stat" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.stat()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.touch" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.touch()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.unlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.unlink()</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/utilities/any_path.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath</span></code></a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.exists" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.exists()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.glob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.glob()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_absolute" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_absolute()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_dir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_dir()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_fifo" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_fifo()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_file" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_file()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_mount" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_mount()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_socket" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_socket()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.is_symlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_symlink()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.iterdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.iterdir()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.mkdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.mkdir()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.open" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.open()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.owner" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.owner()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.rename" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rename()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.replace" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.replace()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.rglob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rglob()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.rm" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rm()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.rmdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rmdir()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.samefile" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.samefile()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.stat" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.stat()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.touch" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.touch()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.any_path.AnyPath.unlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.unlink()</span></code></a>
+      
+    
+    </li></ul>
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="color_matcher.html" class="md-nav__link">color_matcher</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="fsio.html" class="md-nav__link">fsio</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="geometry.html" class="md-nav__link">geometry</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="logging.html" class="md-nav__link">logging</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="mask.html" class="md-nav__link">mask</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="os.html" class="md-nav__link">os</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="projection.html" class="md-nav__link">projection</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="transformation.html" class="md-nav__link">transformation</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../visualization.html" class="md-nav__link">visualization</a>
+      
+    
+    </li></ul>
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-utilities-any-path--page-root" class="md-nav__link">paralleldomain.utilities.any_path</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath</span></code></a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.exists" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.exists()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.glob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.glob()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_absolute" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_absolute()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_dir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_dir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_fifo" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_fifo()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_file" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_file()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_mount" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_mount()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_socket" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_socket()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.is_symlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.is_symlink()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.iterdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.iterdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.mkdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.mkdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.open" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.open()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.owner" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.owner()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rename" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rename()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.replace" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.replace()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rglob" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rglob()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rm" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rm()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.rmdir" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.rmdir()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.samefile" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.samefile()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.stat" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.stat()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.touch" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.touch()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.any_path.AnyPath.unlink" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">AnyPath.unlink()</span></code></a>
+        </li></ul>
+            </nav>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/utilities/any_path.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="module-paralleldomain.utilities.any_path">
+<span id="paralleldomain-utilities-any-path"></span><h1 id="paralleldomain-api-utilities-any-path--page-root">paralleldomain.utilities.any_path<a class="headerlink" href="#paralleldomain-api-utilities-any-path--page-root" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AnyPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath" title="Link to this definition">¶</a></dt>
+<dd><p>Implementation of a Path-like object which handles both local and s3 bucket paths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> | </em><a class="reference internal" href="#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><em>AnyPath</em></a>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.exists">
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.exists" title="Link to this definition">¶</a></dt>
+<dd><p>Whether the path points to an existing Bucket, key or key prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.glob">
+<span class="sig-name descname"><span class="pre">glob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.glob" title="Link to this definition">¶</a></dt>
+<dd><p>Glob the given relative pattern in the Bucket / key prefix represented by this path,
+yielding all matching files (of any kind)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_absolute">
+<span class="sig-name descname"><span class="pre">is_absolute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_absolute" title="Link to this definition">¶</a></dt>
+<dd><p>Returns True if the path points to a Bucket or an absolute local path. If path is relative, it returns False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_dir">
+<span class="sig-name descname"><span class="pre">is_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Returns True if the path points to a Bucket or a key prefix, False if it points to a full key path.
+False is also returned if the path doesn’t exist.
+Other errors (such as permission errors) are propagated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_fifo">
+<span class="sig-name descname"><span class="pre">is_fifo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_fifo" title="Link to this definition">¶</a></dt>
+<dd><p>AWS S3 Service doesn’t have fifo feature, There for this method will always return False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_file">
+<span class="sig-name descname"><span class="pre">is_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_file" title="Link to this definition">¶</a></dt>
+<dd><p>Returns True if the path points to a Bucket key, False if it points to Bucket or a key prefix.
+False is also returned if the path doesn’t exist.
+Other errors (such as permission errors) are propagated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_mount">
+<span class="sig-name descname"><span class="pre">is_mount</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_mount" title="Link to this definition">¶</a></dt>
+<dd><p>AWS S3 Service doesn’t have mounting feature, There for this method will always return False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_socket">
+<span class="sig-name descname"><span class="pre">is_socket</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_socket" title="Link to this definition">¶</a></dt>
+<dd><p>AWS S3 Service doesn’t have sockets feature, There for this method will always return False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.is_symlink">
+<span class="sig-name descname"><span class="pre">is_symlink</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.is_symlink" title="Link to this definition">¶</a></dt>
+<dd><p>AWS S3 Service doesn’t have symlink feature, There for this method will always return False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.iterdir">
+<span class="sig-name descname"><span class="pre">iterdir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.iterdir" title="Link to this definition">¶</a></dt>
+<dd><p>When the path points to a Bucket or a key prefix, yield path objects of the directory contents</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.mkdir">
+<span class="sig-name descname"><span class="pre">mkdir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">511</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exist_ok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.mkdir" title="Link to this definition">¶</a></dt>
+<dd><p>Create a path bucket.
+AWS S3 Service doesn’t support folders, therefore the mkdir method will only create the current bucket.
+If the bucket path already exists, FileExistsError is raised.</p>
+<p>If exist_ok is false (the default), FileExistsError is raised if the target Bucket already exists.
+If exist_ok is true, OSError exceptions will be ignored.</p>
+<p>if parents is false (the default), mkdir will create the bucket only if this is a Bucket path.
+if parents is true, mkdir will create the bucket even if the path have a Key path.</p>
+<p>mode argument is ignored.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.open">
+<span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.open" title="Link to this definition">¶</a></dt>
+<dd><p>Open the file pointed by this path and return a file object, as
+the built-in open() function does.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p></li>
+<li><p><strong>buffering</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.owner">
+<span class="sig-name descname"><span class="pre">owner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.owner" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of the user owning the Bucket or key.
+Similarly to boto3’s ObjectSummary owner attribute</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.rename">
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.rename" title="Link to this definition">¶</a></dt>
+<dd><p>Renames this file or Bucket / key prefix / key to the given target.
+If target exists and is a file, it will be replaced silently if the user has permission.
+If path is a key prefix, it will replace all the keys with the same prefix to the new target prefix.
+Target can be either a string or another S3Path object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.replace" title="Link to this definition">¶</a></dt>
+<dd><p>Renames this Bucket / key prefix / key to the given target.
+If target points to an existing Bucket / key prefix / key, it will be unconditionally replaced.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.rglob">
+<span class="sig-name descname"><span class="pre">rglob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.rglob" title="Link to this definition">¶</a></dt>
+<dd><p>This is like calling S3Path.glob with <cite>‘**/’</cite> added in front of the given relative pattern</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.rm">
+<span class="sig-name descname"><span class="pre">rm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">missing_ok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.rm" title="Link to this definition">¶</a></dt>
+<dd><p>Removes either a Bucket / key prefix or a key, depending on the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>missing_ok</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.rmdir">
+<span class="sig-name descname"><span class="pre">rmdir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.rmdir" title="Link to this definition">¶</a></dt>
+<dd><p>Removes this Bucket / key prefix. The Bucket / key prefix must be empty</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.samefile">
+<span class="sig-name descname"><span class="pre">samefile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.samefile" title="Link to this definition">¶</a></dt>
+<dd><p>Returns whether this path points to the same Bucket key as other_path,
+Which can be either a Path object, or a string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>other_path</strong> (<a class="reference internal" href="#paralleldomain.utilities.any_path.AnyPath" title="paralleldomain.utilities.any_path.AnyPath"><em>AnyPath</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.10/library/pathlib.html#pathlib.Path" title="(in Python v3.10)"><em>Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.stat">
+<span class="sig-name descname"><span class="pre">stat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.stat" title="Link to this definition">¶</a></dt>
+<dd><p>Returns information about this path (similarly to boto3’s ObjectSummary).
+For compatibility with pathlib, the returned object some similar attributes like os.stat_result.
+The result is looked up at each call to this method</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.touch">
+<span class="sig-name descname"><span class="pre">touch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">438</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exist_ok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.touch" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a key at this given path.
+If the key already exists,
+the function succeeds if exist_ok is true (and its modification time is updated to the current time),
+otherwise FileExistsError is raised</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exist_ok</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="paralleldomain.utilities.any_path.AnyPath.unlink">
+<span class="sig-name descname"><span class="pre">unlink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">missing_ok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.any_path.AnyPath.unlink" title="Link to this definition">¶</a></dt>
+<dd><p>Remove this key from its bucket.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>missing_ok</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+</dd></dl>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="../../utilities.html" title="paralleldomain.utilities"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> paralleldomain.utilities </span>
+              </div>
+            </a>
+          
+          
+            <a href="color_matcher.html" title="paralleldomain.utilities.color_matcher"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> "Next" </span> paralleldomain.utilities.color_matcher </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Parallel Domain.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

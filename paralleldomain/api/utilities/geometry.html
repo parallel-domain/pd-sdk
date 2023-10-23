@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>paralleldomain.utilities.geometry &#8212; Parallel Domain SDK  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d70321b6" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="paralleldomain.utilities.logging" href="logging.html" />
+    <link rel="prev" title="paralleldomain.utilities.fsio" href="fsio.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=blue data-md-color-accent=light-blue>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#paralleldomain/api/utilities/geometry" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../index.html" title="Parallel Domain SDK  documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">Parallel Domain SDK</span>
+          <span class="md-header-nav__topic"> paralleldomain.utilities.geometry </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+  
+  <script src="../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../"versions.json"",
+        target_loc = "../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../index.html" class="md-tabs__link">Parallel Domain SDK  documentation</a></li>
+          <li class="md-tabs__item"><a href="../../__index.html" class="md-tabs__link">paralleldomain</a></li>
+          <li class="md-tabs__item"><a href="../../utilities.html" class="md-tabs__link">paralleldomain.utilities</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../index.html" title="Parallel Domain SDK documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../index.html"
+       title="Parallel Domain SDK documentation">Parallel Domain SDK</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/parallel-domain/pd-sdk" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    PD SDK
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">Getting Started</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../getting_started.html" class="md-nav__link">Parallel Domain SDK</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../license.html" class="md-nav__link">License</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+      <span class="md-nav__link caption"><span class="caption-text">API Reference</span></span>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../__index.html" class="md-nav__link">paralleldomain</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../data_lab.html" class="md-nav__link">data_lab</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../model.html" class="md-nav__link">model</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../utilities.html" class="md-nav__link">utilities</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="any_path.html" class="md-nav__link">any_path</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="color_matcher.html" class="md-nav__link">color_matcher</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="fsio.html" class="md-nav__link">fsio</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> geometry </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">geometry</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-utilities-geometry--page-root" class="md-nav__link">paralleldomain.utilities.geometry</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.calculate_triangle_area" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">calculate_triangle_area()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.convex_hull_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.convex_hull_2d_as_mask" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d_as_mask()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">decompose_polygon_into_triangles()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.interpolate_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.random_point_in_triangle" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_in_triangle()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_within_2d_polygon()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.simplify_polyline_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/utilities/geometry.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.calculate_triangle_area" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">calculate_triangle_area()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.convex_hull_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.convex_hull_2d_as_mask" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d_as_mask()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">decompose_polygon_into_triangles()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.interpolate_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.random_point_in_triangle" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_in_triangle()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_within_2d_polygon()</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#paralleldomain.utilities.geometry.simplify_polyline_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="logging.html" class="md-nav__link">logging</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="mask.html" class="md-nav__link">mask</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="os.html" class="md-nav__link">os</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="projection.html" class="md-nav__link">projection</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="transformation.html" class="md-nav__link">transformation</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../visualization.html" class="md-nav__link">visualization</a>
+      
+    
+    </li></ul>
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">"Contents"</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#paralleldomain-api-utilities-geometry--page-root" class="md-nav__link">paralleldomain.utilities.geometry</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.calculate_triangle_area" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">calculate_triangle_area()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.convex_hull_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.convex_hull_2d_as_mask" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">convex_hull_2d_as_mask()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">decompose_polygon_into_triangles()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.interpolate_points" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">interpolate_points()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">is_point_in_polygon_2d()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.random_point_in_triangle" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_in_triangle()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">random_point_within_2d_polygon()</span></code></a>
+        </li>
+        <li class="md-nav__item"><a href="#paralleldomain.utilities.geometry.simplify_polyline_2d" class="md-nav__link"><code class="docutils literal notranslate"><span class="pre">simplify_polyline_2d()</span></code></a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/paralleldomain/api/utilities/geometry.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="module-paralleldomain.utilities.geometry">
+<span id="paralleldomain-utilities-geometry"></span><h1 id="paralleldomain-api-utilities-geometry--page-root">paralleldomain.utilities.geometry<a class="headerlink" href="#paralleldomain-api-utilities-geometry--page-root" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.calculate_triangle_area">
+<span class="sig-name descname"><span class="pre">calculate_triangle_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triangles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.calculate_triangle_area" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates sizes of an array of triangles defined by their three verticies
+:type triangles: <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>
+:param triangles: n x 3 x 2 array containing the 3 vertices of each triangle</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>n x 1 array of triangle sizes</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triangles</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><em>ndarray</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.convex_hull_2d">
+<span class="sig-name descname"><span class="pre">convex_hull_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.convex_hull_2d" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a list of 2d points and returns their convex hull</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_2d</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – n x 2 array of the 2d points we wish to find the convex hull of</p></li>
+<li><p><strong>closed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – True if the returned convex hull should be closed (first point is same as last point on hull).
+False if returned convex hull should be open</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>n x 2 array of the 2d points defining the convex hull</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.convex_hull_2d_as_mask">
+<span class="sig-name descname"><span class="pre">convex_hull_2d_as_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_image_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.convex_hull_2d_as_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a list of 2d points and returns their convex hull in the form of a filled in mask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points_image_2d</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – n x 2 array of the 2d points (in image space) we wish to find the convex hull of</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The width of the image space on which the points exist and the width of the returned image containing the
+convex hull mask</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – The height of the image space on which the points exist and the height of the returned image containing
+the convex hull mask</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>height x width array containing the mask of the calculated convex hull</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.decompose_polygon_into_triangles">
+<span class="sig-name descname"><span class="pre">decompose_polygon_into_triangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.decompose_polygon_into_triangles" title="Link to this definition">¶</a></dt>
+<dd><p>Takes an area defined by a 2D polygon and decomposes it into triangles using the Ear Clipping Method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vertices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – n x 2 array containing the 2d coordinates of the vertices of the polygon</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>n x 3 x 2 array containing the 3 vertices of each n triangle</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.interpolate_points">
+<span class="sig-name descname"><span class="pre">interpolate_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.interpolate_points" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a list of points and interpolates a number of additional points inbetween each point pair.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Array of consecutive points</p></li>
+<li><p><strong>num_points</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Every start point per pair will result in <cite>num_points</cite> points after interpolation.</p></li>
+<li><p><strong>flatten_result</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <cite>False</cite>
+will return interpolated points, where first axis groups by each input point pair; else returns flat list
+of all points. Default: <cite>True</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of points with linearly interpolated values inbetween.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.is_point_in_polygon_2d">
+<span class="sig-name descname"><span class="pre">is_point_in_polygon_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.is_point_in_polygon_2d" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if a point lies inside a polygon shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>polygon</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]]) – Array of consecutive points that form a polygon</p></li>
+<li><p><strong>point</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – 2D point coordinates to be tested if they lie in the specified polygon</p></li>
+<li><p><strong>include_edge</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If point is considered inside if lying on the edge or not. Default: <cite>True</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>True</cite> if point in polygon, otherwise <cite>False</cite></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.random_point_in_triangle">
+<span class="sig-name descname"><span class="pre">random_point_in_triangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triangle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.random_point_in_triangle" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates a random point in a given triangle. Ensuring that the random points are roughly uniformly distributed
+:type triangle: <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>
+:param triangle: 3 x 2 array containing the x,y position of the triangle’s verticies
+:type random_seed: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param random_seed:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2 x 1 array of x,y position of randomly selected point in each triangle</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triangle</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><em>ndarray</em></a>) – </p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.random_point_within_2d_polygon">
+<span class="sig-name descname"><span class="pre">random_point_within_2d_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.random_point_within_2d_polygon" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a random point within a polygon.  Note that this returns a z value of 0
+:type edge_2d: <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>
+:param edge_2d: n x 2 array containing the 2d coordinates of the verticies of the polygon
+:type random_seed: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param random_seed: random seed - will be overridden if randomize_point_selection is set to True
+:type num_points: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>
+:param num_points: Number of points to spawn</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>num_points x 2 array containing the x,y positions of the point(s)</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edge_2d</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><em>ndarray</em></a>) – </p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+<li><p><strong>num_points</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="paralleldomain.utilities.geometry.simplify_polyline_2d">
+<span class="sig-name descname"><span class="pre">simplify_polyline_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polyline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supporting_points_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approximation_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#paralleldomain.utilities.geometry.simplify_polyline_2d" title="Link to this definition">¶</a></dt>
+<dd><p>Takes a 2D polyline and simplifies its shape while allowing for a specified error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>polyline</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]]) – 2D Polyline that should be simplified.</p></li>
+<li><p><strong>supporting_points_indices</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]) – An optional list of vertices of the polyline that need to be kept during
+simplification.</p></li>
+<li><p><strong>approximation_error</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The maximum error that’s allowed to be introduced during simplification.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A simplified version of the input polyline, or the input polyline if no simplification could be done.</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="fsio.html" title="paralleldomain.utilities.fsio"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> "Previous" </span> paralleldomain.utilities.fsio </span>
+              </div>
+            </a>
+          
+          
+            <a href="logging.html" title="paralleldomain.utilities.logging"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> "Next" </span> paralleldomain.utilities.logging </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Parallel Domain.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>
