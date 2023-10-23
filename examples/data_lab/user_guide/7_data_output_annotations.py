@@ -25,7 +25,6 @@ from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.visualization.model_visualization import show_frame
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 def images_to_disk(

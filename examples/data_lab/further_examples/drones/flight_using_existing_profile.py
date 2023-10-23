@@ -29,7 +29,6 @@ from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 

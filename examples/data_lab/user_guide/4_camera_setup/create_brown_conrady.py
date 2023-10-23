@@ -45,7 +45,6 @@ from paralleldomain.utilities.transformation import Transformation
 """
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 # Set up our custom ScenarioCreator object

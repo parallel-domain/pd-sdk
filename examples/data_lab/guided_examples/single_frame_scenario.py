@@ -1,5 +1,3 @@
-import logging
-import random
 from typing import Tuple
 
 from pd.data_lab import ScenarioCreator, ScenarioSource
@@ -17,7 +15,6 @@ from paralleldomain.data_lab.generators.single_frame import (
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 """
 In this example script, we create a scenario single frame scenarios. Single frame scenarios are scenarios in which

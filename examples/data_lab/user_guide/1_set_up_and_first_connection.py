@@ -19,7 +19,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 class FirstConnectionScene(ScenarioCreator):
@@ -109,5 +108,4 @@ if __name__ == "__main__":
         frames_per_scene=100,
         sim_capture_rate=10,
         instance_name="<instance_name>",
-        data_lab_version="<version_name>",
     )

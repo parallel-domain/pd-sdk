@@ -1,13 +1,9 @@
-import logging
 import random
 from typing import Tuple
 
 from pd.data_lab import Scenario, ScenarioCreator, ScenarioSource
 from pd.data_lab.config.distribution import ContinousUniformDistribution, EnumDistribution
-from pd.data_lab.context import setup_datalab
-from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.scenario import Lighting
-from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab
 from paralleldomain import data_lab
@@ -20,7 +16,6 @@ from paralleldomain.data_lab.generators.spawn_data import VehicleSpawnData
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 class ParkingSpaceDelineationTypes(ScenarioCreator):

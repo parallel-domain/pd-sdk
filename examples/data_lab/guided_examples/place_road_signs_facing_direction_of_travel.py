@@ -1,4 +1,3 @@
-import logging
 from typing import Tuple
 
 from pd.data_lab import ScenarioCreator, ScenarioSource
@@ -7,7 +6,6 @@ from pd.data_lab.config.location import Location
 from pd.data_lab.scenario import Lighting
 
 import paralleldomain.data_lab as data_lab
-from paralleldomain.data_lab import DEFAULT_DATA_LAB_VERSION
 from paralleldomain.data_lab.config.sensor_rig import CameraIntrinsic, SensorExtrinsic
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
 from paralleldomain.data_lab.generators.parked_vehicle import ParkedVehicleGeneratorParameters
@@ -21,7 +19,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=["__main__", "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 """
@@ -150,5 +147,4 @@ if __name__ == "__main__":
         sim_capture_rate=10,
         random_seed=42,
         instance_name="<instance name>",
-        data_lab_version=DEFAULT_DATA_LAB_VERSION,
     )

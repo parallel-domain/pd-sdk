@@ -17,7 +17,6 @@ from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 """
@@ -178,5 +177,4 @@ if __name__ == "__main__":
         frames_per_scene=100,
         sim_capture_rate=10,
         instance_name="<instance_name>",
-        data_lab_version="<data_lab_version>",
     )
