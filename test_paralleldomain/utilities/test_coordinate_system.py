@@ -85,3 +85,11 @@ class TestChangeTransformationCoordinateSystem:
         )
 
         assert np.allclose(result.transformation_matrix, expected_matrix)
+
+    @pytest.mark.parametrize("axis_directions, expected", [("FLU", "xyz"), ("RFU", "yxz"), ("DFR", "yzx")])
+    def test_get_yaw_pitch_roll_order_string(self, axis_directions: str, expected: str) -> None:
+        coordinate_system = CoordinateSystem(axis_directions=axis_directions)
+
+        result = coordinate_system.get_yaw_pitch_roll_order_string()
+
+        assert result == expected

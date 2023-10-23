@@ -9,16 +9,16 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.nuimages.common import NUIMAGES_IMU_TO_INTERNAL_CS, NuImagesDataAccessMixin
 from paralleldomain.decoding.sensor_frame_decoder import CameraSensorFrameDecoder
 from paralleldomain.model.annotation import (
+    AnnotationIdentifier,
     AnnotationTypes,
     BoundingBox2D,
     BoundingBoxes2D,
     InstanceSegmentation2D,
     SemanticSegmentation2D,
-    AnnotationIdentifier,
 )
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
-from paralleldomain.model.sensor import SensorExtrinsic, SensorIntrinsic, SensorPose, SensorDataCopyTypes
+from paralleldomain.model.sensor import SensorDataCopyTypes, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.fsio import read_image
@@ -35,19 +35,30 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         dataset_name: str,
         split_name: str,
         scene_name: SceneName,
+        sensor_name: SensorName,
+        frame_id: FrameId,
         settings: DecoderSettings,
+        is_unordered_scene: bool,
+        scene_decoder,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
         CameraSensorFrameDecoder.__init__(
-            self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings
+            self=self,
+            dataset_name=dataset_name,
+            scene_name=scene_name,
+            sensor_name=sensor_name,
+            frame_id=frame_id,
+            settings=settings,
+            scene_decoder=scene_decoder,
+            is_unordered_scene=is_unordered_scene,
         )
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
-    def _decode_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorIntrinsic:
+    def _decode_intrinsic(self) -> SensorIntrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
@@ -71,16 +82,16 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
             k6=distortion_params[7],
         )
 
-    def _decode_image_dimensions(self, sensor_name: SensorName, frame_id: FrameId) -> Tuple[int, int, int]:
+    def _decode_image_dimensions(self) -> Tuple[int, int, int]:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
         data = self.nu_samples_data[sample_data_id]
         return int(data["height"]), int(data["width"]), 3
 
-    def _decode_image_rgba(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_image_rgba(self) -> np.ndarray:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
         data = self.nu_samples_data[sample_data_id]
 
@@ -91,13 +102,11 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
         concatenated = np.concatenate([image_data, ones], axis=-1)
         return concatenated
 
-    def _decode_available_annotation_identifiers(
-        self, sensor_name: SensorName, frame_id: FrameId
-    ) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         anno_identifiers = list()
         if self.split_name != "v1.0-test":
             sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+                log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
             )
             if sample_data_id in self.nu_sample_data_tokens_to_available_anno_types:
                 has_surface, has_obj = self.nu_sample_data_tokens_to_available_anno_types[sample_data_id]
@@ -112,18 +121,18 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
                     anno_identifiers.append(AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D))
         return anno_identifiers
 
-    def _decode_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+    def _decode_metadata(self) -> Dict[str, Any]:
         return {}
 
     def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
-    def _decode_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> datetime:
-        return datetime.fromtimestamp(int(frame_id) / 1000000)
+    def _decode_date_time(self) -> datetime:
+        return datetime.fromtimestamp(int(self.frame_id) / 1000000)
 
-    def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
+    def _decode_extrinsic(self) -> SensorExtrinsic:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
         data = self.nu_samples_data[sample_data_id]
         calib_sensor_token = data["calibrated_sensor_token"]
@@ -137,18 +146,16 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
 
         return trans
 
-    def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
-        sensor_to_ego = self.get_extrinsic(sensor_name=sensor_name, frame_id=frame_id)
-        ego_to_world = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
+    def _decode_sensor_pose(self) -> SensorPose:
+        sensor_to_ego = self.get_extrinsic()
+        ego_to_world = self.get_ego_pose(log_token=self.scene_name, frame_id=self.frame_id)
         sensor_to_world = ego_to_world @ sensor_to_ego.transformation_matrix
         return SensorPose.from_transformation_matrix(sensor_to_world)
 
-    def _decode_file_path(
-        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
-    ) -> Optional[AnyPath]:
+    def _decode_file_path(self, data_type: SensorDataCopyTypes) -> Optional[AnyPath]:
         if issubclass(data_type, Image):
             sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-                log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+                log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
             )
             if sample_data_id is not None:
                 data = self.nu_samples_data[sample_data_id]
@@ -157,24 +164,24 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
                 return img_path
         return None
 
-    def _decode_annotations(self, sensor_name: SensorName, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+    def _decode_annotations(self, identifier: AnnotationIdentifier[T]) -> T:
         if issubclass(identifier.annotation_type, SemanticSegmentation2D):
-            class_ids = self._decode_semantic_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
+            class_ids = self._decode_semantic_segmentation_2d()
             return SemanticSegmentation2D(class_ids=class_ids)
         elif issubclass(identifier.annotation_type, InstanceSegmentation2D):
-            instance_ids = self._decode_instance_segmentation_2d(sensor_name=sensor_name, frame_id=frame_id)
+            instance_ids = self._decode_instance_segmentation_2d()
             return InstanceSegmentation2D(instance_ids=instance_ids)
         elif issubclass(identifier.annotation_type, BoundingBoxes2D):
-            boxes = self._decode_bounding_boxes_2d(sensor_name=sensor_name, frame_id=frame_id)
+            boxes = self._decode_bounding_boxes_2d()
             return BoundingBoxes2D(boxes=boxes)
         else:
             raise NotImplementedError(f"{identifier} is not supported!")
 
-    def _decode_semantic_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_semantic_segmentation_2d(self) -> np.ndarray:
         semseg_mask = np.zeros((900, 1600)).astype(int)
 
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
         for surface_annotation in self.nu_surface_ann[sample_data_id]:
             mask = mask_decode(surface_annotation["mask"])
@@ -201,11 +208,11 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
 
         return np.expand_dims(semseg_mask, axis=-1)
 
-    def _decode_instance_segmentation_2d(self, sensor_name: SensorName, frame_id: FrameId) -> np.ndarray:
+    def _decode_instance_segmentation_2d(self) -> np.ndarray:
         instanceseg_mask = np.zeros((900, 1600)).astype(int)
 
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
 
         object_anns = self.nu_object_ann[sample_data_id]
@@ -219,9 +226,9 @@ class NuImagesCameraSensorFrameDecoder(CameraSensorFrameDecoder[datetime], NuIma
 
         return np.expand_dims(instanceseg_mask, axis=-1)
 
-    def _decode_bounding_boxes_2d(self, sensor_name: SensorName, frame_id: FrameId) -> List[BoundingBox2D]:
+    def _decode_bounding_boxes_2d(self) -> List[BoundingBox2D]:
         sample_data_id = self.get_sample_data_id_frame_id_and_sensor_name(
-            log_token=self.scene_name, frame_id=frame_id, sensor_name=sensor_name
+            log_token=self.scene_name, frame_id=self.frame_id, sensor_name=self.sensor_name
         )
 
         boxes = list()

@@ -1,8 +1,16 @@
+import math
+
 import numpy as np
 import pytest
 
 from paralleldomain.constants import CAMERA_MODEL_OPENCV_FISHEYE, CAMERA_MODEL_OPENCV_PINHOLE, CAMERA_MODEL_PD_FISHEYE
-from paralleldomain.utilities.projection import DistortionLookupTable, project_points_3d_to_2d, project_points_2d_to_3d
+from paralleldomain.utilities.projection import (
+    DistortionLookupTable,
+    focal_length_to_fov,
+    fov_to_focal_length,
+    project_points_2d_to_3d,
+    project_points_3d_to_2d,
+)
 
 
 @pytest.fixture
@@ -102,3 +110,45 @@ def test_opencv_fisheye_3d_to_2d_and_back(k_matrix: np.ndarray):
     )
 
     assert np.allclose(result, points_3d)
+
+
+class TestFovFocalFunctions:
+    def test_fov_to_focal_length_positive(self):
+        # Test with positive fov
+        math.isclose(fov_to_focal_length(math.pi / 4, 1000), 707.10678118, abs_tol=10e-5)
+
+    def test_fov_to_focal_length_zero(self):
+        # Test with fov as zero
+        assert fov_to_focal_length(0.0, 1000) == 0.0
+
+    def test_fov_to_focal_length_negative(self):
+        # Test with negative fov
+        assert fov_to_focal_length(-math.pi / 4, 1000) == 0.0
+
+    def test_focal_length_to_fov_positive(self):
+        # Test with positive focal_length
+        assert math.isclose(focal_length_to_fov(1000, 1000), 0.92729, abs_tol=10e-5)
+
+    def test_focal_length_to_fov_zero(self):
+        # Test with focal_length as zero
+        assert focal_length_to_fov(0.0, 1000) == 0.0
+
+    def test_focal_length_to_fov_negative(self):
+        # Test with negative focal_length
+        assert focal_length_to_fov(-707.10678118, 1000) == 0.0
+
+    def test_fov_to_focal_length_inverse(self):
+        # Test that converting from fov to focal_length and back gives the original fov
+        original_fov = math.pi / 3
+        length = 1000
+        calculated_focal_length = fov_to_focal_length(original_fov, length)
+        calculated_fov = focal_length_to_fov(calculated_focal_length, length)
+        assert math.isclose(original_fov, calculated_fov, abs_tol=10e-5)
+
+    def test_focal_length_to_fov_inverse(self):
+        # Test that converting from focal_length to fov and back gives the original focal_length
+        original_focal_length = 500.0
+        length = 1000
+        calculated_fov = focal_length_to_fov(original_focal_length, length)
+        calculated_focal_length = fov_to_focal_length(calculated_fov, length)
+        assert math.isclose(original_focal_length, calculated_focal_length, abs_tol=10e-5)

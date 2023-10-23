@@ -9,7 +9,7 @@ from paralleldomain.decoding.nuscenes.common import NuScenesDataAccessMixin
 from paralleldomain.decoding.nuscenes.frame_decoder import NuScenesFrameDecoder
 from paralleldomain.decoding.nuscenes.sensor_decoder import NuScenesCameraSensorDecoder, NuScenesLidarSensorDecoder
 from paralleldomain.decoding.sensor_decoder import CameraSensorDecoder, LidarSensorDecoder, RadarSensorDecoder
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.dataset import DatasetMeta
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
@@ -67,6 +67,7 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
             dataset_name=self.dataset_name,
             split_name=self.nu_split_name,
             settings=self.settings,
+            scene_name=scene_name,
         )
 
     def _decode_unordered_scene_names(self) -> List[SceneName]:
@@ -103,31 +104,36 @@ class NuScenesDatasetDecoder(DatasetDecoder, NuScenesDataAccessMixin):
 
 class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
     def __init__(
-        self, dataset_path: Union[str, AnyPath], dataset_name: str, split_name: str, settings: DecoderSettings
+        self,
+        dataset_path: Union[str, AnyPath],
+        dataset_name: str,
+        scene_name: SceneName,
+        split_name: str,
+        settings: DecoderSettings,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path), settings=settings)
+        SceneDecoder.__init__(self=self, dataset_name=str(dataset_path), settings=settings, scene_name=scene_name)
         NuScenesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
-    def _decode_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    def _decode_set_metadata(self) -> Dict[str, Any]:
         # Because there are multiple nuScenes scenes in a log entry, this combines the log and scene metadata.
-        scene_metadata = self.nu_scene_by_scene_name[scene_name]
+        scene_metadata = self.nu_scene_by_scene_name[self.scene_name]
         log_metadata = self.nu_logs_by_log_token[scene_metadata["log_token"]]
         return {**log_metadata, **scene_metadata}
 
-    def _decode_set_description(self, scene_name: SceneName) -> str:
-        return self.nu_scene_by_scene_name[scene_name]["description"]
+    def _decode_set_description(self) -> str:
+        return self.nu_scene_by_scene_name[self.scene_name]["description"]
 
-    def _decode_frame_id_set(self, scene_name: SceneName) -> Set[FrameId]:
-        scene_token = self.nu_scene_name_to_scene_token[scene_name]
+    def _decode_frame_id_set(self) -> Set[FrameId]:
+        scene_token = self.nu_scene_name_to_scene_token[self.scene_name]
         return {sample["token"] for sample in self.nu_samples[scene_token]}
 
-    def _decode_sensor_names_by_modality(
-        self, scene_name: SceneName, modality: List[str] = ["camera", "lidar"]
-    ) -> List[SensorName]:
-        scene_token = self.nu_scene_name_to_scene_token[scene_name]
+    def _decode_sensor_names_by_modality(self, modality: List[str] = None) -> List[SensorName]:
+        if modality is None:
+            modality = ["camera", "lidar"]
+        scene_token = self.nu_scene_name_to_scene_token[self.scene_name]
         samples = self.nu_samples[scene_token]
         sample_tokens = [sample["token"] for sample in samples]
         sensor_names = set()
@@ -143,69 +149,70 @@ class NuScenesSceneDecoder(SceneDecoder[datetime], NuScenesDataAccessMixin):
                     sensor_names.add(sensor["channel"])
         return list(sensor_names)
 
-    def _decode_sensor_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["camera", "lidar"])
+    def _decode_sensor_names(self) -> List[SensorName]:
+        return self._decode_sensor_names_by_modality(modality=["camera", "lidar"])
 
-    def _decode_camera_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["camera"])
+    def _decode_camera_names(self) -> List[SensorName]:
+        return self._decode_sensor_names_by_modality(modality=["camera"])
 
-    def _decode_lidar_names(self, scene_name: SceneName) -> List[SensorName]:
-        return self._decode_sensor_names_by_modality(scene_name=scene_name, modality=["lidar"])
+    def _decode_lidar_names(self) -> List[SensorName]:
+        return self._decode_sensor_names_by_modality(modality=["lidar"])
 
-    def _decode_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def _decode_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         return self.nu_class_maps
 
-    def _create_camera_sensor_decoder(
-        self, scene_name: SceneName, camera_name: SensorName, dataset_name: str
-    ) -> CameraSensorDecoder[datetime]:
+    def _create_camera_sensor_decoder(self, sensor_name: SensorName) -> CameraSensorDecoder[datetime]:
         return NuScenesCameraSensorDecoder(
             dataset_path=self._dataset_path,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset_name,
+            sensor_name=sensor_name,
             split_name=self.split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _create_lidar_sensor_decoder(
-        self, scene_name: SceneName, lidar_name: SensorName, dataset_name: str
-    ) -> LidarSensorDecoder[datetime]:
+    def _create_lidar_sensor_decoder(self, sensor_name: SensorName) -> LidarSensorDecoder[datetime]:
         return NuScenesLidarSensorDecoder(
             dataset_path=self._dataset_path,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset_name,
+            sensor_name=sensor_name,
             split_name=self.split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _create_frame_decoder(
-        self, scene_name: SceneName, frame_id: FrameId, dataset_name: str
-    ) -> FrameDecoder[datetime]:
+    def _create_frame_decoder(self, frame_id: FrameId) -> FrameDecoder[datetime]:
         return NuScenesFrameDecoder(
             dataset_path=self._dataset_path,
-            dataset_name=dataset_name,
+            dataset_name=self.dataset_name,
+            frame_id=frame_id,
             split_name=self.split_name,
-            scene_name=scene_name,
+            scene_name=self.scene_name,
             settings=self.settings,
+            scene_decoder=self,
+            is_unordered_scene=False,
         )
 
-    def _decode_frame_id_to_date_time_map(self, scene_name: SceneName) -> Dict[FrameId, datetime]:
-        scene_token = self.nu_scene_name_to_scene_token[scene_name]
+    def _decode_frame_id_to_date_time_map(self) -> Dict[FrameId, datetime]:
+        scene_token = self.nu_scene_name_to_scene_token[self.scene_name]
         samples = self.nu_samples[scene_token]
         return {s["token"]: datetime.fromtimestamp(int(s["timestamp"]) / 1000000) for s in samples}
 
-    def _decode_radar_names(self, scene_name: SceneName) -> List[SensorName]:
+    def _decode_radar_names(self) -> List[SensorName]:
         """Radar not supported"""
         return list()
 
-    def _create_radar_sensor_decoder(
-        self, scene_name: SceneName, radar_name: SensorName, dataset_name: str
-    ) -> RadarSensorDecoder[None]:
+    def _create_radar_sensor_decoder(self, sensor_name: SensorName) -> RadarSensorDecoder[None]:
         raise ValueError("Currently do not support radar data!")
 
-    def _decode_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         anno_identifiers = list()
         if self.split_name != "v1.0-test":
-            for frame_id in self.get_frame_ids(scene_name=scene_name):
+            for frame_id in self.get_frame_ids():
                 if frame_id in self.nu_frame_id_to_available_anno_types:
                     has_obj, has_surface = self.nu_frame_id_to_available_anno_types[frame_id]
                     if has_obj:

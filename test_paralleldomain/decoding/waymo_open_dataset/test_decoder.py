@@ -197,10 +197,12 @@ def test_decode_lidar_bounding_boxes_3d(waymo_dataset_train_scene: UnorderedScen
 
 def test_decode_class_maps(waymo_dataset_train_scene: UnorderedScene):
     class_maps = waymo_dataset_train_scene.class_maps
-    assert len(class_maps) == 2
+    assert len(class_maps) == 3
+    assert AnnotationTypes.BoundingBoxes2D in class_maps
     assert AnnotationTypes.SemanticSegmentation2D in class_maps
     assert AnnotationTypes.BoundingBoxes3D in class_maps
     assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 29
+    assert len(class_maps[AnnotationTypes.BoundingBoxes2D].class_names) == 3
     assert len(class_maps[AnnotationTypes.BoundingBoxes3D].class_names) == 5
 
 
@@ -214,10 +216,12 @@ def test_decode_sensor_frame_class_maps(waymo_dataset_train_scene: UnorderedScen
         if AnnotationTypes.InstanceSegmentation2D in camera_frame.available_annotation_types:
             found_labels += 1
             class_maps = camera_frame.class_maps
-            assert len(class_maps) == 2
+            assert len(class_maps) == 3
             assert AnnotationTypes.SemanticSegmentation2D in class_maps
+            assert AnnotationTypes.BoundingBoxes2D in class_maps
             assert AnnotationTypes.BoundingBoxes3D in class_maps
             assert len(class_maps[AnnotationTypes.SemanticSegmentation2D].class_names) == 29
+            assert len(class_maps[AnnotationTypes.BoundingBoxes2D].class_names) == 3
             assert len(class_maps[AnnotationTypes.BoundingBoxes3D].class_names) == 5
         if found_labels > 3:
             break

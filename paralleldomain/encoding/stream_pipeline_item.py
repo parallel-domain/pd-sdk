@@ -34,7 +34,6 @@ class StreamPipelineItem(ScenePipelineItem):
         if self.scene_decoder is not None:
             return Scene(
                 decoder=self.scene_decoder,
-                name=self.scene_name,
             )
         return None
 
@@ -46,7 +45,6 @@ class StreamPipelineItem(ScenePipelineItem):
     def frame(self) -> Optional[Frame]:
         if self.frame_decoder is not None:
             return Frame[None](
-                frame_id=self.frame_id,
                 decoder=self.frame_decoder,
             )
         return None

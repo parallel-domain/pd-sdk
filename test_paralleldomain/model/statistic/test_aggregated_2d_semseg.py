@@ -2,19 +2,20 @@ from datetime import datetime
 from typing import List
 
 import numpy as np
+import pytest
 
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
 from paralleldomain.model.annotation import (
-    SemanticSegmentation2D,
-    InstanceSegmentation2D,
     AnnotationIdentifier,
     BoundingBox2D,
+    InstanceSegmentation2D,
+    SemanticSegmentation2D,
 )
-from paralleldomain.model.class_mapping import ClassMap, ClassDetail
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
+from paralleldomain.model.sensor import CameraSensorFrame, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.statistics.aggregated_2d_semantic_segmentation_pxl_counts import (
     Aggregated2DSemanticSegmentationPixelCounts,
 )
@@ -34,6 +35,9 @@ def get_sem_seg_masks(frame_id: List[str]):
 
 
 def test_recorder(decoder: DatasetDecoder):
+    if decoder.get_format() != "dgp":
+        # Sensor names are hard coded to the dgp dataset. WOnt return any samples for other sets
+        pytest.skip()
     dataset = decoder.get_dataset()
 
     SS2D = Aggregated2DSemanticSegmentationPixelCounts()
@@ -49,9 +53,9 @@ def test_semantic_segmentation():
     SS2D = Aggregated2DSemanticSegmentationPixelCounts()
 
     for frame_id in [["1"], ["2"]]:
-        scene_decoder = InMemorySceneDecoder(frame_ids=frame_id)
+        scene_decoder = InMemorySceneDecoder(frame_ids=frame_id, scene_name="scene_01")
         class_ids = get_sem_seg_masks(frame_id=frame_id)
-        scene = Scene(name="test_scene", decoder=scene_decoder)
+        scene = Scene(decoder=scene_decoder)
 
         image = np.zeros([512, 512, 3], dtype=np.uint8)
         semseg2d = SemanticSegmentation2D(class_ids=class_ids)
@@ -69,6 +73,8 @@ def test_semantic_segmentation():
         frame_decoder = InMemoryCameraFrameDecoder(
             dataset_name="test",
             scene_name="test_scene",
+            sensor_name="test_sensor",
+            frame_id=frame_id,
             extrinsic=SensorExtrinsic(),
             sensor_pose=SensorPose(),
             annotations={semseg_annotation_key: semseg2d},
@@ -81,7 +87,7 @@ def test_semantic_segmentation():
             date_time=datetime.now(),
         )
 
-        sensor_frame = CameraSensorFrame(sensor_name="test_sensor", frame_id=frame_id, decoder=frame_decoder)
+        sensor_frame = CameraSensorFrame(decoder=frame_decoder)
         SS2D.update(scene=scene, sensor_frame=sensor_frame)
 
     assert len(SS2D._recorder["semseg_2d_annotations"]) == 2

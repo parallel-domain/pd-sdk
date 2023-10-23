@@ -10,10 +10,10 @@ class Polygon3D(Polyline3D):
     """A closed polygon made a collection of 3D Lines.
 
     Args:
-        lines: :attr:`paralleldomain.model.annotation.polygon_3d.Polygon3D.lines`
-        class_id: :attr:`paralleldomain.model.annotation.polygon_3d.Polygon3D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.polygon_3d.Polygon3D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.polygon_3d.Polygon3D.attributes`
+        lines: :attr:`Polygon3D.lines`
+        class_id: :attr:`Polygon3D.class_id`
+        instance_id: :attr:`Polygon3D.instance_id`
+        attributes: :attr:`Polygon3D.attributes`
 
     Attributes:
         lines: Ordered list of :obj:`Line3D` instances
@@ -32,7 +32,7 @@ class Polygons3D(Annotation):
     """Collection of 3D Polygons
 
     Args:
-        polygons: :attr:`paralleldomain.model.annotation.polygon_3d.Polygon3D.polygons`
+        polygons: :attr:`Polygons3D.polygons`
 
     Attributes:
         polygons: Ordered list of :obj:`Polygon3D` instances

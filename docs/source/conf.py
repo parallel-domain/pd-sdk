@@ -31,13 +31,14 @@ author = "Nisse Knudsen, Phillip Thomas"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions: List[str] = [
-    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
     "sphinx_autodoc_typehints",
+    "sphinx.ext.intersphinx",  # add links to other docs
     "sphinx_mdinclude",
-    # "m2r2",  # .. mdinclude:: package
-    "sphinx_rtd_theme",
-    "nbsphinx",
+    "sphinx_material",
 ]
 
 
@@ -52,10 +53,6 @@ napoleon_google_docstring = True
 napoleon_use_param = True
 
 highlight_language = "python3"
-nbsphinx_execute = "never"
-# nbsphinx_input_prompt = "In [%s]:"
-# nbsphinx_output_prompt = "Out[%s]:"
-nbsphinx_timeout = 600
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path: List[str] = ["_templates"]
@@ -72,14 +69,51 @@ source_suffix = [".rst", ".md"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme: str = "sphinx_rtd_theme"
+html_theme: str = "sphinx_material"
+
+html_show_sourcelink = True
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {"collapse_navigation": False}
+# html_theme_options = {"collapse_navigation": False}
+
+# Material theme options (see theme.conf for more information)
+html_theme_options = {
+    # Set the name of the project to appear in the navigation.
+    "nav_title": "Parallel Domain SDK",
+    # Set you GA account ID to enable tracking
+    # "google_analytics_account": "UA-XXXXX",
+    # Specify a base_url used to generate sitemap.xml. If not
+    # specified, then no sitemap will be built.
+    "base_url": "https://github.com/parallel-domain/pd-sdk",
+    # Set the color and the accent color
+    "color_primary": "blue",
+    "color_accent": "light-blue",
+    # Set the repo location to get a badge with stats
+    "repo_url": "https://github.com/parallel-domain/pd-sdk",
+    "repo_name": "PD SDK",
+    # Visible levels of the global TOC; -1 means unlimited
+    "globaltoc_depth": -1,
+    # If False, expand all TOC entries
+    "globaltoc_collapse": True,
+    # If True, show hidden TOC entries
+    "globaltoc_includehidden": False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path: List[str] = ["_static"]
+html_css_files = ["custom.css"]
+
+# -- Options for Linking  ----------------------------------------------------
+
+version_link = f"{sys.version_info.major}.{sys.version_info.minor}"
+intersphinx_mapping = {
+    "python": (f"https://docs.python.org/{version_link}", None),  # link to used Python version
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "matplotlib": ("https://matplotlib.org/stable", None),
+    "plotly": ("https://plotly.com/python-api-reference", None),
+}

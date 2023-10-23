@@ -1,19 +1,27 @@
 import random
 from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, Generator, Generic, Iterable, List, Optional, Set, Tuple, Type, TypeVar, Union, overload
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import pypeln
 
 from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType
 from paralleldomain.model.class_mapping import ClassMap
-from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
-
 from paralleldomain.model.frame import Frame
 from paralleldomain.model.sensor import (
     CameraSensor,
@@ -23,58 +31,67 @@ from paralleldomain.model.sensor import (
     RadarSensor,
     RadarSensorFrame,
     SensorFrame,
+    TSensorFrameType,
 )
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 
 
 class UnorderedSceneDecoderProtocol(Protocol[TDateTime]):
-    def get_set_description(self, scene_name: SceneName) -> str:
+    @property
+    def scene_name(self) -> SceneName:
         pass
 
-    def get_set_metadata(self, scene_name: SceneName) -> Dict[str, Any]:
+    @property
+    def dataset_name(self) -> str:
         pass
 
-    def get_available_annotation_identifiers(self, scene_name: SceneName) -> List[AnnotationIdentifier]:
+    def get_set_description(self) -> str:
+        pass
+
+    def get_set_metadata(self) -> Dict[str, Any]:
+        pass
+
+    def get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         pass
 
     def get_frame(
         self,
-        scene_name: SceneName,
         frame_id: FrameId,
     ) -> Frame[TDateTime]:
         pass
 
-    def get_sensor_names(self, scene_name: SceneName) -> List[str]:
+    def get_sensor_names(self) -> List[str]:
         pass
 
-    def get_camera_names(self, scene_name: SceneName) -> List[str]:
+    def get_camera_names(self) -> List[str]:
         pass
 
-    def get_lidar_names(self, scene_name: SceneName) -> List[str]:
+    def get_lidar_names(self) -> List[str]:
         pass
 
-    def get_radar_names(self, scene_name: SceneName) -> List[str]:
+    def get_radar_names(self) -> List[str]:
         pass
 
-    def get_frame_ids(self, scene_name: SceneName) -> Set[FrameId]:
+    def get_frame_ids(self) -> Set[FrameId]:
         pass
 
-    def get_class_maps(self, scene_name: SceneName) -> Dict[AnnotationIdentifier, ClassMap]:
+    def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
         pass
 
-    def get_camera_sensor(self, scene_name: SceneName, camera_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[TDateTime]:
         pass
 
-    def get_lidar_sensor(self, scene_name: SceneName, lidar_name: SensorName) -> LidarSensor[TDateTime]:
+    def get_lidar_sensor(self, lidar_name: SensorName) -> LidarSensor[TDateTime]:
         pass
 
-    def get_radar_sensor(self, scene_name: SceneName, radar_name: SensorName) -> RadarSensor[TDateTime]:
+    def get_radar_sensor(self, radar_name: SensorName) -> RadarSensor[TDateTime]:
         pass
 
-    def clear_from_cache(self, scene_name: SceneName):
+    def clear_from_cache(self):
         pass
 
 
@@ -88,10 +105,10 @@ class UnorderedScene(Generic[TDateTime]):
 
     def __init__(
         self,
-        name: SceneName,
         decoder: UnorderedSceneDecoderProtocol[TDateTime],
+        is_ordered: bool = False,
     ):
-        self._name = name
+        self.is_ordered = is_ordered
         self._decoder = decoder
         self._number_of_camera_frames = None
         self._number_of_lidar_frames = None
@@ -100,31 +117,41 @@ class UnorderedScene(Generic[TDateTime]):
 
     @property
     def name(self) -> str:
-        return self._name
+        return self._decoder.scene_name
+
+    @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
 
     @property
     def description(self) -> str:
-        return self._decoder.get_set_description(scene_name=self._name)
+        return self._decoder.get_set_description()
 
     @property
     def metadata(self) -> Dict[str, Any]:
-        return self._decoder.get_set_metadata(scene_name=self._name)
+        return self._decoder.get_set_metadata()
 
     @property
     def frames(self) -> Set[Frame[TDateTime]]:
         return {self.get_frame(frame_id=frame_id) for frame_id in self.frame_ids}
 
+    def _get_frame_ids(self) -> Set[FrameId]:
+        return self._decoder.get_frame_ids()
+
     @property
     def frame_ids(self) -> Set[FrameId]:
-        return self._decoder.get_frame_ids(scene_name=self.name)
+        return self._get_frame_ids()
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list({ai.annotation_type for ai in self.available_annotation_identifiers})
 
+    def _get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        return self._decoder.get_available_annotation_identifiers()
+
     @property
     def available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
-        return self._decoder.get_available_annotation_identifiers(scene_name=self.name)
+        return self._get_available_annotation_identifiers()
 
     def get_annotation_identifiers_of_type(self, annotation_type: Type[T]) -> List[AnnotationIdentifier[T]]:
         return [
@@ -133,44 +160,70 @@ class UnorderedScene(Generic[TDateTime]):
             if issubclass(identifier.annotation_type, annotation_type)
         ]
 
+    def _get_sensor_names(self) -> List[str]:
+        return self._decoder.get_sensor_names()
+
     @property
     def sensor_names(self) -> List[str]:
-        return self._decoder.get_sensor_names(scene_name=self.name)
+        return self._get_sensor_names()
+
+    def _get_camera_names(self) -> List[str]:
+        return self._decoder.get_camera_names()
 
     @property
     def camera_names(self) -> List[str]:
-        return self._decoder.get_camera_names(scene_name=self.name)
+        return self._get_camera_names()
+
+    def _get_lidar_names(self) -> List[str]:
+        return self._decoder.get_lidar_names()
 
     @property
     def lidar_names(self) -> List[str]:
-        return self._decoder.get_lidar_names(scene_name=self.name)
+        return self._get_lidar_names()
+
+    def _get_radar_names(self) -> List[str]:
+        return self._decoder.get_radar_names()
 
     @property
     def radar_names(self) -> List[str]:
-        return self._decoder.get_radar_names(scene_name=self.name)
+        return self._get_radar_names()
 
     def get_frame(self, frame_id: FrameId) -> Frame[TDateTime]:
-        return self._decoder.get_frame(scene_name=self.name, frame_id=frame_id)
+        return self._decoder.get_frame(frame_id=frame_id)
 
     @property
-    def sensors(self) -> Generator[Union[CameraSensor[TDateTime], LidarSensor[TDateTime]], None, None]:
+    def sensors(
+        self,
+    ) -> Generator[
+        Union[
+            CameraSensor[CameraSensorFrame[TDateTime]],
+            LidarSensor[LidarSensorFrame[TDateTime]],
+            RadarSensor[RadarSensorFrame[TDateTime]],
+        ],
+        None,
+        None,
+    ]:
         return (a for a in chain(self.cameras, self.lidars, self.radars))
 
     @property
-    def cameras(self) -> Generator[CameraSensor[TDateTime], None, None]:
+    def cameras(self) -> Generator[CameraSensor[TSensorFrameType], None, None]:
         yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.camera_names)
 
     @property
-    def lidars(self) -> Generator[LidarSensor[TDateTime], None, None]:
+    def lidars(self) -> Generator[LidarSensor[TSensorFrameType], None, None]:
         yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.lidar_names)
 
     @property
-    def radars(self) -> Generator[RadarSensor[TDateTime], None, None]:
+    def radars(self) -> Generator[RadarSensor[TSensorFrameType], None, None]:
         yield from self.sensor_pipeline(shuffle=False, concurrent=False, sensor_names=self.radar_names)
 
     def get_sensor(
         self, sensor_name: SensorName
-    ) -> Union[CameraSensor[TDateTime], LidarSensor[TDateTime], RadarSensor[TDateTime]]:
+    ) -> Union[
+        CameraSensor[CameraSensorFrame[TDateTime]],
+        LidarSensor[LidarSensorFrame[TDateTime]],
+        RadarSensor[RadarSensorFrame[TDateTime]],
+    ]:
         if sensor_name in self.camera_names:
             return self.get_camera_sensor(camera_name=sensor_name)
         elif sensor_name in self.lidar_names:
@@ -180,24 +233,27 @@ class UnorderedScene(Generic[TDateTime]):
         else:
             raise ValueError(f"Sensor {sensor_name} could not be found.")
 
-    def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[TDateTime]:
+    def get_camera_sensor(self, camera_name: SensorName) -> CameraSensor[CameraSensorFrame[TDateTime]]:
         if camera_name not in self.camera_names:
             raise ValueError(f"Camera {camera_name} could not be found.")
-        return self._decoder.get_camera_sensor(scene_name=self.name, camera_name=camera_name)
+        return self._decoder.get_camera_sensor(camera_name=camera_name)
 
-    def get_lidar_sensor(self, lidar_name: SensorName) -> LidarSensor[TDateTime]:
+    def get_lidar_sensor(self, lidar_name: SensorName) -> LidarSensor[LidarSensorFrame[TDateTime]]:
         if lidar_name not in self.lidar_names:
             raise ValueError(f"LiDAR {lidar_name} could not be found.")
-        return self._decoder.get_lidar_sensor(scene_name=self.name, lidar_name=lidar_name)
+        return self._decoder.get_lidar_sensor(lidar_name=lidar_name)
 
-    def get_radar_sensor(self, radar_name: SensorName) -> RadarSensor[TDateTime]:
+    def get_radar_sensor(self, radar_name: SensorName) -> RadarSensor[RadarSensorFrame[TDateTime]]:
         if radar_name not in self.radar_names:
             raise ValueError(f"LiDAR {radar_name} could not be found.")
-        return self._decoder.get_radar_sensor(scene_name=self.name, radar_name=radar_name)
+        return self._decoder.get_radar_sensor(radar_name=radar_name)
+
+    def _get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
+        return self._decoder.get_class_maps()
 
     @property
     def class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
-        return self._decoder.get_class_maps(scene_name=self.name)
+        return self._get_class_maps()
 
     @overload
     def get_class_map(self, annotation_type: Type[T], name: str = None) -> ClassMap:
@@ -338,7 +394,15 @@ class UnorderedScene(Generic[TDateTime]):
         sensor_names: Optional[Iterable[SensorName]] = None,
         max_queue_size: int = 8,
         max_workers: int = 4,
-    ) -> Generator[Frame[TDateTime], None, None]:
+    ) -> Generator[
+        Union[
+            CameraSensor[CameraSensorFrame[TDateTime]],
+            LidarSensor[LidarSensorFrame[TDateTime]],
+            RadarSensor[RadarSensorFrame[TDateTime]],
+        ],
+        None,
+        None,
+    ]:
         runenv = pypeln.sync
         if concurrent:
             if not shuffle:
@@ -411,4 +475,4 @@ class UnorderedScene(Generic[TDateTime]):
             )
 
     def clear_from_cache(self):
-        self._decoder.clear_from_cache(scene_name=self.name)
+        self._decoder.clear_from_cache()

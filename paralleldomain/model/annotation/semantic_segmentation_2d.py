@@ -9,10 +9,11 @@ from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by
 
 @dataclass
 class SemanticSegmentation2D(Annotation):
-    """Represents a 2D Semantic Segmentation mask for a camera image.
+    """
+    Represents a 2D Semantic Segmentation mask for a camera image.
 
     Args:
-        class_ids: :attr:`paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation2D.class_ids`
+        class_ids: :attr:`SemanticSegmentation2D.class_ids`
 
     Attributes:
         class_ids: Matrix of shape `(H x W x 1)`, where `H` is height and `W` is width of corresponding camera image.
@@ -22,14 +23,15 @@ class SemanticSegmentation2D(Annotation):
     class_ids: np.ndarray
 
     def get_class_mask(self, class_id: int) -> np.ndarray:
-        """Returns a `bool` mask where class is present.
+        """
+        Returns a `bool` mask where class is present.
 
         Args:
             class_id: ID of class to be masked
 
         Returns:
-            Mask of same shape as :py:attr:`~class_ids` and `bool` values.
-            `True` where pixel matches class, `False` where it doesn't.
+            Mask of same shape as :py:attr:`~class_ids` and `bool` values. `True` where pixel matches class,
+                `False` where it doesn't.
         """
         return boolean_mask_by_value(mask=self.class_ids, value=class_id)
 
@@ -40,15 +42,14 @@ class SemanticSegmentation2D(Annotation):
             class_ids: IDs of classes to be masked
 
         Returns:
-            Mask of same shape as `class_ids` and `bool` values.
-            `True` where pixel matches one of the classes, `False` where it doesn't.
+            Mask of same shape as `class_ids` and `bool` values. `True` where pixel matches one of the classes,
+                `False` where it doesn't.
         """
         return boolean_mask_by_values(mask=self.class_ids, values=class_ids)
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Outputs :attr:`paralleldomain.model.annotation.semantic_segmentation_2d.SemanticSegmentation.class_ids` mask
-        as RGB-encoded image matrix with shape `(H x W x 3)`,
+        """Returns :attr:`SemanticSegmentation2D.class_ids` mask as RGB-encoded image matrix with shape `(H x W x 3)`,
         with `R` (index: 0) being the lowest and `B` (index: 2) being the highest 8 bit."""
         return encode_int32_as_rgb8(mask=self.class_ids)
 

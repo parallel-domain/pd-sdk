@@ -8,14 +8,15 @@ from paralleldomain.model.geometry.point_3d import Point3DGeometry
 
 @dataclass
 class Point3D(Point3DGeometry):
-    """Represents a 3D Point.
+    """
+    Represents a 3D Point.
 
     Args:
-        x: :attr:`paralleldomain.model.annotation.point_3d.Point3D.x`
-        y: :attr:`paralleldomain.model.annotation.point_3d.Point3D.y`
-        class_id: :attr:`paralleldomain.model.annotation.point_3d.Point3D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.point_3d.Point3D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.point_3d.Point3D.attributes`
+        x: :attr:`Point3D.x`
+        y: :attr:`Point3D.y`
+        class_id: :attr:`Point3D.class_id`
+        instance_id: :attr:`Point3D.instance_id`
+        attributes: :attr:`Point3D.attributes`
 
     Attributes:
         x: coordinate along x-axis in image pixels
@@ -37,10 +38,11 @@ class Point3D(Point3DGeometry):
 
 @dataclass
 class Points3D(Annotation):
-    """Collection of 3D Points
+    """
+    Collection of 3D Points
 
     Args:
-        points: :attr:`paralleldomain.model.annotation.point_3d.Points3D.points`
+        points: :attr:`Points3D.points`
 
     Attributes:
         points: Unordered list of :obj:`Point3D` instances

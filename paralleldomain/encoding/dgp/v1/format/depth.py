@@ -1,5 +1,7 @@
 from typing import Union
 
+import numpy as np
+
 from paralleldomain.common.dgp.v1.constants import ANNOTATION_TYPE_MAP_INV, DirectoryName
 from paralleldomain.encoding.dgp.v1.format.common import ANNOTATIONS_KEY, CUSTOM_FORMAT_KEY, CommonDGPV1FormatMixin
 from paralleldomain.encoding.pipeline_encoder import PipelineItem
@@ -34,7 +36,7 @@ class DepthDGPV1Mixin(CommonDGPV1FormatMixin):
         if isinstance(depth_or_path, AnyPath):
             save_path = fsio.copy_file(source=depth_or_path, target=output_path)
         else:
-            save_path = fsio.write_npz(obj=dict(data=depth_or_path.depth[..., 0]), path=output_path)
+            save_path = fsio.write_npz(obj=dict(data=depth_or_path.depth[..., 0].astype(np.float32)), path=output_path)
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.Depth])

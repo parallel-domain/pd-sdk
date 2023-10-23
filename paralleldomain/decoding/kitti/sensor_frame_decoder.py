@@ -1,26 +1,26 @@
 import logging
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from typing import Dict, Optional, List, Tuple, Union
 
 from paralleldomain.decoding.directory.common import resolve_scene_folder
 from paralleldomain.decoding.directory.sensor_frame_decoder import DirectoryBaseSensorFrameDecoder
 from paralleldomain.decoding.kitti.common import _cached_point_cloud, _cached_sensor_frame_calibrations
 from paralleldomain.decoding.sensor_frame_decoder import LidarSensorFrameDecoder, T
 from paralleldomain.model.annotation import (
+    AnnotationIdentifier,
     AnnotationType,
     AnnotationTypes,
     BoundingBox3D,
     BoundingBoxes3D,
-    AnnotationIdentifier,
 )
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.point_cloud import PointCloud
 from paralleldomain.model.sensor import SensorExtrinsic, SensorPose
 from paralleldomain.model.type_aliases import FrameId, SensorName
 from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.transformation import Transformation
 from paralleldomain.utilities.coordinate_system import CoordinateSystem
+from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
 RDF_TO_FLU = CoordinateSystem("RDF") > CoordinateSystem("FLU")
@@ -52,24 +52,24 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
                              detection, needed for p/r curves, higher is better.
     """
 
-    def __init__(self, pointcloud_dim: int, **kwargs):
-        self.pointcloud_dim = pointcloud_dim
-        super().__init__(**kwargs)
+    def __init__(self, point_cloud_dim: int, sensor_name: SensorName, frame_id: FrameId, **kwargs):
+        self.point_cloud_dim = point_cloud_dim
+        super().__init__(sensor_name=sensor_name, frame_id=frame_id, **kwargs)
 
-    def _decode_calibration(self, scene_folder_path: AnyPath, frame_id: FrameId) -> Dict:
-        return _cached_sensor_frame_calibrations(scene_folder_path=scene_folder_path, frame_id=frame_id)
+    def _decode_calibration(self, scene_folder_path: AnyPath) -> Dict:
+        return _cached_sensor_frame_calibrations(scene_folder_path=scene_folder_path, frame_id=self.frame_id)
 
-    def _decode_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> SensorExtrinsic:
+    def _decode_extrinsic(self) -> SensorExtrinsic:
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
-        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder, frame_id=frame_id)
+        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder)
 
         return SensorExtrinsic.from_transformation_matrix(
             calibration_dict["Tr_imu_to_velo"], approximate_orthogonal=True
         ).inverse
 
-    def _decode_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> SensorPose:
+    def _decode_sensor_pose(self) -> SensorPose:
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
-        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder, frame_id=frame_id)
+        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder)
 
         return SensorPose.from_transformation_matrix(
             calibration_dict["Tr_imu_to_velo"], approximate_orthogonal=True
@@ -94,9 +94,9 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
     def _get_euler_angles(self, split_line: List[str]) -> List[float]:
         return [0.0, self._get_yaw(split_line=split_line), 0.0]
 
-    def _decode_annotations(self, sensor_name: str, frame_id: FrameId, identifier: AnnotationIdentifier[T]) -> T:
+    def _decode_annotations(self, identifier: AnnotationIdentifier[T]) -> T:
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
-        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder, frame_id=frame_id)
+        calibration_dict = self._decode_calibration(scene_folder_path=scene_folder)
 
         # note that 3D annotations are in camera coordinate system (RDF),
         # PD-SDK annotations need to be in sensor coordinate system (FLU)
@@ -106,7 +106,7 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
 
         if identifier.annotation_type is AnnotationTypes.BoundingBoxes3D:
             annotation_file = (
-                scene_folder / self._data_type_to_folder_name[AnnotationTypes.BoundingBoxes3D] / f"{frame_id}.txt"
+                scene_folder / self._data_type_to_folder_name[AnnotationTypes.BoundingBoxes3D] / f"{self.frame_id}.txt"
             )
             class_map = self.get_class_maps()[identifier.annotation_type]
 
@@ -149,40 +149,40 @@ class KittiLidarSensorFrameDecoder(DirectoryBaseSensorFrameDecoder, LidarSensorF
             raise NotImplementedError(f"{identifier.annotation_type} is not supported!")
 
     def _read_from_cache_point_cloud(self, pointcloud_file: AnyPath):
-        return _cached_point_cloud(pointcloud_file=str(pointcloud_file), pointcloud_dim=self.pointcloud_dim)
+        return _cached_point_cloud(pointcloud_file=str(pointcloud_file), point_cloud_dim=self.point_cloud_dim)
 
-    def _decode_point_cloud_size(self, sensor_name: SensorName, frame_id: FrameId) -> int:
+    def _decode_point_cloud_size(self) -> int:
         pass
 
-    def _decode_point_cloud_xyz(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_xyz(self) -> Optional[np.ndarray]:
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
 
-        pointcloud_file = scene_folder / self._data_type_to_folder_name[PointCloud] / f"{frame_id}.bin"
+        pointcloud_file = scene_folder / self._data_type_to_folder_name[PointCloud] / f"{self.frame_id}.bin"
 
         point_cloud_data = self._read_from_cache_point_cloud(pointcloud_file=pointcloud_file)
         xyz = point_cloud_data[:, :3]
         return xyz
 
-    def _decode_point_cloud_rgb(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_rgb(self) -> Optional[np.ndarray]:
         pass
 
-    def _decode_point_cloud_intensity(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_intensity(self) -> Optional[np.ndarray]:
         scene_folder = resolve_scene_folder(dataset_path=self._dataset_path, scene_name=self.scene_name)
 
-        pointcloud_file = scene_folder / self._data_type_to_folder_name[PointCloud] / f"{frame_id}.bin"
+        pointcloud_file = scene_folder / self._data_type_to_folder_name[PointCloud] / f"{self.frame_id}.bin"
 
         point_cloud_data = self._read_from_cache_point_cloud(pointcloud_file=pointcloud_file)
         intensity = point_cloud_data[:, -1].astype(np.uint8)  # reflectance
         return intensity.reshape(-1, 1)
 
-    def _decode_point_cloud_elongation(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_elongation(self) -> Optional[np.ndarray]:
         pass
 
-    def _decode_point_cloud_timestamp(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_timestamp(self) -> Optional[np.ndarray]:
         pass
 
-    def _decode_point_cloud_ring_index(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_ring_index(self) -> Optional[np.ndarray]:
         pass
 
-    def _decode_point_cloud_ray_type(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[np.ndarray]:
+    def _decode_point_cloud_ray_type(self) -> Optional[np.ndarray]:
         pass

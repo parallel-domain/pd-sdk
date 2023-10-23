@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, Optional, TypeVar
+from typing import Callable, Dict, Optional, TypeVar
 
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
 from paralleldomain.utilities.lazy_load_cache import LAZY_LOAD_CACHE, LazyLoadCache
@@ -30,3 +30,4 @@ class DecoderSettings:
     cache_point_clouds: bool = False
     cache_annotations: bool = False
     distortion_lookups: Dict[SensorName, DistortionLookup] = field(default_factory=dict)
+    model_decorator: Callable[[T], T] = None

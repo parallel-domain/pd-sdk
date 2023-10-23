@@ -1,11 +1,10 @@
 from functools import lru_cache
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from typing import Optional, List, Tuple, Dict, Union
 
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.transformation import Transformation
-
 
 # def rot_2d(points_2d: np.ndarray, theta: float):
 #     c, s = np.cos(theta), np.sin(theta)
@@ -15,12 +14,12 @@ from paralleldomain.utilities.transformation import Transformation
 
 
 @lru_cache(maxsize=10)
-def _cached_point_cloud(pointcloud_file: str, pointcloud_dim: int) -> np.ndarray:
+def _cached_point_cloud(pointcloud_file: str, point_cloud_dim: int) -> np.ndarray:
     with AnyPath(pointcloud_file).open(mode="rb") as fp:
         point_cloud_data = np.frombuffer(fp.read(), dtype="<f4")  # little-endian float32
 
     # Default Kitti is 4 dims (x, y, z, intensity)
-    point_cloud_data = np.reshape(point_cloud_data, (-1, pointcloud_dim))
+    point_cloud_data = np.reshape(point_cloud_data, (-1, point_cloud_dim))
     return point_cloud_data
 
 

@@ -2,18 +2,15 @@ from datetime import datetime
 from typing import List
 
 import numpy as np
+import pytest
 
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
-from paralleldomain.model.annotation import (
-    BoundingBox2D,
-    BoundingBoxes2D,
-    AnnotationIdentifier,
-)
-from paralleldomain.model.class_mapping import ClassMap, ClassDetail
+from paralleldomain.model.annotation import AnnotationIdentifier, BoundingBox2D, BoundingBoxes2D
+from paralleldomain.model.class_mapping import ClassDetail, ClassMap
 from paralleldomain.model.scene import Scene
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
+from paralleldomain.model.sensor import CameraSensorFrame, SensorExtrinsic, SensorIntrinsic, SensorPose
 from paralleldomain.model.statistics.aggregated_2d_bounding_box_annotations import Aggregated2DBoundingBoxAnnotations
 
 
@@ -30,8 +27,10 @@ def get_boxes(frame_id: List[str]):
 
 
 def test_recorder(decoder: DatasetDecoder):
+    if decoder.get_format() != "dgp":
+        # Sensor names are hard coded to the dgp dataset. WOnt return any samples for other sets
+        pytest.skip()
     dataset = decoder.get_dataset()
-
     BB2D = Aggregated2DBoundingBoxAnnotations()
     for sensor_frame, _, scene in dataset.sensor_frame_pipeline(
         shuffle=True, only_cameras=True, sensor_names=["camera_front"], frame_ids=["0"]
@@ -45,8 +44,8 @@ def test_aggregation_of_2d_bbox_statistics():
     BB2D = Aggregated2DBoundingBoxAnnotations()
 
     for frame_id in [["1"], ["2"], ["3"]]:
-        scene_decoder = InMemorySceneDecoder(frame_ids=frame_id)
-        scene = Scene(name="test_scene", decoder=scene_decoder)
+        scene_decoder = InMemorySceneDecoder(frame_ids=frame_id, scene_name="scene_01")
+        scene = Scene(decoder=scene_decoder)
 
         image = np.zeros([512, 512, 3], dtype=np.uint8)
         # assigns dummy bounding boxes to the first frame, an empty list of boxes to all other frames
@@ -64,6 +63,8 @@ def test_aggregation_of_2d_bbox_statistics():
         frame_decoder = InMemoryCameraFrameDecoder(
             dataset_name="test",
             scene_name="test_scene",
+            sensor_name="test_sensor",
+            frame_id=frame_id,
             extrinsic=SensorExtrinsic(),
             sensor_pose=SensorPose(),
             # for frame 1 we have bbox annotations with a couple of boxes drawn (see the fnc get_boxes above)
@@ -79,7 +80,7 @@ def test_aggregation_of_2d_bbox_statistics():
             date_time=datetime.now(),
         )
 
-        sensor_frame = CameraSensorFrame(sensor_name="test_sensor", frame_id=frame_id[0], decoder=frame_decoder)
+        sensor_frame = CameraSensorFrame(decoder=frame_decoder)
         BB2D.update(scene=scene, sensor_frame=sensor_frame)
 
     assert "skipped_frames" in BB2D._recorder

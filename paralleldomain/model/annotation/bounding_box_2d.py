@@ -10,25 +10,26 @@ from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeome
 
 @dataclass
 class BoundingBox2D(BoundingBox2DGeometry):
-    """Represents a 2D Bounding Box annotation including geometry.
+    """Represents a 2D Bounding Box annotation including geometry
 
     Args:
-        x: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.x`
-        y: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.y`
-        width: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.width`
-        height: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.height`
-        class_id: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBox2D.attributes`
+        x: :attr:`BoundingBox2D.x`
+        y: :attr:`BoundingBox2D.y`
+        width: :attr:`BoundingBox2D.width`
+        height: :attr:`BoundingBox2D.height`
+        class_id: :attr:`BoundingBox2D.class_id`
+        instance_id: :attr:`BoundingBox2D.instance_id`
+        attributes: :attr:`BoundingBox2D.attributes`
 
     Attributes:
-        x: Top-Left corner in image pixels coordinates along x-axis
-        y: Top-Left corner in image pixels coordinates along y-axis
-        width: Width of box in pixel along x-axis
-        height: Height of box in pixel along y-axis
-        class_id: Class ID of annotated object. Can be used to lookup more details in :obj:`ClassMap`.
+        x: Top-Left corner of bounding box in image pixels coordinates along x-axis
+        y: Top-Left corner of bounding box in image pixels coordinates along y-axis
+        width: Width of bounding box in pixels along x-axis
+        height: Height of bounding box in pixels along y-axis
+        class_id: Class ID of object annotated by bounding box.
         instance_id: Instance ID of annotated object. Can be used to cross-reference with
-            other instance annotation types, e.g., :obj:`InstanceSegmentation2D` or :obj:`InstanceSegmentation3D`.
+            other instance annotation types, e.g., :obj:`AnnotationTypes.InstanceSegmentation2D` or
+            :obj:`AnnotationTypes.InstanceSegmentation3D`.
         attributes: Dictionary of arbitrary object attributes.
     """
 
@@ -46,19 +47,21 @@ class BoundingBox2D(BoundingBox2DGeometry):
 
 @dataclass
 class BoundingBoxes2D(Annotation):
-    """Collection of 2D Bounding Boxes.
+    """
+    Collection of 2D Bounding Boxes
 
     Args:
-        boxes: :attr:`paralleldomain.model.annotation.bounding_box_2d.BoundingBoxes2D.boxes`
+        boxes: :attr:`BoundingBoxes2D.boxes`
 
     Attributes:
-        boxes: Unordered list of :obj:`BoundingBox2D` instances
+        boxes: Unordered list of :obj:`AnnotationTypes.BoundingBox2D`
     """
 
     boxes: List[BoundingBox2D]
 
     def get_box_by_instance_id(self, instance_id: int) -> Optional[BoundingBox2D]:
-        """Returns the box with matching instance ID.
+        """
+        Returns the box with matching instance ID.
 
         Args:
               instance_id: Instance ID of box that should be returned.
@@ -69,7 +72,8 @@ class BoundingBoxes2D(Annotation):
         return next((b for b in self.boxes if b.instance_id == instance_id), None)
 
     def get_boxes_by_attribute_key(self, attr_key: str) -> List[BoundingBox2D]:
-        """Returns all boxes having a certain attribute, independent of value.
+        """
+        Returns all boxes having a certain attribute, independent of value.
 
         Args:
             attr_key: Name of attribute.
@@ -80,7 +84,8 @@ class BoundingBoxes2D(Annotation):
         return [b for b in self.boxes if attr_key in b.attributes]
 
     def get_boxes_by_attribute_value(self, attr_key: str, attr_value: Any) -> List[BoundingBox2D]:
-        """Returns all boxes having the specified attribute and value.
+        """
+        Returns all boxes having the specified attribute and value.
 
         Args:
             attr_key: Name of attribute.
@@ -92,7 +97,8 @@ class BoundingBoxes2D(Annotation):
         return self.get_boxes_by_attribute_values(attr_key=attr_key, attr_values=[attr_value])
 
     def get_boxes_by_attribute_values(self, attr_key: str, attr_values: List[Any]) -> List[BoundingBox2D]:
-        """Returns all boxes having the specified attribute and any of the values.
+        """
+        Returns all boxes having the specified attribute and any of the values.
 
         Args:
             attr_key: Name of attribute.
@@ -106,7 +112,8 @@ class BoundingBoxes2D(Annotation):
         return result if result is not None else []  # if only KeyError, then result is None
 
     def get_boxes_by_class_id(self, class_id: int) -> List[BoundingBox2D]:
-        """Returns all boxes having a the specified class ID.
+        """
+        Returns all boxes having a the specified class ID.
 
         Args:
             class_id: Class ID.
@@ -117,7 +124,8 @@ class BoundingBoxes2D(Annotation):
         return self.get_boxes_by_class_ids([class_id])
 
     def get_boxes_by_class_ids(self, class_ids: List[int]) -> List[BoundingBox2D]:
-        """Returns all boxes having any of the specified class IDs.
+        """
+        Returns all boxes having any of the specified class IDs.
 
         Args:
             class_ids: Class IDs.
@@ -133,9 +141,15 @@ class BoundingBoxes2D(Annotation):
     @staticmethod
     def merge_boxes(target_box: BoundingBox2D, source_box: BoundingBox2D) -> BoundingBox2D:
         """
-        Takes two 2D boxes as input and merges both into a new box.
-        The resulting box has the exact same properties as `target_box`,
-        but with extended `source_box` dimensions merged into it.
+        Merges a 2D Bounding Box into another 2D Bounding Box
+
+        Args:
+            target_box: The 2D Bounding Box into which source_box should be merged
+            source_box: The 2D Bounding Box which should be merged into target_box
+
+        Attributes:
+            2D Bounding Box containing the dimensions of both `target_box` and `source_box` with the attributes of
+                `target_box`
         """
 
         merged_box_geometry = BoundingBox2DGeometry.merge_boxes(target_box=target_box, source_box=source_box)

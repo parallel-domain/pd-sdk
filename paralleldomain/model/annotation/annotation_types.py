@@ -26,52 +26,54 @@ from paralleldomain.model.annotation.surface_normals_3d import SurfaceNormals3D
 
 
 class AnnotationTypes:
-    """Allows to get type-safe access to annotation type related information, e.g., annotation data or class maps.
+    """
+    Type-safe access to annotations and their associated metadata
 
     Attributes:
-        BoundingBoxes2D
-        BoundingBoxes3D
-        SemanticSegmentation2D
-        InstanceSegmentation2D
-        SemanticSegmentation3D
-        InstanceSegmentation3D
-        OpticalFlow
-        BackwardOpticalFlow
-        Depth
-        SurfaceNormals3D
-        SurfaceNormals2D
-        SceneFlow
-        BackwardSceneFlow
-        MaterialProperties2D
-        MaterialProperties3D
-        Albedo2D
-        Points2D
-        Polygons2D
-        Polylines2D
-        PointCaches
+        BoundingBoxes2D - Two-Dimensional bounding box annotations
+        BoundingBoxes3D - Three-Dimensional bounding box annotations
+        SemanticSegmentation2D  - Two-Dimensional semantic segmentation annotations
+        InstanceSegmentation2D  - Two-Dimensional instance segmentation annotations
+        SemanticSegmentation3D  - Three-Dimensional semantic segmentation annotations
+        InstanceSegmentation3D  - Three-Dimensional instance segmentation annotations
+        OpticalFlow - Optical flow mask annotation
+        BackwardOpticalFlow - Backwards optical flow mask annotation
+        Depth - Depth mask annotation
+        SurfaceNormals2D - Two-Dimensional surface normal annotation
+        SurfaceNormals3D - Three-Dimensional surface normal annotation
+        SceneFlow - Point-Cloud scene flow annotation
+        BackwardSceneFlow - Point-Cloud backwards scene flow annotation
+        MaterialProperties2D - Two-Dimensional material properties annotation
+        MaterialProperties3D - Three-Dimensional material properties annotation
+        Albedo2D - Two-Dimensional albedo documentation
+        Points2D - Two-Dimensional key point annotations
+        Points3D - Three-Dimensional key point annotations
+        Polygons2D - Two-Dimensional polygon annotation
+        Polygons3D - Three-Dimensional polygon annotation
+        Polylines2D - Two-Dimensional polyline annotation
+        Polylines3D - Three-Dimensional polyline annotation
+        PointCaches - Three-Dimensional point cache annotation
 
     Examples:
-        Access 2D Bounding Box annotations for a camera frame:
-        ::
+        Access 2D Bounding Box annotations for a camera frame::
 
-            camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+            >>> camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+            >>> camera_frame: SensorFrame = ...  # get any camera's SensorFrame
+            >>>
+            >>> boxes_2d = camera_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
+            >>> for b in boxes_2d.boxes:
+            >>>     print(b.class_id, b.instance_id)
 
-            from paralleldomain.model.annotation import AnnotationTypes
+        Access class map for an annotation type in a scene::
 
-            boxes_2d = camera_frame.get_annotations(AnnotationTypes.BoundingBoxes2D)
-            for b in boxes_2d.boxes:
-                print(b.class_id, b.instance_id)
+            >>> scene: Scene = ...  # get a Scene instance
+            >>>
+            >>> from paralleldomain.model.annotation import AnnotationTypes
+            >>>
+            >>> class_map = scene.get_class_map(AnnotationTypes.SemanticSegmentation2D)
+            >>> for id, class_detail in class_map.items():
+            >>>     print(id, class_detail.name)
 
-        Access class map for an annotation type in a scene:
-        ::
-
-            scene: Scene = ...  # get a Scene instance
-
-            from paralleldomain.model.annotation import AnnotationTypes
-
-            class_map = scene.get_class_map(AnnotationTypes.SemanticSegmentation2D)
-            for id, class_detail in class_map.items():
-                print(id, class_detail.name)
     """
 
     BoundingBoxes2D: Type[BoundingBoxes2D] = BoundingBoxes2D  # noqa: F811

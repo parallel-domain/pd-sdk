@@ -11,11 +11,12 @@ class Line2D(Line2DGeometry):
     """Represents a 2D Line.
 
     Args:
-        start: :attr:`paralleldomain.model.annotation.polyline_2d.Line2D.start`
-        end: :attr:`paralleldomain.model.annotation.polyline_2d.Line2D.end`
-        class_id: :attr:`paralleldomain.model.annotation.polyline_2d.Line2D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.polyline_2d.Line2D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.polyline_2d.Line2D.attributes`
+        start: :attr:`Line2D.start`
+        end: :attr:`Line2D.end`
+        class_id: :attr:`Line2D.class_id`
+        instance_id: :attr:`Line2D.instance_id`
+        attributes: :attr:`Line2D.attributes`
+        directed: :attr:`Line2D.directed`
 
     Attributes:
         start: the 2D start point of the line in image coordinates
@@ -42,10 +43,10 @@ class Polyline2D(Polyline2DGeometry):
     """A polyline made of a collection of 2D Lines
 
     Args:
-        lines: :attr:`paralleldomain.model.annotation.polyline_2d.Polyline2D.lines`
-        class_id: :attr:`paralleldomain.model.annotation.polyline_2d.Polyline2D.class_id`
-        instance_id: :attr:`paralleldomain.model.annotation.polyline_2d.Polyline2D.instance_id`
-        attributes: :attr:`paralleldomain.model.annotation.polyline_2d.Polyline2D.attributes`
+        lines: :attr:`Polyline2D.lines`
+        class_id: :attr:`Polyline2D.class_id`
+        instance_id: :attr:`Polyline2D.instance_id`
+        attributes: :attr:`Polyline2D.attributes`
 
     Attributes:
         lines: Ordered list of :obj:`Line2D` instances
@@ -69,7 +70,7 @@ class Polylines2D(Annotation):
     """Collection of 2D Polylines
 
     Args:
-        polylines: :attr:`paralleldomain.model.annotation.polyline_2d.Polylines2D.polylines`
+        polylines: :attr:`Polylines2D.polylines`
 
     Attributes:
         polylines: Ordered list of :obj:`Polyline2D` instances

@@ -91,12 +91,14 @@ class GaussianColorDistribution(StreamingStats):
         with path.open("w") as f:
             ujson.dump(data, f)
 
-    def update(self, x: np.ndarray) -> None:
+    def update(self, x: np.ndarray, mask: np.ndarray = None) -> None:
         """
         adds the image colors to the color statistics
 
         Args:
             x: image in rgb
+            mask: a binary mask in the shape of the image.
+                If provided, the color distribution is only update with pixels that fall within the mask.
         """
         if x.dtype == np.uint8:
             x = x.astype(np.float32) / 255
@@ -106,6 +108,8 @@ class GaussianColorDistribution(StreamingStats):
             x = x[..., :3]
         img = cv2.cvtColor(x, cv2.COLOR_RGB2LAB)
         img = img.reshape((-1, 3))
+        if mask is not None:
+            img = img[mask.reshape(-1)]
         super().update(x=img)
 
     @staticmethod

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Tuple
 
 import cv2
@@ -21,6 +20,9 @@ class UndistortionOutput:
     virtual_camera_to_actual_sensor_in_rdf: Transformation
 
 
+_FLU_TO_RDF = CoordinateSystem("FLU") > CoordinateSystem("RDF")
+
+
 def undistort_inpainting_input(
     input_image: np.ndarray,
     empty_image: np.ndarray,
@@ -32,7 +34,7 @@ def undistort_inpainting_input(
 ) -> UndistortionOutput:
     center_x, center_y, _, _ = _get_bounding_box_from_mask(input_mask=input_mask)
 
-    virtual_camera_3d_target = project_points_2d_to_3d(
+    virtual_camera_3d_target_rdf = project_points_2d_to_3d(
         k_matrix=camera.intrinsic.camera_matrix,
         camera_model=camera.intrinsic.camera_model,
         distortion_lookup=camera.distortion_lookup,
@@ -40,16 +42,14 @@ def undistort_inpainting_input(
         points_2d=np.array([[center_x, center_y]]),
         depth=depth,
     )[0]
-    RDF_TO_FLU = (CoordinateSystem("RDF") > CoordinateSystem("FLU")).rotation
-
-    target_position_in_sensor_flu = camera.sensor_to_ego.rotation @ RDF_TO_FLU @ virtual_camera_3d_target
-    ego_to_virtual_camera = Transformation.look_at(
-        target=target_position_in_sensor_flu, coordinate_system="FLU"
+    # for pd cameras sensor_to_ego is rdf to flu
+    sensor_to_ego_rdf = _FLU_TO_RDF @ camera.sensor_to_ego
+    target_position_in_sensor_rdf = sensor_to_ego_rdf.rotation @ virtual_camera_3d_target_rdf
+    ego_to_virtual_camera_rdf = Transformation.look_at(
+        target=target_position_in_sensor_rdf, coordinate_system="RDF"
     ).inverse
-    virtual_camera_to_actual_sensor_in_rdf = CoordinateSystem.change_transformation_coordinate_system(
-        transformation=Transformation(quaternion=camera.ego_to_sensor.quaternion) @ ego_to_virtual_camera.inverse,
-        transformation_system="FLU",
-        target_system="RDF",
+    virtual_camera_to_actual_sensor_in_rdf = (
+        Transformation(quaternion=sensor_to_ego_rdf.inverse.quaternion) @ ego_to_virtual_camera_rdf.inverse
     )
 
     virtual_camera_fov, virtual_camera_resolution = _calculate_virtual_camera_fov_and_resolution(
@@ -142,9 +142,9 @@ def distort_reactor_output(
         undistorted_crop_2d_coordinates[..., 1].astype(np.float32),
         cv2.INTER_NEAREST,
     )
-    alpha = (distorted_image[..., -1:] == 255).astype(np.float32)
+    alpha = (cv2.erode(distorted_image, kernel=np.ones((2, 2), np.uint8))[..., -1:] == 255).astype(np.float32)
     merged_image = (1 - alpha) * input_image + alpha * distorted_image
-    return np.clip(merged_image, 0, 255).astype(np.uint8), distorted_mask.astype(np.uint8)
+    return np.clip(merged_image, 0, 255).astype(np.uint8), np.expand_dims(distorted_mask, 2).astype(np.uint8)
 
 
 def _create_remapping_lut(
@@ -187,11 +187,13 @@ def _create_remapping_lut(
         camera_model = camera.intrinsic.camera_model
         distortion_lookup = camera.distortion_lookup
         distortion_parameters = camera.intrinsic.distortion_parameters
+        filter_result_behind_camera = False
     else:
         k_matrix = virtual_camera_k_matrix
         camera_model = CAMERA_MODEL_OPENCV_PINHOLE
         distortion_lookup = None
         distortion_parameters = None
+        filter_result_behind_camera = True
     source_2d_coordinates = project_points_3d_to_2d(
         k_matrix=k_matrix,
         camera_model=camera_model,
@@ -199,6 +201,11 @@ def _create_remapping_lut(
         distortion_parameters=distortion_parameters,
         points_3d=virtual_camera_3d_coordinates,
     )
+    if filter_result_behind_camera:
+        behind_camera_mask = virtual_camera_3d_coordinates[:, 2] < 0
+        source_2d_coordinates = np.where(
+            behind_camera_mask[..., np.newaxis], np.nan * np.zeros_like(source_2d_coordinates), source_2d_coordinates
+        )
     return source_2d_coordinates.reshape((target_height, target_width, 2))
 
 
@@ -247,9 +254,11 @@ def _calculate_virtual_camera_fov_and_resolution(
     corners_3d_in_virtual_cam_rdf = (
         virtual_camera_to_actual_sensor_in_rdf.inverse.transformation_matrix[:3, :3] @ corners_3d.T
     ).T
-    # The interpolating depth access still leads to some nans
+    # The interpolating depth access still leads to some nans or positions behind camera
     corners_3d_in_virtual_cam_rdf = corners_3d_in_virtual_cam_rdf[
-        ~np.any(np.isnan(corners_3d_in_virtual_cam_rdf), axis=-1)
+        ~np.logical_or(
+            np.any(np.isnan(corners_3d_in_virtual_cam_rdf), axis=-1), corners_3d_in_virtual_cam_rdf[:, 2] <= 0
+        )
     ]
     angles_horizontal = np.rad2deg(
         np.abs(np.arctan2(corners_3d_in_virtual_cam_rdf[:, 0], corners_3d_in_virtual_cam_rdf[:, 2]))

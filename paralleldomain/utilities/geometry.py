@@ -1,7 +1,7 @@
-from typing import List, Optional, Tuple, Union
-
 import math
 import random
+from typing import List, Optional, Tuple, Union
+
 import cv2
 import numpy as np
 from more_itertools import pairwise
@@ -52,13 +52,13 @@ def is_point_in_polygon_2d(
         include_edge: If point is considered inside if lying on the edge or not. Default: `True`
 
     Returns:
-        `True` if point in polygon, otherwise `False,
+        `True` if point in polygon, otherwise `False`
     """
     polygon = np.asarray(polygon).astype(np.float32)
     if polygon.ndim != 2 or polygon.shape[0] < 3 or polygon.shape[1] != 2:
         raise ValueError(
-            f"""Expected np.ndarray of shape (N X 2) for `polygon`, where N is
-                number of points >= 3. Received {polygon.shape}."""
+            "Expected np.ndarray of shape (N X 2) for `polygon`, where N is  number of points >= 3. Received"
+            f" {polygon.shape}."
         )
 
     if isinstance(point, np.ndarray):
@@ -112,6 +112,16 @@ def simplify_polyline_2d(
 
 
 def convex_hull_2d(points_2d: np.ndarray, closed: bool = False) -> np.ndarray:
+    """Takes a list of 2d points and returns their convex hull
+
+    Args:
+        points_2d: n x 2 array of the 2d points we wish to find the convex hull of
+        closed: True if the returned convex hull should be closed (first point is same as last point on hull).
+            False if returned convex hull should be open
+
+    Returns:
+        n x 2 array of the 2d points defining the convex hull
+    """
     convex_hull = cv2.convexHull(points=points_2d.reshape((1, -1, 2))).reshape(-1, 2)
 
     if closed:
@@ -121,6 +131,18 @@ def convex_hull_2d(points_2d: np.ndarray, closed: bool = False) -> np.ndarray:
 
 
 def convex_hull_2d_as_mask(points_image_2d: np.ndarray, width: int, height: int) -> np.ndarray:
+    """Takes a list of 2d points and returns their convex hull in the form of a filled in mask
+
+    Args:
+        points_image_2d: n x 2 array of the 2d points (in image space) we wish to find the convex hull of
+        width: The width of the image space on which the points exist and the width of the returned image containing the
+            convex hull mask
+        height: The height of the image space on which the points exist and the height of the returned image containing
+            the convex hull mask
+
+    Returns:
+        height x width array containing the mask of the calculated convex hull
+    """
     convex_hull = convex_hull_2d(points_2d=points_image_2d, closed=True)
     mask = np.zeros(shape=(height, width)).astype(np.uint8)
     convex_hull_mask = cv2.fillPoly(

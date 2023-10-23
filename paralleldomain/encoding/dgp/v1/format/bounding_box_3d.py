@@ -40,7 +40,7 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
         else:
             annotations = [self.encode_bounding_box_3d(b) for b in data.boxes]
             boxes3d_dto = annotations_pb2.BoundingBox3DAnnotations(annotations=annotations)
-            output_path = str(fsio.write_message(obj=boxes3d_dto, path=output_path, append_sha1=True))
+            output_path = str(fsio.write_message(obj=boxes3d_dto, path=output_path, append_sha1=False))
 
         pipeline_item.custom_data[CUSTOM_FORMAT_KEY][ANNOTATIONS_KEY][
             str(ANNOTATION_TYPE_MAP_INV[AnnotationTypes.BoundingBoxes3D])
@@ -61,7 +61,7 @@ class BoundingBox3DDGPV1Mixin(CommonDGPV1FormatMixin):
         box_proto = annotations_pb2.BoundingBox3DAnnotation(
             class_id=box.class_id,
             instance_id=box.instance_id,
-            num_points=box.num_points,
+            num_points=box.num_points if box.num_points >= 0 else 0,  # TODO: protos only allow uint atm.
             attributes={
                 _attribute_key_dump(k): _attribute_value_dump(v)
                 for k, v in box.attributes.items()

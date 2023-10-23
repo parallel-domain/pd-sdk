@@ -1,7 +1,7 @@
 from typing import List
 
-from paralleldomain.visualization.statistics.viewer import ViewComponent, StatisticViewer, BACKEND
-from paralleldomain.visualization.initialization import initialize_viewer
+from paralleldomain.visualization import initialize_viewer
+from paralleldomain.visualization.statistics.viewer import BACKEND, StatisticViewer, ViewComponent
 
 
 class RerunViewer(StatisticViewer):

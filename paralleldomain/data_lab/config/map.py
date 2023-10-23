@@ -1,67 +1,146 @@
-import random
 import logging
+import random
+from collections import OrderedDict
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from math import sqrt
+from igraph import Graph, Vertex
 from more_itertools import windowed
 from pd.core import PdError
+from pd.internal.proto.umd.generated.python import UMD_pb2 as UMD_pb2_base
+from pd.internal.proto.umd.generated.wrapper import UMD_pb2
 from pd.internal.proto.umd.generated.wrapper.utils import register_wrapper
 
 from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeometry
 from paralleldomain.model.geometry.point_3d import Point3DGeometry
 from paralleldomain.model.geometry.polyline_3d import Line3DGeometry, Polyline3DBaseGeometry
 from paralleldomain.model.type_aliases import AreaId, EdgeId, JunctionId, LaneSegmentId, RoadSegmentId
-from paralleldomain.utilities.transformation import Transformation
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
-
-from igraph import Graph, Vertex
-from pd.internal.proto.umd.generated.python import UMD_pb2 as UMD_pb2_base
-from pd.internal.proto.umd.generated.wrapper import UMD_pb2
+from paralleldomain.utilities import inherit_docs
 from paralleldomain.utilities.geometry import random_point_within_2d_polygon
-
-AABB = UMD_pb2.AABB
-Info = UMD_pb2.Info
-Object = UMD_pb2.Object
-Phase = UMD_pb2.Phase
-Point_ECEF = UMD_pb2.Point_ECEF
-Point_LLA = UMD_pb2.Point_LLA
-PropData = UMD_pb2.PropData
-Quaternion = UMD_pb2.Quaternion
-SignalOnset = UMD_pb2.SignalOnset
-SignaledIntersection = UMD_pb2.SignaledIntersection
-SignedIntersection = UMD_pb2.SignedIntersection
-SpeedLimit = UMD_pb2.SpeedLimit
-TrafficLightBulb = UMD_pb2.TrafficLightBulb
-TrafficLightData = UMD_pb2.TrafficLightData
-TrafficSignData = UMD_pb2.TrafficSignData
-ZoneGrid = UMD_pb2.ZoneGrid
-UniversalMap = UMD_pb2.UniversalMap
-RoadMarking = UMD_pb2.RoadMarking
-Point_ENU = UMD_pb2.Point_ENU
+from paralleldomain.utilities.transformation import Transformation
 
 logger = logging.getLogger(__name__)
 
 
+@inherit_docs
+class AABB(UMD_pb2.AABB):
+    ...
+
+
+@inherit_docs
+class Info(UMD_pb2.Info):
+    ...
+
+
+@inherit_docs
+class Object(UMD_pb2.Object):
+    ...
+
+
+@inherit_docs
+class Phase(UMD_pb2.Phase):
+    ...
+
+
+@inherit_docs
+class Point_ECEF(UMD_pb2.Point_ECEF):
+    ...
+
+
+@inherit_docs
+class Point_LLA(UMD_pb2.Point_LLA):
+    ...
+
+
+@inherit_docs
+class PropData(UMD_pb2.PropData):
+    ...
+
+
+@inherit_docs
+class Quaternion(UMD_pb2.Quaternion):
+    ...
+
+
+@inherit_docs
+class SignalOnset(UMD_pb2.SignalOnset):
+    ...
+
+
+@inherit_docs
+class SignaledIntersection(UMD_pb2.SignaledIntersection):
+    ...
+
+
+@inherit_docs
+class SignedIntersection(UMD_pb2.SignedIntersection):
+    ...
+
+
+@inherit_docs
+class SpeedLimit(UMD_pb2.SpeedLimit):
+    ...
+
+
+@inherit_docs
+class TrafficLightBulb(UMD_pb2.TrafficLightBulb):
+    ...
+
+
+@inherit_docs
+class TrafficLightData(UMD_pb2.TrafficLightData):
+    ...
+
+
+@inherit_docs
+class TrafficSignData(UMD_pb2.TrafficSignData):
+    ...
+
+
+@inherit_docs
+class ZoneGrid(UMD_pb2.ZoneGrid):
+    ...
+
+
+@inherit_docs
+class UniversalMap(UMD_pb2.UniversalMap):
+    ...
+
+
+@inherit_docs
+class RoadMarking(UMD_pb2.RoadMarking):
+    ...
+
+
+@inherit_docs
+class Point_ENU(UMD_pb2.Point_ENU):
+    ...
+
+
 class Side(Enum):
+    """
+    Enum class for LEFT and RIGHT side.  Used by geometry functions
+    """
+
     LEFT = "LEFT"
     RIGHT = "RIGHT"
 
 
 @register_wrapper(proto_type=UMD_pb2_base.Edge)
 class Edge(UMD_pb2.Edge):
+    """Class representing a particular Edge on a UMD map"""
+
     def as_polyline(self) -> Polyline3DBaseGeometry:
+        """Returns a 3D Polyline representation of the edge"""
         lines = [
             Line3DGeometry(
                 start=Point3DGeometry(x=point_pair[0].x, y=point_pair[0].y, z=point_pair[0].z),
-                end=Point3DGeometry(x=point_pair[1].x, y=point_pair[1].y, z=point_pair[1].z)
-                if point_pair[1] is not None
-                else Point3DGeometry(x=point_pair[0].x, y=point_pair[0].y, z=point_pair[0].z),
+                end=(
+                    Point3DGeometry(x=point_pair[1].x, y=point_pair[1].y, z=point_pair[1].z)
+                    if point_pair[1] is not None
+                    else Point3DGeometry(x=point_pair[0].x, y=point_pair[0].y, z=point_pair[0].z)
+                ),
             )
             for point_pair in windowed(self.points, 2)
         ]
@@ -70,33 +149,47 @@ class Edge(UMD_pb2.Edge):
 
 @register_wrapper(proto_type=UMD_pb2_base.Junction)
 class Junction(UMD_pb2.Junction):
+    """Class representing a particular Junction on a UMD map"""
+
     @property
     def junction_id(self) -> JunctionId:
+        """The integer ID of the Junction object"""
         return self.id
 
 
 @register_wrapper(proto_type=UMD_pb2_base.LaneSegment)
 class LaneSegment(UMD_pb2.LaneSegment):
+    """Class representing a particular Lane Segment on a UMD map"""
+
     @property
     def lane_segment_id(self) -> LaneSegmentId:
+        """The integer ID of the LaneSegment object"""
         return self.id
 
 
 @register_wrapper(proto_type=UMD_pb2_base.RoadSegment)
 class RoadSegment(UMD_pb2.RoadSegment):
+    """Class representing a particular Road Segment on a UMD map"""
+
     @property
     def road_segment_id(self) -> RoadSegmentId:
+        """The integer ID of the RoadSegment object"""
         return self.id
 
 
 @register_wrapper(proto_type=UMD_pb2_base.Area)
 class Area(UMD_pb2.Area):
+    """Class representing a particular Area on a UMD map"""
+
     @property
     def area_id(self) -> AreaId:
+        """The integer ID of the Area object"""
         return self.id
 
 
 class NodePrefix:
+    """Class which contains the prefixes used to denote particular map elements in the UMD map"""
+
     ROAD_SEGMENT: str = "RS"
     LANE_SEGMENT: str = "LS"
     JUNCTION: str = "JC"
@@ -104,6 +197,16 @@ class NodePrefix:
 
 
 class MapQuery:
+    """
+    Class containing lookup tools and helper functions for interacting with and querying UMD maps
+
+    Args:
+        map: The UMD map to be interacted with and queried through the MapQuery object
+    Attributes:
+        edges: Dictionary containing the edge_id and Edge object of the line edges which make up the UMD map
+        map: THe UMD map that is being interacted with through the MapQuery object
+    """
+
     def __init__(self, map: UniversalMap):
         super().__init__()
         self.edges: Dict[int, Edge] = dict()
@@ -113,38 +216,92 @@ class MapQuery:
         self._added_junctions = False
         self._added_areas = False
         self.map = map
-        self.edges.update(map.edges)
-        self._add_road_segments_to_graph(road_segments=map.road_segments)
-        self._add_lane_segments_to_graph(lane_segments=map.lane_segments)
-        self._add_junctions_to_graph(junctions=map.junctions)
-        self._add_areas_to_graph(areas=map.areas)
+        self.edges.update(OrderedDict(sorted(map.edges.items())))
+        self._add_road_segments_to_graph(road_segments=OrderedDict(sorted(map.road_segments.items())))
+        self._add_lane_segments_to_graph(lane_segments=OrderedDict(sorted(map.lane_segments.items())))
+        self._add_junctions_to_graph(junctions=OrderedDict(sorted(map.junctions.items())))
+        self._add_areas_to_graph(areas=OrderedDict(sorted(map.areas.items())))
 
     @property
     def map_graph(self) -> Graph:
+        """The Graph object of the map"""
         return self.__map_graph
 
     def get_junction(self, junction_id: JunctionId) -> Optional[Junction]:
+        """
+        Function to return a Junction object based on the provided junction_id
+
+        Args:
+            junction_id: The id of the Junction object to be retrieved
+        Returns:
+            The Junction object which corresponds to the provided junction_id, if such a Junction exists.  If
+                the map contains no junctions with the provided junction_id, None is returned.
+        """
         query_results = self.map_graph.vs.select(name_eq=f"{NodePrefix.JUNCTION}_{junction_id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
     def get_road_segment(self, road_segment_id: RoadSegmentId) -> Optional[RoadSegment]:
+        """
+        Function to return a RoadSegment object based on the provided road_segment_id
+
+        Args:
+            road_segment_id: The id of the RoadSegment object to be retrieved
+        Returns:
+            The RoadSegment object which corresponds to the provided road_segment_id, if such a RoadSegment exists.  If
+                the map contains no road segments with the provided road_segment_id, None is returned.
+        """
         query_results = self.map_graph.vs.select(name_eq=f"{NodePrefix.ROAD_SEGMENT}_{road_segment_id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
     def get_lane_segment(self, lane_segment_id: LaneSegmentId) -> Optional[LaneSegment]:
+        """
+        Function to return a LaneSegment object based on the provided lane_segment_id
+
+        Args:
+            lane_segment_id: The id of the LaneSegment object to be retrieved
+        Returns:
+            The LaneSegment object which corresponds to the provided lane_segment_id, if such a LaneSegment exists.  If
+                the map contains no lanes with the provided lane_segment_id, None is returned.
+        """
         query_results = self.map_graph.vs.select(name_eq=f"{NodePrefix.LANE_SEGMENT}_{lane_segment_id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
     def get_area(self, area_id: AreaId) -> Area:
+        """
+        Function to return an Area object based on the provided area_id
+
+        Args:
+            area_id: The id of the Area object to be retrieved
+        Returns:
+            The Area object which corresponds to the provided area_id
+        """
         query_results = self.map_graph.vs.select(name_eq=f"{NodePrefix.AREA}_{area_id}")
         return query_results[0]["object"] if len(query_results) > 0 else None
 
     def get_edge(self, edge_id: EdgeId) -> Edge:
+        """
+        Function to return an Edge object based on the provided edge_id
+
+        Args:
+            edge_id: The id of the Edge object to be retrieved
+        Returns:
+            The Edge object which corresponds to the provided edge_id
+        """
         return self.edges[edge_id]
 
     def get_road_segments_within_bounds(
         self, bounds: BoundingBox2DBaseGeometry[float], method: str = "inside"
     ) -> List[LaneSegment]:
+        """
+        Function to get a list of RoadSegment objects which are located within a provided boundary
+
+        Args:
+            bounds: A rectangular polygon which outlines the area in which RoadSegment objects are searched for
+            method: The method by which RoadSegment objects are checked to be within the provided bounds.  Can be
+                "inside", "center" or "overlap"
+        Returns:
+            A list of RoadSegment objects which exist within the specified bounds
+        """
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.ROAD_SEGMENT, bounds=bounds, method=method)
 
     def get_lane_segments_within_bounds(
@@ -152,6 +309,16 @@ class MapQuery:
         bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[LaneSegment]:
+        """
+        Function to get a list of LaneSegment objects which are located within a provided boundary
+
+        Args:
+            bounds: A rectangular polygon which outlines the area in which LaneSegment objects are searched for
+            method: The method by which LaneSegment objects are checked to be within the provided bounds.  Can be
+                "inside", "center" or "overlap"
+        Returns:
+            A list of LaneSegment objects which exist within the specified bounds
+        """
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.LANE_SEGMENT, bounds=bounds, method=method)
 
     def get_areas_within_bounds(
@@ -159,6 +326,16 @@ class MapQuery:
         bounds: BoundingBox2DBaseGeometry[float],
         method: str = "inside",
     ) -> List[Area]:
+        """
+        Function to get a list of Area objects which are located within a provided boundary
+
+        Args:
+            bounds: A rectangular polygon which outlines the area in which Area objects are searched for
+            method: The method by which Area objects are checked to be within the provided bounds.  Can be "inside",
+                "center" or "overlap"
+        Returns:
+            A list of Area objects which exist within the specified bounds
+        """
         return self._get_nodes_within_bounds(node_prefix=NodePrefix.AREA, bounds=bounds, method=method)
 
     def _get_nodes_within_bounds(
@@ -300,17 +477,40 @@ class MapQuery:
     def get_lane_segments_near(
         self, pose: Transformation, radius: float = 10, method: str = "overlap"
     ) -> List[LaneSegment]:
+        """
+        Function to get a list of LaneSegment objects which are located within a specified radius of a particular
+            location on the map
+
+        Args:
+            pose: The location on the map around which we return LaneSegment objects which are within the specified
+                radius
+            radius: The distance (in meters) around the provided pose within which LaneSegment objects are searched for
+            method: The method by which lane segments are checked to be within the provided bounds.  Can be "inside",
+                "center" or "overlap"
+
+        Returns:
+            A list of LaneSegment objects which exist within the specified radius around the specified location in the
+                pose parameter
+        """
         bounds = BoundingBox2DBaseGeometry(
-            x=pose.translation[0] - radius,
-            y=pose.translation[1] - radius,
-            width=radius,
-            height=radius,
+            x=pose.translation[0] - radius, y=pose.translation[1] - radius, width=2 * radius, height=2 * radius
         )
         return self.get_lane_segments_within_bounds(bounds=bounds, method=method)
 
     def get_random_area_object(self, area_type: UMD_pb2.Area.AreaType, random_seed: int) -> Optional[UMD_pb2.Area]:
+        """
+        Function to get a random Area object
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            area_type: The desired type of Area
+
+        Returns:
+            Area object which is compliant with the specified parameters passed in, if such a valid area
+                exists.  Returns None if no valid area can be found.
+        """
         random_state = random.Random(random_seed)
-        area_ids = [area_id for area_id, area in self.map.areas.items() if area.type is area_type]
+        area_ids = [area_id for area_id, area in self.map.areas.items() if area.type == area_type]
 
         if len(area_ids) == 0:
             return None
@@ -321,6 +521,21 @@ class MapQuery:
     def get_random_area_location(
         self, area_type: UMD_pb2.Area.AreaType, random_seed: int, num_points: int = 1, area_id: Optional[int] = None
     ) -> Optional[Transformation]:
+        """
+        Function to get a random location on the map which is located on a particular selected AreaType
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            area_type: The desired type of Area on which the returned location should be located.  Will be ignored if
+                area_id parameters is used
+            num_points: The number of locations within a given Area object which should be returned
+            area_id: The id of the Area object on which a random location should be chosen.  Optional, will override the
+                area_type parameter if used
+
+        Returns:
+            Transformation object containing the pose of the randomly selected area location, if such a valid location
+                exists.  Returns None if no valid location can be found.
+        """
         random_state = random.Random(random_seed)
 
         if area_id is None:
@@ -332,6 +547,11 @@ class MapQuery:
             return None
 
         edge_line = self.map.edges[int(area.edges[0])].as_polyline().to_numpy()
+
+        if edge_line.shape[0] < 3:
+            raise PdError(
+                "The edge line of the selected area object is malformed and does not contain at least 3 points"
+            )
 
         point = random_point_within_2d_polygon(
             edge_2d=edge_line[:, :2], random_seed=random_seed, num_points=num_points
@@ -358,6 +578,28 @@ class MapQuery:
         sample_rate: int = 100,
         max_retries: int = 1000,
     ) -> Optional[Transformation]:
+        """
+        Function to get a random location on the map which corresponds to a particular selected LaneType
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            lane_type: The desired type of LaneSegment on which the returned location should be located
+            min_path_length: The minimum distance (in meters) of available road beyond the location returned
+                by this function
+            relative_location_variance: Parameter that governs the maximum lateral variation (relative to the direction
+                of the road lane) in the positioning of the returned location.  A value of 1.0 will allow for positions
+                to be returned across the entire width of the lane.  A value of 0.0 will only return locations in the
+                center of the lane.
+            direction_variance_in_degrees: The maximum variation in the returned pose's rotation, relative to the
+                direction of the lane which the returned location corresponds to
+            sample_rate: The number of valid points in the lateral direction of the lane (taking into account the
+                specified relative_location_variance) from which the returned location is chosen
+            max_retries: The maximum number of times the method will attempt to look for a valid lane object
+
+        Returns:
+            Transformation object containing the pose of the randomly selected lane location, if such a valid location
+                exists.  Returns None if no valid location can be found.
+        """
         random_state = random.Random(random_seed)
         lane_segment = self.get_random_lane_type_object(
             lane_type=lane_type, random_seed=random_seed, min_path_length=min_path_length, max_retries=max_retries
@@ -414,6 +656,20 @@ class MapQuery:
         min_path_length: Optional[float] = None,
         max_retries: int = 1000,
     ) -> Optional[LaneSegment]:
+        """
+        Function to get a random LaneSegment object
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            lane_type: The desired type of LaneSegment
+            min_path_length: The minimum distance (in meters) of available road beyond the LaneSegment object returned
+                by this function
+            max_retries: The maximum number of times the method will attempt to look for a valid lane object
+
+        Returns:
+            LaneSegment object which is compliant with the specified parameters passed in, if such a valid lane segment
+                exists.  Returns None if no valid lane segments can be found.
+        """
         seed = random_seed
         attempts = 0
         valid_lane_found = False
@@ -451,6 +707,20 @@ class MapQuery:
         min_path_length: Optional[float] = None,
         max_retries: int = 1000,
     ) -> Optional[RoadSegment]:
+        """
+        Function to get a random RoadSegment object
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            road_type: The desired type of RoadSegment
+            min_path_length: The minimum distance (in meters) of available road beyond the RoadSegment object returned
+                by this function
+            max_retries: The maximum number of times the method will attempt to look for a valid road segment object
+
+        Returns:
+            RoadSegment object which is compliant with the specified parameters passed in, if such a valid road segment
+                exists.  Returns None if no valid road segments can be found.
+        """
         seed = random_seed
         attempts = 0
         valid_lane_found = False
@@ -488,9 +758,26 @@ class MapQuery:
         self,
         road_type: UMD_pb2.RoadSegment.RoadType,
         random_seed: int,
+        lane_type: Optional[UMD_pb2.LaneSegment.LaneType] = None,
         min_path_length: Optional[float] = None,
         max_retries: int = 1000,
     ) -> Optional[LaneSegment]:
+        """
+        Function to get a random LaneSegment object from a specified RoadType
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            road_type: The desired type of RoadSegment
+            lane_type: The desired type of LaneSegment to apply within the specified RoadSegment. If None, any lane
+                type will be considered valid.
+            min_path_length: The minimum distance (in meters) of available road beyond the lane object returned by
+                this function
+            max_retries: The maximum number of times the method will attempt to look for a valid lane object
+
+        Returns:
+            LaneSegment object which is compliant with the specified parameters passed in, if such a valid lane segment
+                exists.  Returns None if no valid lane segments can be found.
+        """
         seed = random_seed
         attempts = 0
         valid_lane_found = False
@@ -503,13 +790,19 @@ class MapQuery:
             if road_object is None:
                 return None
 
-            lane_object = self.map.lane_segments[random_state.choice(road_object.lane_segments)]
+            lanes_from_road = road_object.lane_segments
+            # filter for lane length
+            lanes_from_road = [
+                lane_id for lane_id in lanes_from_road if self.check_lane_is_longer_than(lane_id, min_path_length)
+            ]
+            # filter for lane type
+            if lane_type is not None:
+                lanes_from_road = [
+                    lane_id for lane_id in lanes_from_road if self.map.lane_segments[lane_id].type in [lane_type]
+                ]
 
-            if (
-                self.check_lane_is_longer_than(lane_id=lane_object.id, path_length=min_path_length)
-                or min_path_length is None
-            ):
-                return lane_object
+            if len(lanes_from_road) > 0:
+                return self.map.lane_segments[random_state.choice(lanes_from_road)]
             elif attempts > max_retries:
                 logger.warning("Unable to find valid lane segment with given min_path_length")
                 return None
@@ -518,6 +811,20 @@ class MapQuery:
                 attempts += 1
 
     def get_random_junction_object(self, intersection_type: str, random_seed: int) -> Optional[Junction]:
+        """
+        Function to find a random junction object on the map
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            intersection_type: The desired type of junction (signed vs signaled)
+
+        Returns:
+            Junction object which is compliant with the specified parameters passed in, if such a valid junction
+                exists.  Returns None if no valid junction can be found.
+
+        Raises:
+            ValueError: If an invalid intersection_type is specified
+        """
         random_state = random.Random(random_seed)
 
         if intersection_type == "signaled":
@@ -543,6 +850,22 @@ class MapQuery:
         probability_of_signaled_junction: float = 0.5,
         probability_of_arriving_junction: float = 1.0,
     ) -> Optional[Transformation]:
+        """
+        Returns a location on a drivable lane in a position relative to a junction
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            distance_to_junction: The desired distance between the returned lane location and the junction to which
+                the lane location is connected
+            probability_of_signaled_junction: The probability that the returned location is connected to a junction
+                which is controlled by traffic lights as opposed to stop signs
+            probability_of_arriving_junction: The probability that the return location is on a lane which is driving
+                into an intersection (as opposed to driving away from an intersection)
+
+        Returns:
+            Transformation object containing the pose of the location selected by the method, if such a valid location
+                exists.  Returns None if no valid location can be found.
+        """
         random_state = random.Random(random_seed)
         np.random.seed(random_seed)
 
@@ -560,7 +883,7 @@ class MapQuery:
         valid_lanes_at_junctions = [
             self.map.lane_segments[id]
             for id in junction_to_spawn.lane_segments
-            if self.map.lane_segments[id].direction is LaneSegment.Direction.FORWARD
+            if self.map.lane_segments[id].direction == LaneSegment.Direction.FORWARD
         ]
 
         junction_lane = random_state.choice(valid_lanes_at_junctions)
@@ -592,10 +915,8 @@ class MapQuery:
                 )
             except IndexError:  # In the case that we don't have long enough lanes to meet the distance requirement
                 logger.warning(
-                    (
-                        "Unable to find lane location which matches given distance requirement. "
-                        "Consider reducing requested distance to junction"
-                    )
+                    "Unable to find lane location which matches given distance requirement. "
+                    "Consider reducing requested distance to junction"
                 )
                 return None
 
@@ -623,6 +944,23 @@ class MapQuery:
         direction_variance_in_degrees: float = 0.0,
         sample_rate: int = 100,
     ) -> Transformation:
+        """
+        Function to retrieve a random street location on the map
+
+        Args:
+            random_seed: Integer used to seed all random functions.  Allows for function return to be deterministic
+            relative_location_variance: Parameter that governs the maximum lateral variation (relative to the direction
+                of the road lane) in the positioning of the returned location.  A value of 1.0 will allow for positions
+                to be returned across the entire width of the lane.  A value of 0.0 will only return locations in the
+                center of the lane.
+            direction_variance_in_degrees: The maximum variation in the returned pose's rotation, relative to the
+                direction of the lane which the returned location corresponds to
+            sample_rate: The number of valid points in the lateral direction of the lane (taking into account the
+                specified relative_location_variance) from which the returned location is chosen
+
+        Returns:
+            Transformation object containing the pose of the random location selected by the method
+        """
         return self.get_random_lane_type_location(
             lane_type=LaneSegment.LaneType.DRIVABLE,
             random_seed=random_seed,
@@ -726,7 +1064,7 @@ class MapQuery:
 
     def get_edge_of_road_from_lane(self, lane_id: int, side: Side) -> Edge:
         """
-        Function which returns either the left or right edge of the roac on which the lane we specify exists
+        Function which returns either the left or right Edge object of the road on which the lane we specify exists
 
         Args:
             lane_id: The ID of the lane which exists on the road we wish to find the edge of
@@ -736,15 +1074,24 @@ class MapQuery:
             An Edge object of the edge of the road corresponding to the inputted parameters
         """
         current_lane = self.map.lane_segments[lane_id]
+        start_direction = current_lane.direction
 
         neighbor_id = None
         while neighbor_id != 0:
-            neighbor_id = current_lane.left_neighbor if side is Side.LEFT else current_lane.right_neighbor
+            neighbor_id = (
+                current_lane.left_neighbor
+                if (side is Side.LEFT and current_lane.direction == start_direction)
+                else current_lane.right_neighbor
+            )
 
             if neighbor_id != 0:
                 current_lane = self.map.lane_segments[neighbor_id]
 
-        road_edge = self.map.edges[current_lane.left_edge if side is Side.LEFT else current_lane.right_edge]
+        road_edge = self.map.edges[
+            current_lane.left_edge
+            if side is Side.LEFT and current_lane.direction == start_direction
+            else current_lane.right_edge
+        ]
         return road_edge
 
     def get_line_point_by_distance_from_start(self, line: np.ndarray, distance_from_start: float) -> np.ndarray:

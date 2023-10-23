@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional, Type, Union
 
 from paralleldomain.decoding.cityscapes.decoder import CityscapesDatasetDecoder
@@ -17,6 +18,8 @@ from paralleldomain.decoding.waymo_open_dataset.decoder import WaymoOpenDatasetD
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.utilities.any_path import AnyPath
 
+logger = logging.getLogger(__name__)
+
 known_decoders: List[Type[DatasetDecoder]] = [
     DGPDatasetDecoder,
     DGPV1DatasetDecoder,
@@ -35,8 +38,9 @@ try:
     from paralleldomain.decoding.data_stream.decoder import DataStreamDatasetDecoder
 
     known_decoders.append(DataStreamDatasetDecoder)
-except ImportError:
-    pass
+except ImportError as e:
+    logger.warning("Not able to import DataStreamDatasetDecoder. If you haven't installed pd-api-py, this is expected!")
+    logger.warning(e)
 
 
 def register_decoder(decoder_type: Type[DatasetDecoder]):
@@ -50,6 +54,8 @@ def decode_dataset(
     settings: Optional[DecoderSettings] = None,
     **decoder_kwargs,
 ) -> Dataset:
+    if settings is None:
+        settings = DecoderSettings()
     dataset_path = AnyPath(dataset_path)
     decoder_type = next((dtype for dtype in known_decoders if dataset_format == dtype.get_format()), None)
     if decoder_type is not None:

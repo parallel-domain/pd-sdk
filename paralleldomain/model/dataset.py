@@ -1,26 +1,19 @@
+import logging
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Generator, Iterable, List, Optional, Set, Tuple, TypeVar, Union, Type
-
-from paralleldomain.model.frame import Frame
-from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
-from paralleldomain.model.unordered_scene import UnorderedScene
-from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
-
-import logging
+from typing import Any, Dict, Generator, Iterable, List, Optional, Protocol, Set, Tuple, Type, TypeVar, Union
 
 import pypeln
 
-from paralleldomain.model.annotation import AnnotationType, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType
+from paralleldomain.model.frame import Frame
 from paralleldomain.model.scene import Scene
+from paralleldomain.model.sensor import CameraSensorFrame, LidarSensorFrame, RadarSensorFrame, SensorFrame
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.model.unordered_scene import UnorderedScene
+from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.generator_shuffle import nested_generator_random_draw
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -99,15 +92,23 @@ class Dataset:
         self._number_of_radar_frames = None
         self._number_of_sensor_frames = None
 
-    @property
-    def unordered_scene_names(self) -> List[SceneName]:
+    def _get_unordered_scene_names(self) -> List[SceneName]:
         """Returns a list of sensor frame set names within the dataset."""
         return self._decoder.get_unordered_scene_names()
 
     @property
-    def metadata(self) -> DatasetMeta:
+    def unordered_scene_names(self) -> List[SceneName]:
+        """Returns a list of sensor frame set names within the dataset."""
+        return self._get_unordered_scene_names()
+
+    def _get_metadata(self) -> DatasetMeta:
         """Returns a list of scene names within the dataset."""
         return self._decoder.get_dataset_metadata()
+
+    @property
+    def metadata(self) -> DatasetMeta:
+        """Returns a list of scene names within the dataset."""
+        return self._get_metadata()
 
     @property
     def format(self) -> str:
@@ -163,10 +164,14 @@ class Dataset:
         """
         return self._decoder.get_unordered_scene(scene_name=scene_name)
 
+    def _get_scene_names(self) -> List[SceneName]:
+        """Returns a list of scene names within the dataset."""
+        return self._decoder.get_scene_names()
+
     @property
     def scene_names(self) -> List[SceneName]:
         """Returns a list of scene names within the dataset."""
-        return self._decoder.get_scene_names()
+        return self._get_scene_names()
 
     @property
     def scenes(self) -> Dict[SceneName, Scene]:
@@ -451,7 +456,7 @@ class Dataset:
             endless_loop: whether to iterate over the scenes of the dataset in an endless loop
             random_seed: seed used for shuffling the data
             scene_names: optional iterable of scene_names, if set, only frames from these scenes are yielded
-            frame_ids: optional, dict/iterable containing frame_ids
+            frame_ids: optional, dict/iterable containing frame_ids::
                        - if frame_ids is None, yield all frames from each scene
                        - if frame_ids is a dictionary, mapping scene_names to frame_ids:
                            + if a scene_name is among the dictionary keys, the corresponding value defines which
@@ -476,7 +481,8 @@ class Dataset:
         stage = self.scene_pipeline(
             shuffle=shuffle,
             concurrent=concurrent,
-            endless_loop=endless_loop,
+            # endless looping is differently handled in shuffle pipeline
+            endless_loop=endless_loop and not shuffle,
             random_seed=source_state.randint(0, 99999),
             scene_names=scene_names,
             only_ordered_scenes=only_ordered_scenes,

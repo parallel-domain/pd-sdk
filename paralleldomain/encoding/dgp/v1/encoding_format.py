@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from paralleldomain.encoding.dgp.v1.format.backward_optical_flow import BackwardOpticalFlowDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.backward_scene_flow import BackwardSceneFlowDGPV1Mixin
@@ -23,7 +23,7 @@ from paralleldomain.encoding.dgp.v1.format.semantic_segmentation_3d import Seman
 from paralleldomain.encoding.dgp.v1.format.surface_normals_2d import SurfaceNormals2DDGPV1Mixin
 from paralleldomain.encoding.dgp.v1.format.surface_normals_3d import SurfaceNormals3DDGPV1Mixin
 from paralleldomain.encoding.pipeline_encoder import DataType, EncodingFormat, ScenePipelineItem
-from paralleldomain.model.annotation import AnnotationTypes, AnnotationIdentifier
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import Image
 from paralleldomain.model.point_cloud import PointCloud
@@ -56,12 +56,18 @@ class DGPV1EncodingFormat(
 ):
     def __init__(
         self,
-        dataset_output_path: AnyPath,
+        output_path: Union[None, str, AnyPath] = None,
+        dataset_output_path: Union[None, str, AnyPath] = None,
         target_dataset_name: Optional[str] = None,
         inplace: bool = False,
         sim_offset: float = 0.01 * 5,
         encode_to_binary: bool = False,
     ):
+        if dataset_output_path is None:
+            if output_path is None:
+                raise ValueError("Please pass an output_path!")
+            dataset_output_path = output_path
+
         super().__init__()
         self.encode_to_binary = encode_to_binary
         self.inplace = inplace
@@ -71,6 +77,12 @@ class DGPV1EncodingFormat(
 
     def supports_copy(self, pipeline_item: ScenePipelineItem, data_type: DataType, data_path: AnyPath):
         suffix = data_path.suffix
+        if (
+            "settings" in pipeline_item.decoder_kwargs
+            and pipeline_item.decoder_kwargs["settings"].model_decorator is not None
+        ):
+            return False
+
         if pipeline_item.dataset_format == "dgpv1":
             if (suffix == ".json" and self.encode_to_binary) or (suffix == ".bin" and not self.encode_to_binary):
                 return False
@@ -237,7 +249,10 @@ class DGPV1EncodingFormat(
         if pipeline_item.camera_frame is not None:
             pipeline_item.custom_data[CUSTOM_FORMAT_KEY]["image_width"] = pipeline_item.camera_frame.image.width
             pipeline_item.custom_data[CUSTOM_FORMAT_KEY]["image_height"] = pipeline_item.camera_frame.image.height
-        self.aggregate_sensor_frame(pipeline_item=pipeline_item)
+        self.aggregate_sensor_frame(pipeline_item=pipeline_item, dataset_output_path=self.dataset_output_path)
+
+    def save_frame(self, pipeline_item: ScenePipelineItem, data: Any = None):
+        pass
 
     def save_scene(self, pipeline_item: ScenePipelineItem, data: Any = None):
         self.save_aggregated_scene(

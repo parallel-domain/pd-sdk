@@ -1,8 +1,10 @@
+import logging
 from typing import Iterable, List, Optional, Type, TypeVar, Union
 
 import numpy as np
 import pd.state
 from google.protobuf.message import Message
+from pd.core import PdError
 from pd.internal.proto.keystone.generated.python import pd_sensor_pb2 as pd_sensor_pb2_base
 from pd.internal.proto.keystone.generated.wrapper import pd_sensor_pb2
 from pd.internal.proto.keystone.generated.wrapper.utils import register_wrapper
@@ -14,27 +16,105 @@ from pd.state.sensor import PostProcessMaterial
 from pd.state.sensor import PostProcessParams as PostProcessParamsStep
 
 from paralleldomain.model.annotation import AnnotationType, AnnotationTypes
+from paralleldomain.utilities import clip_with_warning, inherit_docs
 from paralleldomain.utilities.coordinate_system import SIM_COORDINATE_SYSTEM, CoordinateSystem
 from paralleldomain.utilities.transformation import Transformation
 
-AlbedoWeights = pd_sensor_pb2.AlbedoWeights
-AliceLidarModel = pd_sensor_pb2.AliceLidarModel
-CameraIntrinsic = pd_sensor_pb2.CameraIntrinsic
-DistortionParams = pd_sensor_pb2.DistortionParams
-LidarBeam = pd_sensor_pb2.LidarBeam
-LidarIntensityParams = pd_sensor_pb2.LidarIntensityParams
-LidarIntrinsic = pd_sensor_pb2.LidarIntrinsic
-LidarNoiseParams = pd_sensor_pb2.LidarNoiseParams
-NoiseParams = pd_sensor_pb2.NoiseParams
-PostProcessNode = pd_sensor_pb2.PostProcessNode
-PostProcessParams = pd_sensor_pb2.PostProcessParams
-RadarBasicParameters = pd_sensor_pb2.RadarBasicParameters
-RadarDetectorParameters = pd_sensor_pb2.RadarDetectorParameters
-RadarEnergyParameters = pd_sensor_pb2.RadarEnergyParameters
-RadarIntrinsic = pd_sensor_pb2.RadarIntrinsic
-RadarNoiseParameters = pd_sensor_pb2.RadarNoiseParameters
-SensorExtrinsic = pd_sensor_pb2.SensorExtrinsic
-SensorList = pd_sensor_pb2.SensorList
+logger = logging.getLogger(__name__)
+
+
+DenoiseFilter = pd_sensor_pb2.DenoiseFilter
+
+
+@inherit_docs
+class AlbedoWeights(pd_sensor_pb2.AlbedoWeights):
+    ...
+
+
+@inherit_docs
+class CameraIntrinsic(pd_sensor_pb2.CameraIntrinsic):
+    ...
+
+
+@inherit_docs
+class DistortionParams(pd_sensor_pb2.DistortionParams):
+    ...
+
+
+@inherit_docs
+class LidarBeam(pd_sensor_pb2.LidarBeam):
+    ...
+
+
+@inherit_docs
+class LidarIntensityParams(pd_sensor_pb2.LidarIntensityParams):
+    ...
+
+
+@inherit_docs
+class LidarIntrinsic(pd_sensor_pb2.LidarIntrinsic):
+    ...
+
+
+@inherit_docs
+class LidarNoiseParams(pd_sensor_pb2.LidarNoiseParams):
+    ...
+
+
+@inherit_docs
+class NoiseParams(pd_sensor_pb2.NoiseParams):
+    ...
+
+
+@inherit_docs
+class PostProcessNode(pd_sensor_pb2.PostProcessNode):
+    ...
+
+
+@inherit_docs
+class PostProcessParams(pd_sensor_pb2.PostProcessParams):
+    ...
+
+
+@inherit_docs
+class RadarBasicParameters(pd_sensor_pb2.RadarBasicParameters):
+    ...
+
+
+@inherit_docs
+class RadarDetectorParameters(pd_sensor_pb2.RadarDetectorParameters):
+    ...
+
+
+@inherit_docs
+class RadarEnergyParameters(pd_sensor_pb2.RadarEnergyParameters):
+    ...
+
+
+@inherit_docs
+class RadarIntrinsic(pd_sensor_pb2.RadarIntrinsic):
+    ...
+
+
+@inherit_docs
+class RadarNoiseParameters(pd_sensor_pb2.RadarNoiseParameters):
+    ...
+
+
+@inherit_docs
+class SensorExtrinsic(pd_sensor_pb2.SensorExtrinsic):
+    ...
+
+
+@inherit_docs
+class SensorList(pd_sensor_pb2.SensorList):
+    ...
+
+
+@inherit_docs
+class ToneCurveParams(pd_sensor_pb2.ToneCurveParams):
+    ...
+
 
 T = TypeVar("T")
 
@@ -62,6 +142,7 @@ def convert_to_step_class(step_class: Type[T], message: Message, attr_name: str)
     return None
 
 
+@inherit_docs
 @register_wrapper(proto_type=pd_sensor_pb2_base.SensorConfig)
 class SensorConfig(pd_sensor_pb2.SensorConfig):
     @property
@@ -72,7 +153,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
     def sensor_to_ego(self) -> Transformation:
         """
         Returns:
-        Transformation: The transformation from sensor to ego in FLU
+            The transformation from sensor to ego in FLU
         """
         return self.get_sensor_to_ego()
 
@@ -82,7 +163,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
             coordinate_system: The coordinate system the return transformation is in
 
         Returns:
-        Transformation: The transformation from sensor to ego in the given coordinate system
+            The transformation from sensor to ego in the given coordinate system
         """
         extrinsic: SensorExtrinsic = self.sensor_extrinsic
         # sim coordinates are in  RFU, so roll is around the y-axis, pitch around x-axis
@@ -102,7 +183,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
     def ego_to_sensor(self) -> Transformation:
         """
         Returns:
-        Transformation: The transformation from ego to sensor in FLU
+            The transformation from ego to sensor in FLU
         """
         return self.sensor_to_ego.inverse
 
@@ -134,7 +215,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         sim_pose = self.get_sensor_to_ego(coordinate_system=SIM_COORDINATE_SYSTEM.axis_directions)
         sim_pose = pd.state.Pose6D.from_transformation_matrix(matrix=sim_pose.transformation_matrix)
         if self.is_camera:
-            return CameraSensor(
+            sensor = CameraSensor(
                 name=self.display_name,
                 pose=sim_pose,
                 width=self.camera_intrinsic.width,
@@ -169,8 +250,11 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
                 distortion_lookup_table=self.camera_intrinsic.distortion_lookup_table,
                 time_offset=self.camera_intrinsic.time_offset,
             )
+            sensor.render_ego = self.render_ego
+
+            return sensor
         elif self.is_lidar:
-            return LiDARSensor(
+            sensor = LiDARSensor(
                 name=self.display_name,
                 pose=sim_pose,
                 azimuth_max=self.lidar_intrinsic.azimuth_max,
@@ -200,6 +284,9 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
                 sample_rate=self.lidar_intrinsic.sample_rate,
                 time_offset_ms=self.lidar_intrinsic.time_offset,
             )
+            sensor.render_ego = self.render_ego
+
+            return sensor
         else:
             raise NotImplementedError()
 
@@ -234,6 +321,7 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         annotation_types = annotation_types if annotation_types is not None else []
         return SensorConfig(
             display_name=name,
+            render_ego=kwargs.pop("render_ego", False),
             sensor_extrinsic=extrinsic,
             camera_intrinsic=CameraIntrinsic(
                 width=width,
@@ -254,8 +342,83 @@ class SensorConfig(pd_sensor_pb2.SensorConfig):
         )
 
 
+@inherit_docs
 @register_wrapper(proto_type=pd_sensor_pb2_base.SensorRigConfig)
 class SensorRig(pd_sensor_pb2.SensorRigConfig):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._validate_sensor_config()
+
+    def _validate_sensor_config(self):
+        maximum_megapixels = 64_000_000  # 64 megapixels
+        total_pixel_count = 0
+
+        for sensor in self.sensors:
+            if sensor.is_camera:
+                distortion_params = sensor.intrinsic_config.distortion_params
+                fisheye_model = distortion_params.fisheye_model
+                width = sensor.intrinsic_config.width
+                height = sensor.intrinsic_config.height
+
+                # There is a maximum camera height and width specified in the IG
+                if width > 4200 or height > 4200:
+                    raise PdError(
+                        f"Camera '{sensor.name}' has a height or width greater than 4200 pixels. Reduce the resolution"
+                        " and submit again."
+                    )
+                if width <= 1 or height <= 1:
+                    raise PdError(
+                        f"Camera '{sensor.name}' has a height or width less than 2 pixels. Increase the resolution and"
+                        " submit again."
+                    )
+
+                if fisheye_model == 6 and distortion_params.p1 < -300:
+                    distortion_params.p1 = -300
+                    logger.warning(
+                        f"Clipping near clip plane of camera '{sensor.name}' to -300m. This is the minimum value"
+                        " currently supported."
+                    )
+
+                if fisheye_model == 6 and distortion_params.p2 > 500:
+                    distortion_params.p2 = 500
+                    logger.warning(
+                        f"Clipping far clip plane of camera '{sensor.name}' to 500m. This is the maximum value"
+                        " currently supported."
+                    )
+
+                if fisheye_model == 6 and distortion_params.p1 > distortion_params.p2:
+                    raise PdError(
+                        f"Camera '{sensor.name}' is an orthographic camera with a near clip plane"
+                        f" ({distortion_params.p1}m) further away than its far clip plane"
+                        f" ({distortion_params.p2}m). This is not supported."
+                    )
+
+                if fisheye_model not in {0, 1, 3, 6}:
+                    raise PdError(
+                        f"Camera '{sensor.name}' has an unsupported fisheye model. Only models 0, 1, 3, and 6 are"
+                        " supported."
+                    )
+
+                if sensor.intrinsic_config.fov == 0.0 and distortion_params.fx == 0.0:
+                    raise PdError(
+                        f"Camera '{sensor.name}' has a field of view of 0.0 degrees and a focal length of 0.0 pixels."
+                        " Please specify a field of view or focal length."
+                    )
+
+                pixel_factor = 3.0 if fisheye_model in [1, 3, 6] else 1.0
+                supersample_factor = (
+                    1.0 if sensor.intrinsic_config.supersample == 0.0 else sensor.intrinsic_config.supersample
+                )  # The supersample defaults to 0.0 when not set, but is handled by the IG.  We handle this case
+
+                total_pixel_count += pixel_factor * supersample_factor * width * height
+
+        if total_pixel_count > maximum_megapixels:
+            raise PdError(
+                "The specified camera configuration is too large, please reduce the number of cameras or the combined"
+                " total resolution of all cameras, including supersampling factors."
+            )
+
     @property
     def available_annotations(self) -> List[AnnotationType]:
         available_annotations = set()
@@ -316,6 +479,9 @@ class SensorRig(pd_sensor_pb2.SensorRigConfig):
             **kwargs,
         )
         self.add_sensor(sensor=cam)
+
+        self._validate_sensor_config()
+
         return self
 
 

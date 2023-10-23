@@ -9,14 +9,15 @@ from paralleldomain.utilities.mask import boolean_mask_by_value, boolean_mask_by
 
 @dataclass
 class InstanceSegmentation2D(Annotation):
-    """Represents a 2D Instance Segmentation mask for a camera image.
+    """
+    Represents a 2D Instance Segmentation mask for a camera image.
 
     Args:
-        instance_ids: :attr:`paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation2D.instance_ids`  # noqa: E501
+        instance_ids: :attr:`InstanceSegmentation2D.instance_ids`
 
     Attributes:
-        instance_ids: Matrix of shape `(H x W x 1)`, where `H` is the height and `W` is the width of corresponding
-            camera image. The third axis contains the instance ID for each pixel as `int`.
+        instance_ids: Matrix identical in size to the image where the third axis contains the instance ID for each
+            pixel as `int`.
     """
 
     instance_ids: np.ndarray
@@ -50,7 +51,8 @@ class InstanceSegmentation2D(Annotation):
 
     @property
     def rgb_encoded(self) -> np.ndarray:
-        """Outputs :attr:`paralleldomain.model.annotation.instance_segmentation_2d.InstanceSegmentation.instance_ids`
+        """
+        Outputs :attr:`InstanceSegmentation.instance_ids`
         mask as RGB matrix with shape `(H x W x 3)`,
         with `R` being the lowest and `B` being the highest 8 bit."""
         return encode_int32_as_rgb8(mask=self.instance_ids)

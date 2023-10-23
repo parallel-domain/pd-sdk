@@ -4,15 +4,20 @@ from typing import List
 
 import pytest
 
+from paralleldomain import Scene
 from paralleldomain.common.dgp.v1.constants import DirectoryName
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder
 from paralleldomain.decoding.helper import decode_dataset
 from paralleldomain.encoding.dgp.v1.dataset import DGPDatasetEncoder
+from paralleldomain.encoding.dgp.v1.encoding_format import DGPV1EncodingFormat
 from paralleldomain.encoding.dgp.v1.pipeline_encoder import DGPV1DatasetPipelineEncoder
+from paralleldomain.encoding.helper import encode_dataset
 from paralleldomain.model.annotation import Annotation
 from paralleldomain.model.dataset import Dataset
 from paralleldomain.model.sensor import CameraSensorFrame, FilePathedDataType, LidarSensorFrame
+from paralleldomain.model.type_aliases import FrameId
 from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.dataset_transform import D, DatasetTransformation, DataTransformer, M
 
 
 def check_files_in_folder(path: AnyPath, expected_num: int, expected_suffix: str = ".bin", check_suffix: bool = True):
@@ -101,20 +106,28 @@ def test_encode_to_binary_proto(dataset: Dataset):
             num_frames = 3
             output_path = AnyPath(temp_dir)
 
-            encoder = DGPV1DatasetPipelineEncoder.from_path(
-                dataset_path=dataset.path,
-                dataset_format=dataset.format,
-                decoder_kwargs=dataset.decoder_init_kwargs,
-                output_path=output_path,
-                set_stop=2,
+            class FilterFrames(DataTransformer[List[FrameId], Scene]):
+                def __call__(self, model: Scene) -> List[FrameId]:
+                    return model.frame_ids[:num_frames]
+
+            data_transform = DatasetTransformation(
+                frame_ids=FilterFrames(),
+                sensor_names=["CAM_BACK", "CAM_FRONT"],
+                scene_names=dataset.scene_names[:2],
+            )
+            dataset = data_transform.apply(dataset)
+            encode_dataset(
+                dataset=dataset,
+                encoding_format=DGPV1EncodingFormat(
+                    dataset_output_path=output_path,
+                    target_dataset_name="NewDataset",
+                    encode_to_binary=True,
+                ),
+                copy_all_available_sensors_and_annotations=True,
                 workers=4,
                 max_in_queue_size=10,
-                fs_copy=False,
-                allowed_frames=[str(i) for i in range(num_frames)],
-                copy_all_available_sensors_and_annotations=True,
-                encode_to_binary=True,
             )
-            encoder.encode_dataset()
+
             # scene = dataset.get_scene(scene_name=dataset.scene_names[0])
             check_if_files_are_binary(
                 output_path=output_path,
@@ -132,21 +145,27 @@ def test_encode_and_read_binary_proto(dataset: Dataset):
             num_frames = 3
             output_path = AnyPath(temp_dir)
 
-            encoder = DGPV1DatasetPipelineEncoder.from_path(
-                dataset_path=dataset.path,
-                dataset_format=dataset.format,
-                decoder_kwargs=dataset.decoder_init_kwargs,
-                output_path=output_path,
-                set_stop=2,
+            class FilterFrames(DataTransformer[List[FrameId], Scene]):
+                def __call__(self, model: Scene) -> List[FrameId]:
+                    return model.frame_ids[:num_frames]
+
+            data_transform = DatasetTransformation(
+                frame_ids=FilterFrames(),
+                sensor_names=["CAM_BACK", "CAM_FRONT"],
+                scene_names=dataset.scene_names[:2],
+            )
+            dataset = data_transform.apply(dataset)
+            encode_dataset(
+                dataset=dataset,
+                encoding_format=DGPV1EncodingFormat(
+                    dataset_output_path=output_path,
+                    target_dataset_name="NewDataset",
+                    encode_to_binary=True,
+                ),
+                copy_all_available_sensors_and_annotations=True,
                 workers=4,
                 max_in_queue_size=10,
-                fs_copy=False,
-                allowed_frames=[str(i) for i in range(num_frames)],
-                copy_all_available_sensors_and_annotations=True,
-                encode_to_binary=True,
             )
-            encoder.encode_dataset()
-            # scene = dataset.get_scene(scene_name=dataset.scene_names[0])
 
             binary_dataset = decode_dataset(dataset_path=output_path, dataset_format="dgpv1")
 

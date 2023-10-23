@@ -10,29 +10,32 @@ T = TypeVar("T")
 
 @dataclass
 class MaterialProperties3D(Annotation):
-    """Represents a 3D Material Segmentation mask for a point cloud.
+    """
+    Represents a 3D Material Segmentation mask for a point cloud.
 
     Args:
-        material_ids: :attr:`~.MaterialProperties3D.material_ids`
-        roughness: :attr:`~.MaterialProperties3D.roughness`
-        metallic: :attr:`~.MaterialProperties3D.metallic`
-        specular: :attr:`~.MaterialProperties3D.specular`
-        emissive: :attr:`~.MaterialProperties3D.emissive`
-        opacity: :attr:`~.MaterialProperties3D.opacity`
-        flags: :attr:`~.MaterialProperties3D.flags`
+        material_ids: :attr:`MaterialProperties3D.material_ids`
+        roughness: :attr:`MaterialProperties3D.roughness`
+        metallic: :attr:`MaterialProperties3D.metallic`
+        specular: :attr:`MaterialProperties3D.specular`
+        emissive: :attr:`MaterialProperties3D.emissive`
+        opacity: :attr:`MaterialProperties3D.opacity`
+        flags: :attr:`MaterialProperties3D.flags`
 
     Attributes:
         material_ids: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material ID for each point as `int`.
         roughness: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material's roughness value for each point as `float`.
+        metallic: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+            The second axis contains the material's metallic value for each point as `float`.
         specular: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material's specular value for each point as `float`.
         emissive: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material's emissive value for each point as `float`.
         opacity: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains the material's opacity value for each point as `float`.
-        flag: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
+        flags: Matrix of shape `(N x 1)`, where `N` is the length of the corresponding point cloud.
             The second axis contains special flags for each point encoded as `float`.
     """
 

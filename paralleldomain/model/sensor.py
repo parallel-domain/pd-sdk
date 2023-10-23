@@ -1,10 +1,32 @@
 from __future__ import annotations
+
 import math
 from datetime import datetime
-from typing import Any, Dict, Generator, Generic, List, Optional, Set, Type, TypeVar, Union, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Optional,
+    Protocol,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import numpy as np
 
+from paralleldomain.constants import (
+    CAMERA_MODEL_OPENCV_FISHEYE,
+    CAMERA_MODEL_OPENCV_PINHOLE,
+    CAMERA_MODEL_PD_FISHEYE,
+    CAMERA_MODEL_PD_ORTHOGRAPHIC,
+)
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
 from paralleldomain.model.image import DecoderImage, Image, ImageDecoderProtocol
 from paralleldomain.model.point_cloud import DecoderPointCloud, PointCloud, PointCloudDecoderProtocol
@@ -18,24 +40,18 @@ from paralleldomain.model.radar_point_cloud import (
     RadarPointCloudDecoderProtocol,
     RangeDopplerMap,
 )
-from paralleldomain.utilities.any_path import AnyPath
-from paralleldomain.utilities.projection import DistortionLookup, project_points_3d_to_2d
-
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
-
-from paralleldomain.constants import (
-    CAMERA_MODEL_OPENCV_FISHEYE,
-    CAMERA_MODEL_OPENCV_PINHOLE,
-    CAMERA_MODEL_PD_FISHEYE,
-    CAMERA_MODEL_PD_ORTHOGRAPHIC,
-)
-from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
 from paralleldomain.model.type_aliases import FrameId, SceneName, SensorName
+from paralleldomain.utilities.any_path import AnyPath
+from paralleldomain.utilities.projection import DistortionLookup, fov_to_focal_length, project_points_3d_to_2d
 from paralleldomain.utilities.transformation import Transformation
 
+if TYPE_CHECKING:
+    from paralleldomain.model.frame import Frame
+    from paralleldomain.model.scene import Scene
+    from paralleldomain.model.unordered_scene import UnorderedScene
+
+
+SelfType = TypeVar("SelfType", bound="SensorFrame")
 T = TypeVar("T")
 TDateTime = TypeVar("TDateTime", bound=Union[None, datetime])
 SensorDataCopyTypes = Union[
@@ -88,6 +104,9 @@ class FilePathedDataType(AnnotationTypes):
 
     Image: Type[Image] = Image  # noqa: F811
     PointCloud: Type[PointCloud] = PointCloud  # noqa: F811
+    RadarPointCloud: Type[RadarPointCloud] = RadarPointCloud  # noqa: F811
+    RadarFrameHeader: Type[RadarFrameHeader] = RadarFrameHeader  # noqa: F811
+    RangeDopplerMap: Type[RangeDopplerMap] = RangeDopplerMap  # noqa: F811
 
 
 class CameraModel:
@@ -128,50 +147,48 @@ class SensorFrameDecoderProtocol(Protocol[TDateTime]):
     def scene_name(self) -> SceneName:
         pass
 
-    def get_extrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorExtrinsic":
+    @property
+    def sensor_name(self) -> SensorName:
         pass
 
-    def get_sensor_pose(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorPose":
+    @property
+    def frame_id(self) -> FrameId:
         pass
 
-    def get_annotations(
-        self,
-        sensor_name: SensorName,
-        frame_id: FrameId,
-        identifier: AnnotationIdentifier[T],
-    ) -> List[T]:
+    def get_extrinsic(self) -> "SensorExtrinsic":
         pass
 
-    def get_file_path(
-        self, sensor_name: SensorName, frame_id: FrameId, data_type: SensorDataCopyTypes
-    ) -> Optional[AnyPath]:
+    def get_sensor_pose(self) -> "SensorPose":
         pass
 
-    def get_available_annotation_identifiers(
-        self, sensor_name: SensorName, frame_id: FrameId
-    ) -> List[AnnotationIdentifier]:
+    def get_annotations(self, identifier: AnnotationIdentifier[T]) -> List[T]:
         pass
 
-    def get_metadata(self, sensor_name: SensorName, frame_id: FrameId) -> Dict[str, Any]:
+    def get_file_path(self, data_type: SensorDataCopyTypes) -> Optional[AnyPath]:
         pass
 
-    def get_date_time(self, sensor_name: SensorName, frame_id: FrameId) -> TDateTime:
+    def get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        pass
+
+    def get_metadata(self) -> Dict[str, Any]:
+        pass
+
+    def get_date_time(self) -> TDateTime:
         pass
 
     def get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
+        pass
+
+    def get_scene(self) -> Union[Scene, UnorderedScene]:
         pass
 
 
 class SensorFrame(Generic[TDateTime]):
     def __init__(
         self,
-        sensor_name: SensorName,
-        frame_id: FrameId,
         decoder: SensorFrameDecoderProtocol[TDateTime],
     ):
-        self._frame_id = frame_id
         self._decoder = decoder
-        self._sensor_name = sensor_name
 
     @property
     def dataset_name(self) -> str:
@@ -182,12 +199,119 @@ class SensorFrame(Generic[TDateTime]):
         return self._decoder.scene_name
 
     @property
+    def scene(self) -> Union[Scene, UnorderedScene]:
+        return self._decoder.get_scene()
+
+    @property
+    def sensor(self) -> "Sensor":
+        return self.scene.get_sensor(sensor_name=self.sensor_name)
+
+    @property
+    def frame(self) -> Frame:
+        return self.scene.get_frame(frame_id=self.frame_id)
+
+    @property
+    def next_frame(self) -> Optional[Frame[TDateTime]]:
+        """
+        Returns: The next frame in the dataset. None if there is no next frame
+        or the scene has no order in frame ids. Note that that frame might not have data for this sensor.
+        """
+        return self.frame.next_frame
+
+    @property
+    def previous_frame(self) -> Optional[Frame[TDateTime]]:
+        """
+        Returns: The previous frame in the dataset. None if there is no previous frame
+        or the scene has no order in frame ids. Note that that frame might not have data for this sensor.
+        """
+        return self.frame.previous_frame
+
+    @property
+    def next_sensor_frame_id(self) -> Optional[FrameId]:
+        """
+        Returns: The frame id of the next frame that has data for this sensor. None if there is no next frame
+        or the scene has no order in frame ids.
+        """
+        scene = self.scene
+        if not scene.is_ordered:
+            return None
+        sensor_fids = scene.get_sensor(sensor_name=self.sensor_name).frame_ids
+        frame_ids = [fid for fid in scene.frame_ids if fid in sensor_fids]
+        next_frame_id_idx = frame_ids.index(self.frame_id) + 1
+        if 0 <= next_frame_id_idx < len(frame_ids):
+            return frame_ids[next_frame_id_idx]
+        return None
+
+    @property
+    def previous_sensor_frame_id(self) -> Optional[FrameId]:
+        """
+        Returns: The frame id of the previous frame that has data for this sensor. None if there is no previous frame
+        or the scene has no order in frame ids.
+        """
+        scene = self.scene
+        if not scene.is_ordered:
+            return None
+        sensor_fids = scene.get_sensor(sensor_name=self.sensor_name).frame_ids
+        frame_ids = [fid for fid in scene.frame_ids if fid in sensor_fids]
+        previous_frame_id_idx = frame_ids.index(self.frame_id) - 1
+        if 0 <= previous_frame_id_idx < len(frame_ids):
+            return frame_ids[previous_frame_id_idx]
+        return None
+
+    @property
+    def next_frame_id(self) -> Optional[FrameId]:
+        """
+        Returns: The frame id of the next frame in the dataset. None if there is no next frame
+        or the scene has no order in frame ids. Note that that frame might not have data for this sensor.
+        """
+        return self.frame.next_frame_id
+
+    @property
+    def previous_frame_id(self) -> Optional[FrameId]:
+        """
+        Returns: The frame id of the previous frame in the dataset. None if there is no previous frame
+        or the scene has no order in frame ids. Note that that frame might not have data for this sensor.
+        """
+        return self.frame.previous_frame_id
+
+    @property
+    def next_sensor_frame(self: SelfType) -> Optional[SelfType]:
+        next_sensor_frame_id = self.next_sensor_frame_id
+        if next_sensor_frame_id is not None:
+            next_frame = self.scene.get_frame(frame_id=next_sensor_frame_id)
+            return next_frame.get_sensor(sensor_name=self.sensor_name)
+        return None
+
+    @property
+    def previous_sensor_frame(self: SelfType) -> Optional[SelfType]:
+        previous_sensor_frame_id = self.previous_sensor_frame_id
+        if previous_sensor_frame_id is not None:
+            previous_frame = self.scene.get_frame(frame_id=previous_sensor_frame_id)
+            return previous_frame.get_sensor(sensor_name=self.sensor_name)
+        return None
+
+    def _get_extrinsic(self) -> "SensorExtrinsic":
+        """
+        Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. Vehicle coordinate system is in FLU.
+        """
+        return self._decoder.get_extrinsic()
+
+    @property
     def extrinsic(self) -> "SensorExtrinsic":
         """
         Local Sensor coordinate system to vehicle coordinate system. Local Sensor coordinates are in RDF for PD data,
         but it can be something else for other dataset types. Vehicle coordinate system is in FLU.
         """
-        return self._decoder.get_extrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_extrinsic()
+
+    def _get_pose(self) -> "SensorPose":
+        """
+        Local Sensor coordinate system at the current time step to world coordinate system.
+        This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
+        but it can be something else for other dataset types. World coordinate system is Z up.
+        """
+        return self._decoder.get_sensor_pose()
 
     @property
     def pose(self) -> "SensorPose":
@@ -196,7 +320,7 @@ class SensorFrame(Generic[TDateTime]):
         This is the same as the sensor_to_world property. Local Sensor coordinates are in RDF for PD data,
         but it can be something else for other dataset types. World coordinate system is Z up.
         """
-        return self._decoder.get_sensor_pose(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_pose()
 
     @property
     def sensor_to_world(self) -> Transformation:
@@ -246,19 +370,22 @@ class SensorFrame(Generic[TDateTime]):
 
     @property
     def sensor_name(self) -> str:
-        return self._sensor_name
+        return self._decoder.sensor_name
 
     @property
     def frame_id(self) -> FrameId:
-        return self._frame_id
+        return self._decoder.frame_id
 
     @property
     def available_annotation_types(self) -> List[AnnotationType]:
         return list({ai.annotation_type for ai in self.available_annotation_identifiers})
 
+    def _get_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
+        return self._decoder.get_available_annotation_identifiers()
+
     @property
     def available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
-        return self._decoder.get_available_annotation_identifiers(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_available_annotation_identifiers()
 
     def get_annotation_identifiers_of_type(self, annotation_type: Type[T]) -> List[AnnotationIdentifier[T]]:
         return [
@@ -267,9 +394,12 @@ class SensorFrame(Generic[TDateTime]):
             if issubclass(identifier.annotation_type, annotation_type)
         ]
 
+    def _get_class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
+        return self._decoder.get_class_maps()
+
     @property
     def class_maps(self) -> Dict[AnnotationIdentifier, ClassMap]:
-        return self._decoder.get_class_maps()
+        return self._get_class_maps()
 
     @overload
     def get_class_map(self, annotation_type: Type[T], name: str = None) -> ClassMap:
@@ -292,7 +422,7 @@ class SensorFrame(Generic[TDateTime]):
 
     @property
     def metadata(self) -> Dict[str, Any]:
-        return self._decoder.get_metadata(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._decoder.get_metadata()
 
     def get_annotation_identifiers(
         self, names: Optional[List[str]] = None, annotation_types: Optional[List[AnnotationType]] = None
@@ -322,22 +452,18 @@ class SensorFrame(Generic[TDateTime]):
             name=name,
         )
         return self._decoder.get_annotations(
-            sensor_name=self.sensor_name,
-            frame_id=self.frame_id,
             identifier=annotation_identifier,
         )
 
     def get_file_path(self, data_type: SensorDataCopyTypes) -> Optional[AnyPath]:
         # Note: We also support Type[Annotation] for data_type for backwards compatibility
         return self._decoder.get_file_path(
-            sensor_name=self.sensor_name,
-            frame_id=self.frame_id,
             data_type=data_type,
         )
 
     @property
     def date_time(self) -> TDateTime:
-        return self._decoder.get_date_time(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._decoder.get_date_time()
 
     def __lt__(self, other: "SensorFrame[TDateTime]"):
         if self.date_time is not None and other.date_time is not None:
@@ -359,70 +485,85 @@ class RadarSensorFrameDecoderProtocol(
 class LidarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
-        sensor_name: SensorName,
-        frame_id: FrameId,
         decoder: LidarSensorFrameDecoderProtocol[TDateTime],
     ):
-        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        super().__init__(decoder=decoder)
         self._decoder = decoder
+
+    def _get_point_cloud(self) -> PointCloud:
+        return DecoderPointCloud(decoder=self._decoder)
 
     @property
     def point_cloud(self) -> PointCloud:
-        return DecoderPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_point_cloud()
 
 
 class RadarSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
-        sensor_name: SensorName,
-        frame_id: FrameId,
         decoder: RadarSensorFrameDecoderProtocol[TDateTime],
     ):
-        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        super().__init__(decoder=decoder)
         self._decoder = decoder
+
+    def _get_radar_point_cloud(self) -> RadarPointCloud:
+        return DecoderRadarPointCloud(decoder=self._decoder)
+
+    def _get_radar_range_doppler_map(self) -> RangeDopplerMap:
+        return DecoderRangeDopplerMap(decoder=self._decoder)
+
+    def _get_header(self) -> RadarFrameHeader:
+        return DecoderRadarFrameHeader(decoder=self._decoder)
 
     @property
     def radar_point_cloud(self) -> RadarPointCloud:
-        return DecoderRadarPointCloud(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_radar_point_cloud()
 
     @property
     def radar_range_doppler_map(self) -> RangeDopplerMap:
-        return DecoderRangeDopplerMap(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_radar_range_doppler_map()
 
     @property
     def header(self) -> RadarFrameHeader:
-        return DecoderRadarFrameHeader(decoder=self._decoder, sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_header()
 
 
 class CameraSensorFrameDecoderProtocol(SensorFrameDecoderProtocol[TDateTime], ImageDecoderProtocol):
-    def get_intrinsic(self, sensor_name: SensorName, frame_id: FrameId) -> "SensorIntrinsic":
+    def get_intrinsic(self) -> "SensorIntrinsic":
         pass
 
-    def get_distortion_lookup(self, sensor_name: SensorName, frame_id: FrameId) -> Optional[DistortionLookup]:
+    def get_distortion_lookup(self) -> Optional[DistortionLookup]:
         pass
 
 
 class CameraSensorFrame(SensorFrame[TDateTime]):
     def __init__(
         self,
-        sensor_name: SensorName,
-        frame_id: FrameId,
         decoder: CameraSensorFrameDecoderProtocol[TDateTime],
     ):
-        super().__init__(sensor_name=sensor_name, frame_id=frame_id, decoder=decoder)
+        super().__init__(decoder=decoder)
         self._decoder = decoder
+
+    def _get_image(self) -> Image:
+        return DecoderImage(decoder=self._decoder)
 
     @property
     def image(self) -> Image:
-        return DecoderImage(decoder=self._decoder, frame_id=self.frame_id, sensor_name=self.sensor_name)
+        return self._get_image()
+
+    def _get_intrinsic(self) -> "SensorIntrinsic":
+        return self._decoder.get_intrinsic()
 
     @property
     def intrinsic(self) -> "SensorIntrinsic":
-        return self._decoder.get_intrinsic(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_intrinsic()
+
+    def _get_distortion_lookup(self) -> Optional[DistortionLookup]:
+        return self._decoder.get_distortion_lookup()
 
     @property
     def distortion_lookup(self) -> Optional[DistortionLookup]:
-        return self._decoder.get_distortion_lookup(sensor_name=self.sensor_name, frame_id=self.frame_id)
+        return self._get_distortion_lookup()
 
     def project_points_from_3d(
         self, points_3d: np.ndarray, distortion_lookup: Optional[DistortionLookup] = None
@@ -443,32 +584,60 @@ TSensorFrameType = TypeVar("TSensorFrameType", bound=SensorFrame)
 
 
 class SensorDecoderProtocol(Protocol[TSensorFrameType]):
-    def get_sensor_frame(self, frame_id: FrameId, sensor_name: SensorName) -> TSensorFrameType:
+    def get_sensor_frame(self, frame_id: FrameId) -> TSensorFrameType:
         pass
 
-    def get_frame_ids(self, sensor_name: SensorName) -> Set[FrameId]:
+    def get_frame_ids(self) -> Set[FrameId]:
+        pass
+
+    def get_scene(self) -> Union[Scene, UnorderedScene]:
+        pass
+
+    @property
+    def dataset_name(self) -> str:
+        pass
+
+    @property
+    def scene_name(self) -> SceneName:
+        pass
+
+    @property
+    def sensor_name(self) -> SensorName:
         pass
 
 
 class Sensor(Generic[TSensorFrameType]):
     def __init__(
         self,
-        sensor_name: SensorName,
         decoder: SensorDecoderProtocol[TSensorFrameType],
     ):
         self._decoder = decoder
-        self._sensor_name = sensor_name
 
     @property
     def name(self) -> str:
-        return self._sensor_name
+        return self._decoder.sensor_name
+
+    def _get_frame_ids(self) -> Set[FrameId]:
+        return self._decoder.get_frame_ids()
+
+    @property
+    def scene(self) -> Union[Scene, UnorderedScene]:
+        return self._decoder.get_scene()
+
+    @property
+    def dataset_name(self) -> str:
+        return self._decoder.dataset_name
+
+    @property
+    def scene_name(self) -> SceneName:
+        return self._decoder.scene_name
 
     @property
     def frame_ids(self) -> Set[FrameId]:
-        return self._decoder.get_frame_ids(sensor_name=self.name)
+        return self._get_frame_ids()
 
     def get_frame(self, frame_id: FrameId) -> TSensorFrameType:
-        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+        return self._decoder.get_sensor_frame(frame_id=frame_id)
 
     @property
     def sensor_frames(self) -> Generator[TSensorFrameType, None, None]:
@@ -477,7 +646,7 @@ class Sensor(Generic[TSensorFrameType]):
 
 class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> CameraSensorFrame[TDateTime]:
-        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+        return self._decoder.get_sensor_frame(frame_id=frame_id)
 
     @property
     def sensor_frames(self) -> Generator[CameraSensorFrame[TDateTime], None, None]:
@@ -486,7 +655,7 @@ class CameraSensor(Sensor[CameraSensorFrame[TDateTime]]):
 
 class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> LidarSensorFrame[TDateTime]:
-        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+        return self._decoder.get_sensor_frame(frame_id=frame_id)
 
     @property
     def sensor_frames(self) -> Generator[LidarSensorFrame[TDateTime], None, None]:
@@ -495,7 +664,7 @@ class LidarSensor(Sensor[LidarSensorFrame[TDateTime]]):
 
 class RadarSensor(Sensor[RadarSensorFrame[TDateTime]]):
     def get_frame(self, frame_id: FrameId) -> RadarSensorFrame[TDateTime]:
-        return self._decoder.get_sensor_frame(frame_id=frame_id, sensor_name=self._sensor_name)
+        return self._decoder.get_sensor_frame(frame_id=frame_id)
 
 
 class SensorPose(Transformation):
@@ -607,15 +776,14 @@ class SensorIntrinsic:
 
     @staticmethod
     def from_field_of_view(field_of_view_degrees: float, width: int, height: int) -> SensorIntrinsic:
-        # TODO: This is the code from the step decoder. It assumes that the fov is horizontal fov if width > height and
-        # vertical fov if height > width?
-        fx = width / (2 * math.tan(math.radians(field_of_view_degrees) / 2))
-        fy = height / (2 * math.tan(math.radians(field_of_view_degrees) / 2))
+        fx = fy = fov_to_focal_length(
+            fov=math.radians(field_of_view_degrees), sensor_size=width if width >= height else height
+        )
         return SensorIntrinsic(
             cx=width / 2,
             cy=height / 2,
-            fx=max(fx, fy),
-            fy=max(fx, fy),
+            fx=fx,
+            fy=fy,
             fov=field_of_view_degrees,
             camera_model=CameraModel.OPENCV_PINHOLE,
         )

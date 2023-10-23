@@ -1,11 +1,13 @@
-import numpy as np
 from datetime import datetime
 
+import numpy as np
+
 from paralleldomain import Scene
+from paralleldomain.decoding.in_memory.scene_decoder import InMemorySceneDecoder
 from paralleldomain.decoding.in_memory.sensor_frame_decoder import InMemoryCameraFrameDecoder
-from paralleldomain.model.sensor import CameraSensorFrame, SensorIntrinsic, SensorExtrinsic, SensorPose
-from paralleldomain.model.statistics import ImageStatistics
 from paralleldomain.model.annotation import AnnotationTypes
+from paralleldomain.model.sensor import CameraSensorFrame, SensorExtrinsic, SensorIntrinsic, SensorPose
+from paralleldomain.model.statistics import ImageStatistics
 
 
 def test_all_red():
@@ -17,9 +19,11 @@ def test_all_red():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations=[],
+        annotations={},
         class_maps={},
         intrinsic=SensorIntrinsic(),
         rgba=image,
@@ -28,8 +32,11 @@ def test_all_red():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_red = np.zeros(256, dtype=np.uint32)
@@ -51,9 +58,11 @@ def test_all_green():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations=[],
+        annotations={},
         class_maps={},
         intrinsic=SensorIntrinsic(),
         rgba=image,
@@ -62,8 +71,11 @@ def test_all_green():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_green = np.zeros(256, dtype=np.uint32)
@@ -85,6 +97,8 @@ def test_all_blue():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
         annotations=[],
@@ -96,8 +110,11 @@ def test_all_blue():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_blue = np.zeros(256, dtype=np.uint32)
@@ -117,9 +134,11 @@ def test_black():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations=[],
+        annotations={},
         class_maps={},
         intrinsic=SensorIntrinsic(),
         rgba=image,
@@ -128,8 +147,11 @@ def test_black():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_other = np.zeros(256)
@@ -149,9 +171,11 @@ def test_multiple_updates():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations=[AnnotationTypes.BoundingBoxes2D],
+        annotations={},
         class_maps={},
         intrinsic=SensorIntrinsic(),
         rgba=image,
@@ -160,8 +184,11 @@ def test_multiple_updates():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
@@ -188,9 +215,11 @@ def test_range():
     decoder = InMemoryCameraFrameDecoder(
         dataset_name="test",
         scene_name="test",
+        sensor_name="test_sensor",
+        frame_id="1",
         extrinsic=SensorExtrinsic(),
         sensor_pose=SensorPose(),
-        annotations=[],
+        annotations={},
         class_maps={},
         intrinsic=SensorIntrinsic(),
         rgba=image,
@@ -199,8 +228,11 @@ def test_range():
         metadata={},
         date_time=datetime.now(),
     )
-    sensor_frame = CameraSensorFrame("test_sensor", "1", decoder=decoder)
-    scene = Scene(name="test_scene", decoder=None)
+    sensor_frame = CameraSensorFrame(decoder=decoder)
+    scene_decoder = InMemorySceneDecoder(
+        scene_name="test",
+    )
+    scene = Scene(decoder=scene_decoder)
     image_statistics.update(scene=scene, sensor_frame=sensor_frame)
 
     hist_red = np.zeros(256, dtype=np.uint32)

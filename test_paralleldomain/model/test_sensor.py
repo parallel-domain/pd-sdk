@@ -8,8 +8,9 @@ from paralleldomain.decoding.common import DecoderSettings
 from paralleldomain.decoding.decoder import DatasetDecoder
 from paralleldomain.decoding.dgp.decoder import DGPDatasetDecoder as DGPDatasetDecoderV0
 from paralleldomain.decoding.dgp.v1.decoder import DGPDatasetDecoder as DGPDatasetDecoderV1
-from paralleldomain.model.annotation import AnnotationType, AnnotationIdentifier, AnnotationTypes
+from paralleldomain.model.annotation import AnnotationIdentifier, AnnotationType, AnnotationTypes
 from paralleldomain.model.class_mapping import ClassMap
+from paralleldomain.model.sensor import CameraSensorFrame
 from paralleldomain.utilities.projection import DistortionLookupTable
 
 
@@ -24,6 +25,60 @@ def class_maps_do_match(map_a: Dict[AnnotationType, ClassMap], map_b: Dict[Annot
 
 
 class TestSensorFrame:
+    def test_can_access_neighboring_sensor_frames(self, scene: Scene):
+        for sensor_name in scene.sensor_names:
+            sensor = scene.get_sensor(sensor_name=sensor_name)
+            # ensure correct order so that we get the first sensor frame
+            sensor_fids = [f for f in scene.frame_ids if f in sensor.frame_ids]
+            sensor_frame = scene.get_frame(frame_id=sensor_fids[0]).get_sensor(sensor_name=sensor_name)
+            sf_type = type(sensor_frame)
+            frame_count = 1
+            while sensor_frame is not None:
+                sensor_frame = sensor_frame.next_sensor_frame
+                if sensor_frame is not None:
+                    frame_count += 1
+                    assert isinstance(sensor_frame, sf_type)
+            assert frame_count == len(sensor_fids)
+
+    def test_can_access_neighboring_prev_sensor_frames(self, scene: Scene):
+        for sensor_name in scene.sensor_names:
+            sensor = scene.get_sensor(sensor_name=sensor_name)
+            # ensure correct order so that we get the first sensor frame
+            sensor_fids = [f for f in scene.frame_ids if f in sensor.frame_ids]
+            sensor_frame = scene.get_frame(frame_id=sensor_fids[-1]).get_sensor(sensor_name=sensor_name)
+            sf_type = type(sensor_frame)
+            frame_count = 1
+            while sensor_frame is not None:
+                sensor_frame = sensor_frame.previous_sensor_frame
+                if sensor_frame is not None:
+                    frame_count += 1
+                    assert isinstance(sensor_frame, sf_type)
+            assert frame_count == len(sensor_fids)
+
+    def is_same_scene(self, a: Scene, b: Scene):
+        assert isinstance(a, type(b))
+        assert isinstance(b, type(a))
+        assert a.name == b.name
+        assert a.frame_ids == b.frame_ids
+        assert a.sensor_names == b.sensor_names
+        assert a.number_of_sensor_frames == b.number_of_sensor_frames
+
+    def test_can_access_scene_from_sensor_frame(self, scene: Scene):
+        for sensor_name in scene.sensor_names:
+            sensor = scene.get_sensor(sensor_name=sensor_name)
+            sensor_frame = next(iter(sensor.sensor_frames))
+            self.is_same_scene(a=scene, b=sensor_frame.scene)
+
+    def test_can_access_scene_from_sensor(self, scene: Scene):
+        for sensor_name in scene.sensor_names:
+            sensor = scene.get_sensor(sensor_name=sensor_name)
+            self.is_same_scene(a=scene, b=sensor.scene)
+
+    def test_can_access_scene_from_frame(self, scene: Scene):
+        for frame_id in scene.frame_ids:
+            frame = scene.get_frame(frame_id=frame_id)
+            self.is_same_scene(a=scene, b=frame.scene)
+
     def test_date_time_type(self, scene: Scene):
         frame_ids = scene.frame_ids
         frame = scene.get_frame(frame_id=frame_ids[0])
@@ -116,7 +171,7 @@ class TestSensorFrame:
             AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D),
             AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D, name="someName"),
         ]
-        scene = Scene(name="test", decoder=decoder)
+        scene = Scene(decoder=decoder)
 
         result = scene.available_annotation_types
 
@@ -132,7 +187,7 @@ class TestSensorFrame:
             AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D),
             AnnotationIdentifier(annotation_type=AnnotationTypes.SemanticSegmentation2D, name="someName"),
         ]
-        scene = Scene(name="test", decoder=decoder)
+        scene = Scene(decoder=decoder)
 
         result = scene.get_annotation_identifiers_of_type(annotation_type=AnnotationTypes.BoundingBoxes2D)
         assert result == [AnnotationIdentifier(annotation_type=AnnotationTypes.BoundingBoxes2D)]

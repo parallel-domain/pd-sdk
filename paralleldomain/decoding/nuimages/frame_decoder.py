@@ -22,30 +22,41 @@ class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
         dataset_name: str,
         split_name: str,
         scene_name: SceneName,
+        frame_id: FrameId,
         settings: DecoderSettings,
+        is_unordered_scene: bool,
+        scene_decoder,
     ):
         self._dataset_path: AnyPath = AnyPath(dataset_path)
-        FrameDecoder.__init__(self=self, dataset_name=dataset_name, scene_name=scene_name, settings=settings)
+        FrameDecoder.__init__(
+            self=self,
+            dataset_name=dataset_name,
+            scene_name=scene_name,
+            frame_id=frame_id,
+            settings=settings,
+            scene_decoder=scene_decoder,
+            is_unordered_scene=is_unordered_scene,
+        )
         NuImagesDataAccessMixin.__init__(
             self=self, dataset_name=dataset_name, split_name=split_name, dataset_path=self._dataset_path
         )
 
-    def _decode_ego_pose(self, frame_id: FrameId) -> EgoPose:
-        trans = self.get_ego_pose(log_token=self.scene_name, frame_id=frame_id)
+    def _decode_ego_pose(self) -> EgoPose:
+        trans = self.get_ego_pose(log_token=self.scene_name, frame_id=self.frame_id)
         return EgoPose.from_transformation_matrix(mat=trans)
 
-    def _decode_available_sensor_names(self, frame_id: FrameId) -> List[SensorName]:
+    def _decode_available_sensor_names(self) -> List[SensorName]:
         camera_names = set()
-        for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=frame_id):
+        for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=self.frame_id):
             calib_sensor_token = data["calibrated_sensor_token"]
             calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
             camera_names.add(sensor["channel"])
         return list(camera_names)
 
-    def _decode_available_camera_names(self, frame_id: FrameId) -> List[SensorName]:
+    def _decode_available_camera_names(self) -> List[SensorName]:
         camera_names = set()
-        for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=frame_id):
+        for data in self.get_sample_data_with_frame_id(log_token=self.scene_name, frame_id=self.frame_id):
             calib_sensor_token = data["calibrated_sensor_token"]
             calib_sensor = self.nu_calibrated_sensors[calib_sensor_token]
             sensor = self.get_nu_sensor(sensor_token=calib_sensor["sensor_token"])
@@ -53,30 +64,34 @@ class NuImagesFrameDecoder(FrameDecoder[datetime], NuImagesDataAccessMixin):
                 camera_names.add(sensor["channel"])
         return list(camera_names)
 
-    def _decode_available_lidar_names(self, frame_id: FrameId) -> List[SensorName]:
+    def _decode_available_lidar_names(self) -> List[SensorName]:
         return list()
 
-    def _decode_metadata(self, frame_id: FrameId) -> Dict[str, Any]:
+    def _decode_metadata(self) -> Dict[str, Any]:
         return dict()
 
-    def _decode_datetime(self, frame_id: FrameId) -> datetime:
-        return datetime.fromtimestamp(int(frame_id) / 1000000)
+    def _decode_datetime(self) -> datetime:
+        return datetime.fromtimestamp(int(self.frame_id) / 1000000)
 
-    def _create_camera_sensor_frame_decoder(self) -> CameraSensorFrameDecoder[TDateTime]:
+    def _create_camera_sensor_frame_decoder(self, sensor_name: SensorName) -> CameraSensorFrameDecoder[TDateTime]:
         return NuImagesCameraSensorFrameDecoder(
             dataset_path=self._dataset_path,
             dataset_name=self.dataset_name,
             scene_name=self.scene_name,
+            frame_id=self.frame_id,
+            sensor_name=sensor_name,
             split_name=self.split_name,
             settings=self.settings,
+            scene_decoder=self.scene_decoder,
+            is_unordered_scene=self.is_unordered_scene,
         )
 
-    def _create_lidar_sensor_frame_decoder(self) -> LidarSensorFrameDecoder[TDateTime]:
+    def _create_lidar_sensor_frame_decoder(self, sensor_name: SensorName) -> LidarSensorFrameDecoder[TDateTime]:
         raise ValueError("NuImages does not contain lidar data!")
 
-    def _decode_available_radar_names(self, frame_id: FrameId) -> List[SensorName]:
+    def _decode_available_radar_names(self) -> List[SensorName]:
         """Not supported yet"""
         return list()
 
-    def _create_radar_sensor_frame_decoder(self) -> RadarSensorFrameDecoder[None]:
+    def _create_radar_sensor_frame_decoder(self, sensor_name: SensorName) -> RadarSensorFrameDecoder[None]:
         raise ValueError("NuImages does not contain radar data!")
