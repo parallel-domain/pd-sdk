@@ -26,7 +26,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 """
 In this example script, we create a scenario in which we create a driving scenario with pedestrians placed near the

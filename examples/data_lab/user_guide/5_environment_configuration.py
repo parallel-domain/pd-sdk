@@ -1,5 +1,4 @@
 import logging
-import random
 from typing import Tuple
 
 from pd.data_lab import ScenarioCreator, ScenarioSource
@@ -21,7 +20,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 # Create our custom ScenarioCreator class

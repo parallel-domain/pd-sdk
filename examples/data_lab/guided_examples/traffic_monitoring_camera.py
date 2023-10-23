@@ -1,4 +1,3 @@
-import random
 from typing import Tuple
 
 import numpy as np
@@ -22,6 +21,10 @@ from paralleldomain.data_lab.generators.position_request import (
 from paralleldomain.data_lab.generators.spawn_data import AgentSpawnData, VehicleSpawnData
 from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameters
 from paralleldomain.data_lab.generators.vehicle import VehicleGeneratorParameters
+from paralleldomain.utilities.logging import setup_loggers
+
+setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
+
 
 """
 In this example script, we create a scenario in which the ego agent is a static traffic monitoring camera overlooking a
@@ -116,7 +119,7 @@ class TrafficMonitoringCamera(ScenarioCreator):
         # to know where to point the static traffic camera
 
         # Use the MapQuery object to retrieve the reference line points of the LaneSegment retrieved above, and
-        # any connected LaneSegements, up to the min_path_length specified above
+        # any connected LaneSegments, up to the min_path_length specified above
         star_vehicle_path = map_query.get_connected_lane_points(lane_id=spawn_lane.id, path_length=min_path_length)
 
         # Again using the MapQuery object, retrieve the point on the reference line that is at least the specified
@@ -183,7 +186,7 @@ class TrafficMonitoringCamera(ScenarioCreator):
         # placed above
         scenario.add_agents(
             generator=TrafficGeneratorParameters(
-                # Specify the highest possible density of traffic to create a traffic jam
+                # Specify the highest possible density of traffic to create traffic jam
                 spawn_probability=1.0,
                 # Specify the spawn position of the traffic to be relative to the location of the STAR vehicle placed
                 # above

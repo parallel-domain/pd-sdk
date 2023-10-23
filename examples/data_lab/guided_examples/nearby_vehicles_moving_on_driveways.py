@@ -27,8 +27,7 @@ from paralleldomain.model.geometry.bounding_box_2d import BoundingBox2DBaseGeome
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logger = logging.getLogger("pd.state.serialize")
-logger.setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
 
 
 """
@@ -137,9 +136,7 @@ def get_valid_spawn_point(
         retries += 1
 
     # If we exceed 1000 attempts to search for a spawn location, we exit and return an error
-    raise PdError(
-        "Failed to find valid spawn location within max_retries set.  " "Adjust max_retries or spawn conditions"
-    )
+    raise PdError("Failed to find valid spawn location within max_retries set.  Adjust max_retries or spawn conditions")
 
 
 # We create a custom class that inherits from the ScenarioCreator class.  This is where we will provide our scenario

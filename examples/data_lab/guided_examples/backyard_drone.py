@@ -1,6 +1,5 @@
 import csv
 import logging
-import random
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -11,13 +10,11 @@ from pd.data_lab.scenario import Lighting, ScenarioCreator, ScenarioSource
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab import preview_scenario
 from paralleldomain.data_lab.config.map import Area, MapQuery
-from paralleldomain.model.annotation import AnnotationTypes
 from paralleldomain.utilities.any_path import AnyPath
 from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 """

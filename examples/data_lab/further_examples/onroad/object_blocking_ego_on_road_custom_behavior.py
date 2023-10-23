@@ -1,13 +1,8 @@
 import dataclasses
-import logging
 from typing import Callable, List, Optional, Tuple
 
-from pd.data_lab import Scenario
 from pd.data_lab.config.distribution import Distribution, EnumDistribution
-from pd.data_lab.context import setup_datalab
-from pd.data_lab.render_instance import RenderInstance
 from pd.data_lab.scenario import Lighting, ScenarioCreator, ScenarioSource
-from pd.data_lab.sim_instance import SimulationInstance
 
 import paralleldomain.data_lab as data_lab
 from paralleldomain.data_lab.generators.ego_agent import AgentType, EgoAgentGeneratorParameters
@@ -22,7 +17,6 @@ from paralleldomain.utilities.logging import setup_loggers
 from paralleldomain.utilities.transformation import Transformation
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 class BlockEgoBehavior(data_lab.CustomSimulationAgentBehavior):

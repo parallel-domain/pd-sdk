@@ -20,7 +20,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 # This class implements our custom Scenario object which inherits from the ScenarioCreator base class
@@ -119,7 +118,5 @@ if __name__ == "__main__":
         random_seed=2023,
         frames_per_scene=100,
         sim_capture_rate=10,
-        simulator=SimulationInstance(name="<instance name>"),
-        renderer=RenderInstance(name="<instance name>"),
-        data_lab_version="<version_name>",
+        instance_name="<instance name>",
     )

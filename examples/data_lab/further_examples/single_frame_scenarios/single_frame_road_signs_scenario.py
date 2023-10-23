@@ -1,4 +1,3 @@
-import logging
 import random
 from typing import Tuple
 
@@ -17,7 +16,6 @@ from paralleldomain.data_lab.generators.single_frame import (
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 class SingleFrameRoadSigns(ScenarioCreator):

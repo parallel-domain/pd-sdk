@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 
-from pd.data_lab import RenderInstance, ScenarioCreator, ScenarioSource
+from pd.data_lab import LabelEngineInstance, RenderInstance, ScenarioCreator, ScenarioSource
 from pd.data_lab.config.distribution import CenterSpreadConfig, EnumDistribution
 from pd.data_lab.config.location import Location
 from pd.data_lab.scenario import Lighting
@@ -20,7 +20,6 @@ from paralleldomain.data_lab.generators.traffic import TrafficGeneratorParameter
 from paralleldomain.utilities.logging import setup_loggers
 
 setup_loggers(logger_names=[__name__, "paralleldomain", "pd"])
-logging.getLogger("pd.state.serialize").setLevel(logging.CRITICAL)
 
 
 # Our custom ScenarioCreator object
@@ -114,15 +113,15 @@ if __name__ == "__main__":
 
     # Note also that we specify the renderer and simulator separately.  This allows us to specify that we want to run
     # Data Lab in simulator-only mode. This can be done by passing in only the simulator parameter and not passing the
-    # renderer parameter.
+    # renderer and label_engine parameter.
     data_lab.preview_scenario(
         scenario_creator=IterationFlowExample(),  # The custom ScenarioCreator object which we created above
         random_seed=2023,  # A random seed which controls all random-based logic in our scenario generation instructions
         frames_per_scene=100,  # The number of frames we want to get back from our Data Lab Instance
         sim_capture_rate=10,  # The frame rate of the scenario. Defined as 100 / sim_capture_rate
         simulator=SimulationInstance(name="<instance name>"),  # Name of the instance we want to perform simulation on
-        # Name of the instance we want to perform rendering on. Optional - if not provided, Data Lab will run in
-        # simulation-only mode
+        # Name of the instance we want to perform rendering and labeling on. Optional - if not provided, Data Lab
+        # will run in simulation-only mode
         renderer=RenderInstance(name="<instance name>"),
-        data_lab_version="<version_name>",  # The Data Lab version of our instance
+        label_engine=LabelEngineInstance(name="<instance name>"),
     )
