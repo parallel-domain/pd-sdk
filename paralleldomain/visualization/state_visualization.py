@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import rerun as rr
 import ujson
+from pd.assets import asset_pivot_point_to_sim_geometric_center_offset
 from pd.internal.assets.asset_registry import ObjAssets
 from pd.state import ModelAgent, State, VehicleAgent
 
@@ -175,10 +176,30 @@ def show_agents(sim_state: State, recording_id: Optional[str], application_id: s
     agents = [a for a in sim_state.agents if isinstance(a, ModelAgent) or isinstance(a, VehicleAgent)]
 
     agent_names = [a.asset_name if isinstance(a, ModelAgent) else a.vehicle_type for a in agents]
-    assets = ObjAssets.select(ObjAssets.name, ObjAssets.width, ObjAssets.length, ObjAssets.height).where(
-        ObjAssets.name.in_(agent_names)
-    )
+    assets = ObjAssets.select(
+        ObjAssets.name,
+        ObjAssets.width,
+        ObjAssets.length,
+        ObjAssets.height,
+        ObjAssets.bbox_min_x,
+        ObjAssets.bbox_max_x,
+        ObjAssets.bbox_min_y,
+        ObjAssets.bbox_max_y,
+        ObjAssets.bbox_min_z,
+        ObjAssets.bbox_max_z,
+    ).where(ObjAssets.name.in_(agent_names))
     asset_dimensions_by_name = {obj.name: (obj.width, obj.length, obj.height) for obj in assets}
+    asset_center_offsets_by_name = {  # need to calculate offset from asset's pivot point to geometric center
+        obj.name: asset_pivot_point_to_sim_geometric_center_offset(
+            min_x=obj.bbox_min_x,
+            max_x=obj.bbox_max_x,
+            min_y=obj.bbox_min_y,
+            max_y=obj.bbox_max_y,
+            min_z=obj.bbox_min_z,
+            max_z=obj.bbox_max_z,
+        )
+        for obj in assets
+    }
 
     for agent in agents:
         metadata = {}
@@ -188,9 +209,6 @@ def show_agents(sim_state: State, recording_id: Optional[str], application_id: s
             metadata = {
                 k: getattr(agent, k) for k in ("vehicle_type", "vehicle_color", "vehicle_accessory", "is_parked")
             }
-
-        pose: Transformation = Transformation.from_transformation_matrix(mat=agent.pose, approximate_orthogonal=True)
-        pose: Transformation = SIM_TO_INTERNAL @ pose
 
         half_size = list(
             map(
@@ -202,11 +220,23 @@ def show_agents(sim_state: State, recording_id: Optional[str], application_id: s
             )
         )
 
+        pose = Transformation.from_transformation_matrix(mat=agent.pose, approximate_orthogonal=True)
+
+        translation_offset = np.asarray(
+            asset_center_offsets_by_name.get(
+                agent.asset_name if isinstance(agent, ModelAgent) else agent.vehicle_type, (0.0, 0.0, 0.0)
+            )
+        )
+        translation_offset_rotated = pose.rotation @ translation_offset
+
+        pose = Transformation(quaternion=pose.quaternion, translation=pose.translation + translation_offset_rotated)
+        pose = SIM_TO_INTERNAL @ pose
+
         rr.log(
             f"{agent_root}/{agent.id}",
             rr.Boxes3D(
                 half_sizes=[half_size],
-                centers=[pose.translation + np.array([0.0, 0.0, half_size[2]])],
+                centers=[pose.translation],
                 rotations=[
                     [
                         pose.quaternion.x,

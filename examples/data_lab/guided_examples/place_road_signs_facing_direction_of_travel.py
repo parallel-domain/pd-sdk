@@ -125,6 +125,7 @@ class PlaceRoadSigns(ScenarioCreator):
                 forward_offset_to_place_signs=20.0,
                 min_distance_between_signs=1.5,
                 single_frame_mode=False,
+                orient_signs_facing_travel_direction=True,
             )
         )
         return scenario

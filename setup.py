@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="paralleldomain",
-    version="2.7.0",
+    version="2.7.1",
     author=", ".join(["Nisse Knudsen", "Phillip Thomas", "Lars Pandikow", "Michael Stanley"]),
     author_email=", ".join(
         [
@@ -54,7 +54,7 @@ setup(
     ],
     extras_require={
         "data_lab": [
-            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git@v2.7.0",
+            "step-sdk @ git+https://github.com/parallel-domain/step-sdk.git@v2.7.1",
             "rerun-sdk>=0.9.1,<0.10.0",
             "py7zr>=0.20.5,<1.0.0",
         ],

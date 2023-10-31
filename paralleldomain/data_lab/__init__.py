@@ -75,7 +75,7 @@ _ = Scenario
 # Maintained for backwards compatibility
 CustomSimulationAgentBehaviour = CustomSimulationAgentBehavior
 
-DEFAULT_DATA_LAB_VERSION = "v2.7.0"
+DEFAULT_DATA_LAB_VERSION = "v2.7.1"
 """Default Data Lab version to use across examples"""
 
 coordinate_system = CoordinateSystem("RFU")
@@ -955,47 +955,50 @@ def save_sim_state_archive(
     output_path: AnyPath,
     yield_every_sim_state: bool = True,
     scenario_index_offset: int = 0,
+    number_of_scenes: int = 1,
     **kwargs,
 ) -> AnyPath:
     # Function returns AnyPath object of location where state file has been outputted
 
-    gen = create_sensor_sim_stream(
-        scenario_creator=scenario_creator,
-        scene_index=scene_index,
-        frames_per_scene=frames_per_scene,
-        sim_capture_rate=sim_capture_rate,
-        yield_every_sim_state=yield_every_sim_state,
-        simulator=simulator,
-        sim_state_type=ExtendedSimState,
-        **kwargs,
-    )
+    for i in range(number_of_scenes):
+        gen = create_sensor_sim_stream(
+            scenario_creator=scenario_creator,
+            scene_index=scene_index + i,
+            frames_per_scene=frames_per_scene,
+            sim_capture_rate=sim_capture_rate,
+            yield_every_sim_state=yield_every_sim_state,
+            simulator=simulator,
+            sim_state_type=ExtendedSimState,
+            number_of_scenes=number_of_scenes,
+            **kwargs,
+        )
 
-    with TemporaryDirectory() as temp_dir:
-        archive_dir = AnyPath(temp_dir) / "state"
-        os.makedirs(str(archive_dir))
+        with TemporaryDirectory() as temp_dir:
+            archive_dir = AnyPath(temp_dir) / "state"
+            os.makedirs(str(archive_dir))
 
-        scenario_file_name = f"scenario_{(scenario_index_offset + scene_index):09}.7z"
-        scenario_file_path = AnyPath(temp_dir) / scenario_file_name
+            scenario_file_name = f"scenario_{(scenario_index_offset + scene_index+i):09}.7z"
+            scenario_file_path = AnyPath(temp_dir) / scenario_file_name
 
-        if not output_path.is_cloud_path:
-            output_path.mkdir(exist_ok=True)
-        archive_dir.mkdir(exist_ok=True)
+            if not output_path.is_cloud_path:
+                output_path.mkdir(exist_ok=True)
+            archive_dir.mkdir(exist_ok=True)
 
-        for temporal_sensor_session_reference in gen:
-            # serialize out our sim state
-            state_bytes = state_to_bytes(state=temporal_sensor_session_reference.state)
+            for temporal_sensor_session_reference in gen:
+                # serialize out our sim state
+                state_bytes = state_to_bytes(state=temporal_sensor_session_reference.state)
 
-            frame_id = int(temporal_sensor_session_reference.frame_id)
+                frame_id = int(temporal_sensor_session_reference.frame_id)
 
-            state_filepath = archive_dir / f"{frame_id:09}.pd"
-            with state_filepath.open("wb") as f:
-                f.write(state_bytes)
+                state_filepath = archive_dir / f"{frame_id:09}.pd"
+                with state_filepath.open("wb") as f:
+                    f.write(state_bytes)
 
-        with py7zr.SevenZipFile(str(scenario_file_path), "w") as zip_file:
-            zip_file.writeall(path=str(archive_dir), arcname="state")
+            with py7zr.SevenZipFile(str(scenario_file_path), "w") as zip_file:
+                zip_file.writeall(path=str(archive_dir), arcname="state")
 
-        scenario_file_path.copy(target=output_path / scenario_file_name)
+            scenario_file_path.copy(target=output_path / scenario_file_name)
 
-    logger.info(f"State file outputted to: {str(output_path / scenario_file_name)}")
+    logger.info(f"State files output to: {str(output_path)}")
 
-    return output_path / scenario_file_name
+    return output_path
