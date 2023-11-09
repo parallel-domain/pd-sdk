@@ -80,20 +80,20 @@ T = TypeVar("T")
 
 class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta):
     def __init__(
-        self,
-        dataset_name: str,
-        scene_name: SceneName,
-        sensor_name: SensorName,
-        frame_id: FrameId,
-        dataset_path: AnyPath,
-        frame_sample: sample_pb2.Sample,
-        sensor_frame_data: sample_pb2.Datum,
-        ontologies: Dict[str, str],
-        custom_reference_to_box_bottom: Transformation,
-        point_cache_folder_exists: bool,
-        settings: DecoderSettings,
-        is_unordered_scene: bool,
-        scene_decoder,
+            self,
+            dataset_name: str,
+            scene_name: SceneName,
+            sensor_name: SensorName,
+            frame_id: FrameId,
+            dataset_path: AnyPath,
+            frame_sample: sample_pb2.Sample,
+            sensor_frame_data: sample_pb2.Datum,
+            ontologies: Dict[str, str],
+            custom_reference_to_box_bottom: Transformation,
+            point_cache_folder_exists: bool,
+            settings: DecoderSettings,
+            is_unordered_scene: bool,
+            scene_decoder,
     ):
         super().__init__(
             dataset_name=dataset_name,
@@ -126,7 +126,7 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         )[self.sensor_name]["extrinsic"]
         sensor_to_box_bottom = _pose_dto_to_transformation(dto=dto, transformation_type=SensorExtrinsic)
         sensor_to_custom_reference = (
-            self._custom_reference_to_box_bottom.inverse @ sensor_to_box_bottom
+                self._custom_reference_to_box_bottom.inverse @ sensor_to_box_bottom
         )  # from center-bottom to center rear-axle
         return sensor_to_custom_reference
 
@@ -413,10 +413,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return decoded_norms
 
     def _lines_2d_from_pb_annotation(
-        self,
-        annotation: Union[annotations_pb2.Polygon2DAnnotation, annotations_pb2.KeyLine2DAnnotation],
-        class_id: int,
-        instance_id: int,
+            self,
+            annotation: Union[annotations_pb2.Polygon2DAnnotation, annotations_pb2.KeyLine2DAnnotation],
+            class_id: int,
+            instance_id: int,
     ) -> List[Line2D]:
         lines = list()
         points = list()
@@ -431,10 +431,10 @@ class DGPSensorFrameDecoder(SensorFrameDecoder[datetime], metaclass=abc.ABCMeta)
         return lines
 
     def _lines_3d_from_pb_annotation(
-        self,
-        annotation: Union[annotations_pb2.Polygon3DAnnotation, annotations_pb2.KeyLine3DAnnotation],
-        class_id: int,
-        instance_id: int,
+            self,
+            annotation: Union[annotations_pb2.Polygon3DAnnotation, annotations_pb2.KeyLine3DAnnotation],
+            class_id: int,
+            instance_id: int,
     ) -> List[Line3D]:
         lines = list()
         points = list()
@@ -695,9 +695,10 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         datum = self.sensor_frame_data.datum
-        self.point_cloud_format = [
-            point_cloud_pb2.PointCloud.ChannelType.Name(pf) for pf in datum.point_cloud.point_format
-        ]
+        # self.point_cloud_format = [
+        #     point_cloud_pb2.PointCloud.ChannelType.Name(pf) for pf in datum.point_cloud.point_format
+        # ]
+        self.point_cloud_format = ['X', 'Y', 'Z', 'INTENSITY', 'R', 'G', 'B', 'RING', 'TIMESTAMP', "AZIMUTH", "ELEVATION"]
 
     def _decode_available_annotation_identifiers(self) -> List[AnnotationIdentifier]:
         datum = self.sensor_frame_data.datum
@@ -808,6 +809,32 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
                 rec=point_cloud_data,
                 fields=fields,
             ).astype(np.uint32)
+        else:
+            return None
+
+    def _decode_point_cloud_azimuth(self) -> Optional[np.ndarray]:
+        fields = [PointFormat.AZIMUTH]
+        point_cloud_format = self.point_cloud_format
+        point_cloud_data = self._decode_point_cloud_data()
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
+        else:
+            return None
+
+    def _decode_point_cloud_elevation(self) -> Optional[np.ndarray]:
+        fields = [PointFormat.ELEVATION]
+        point_cloud_format = self.point_cloud_format
+        point_cloud_data = self._decode_point_cloud_data()
+
+        if all(f in point_cloud_format for f in fields):
+            return rec2array(
+                rec=point_cloud_data,
+                fields=fields,
+            ).astype(np.float32)
         else:
             return None
 

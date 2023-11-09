@@ -51,6 +51,8 @@ message PointCloud {
     INSTANCE_ID = 12;
     // Timestamp of this point sample, stored as UTC in microseconds
     TIMESTAMP = 13;
+    AZIMUTH=14;
+    ELEVATION=15;
   }
 
   // Structure of values in the pointcloud file. Each entry in this array specifies

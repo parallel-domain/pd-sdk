@@ -30,7 +30,7 @@ ANNOTATION_TYPE_MAP_INV: Dict[Type[Annotation], str] = {
     v: k for k, v in ANNOTATION_TYPE_MAP.items() if v is not Annotation
 }
 
-POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP")
+POINT_FORMAT = ("X", "Y", "Z", "INTENSITY", "R", "G", "B", "RING", "TIMESTAMP", "AZIMUTH", "ELEVATION")
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 NON_DGP_ANNOTATIONS = {

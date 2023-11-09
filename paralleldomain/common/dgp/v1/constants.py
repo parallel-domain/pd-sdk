@@ -50,6 +50,8 @@ class PointFormat:
     RING: str = "RING"
     RAYTYPE: str = "RAYTYPE"
     TS: str = "TIMESTAMP"
+    AZIMUTH: str = "AZIMUTH"
+    ELEVATION: str = "ELEVATION"
 
     @classmethod
     def to_list(cls):
@@ -64,6 +66,8 @@ class PointFormat:
             cls.RING,
             # cls.RAYTYPE,  # deactivated until in official DGP v1.0 proto schema
             cls.TS,
+            cls.AZIMUTH,
+            cls.ELEVATION
         ]
 
 
@@ -105,6 +109,8 @@ class PointFormatDtype:
     RING: str = "<u4"
     RAYTYPE: str = "<u4"
     TS: str = "<u8"
+    AZIMUTH: str = "<f4"
+    ELEVATION: str = "<f4"
 
     @classmethod
     def to_list(cls):
@@ -119,6 +125,8 @@ class PointFormatDtype:
             cls.RING,
             # cls.RAYTYPE,  # deactivated until in official DGP v1.0 proto schema
             cls.TS,
+            cls.AZIMUTH,
+            cls.ELEVATION
         ]
 
 

@@ -536,6 +536,8 @@ class PointInfo(Enum):
     B = "B"
     RING = "RING"
     TS = "TIMESTAMP"
+    AZIMUTH = "AZIMUTH"
+    ELEVATION = "ELEVATION"
 
 
 # The LidarSensorFrameDecoder api exposes individual access to point fields, but they are stored in one single file.
@@ -551,7 +553,8 @@ def load_point_cloud(path: str) -> np.ndarray:
 class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[datetime]):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.point_format = self.sensor_frame_data.datum.point_cloud.point_format
+        # self.point_format = self.sensor_frame_data.datum.point_cloud.point_format
+        self.point_format = ['X', 'Y', 'Z', 'INTENSITY', 'R', 'G', 'B', 'RING', 'TIMESTAMP', "AZIMUTH", "ELEVATION"]
 
     def _get_index(self, p_info: PointInfo):
         point_cloud_info = {PointInfo(val): idx for idx, val in enumerate(self.point_format)}
@@ -614,6 +617,20 @@ class DGPLidarSensorFrameDecoder(DGPSensorFrameDecoder, LidarSensorFrameDecoder[
 
     def _decode_point_cloud_ray_type(self) -> Optional[np.ndarray]:
         return None
+
+    def _decode_point_cloud_azimuth(self) -> Optional[np.ndarray]:
+        azimuth_index = [
+            self._get_index(p_info=PointInfo.AZIMUTH),
+        ]
+        data = self._decode_point_cloud_data()
+        return data[:, azimuth_index]
+
+    def _decode_point_cloud_elevation(self) -> Optional[np.ndarray]:
+        elevation_index = [
+            self._get_index(p_info=PointInfo.ELEVATION),
+        ]
+        data = self._decode_point_cloud_data()
+        return data[:, elevation_index]
 
 
 @lru_cache(maxsize=16)

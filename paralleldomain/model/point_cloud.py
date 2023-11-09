@@ -46,6 +46,16 @@ class PointCloud:
         pass
 
     @property
+    @abc.abstractmethod
+    def azimuth(self) -> Optional[np.ndarray]:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def elevation(self) -> Optional[np.ndarray]:
+        pass
+
+    @property
     def xyz_i(self) -> np.ndarray:
         return np.concatenate((self.xyz, self.intensity), axis=1)
 
@@ -81,6 +91,11 @@ class PointCloudDecoderProtocol(Protocol):
     def get_point_cloud_ray_type(self) -> Optional[np.ndarray]:
         pass
 
+    def get_point_cloud_azimuth(self) -> Optional[np.ndarray]:
+        pass
+
+    def get_point_cloud_elevation(self) -> Optional[np.ndarray]:
+        pass
 
 class DecoderPointCloud(PointCloud):
     def __init__(self, decoder: PointCloudDecoderProtocol):
@@ -93,6 +108,8 @@ class DecoderPointCloud(PointCloud):
         self._ts = None
         self._ring = None
         self._ray_type = None
+        self._azimuth = None
+        self._elevation = None
 
     @property
     def length(self) -> int:
@@ -147,3 +164,15 @@ class DecoderPointCloud(PointCloud):
         if self._ray_type is None:
             self._ray_type = self._decoder.get_point_cloud_ray_type()
         return self._ray_type
+
+    @property
+    def azimuth(self) -> Optional[np.ndarray]:
+        if self._azimuth is None:
+            self._azimuth = self._decoder.get_point_cloud_azimuth()
+        return self._azimuth
+
+    @property
+    def elevation(self) -> Optional[np.ndarray]:
+        if self._elevation is None:
+            self._elevation = self._decoder.get_point_cloud_elevation()
+        return self._elevation

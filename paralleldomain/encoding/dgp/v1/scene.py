@@ -152,6 +152,8 @@ class DGPSceneEncoder(SceneEncoder):
             ("B", "<f4"),
             ("RING_ID", "<u4"),
             ("TIMESTAMP", "<u8"),
+            ("AZIMUTH", "<f4"),
+            ("ELEVATION", "<f4")
         ]
 
         row_count = pc.length
@@ -166,6 +168,8 @@ class DGPSceneEncoder(SceneEncoder):
         pc_data["B"] = pc.rgb[:, 2]
         pc_data["RING_ID"] = pc.ring[:, 0]
         pc_data["TIMESTAMP"] = pc.ts[:, 0]
+        pc_data["AZIMUTH"] = pc.azimuth[:, 0]
+        pc_data["ELEVATION"] = pc.elevation[:, 0]
 
         return self._run_async(func=fsio.write_npz, obj={"data": pc_data}, path=output_path)
 

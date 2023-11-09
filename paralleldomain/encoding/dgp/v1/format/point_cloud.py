@@ -53,6 +53,8 @@ class PointCloudDGPV1Mixin(CommonDGPV1FormatMixin):
             ("B", "<f4"),
             ("RING_ID", "<u4"),
             ("TIMESTAMP", "<u8"),
+            ("AZIMUTH", "<f4"),
+            ("ELEVATION", "<f4")
         ]
 
         row_count = point_cloud.length
@@ -67,5 +69,8 @@ class PointCloudDGPV1Mixin(CommonDGPV1FormatMixin):
         pc_data["B"] = point_cloud.rgb[:, 2]
         pc_data["RING_ID"] = point_cloud.ring[:, 0]
         pc_data["TIMESTAMP"] = point_cloud.ts[:, 0]
+        # pc_data["RAYTYPE"] = point_cloud.ray_type
+        pc_data["AZIMUTH"] = point_cloud.azimuth[:, 0]
+        pc_data["ELEVATION"] = point_cloud.elevation[:, 0]
 
         return fsio.write_npz(obj={"data": pc_data}, path=output_path)

@@ -295,6 +295,26 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
         else:
             return self._decode_point_cloud_ray_type()
 
+    def get_point_cloud_azimuth(self) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(extra="point_cloud_azimuth")
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_azimuth(),
+            )
+        else:
+            return self._decode_point_cloud_azimuth()
+
+    def get_point_cloud_elevation(self) -> Optional[np.ndarray]:
+        if self.settings.cache_point_clouds:
+            _unique_cache_key = self.get_unique_sensor_frame_id(extra="point_cloud_elevation")
+            return self.lazy_load_cache.get_item(
+                key=_unique_cache_key,
+                loader=lambda: self._decode_point_cloud_elevation(),
+            )
+        else:
+            return self._decode_point_cloud_elevation()
+
     @abc.abstractmethod
     def _decode_point_cloud_size(self) -> int:
         pass
@@ -325,6 +345,14 @@ class LidarSensorFrameDecoder(SensorFrameDecoder[TDateTime]):
 
     @abc.abstractmethod
     def _decode_point_cloud_ray_type(self) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_point_cloud_azimuth(self) -> Optional[np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def _decode_point_cloud_elevation(self) -> Optional[np.ndarray]:
         pass
 
 
