@@ -22,7 +22,7 @@ setup(
     install_requires=[
         "Pillow>=6.2.1,<11.0.0",
         "awscli>=1.0.0,<2.0.0",
-        # "bezier>=2023.7.28",
+        "bezier>=2023.7.28",
         "cachetools>=4.2.2,<5.0.0",
         "cgroupspy>=0.2.1,<1.0.0",
         "coloredlogs>=15.0.1,<16.0.0",
