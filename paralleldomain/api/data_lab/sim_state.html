@@ -570,7 +570,7 @@ of which the simulation state is a part</p>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Keyword arguments of parameters to be passed in when initializing the ExtendedSimulationState</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#paralleldomain.data_lab.sim_state.ExtendedSimState" title="paralleldomain.data_lab.sim_state.ExtendedSimState"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedSimState</span></code></a></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#paralleldomain.data_lab.sim_state.ExtendedSimState" title="paralleldomain.data_lab.sim_state.ExtendedSimState"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExtendedSimState</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -581,22 +581,22 @@ of which the simulation state is a part</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>agent</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">CustomSimulationAgent</span></code>) – The agent that should be checked for collisions.  If <code class="xref py py-attr docutils literal notranslate"><span class="pre">pose</span></code> is not passed, the agent’s current
+<li><p><strong>agent</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomSimulationAgent</span></code></span>) – The agent that should be checked for collisions.  If <code class="xref py py-attr docutils literal notranslate"><span class="pre">pose</span></code> is not passed, the agent’s current
 pose from the sim state is checked for collisions</p></li>
-<li><p><strong>scale_length</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Scales the region the collision check is performed over in the length direction.  A value of
+<li><p><strong>scale_length</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Scales the region the collision check is performed over in the length direction.  A value of
 1.0 checks the exact dimension of the agent’s bounding box. Values greater than 1.0 expand the collision
 check region to be larger than the bounding box of the agent, values below 1.0 make the collision check
 region smaller than the agent</p></li>
-<li><p><strong>scale_width</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Scales the region the collision check is performed over in the width direction.  A value of
+<li><p><strong>scale_width</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Scales the region the collision check is performed over in the width direction.  A value of
 1.0 checks the exact dimension of the agent’s bounding box. Values greater than 1.0 expand the collision
 check region to be larger than the bounding box of the agent, values below 1.0 make the collision check
 region smaller than the agent</p></li>
-<li><p><strong>pose</strong> (<a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>]) – A pose of the agent (other that the agent’s current pose) to check for collisions,
+<li><p><strong>pose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="../utilities/transformation.html#paralleldomain.utilities.transformation.Transformation" title="paralleldomain.utilities.transformation.Transformation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transformation</span></code></a>]</span>) – A pose of the agent (other that the agent’s current pose) to check for collisions,
 useful for checking if a new pose is a valid location for the agent to be moved to</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><dl class="simple">
