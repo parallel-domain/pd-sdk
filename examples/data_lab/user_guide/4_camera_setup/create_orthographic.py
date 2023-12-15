@@ -33,7 +33,7 @@ from paralleldomain.utilities.transformation import Transformation
         p1 - Near clip plane of the orthographic camera
         p2 - Far clip plane of the orthographic camera
 
-    In this example script, we will be demonstrating four examples of orthographic cameras:
+    In this example script, we will be demonstrating three examples of orthographic cameras:
         Ortho_BEV - Square Orthographic BEV Camera 100m x 100m in size and 19.2 pixels/m resolution
         Ortho_BEV_low_res - Square Orthographic BEV Camera 100m x 100m in size and 1/5th the resolution of Ortho_BEV
         Ortho_BEV_low_fov - Square Orthographic BEV Camera 20m x 20m in size and 19.2 pixels/m resolution
